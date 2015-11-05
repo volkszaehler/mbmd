@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/codegangsta/cli",
+			"repository": "https://github.com/codegangsta/cli",
+			"revision": "70e3fa51ebed95df8c0fbe1519c1c1f9bc16bb13",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/goburrow/modbus",
 			"repository": "https://github.com/goburrow/modbus",
 			"revision": "8b151e5eecacb1e3b87935d96bd33dd14b17175e",
