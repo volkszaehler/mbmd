@@ -1,0 +1,35 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/goburrow/modbus",
+			"repository": "https://github.com/goburrow/modbus",
+			"revision": "8b151e5eecacb1e3b87935d96bd33dd14b17175e",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/goburrow/serial",
+			"repository": "https://github.com/goburrow/serial",
+			"revision": "bf1bf09b87e3ec7436f34f09ae59ce10537366ac",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gorilla/context",
+			"repository": "https://github.com/gorilla/context",
+			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gorilla/mux",
+			"repository": "https://github.com/gorilla/mux",
+			"revision": "ad4d7a5882b961e07e2626045eb995c022ac6664",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/zfjagann/golang-ring",
+			"repository": "https://github.com/zfjagann/golang-ring",
+			"revision": "17637388c9f6665e2f475e4beec439e6fc19fee9",
+			"branch": "master"
+		}
+	]
+}
