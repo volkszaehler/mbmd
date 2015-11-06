@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/codegangsta/cli"
 	"github.com/gonium/gosdm630"
+	"log"
 	"os"
 )
 
@@ -22,15 +23,27 @@ func main() {
 			Name:  "verbose, v",
 			Usage: "print verbose messages",
 		},
+		cli.IntFlag{
+			Name:  "interval, i",
+			Value: 5,
+			Usage: "seconds between getting new values from the SDM630",
+		},
 	}
 	app.Action = func(c *cli.Context) {
+		// Check the interval - only values between 5 and 20 are
+		// useful.
+		if c.Int("interval") < 5 || c.Int("interval") > 20 {
+			log.Fatal("the interval must be between 5 and 20 seconds.")
+		}
 		var rc = make(sdm630.ReadingChannel)
-		// Read the SDM630 every 5 seconds
-		interval := 5
-		qe := sdm630.NewQueryEngine(c.String("device"), interval,
-			c.Bool("verbose"), rc)
+		qe := sdm630.NewQueryEngine(
+			c.String("device"),
+			c.Int("interval"),
+			c.Bool("verbose"),
+			rc,
+		)
 		go qe.Produce()
-		mc := sdm630.NewMeasurementCache(rc, interval)
+		mc := sdm630.NewMeasurementCache(rc, c.Int("interval"))
 		go mc.ConsumeData()
 		sdm630.Run_httpd(mc)
 	}
