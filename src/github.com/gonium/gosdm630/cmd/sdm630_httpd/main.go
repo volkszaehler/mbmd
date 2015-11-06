@@ -48,7 +48,11 @@ func main() {
 			rc,
 		)
 		go qe.Produce()
-		mc := sdm630.NewMeasurementCache(rc, c.Int("interval"))
+		mc := sdm630.NewMeasurementCache(
+			rc,
+			c.Int("interval"),
+			c.Bool("verbose"),
+		)
 		go mc.ConsumeData()
 		sdm630.Run_httpd(mc, c.String("url"))
 	}

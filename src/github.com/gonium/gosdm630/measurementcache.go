@@ -10,15 +10,17 @@ type MeasurementCache struct {
 	secsBetweenReadings int
 	lastminutebuffer    *ring.Ring
 	lastreading         Readings
+	verbose             bool
 }
 
-func NewMeasurementCache(ds ReadingChannel, interval int) *MeasurementCache {
+func NewMeasurementCache(ds ReadingChannel, interval int, isVerbose bool) *MeasurementCache {
 	r := &ring.Ring{}
 	r.SetCapacity(60 / interval)
 	return &MeasurementCache{
 		datastream:          ds,
 		secsBetweenReadings: interval,
 		lastminutebuffer:    r,
+		verbose:             isVerbose,
 	}
 }
 
@@ -27,7 +29,9 @@ func (mc *MeasurementCache) ConsumeData() {
 		reading := <-mc.datastream
 		mc.lastreading = reading
 		mc.lastminutebuffer.Enqueue(reading)
-		fmt.Printf("%s\r\n", &mc.lastreading)
+		if mc.verbose {
+			fmt.Printf("%s\r\n", &mc.lastreading)
+		}
 	}
 }
 
