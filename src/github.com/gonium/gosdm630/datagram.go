@@ -10,7 +10,7 @@ import (
 type ReadingChannel chan Readings
 
 type Readings struct {
-	Time      time.Time
+	Timestamp time.Time
 	L1Voltage float32
 	L2Voltage float32
 	L3Voltage float32
@@ -30,7 +30,7 @@ func (r *Readings) String() string {
 		"L2: %.2fV %.2fA %.2fW %.2fcos | " +
 		"L3: %.2fV %.2fA %.2fW %.2fcos"
 	return fmt.Sprintf(fmtString,
-		r.Time.Format(time.RFC3339),
+		r.Timestamp.Format(time.RFC3339),
 		r.L1Voltage,
 		r.L1Current,
 		r.L1Power,
@@ -69,10 +69,10 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings) {
 		L2CosPhi:  lhs.L2CosPhi + rhs.L2CosPhi,
 		L3CosPhi:  lhs.L3CosPhi + rhs.L3CosPhi,
 	}
-	if lhs.Time.After(rhs.Time) {
-		retval.Time = lhs.Time
+	if lhs.Timestamp.After(rhs.Timestamp) {
+		retval.Timestamp = lhs.Timestamp
 	} else {
-		retval.Time = rhs.Time
+		retval.Timestamp = rhs.Timestamp
 	}
 	return retval
 }
@@ -96,6 +96,6 @@ func (lhs *Readings) divide(scalar float32) (retval Readings) {
 		L2CosPhi:  lhs.L2CosPhi / scalar,
 		L3CosPhi:  lhs.L3CosPhi / scalar,
 	}
-	retval.Time = lhs.Time
+	retval.Timestamp = lhs.Timestamp
 	return retval
 }

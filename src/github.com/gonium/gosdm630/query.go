@@ -98,7 +98,7 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 func (q *QueryEngine) Produce() {
 	for {
 		q.datastream <- Readings{
-			Time:      time.Now(),
+			Timestamp: time.Now(),
 			L1Voltage: q.queryOrFail(OpCodeL1Voltage),
 			L2Voltage: q.queryOrFail(OpCodeL2Voltage),
 			L3Voltage: q.queryOrFail(OpCodeL3Voltage),

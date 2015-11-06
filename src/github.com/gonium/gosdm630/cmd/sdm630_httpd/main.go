@@ -19,13 +19,18 @@ func main() {
 			Value: "/dev/ttyUSB0",
 			Usage: "path to serial RTU device",
 		},
+		cli.StringFlag{
+			Name:  "url, u",
+			Value: ":8080",
+			Usage: "the URL the server should respond on",
+		},
 		cli.BoolFlag{
 			Name:  "verbose, v",
 			Usage: "print verbose messages",
 		},
 		cli.IntFlag{
 			Name:  "interval, i",
-			Value: 5,
+			Value: 10,
 			Usage: "seconds between getting new values from the SDM630",
 		},
 	}
@@ -45,7 +50,7 @@ func main() {
 		go qe.Produce()
 		mc := sdm630.NewMeasurementCache(rc, c.Int("interval"))
 		go mc.ConsumeData()
-		sdm630.Run_httpd(mc)
+		sdm630.Run_httpd(mc, c.String("url"))
 	}
 
 	app.Run(os.Args)

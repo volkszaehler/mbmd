@@ -13,7 +13,7 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 		w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 		v := hc.GetLast()
-		fmt.Fprintf(w, "Last measurement taken %s:\r\n", v.Time.Format(time.RFC850))
+		fmt.Fprintf(w, "Last measurement taken %s:\r\n", v.Timestamp.Format(time.RFC850))
 		fmt.Fprintf(w, "L1: %.2fV %.2fA %.2fW %.2fcos\r\n",
 			v.L1Voltage, v.L1Current, v.L1Power, v.L1CosPhi)
 		fmt.Fprintf(w, "L2: %.2fV %.2fA %.2fW %.2fcos\r\n",
@@ -45,10 +45,10 @@ func MkLastMinuteAvgHandler(hc *MeasurementCache) func(http.ResponseWriter, *htt
 	})
 }
 
-func Run_httpd(mc *MeasurementCache) {
+func Run_httpd(mc *MeasurementCache, url string) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", MkIndexHandler(mc))
 	router.HandleFunc("/last", MkLastValueHandler(mc))
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgHandler(mc))
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(url, router))
 }
