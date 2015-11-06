@@ -97,5 +97,9 @@ Now fire up the software:
 
 You can see modbus traffic and the current readings on the command line.
 If you visit [http://localhost:8080](http://localhost:8080) you should
-also see the last received value printed as ASCII text. Please note: The
+also see the last received value printed as ASCII text:
+
+![Browser output](img/browser-ascii.png)
+
+Please note: The
 exact representation might change in future releases.
