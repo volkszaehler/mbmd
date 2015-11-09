@@ -11,21 +11,31 @@ type ReadingChannel chan Readings
 
 type Readings struct {
 	Timestamp time.Time
-	L1Voltage float32
-	L2Voltage float32
-	L3Voltage float32
-	L1Current float32
-	L2Current float32
-	L3Current float32
-	L1Power   float32
-	L2Power   float32
-	L3Power   float32
-	L1CosPhi  float32
-	L2CosPhi  float32
-	L3CosPhi  float32
+	Power     PowerReadings
+	Voltage   VoltageReadings
+	Current   CurrentReadings
+	Cosphi    CosphiReadings
 }
 
 type PowerReadings struct {
+	L1 float32
+	L2 float32
+	L3 float32
+}
+
+type VoltageReadings struct {
+	L1 float32
+	L2 float32
+	L3 float32
+}
+
+type CurrentReadings struct {
+	L1 float32
+	L2 float32
+	L3 float32
+}
+
+type CosphiReadings struct {
 	L1 float32
 	L2 float32
 	L3 float32
@@ -37,32 +47,23 @@ func (r *Readings) String() string {
 		"L3: %.2fV %.2fA %.2fW %.2fcos"
 	return fmt.Sprintf(fmtString,
 		r.Timestamp.Format(time.RFC3339),
-		r.L1Voltage,
-		r.L1Current,
-		r.L1Power,
-		r.L1CosPhi,
-		r.L2Voltage,
-		r.L2Current,
-		r.L2Power,
-		r.L2CosPhi,
-		r.L3Voltage,
-		r.L3Current,
-		r.L3Power,
-		r.L3CosPhi,
+		r.Voltage.L1,
+		r.Current.L1,
+		r.Power.L1,
+		r.Cosphi.L1,
+		r.Voltage.L2,
+		r.Current.L2,
+		r.Power.L2,
+		r.Cosphi.L2,
+		r.Voltage.L3,
+		r.Current.L3,
+		r.Power.L3,
+		r.Cosphi.L3,
 	)
 }
 
 func (r *Readings) JSON(w io.Writer) error {
 	return json.NewEncoder(w).Encode(r)
-}
-
-func (r *Readings) PowerJSON(w io.Writer) error {
-	p := PowerReadings{
-		L1: r.L1Power,
-		L2: r.L2Power,
-		L3: r.L3Power,
-	}
-	return json.NewEncoder(w).Encode(p)
 }
 
 /*
@@ -71,18 +72,26 @@ func (r *Readings) PowerJSON(w io.Writer) error {
  */
 func (lhs *Readings) add(rhs *Readings) (retval Readings) {
 	retval = Readings{
-		L1Voltage: lhs.L1Voltage + rhs.L1Voltage,
-		L2Voltage: lhs.L2Voltage + rhs.L2Voltage,
-		L3Voltage: lhs.L3Voltage + rhs.L3Voltage,
-		L1Current: lhs.L1Current + rhs.L1Current,
-		L2Current: lhs.L2Current + rhs.L2Current,
-		L3Current: lhs.L3Current + rhs.L3Current,
-		L1Power:   lhs.L1Power + rhs.L1Power,
-		L2Power:   lhs.L2Power + rhs.L2Power,
-		L3Power:   lhs.L3Power + rhs.L3Power,
-		L1CosPhi:  lhs.L1CosPhi + rhs.L1CosPhi,
-		L2CosPhi:  lhs.L2CosPhi + rhs.L2CosPhi,
-		L3CosPhi:  lhs.L3CosPhi + rhs.L3CosPhi,
+		Voltage: VoltageReadings{
+			L1: lhs.Voltage.L1 + rhs.Voltage.L1,
+			L2: lhs.Voltage.L2 + rhs.Voltage.L2,
+			L3: lhs.Voltage.L3 + rhs.Voltage.L3,
+		},
+		Current: CurrentReadings{
+			L1: lhs.Current.L1 + rhs.Current.L1,
+			L2: lhs.Current.L2 + rhs.Current.L2,
+			L3: lhs.Current.L3 + rhs.Current.L3,
+		},
+		Power: PowerReadings{
+			L1: lhs.Power.L1 + rhs.Power.L1,
+			L2: lhs.Power.L2 + rhs.Power.L2,
+			L3: lhs.Power.L3 + rhs.Power.L3,
+		},
+		Cosphi: CosphiReadings{
+			L1: lhs.Cosphi.L1 + rhs.Cosphi.L1,
+			L2: lhs.Cosphi.L2 + rhs.Cosphi.L2,
+			L3: lhs.Cosphi.L3 + rhs.Cosphi.L3,
+		},
 	}
 	if lhs.Timestamp.After(rhs.Timestamp) {
 		retval.Timestamp = lhs.Timestamp
@@ -98,18 +107,26 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings) {
  */
 func (lhs *Readings) divide(scalar float32) (retval Readings) {
 	retval = Readings{
-		L1Voltage: lhs.L1Voltage / scalar,
-		L2Voltage: lhs.L2Voltage / scalar,
-		L3Voltage: lhs.L3Voltage / scalar,
-		L1Current: lhs.L1Current / scalar,
-		L2Current: lhs.L2Current / scalar,
-		L3Current: lhs.L3Current / scalar,
-		L1Power:   lhs.L1Power / scalar,
-		L2Power:   lhs.L2Power / scalar,
-		L3Power:   lhs.L3Power / scalar,
-		L1CosPhi:  lhs.L1CosPhi / scalar,
-		L2CosPhi:  lhs.L2CosPhi / scalar,
-		L3CosPhi:  lhs.L3CosPhi / scalar,
+		Voltage: VoltageReadings{
+			L1: lhs.Voltage.L1 / scalar,
+			L2: lhs.Voltage.L2 / scalar,
+			L3: lhs.Voltage.L3 / scalar,
+		},
+		Current: CurrentReadings{
+			L1: lhs.Current.L1 / scalar,
+			L2: lhs.Current.L2 / scalar,
+			L3: lhs.Current.L3 / scalar,
+		},
+		Power: PowerReadings{
+			L1: lhs.Power.L1 / scalar,
+			L2: lhs.Power.L2 / scalar,
+			L3: lhs.Power.L3 / scalar,
+		},
+		Cosphi: CosphiReadings{
+			L1: lhs.Cosphi.L1 / scalar,
+			L2: lhs.Cosphi.L2 / scalar,
+			L3: lhs.Cosphi.L3 / scalar,
+		},
 	}
 	retval.Timestamp = lhs.Timestamp
 	return retval

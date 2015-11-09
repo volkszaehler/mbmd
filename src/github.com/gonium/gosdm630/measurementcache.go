@@ -44,8 +44,10 @@ func (mc *MeasurementCache) GetMinuteAvg() Readings {
 	var avg Readings
 	for _, m := range measurements {
 		r, _ := m.(Readings)
-		log.Printf("%s\r\n", r.String())
 		avg = r.add(&avg)
+	}
+	if mc.verbose {
+		log.Printf("%s\r\n", avg.String())
 	}
 	return avg.divide(float32(len(measurements)))
 }

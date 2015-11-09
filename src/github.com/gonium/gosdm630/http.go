@@ -15,11 +15,11 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 		v := hc.GetLast()
 		fmt.Fprintf(w, "Last measurement taken %s:\r\n", v.Timestamp.Format(time.RFC850))
 		fmt.Fprintf(w, "L1: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.L1Voltage, v.L1Current, v.L1Power, v.L1CosPhi)
+			v.Voltage.L1, v.Current.L1, v.Power.L1, v.Cosphi.L1)
 		fmt.Fprintf(w, "L2: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.L2Voltage, v.L2Current, v.L2Power, v.L2CosPhi)
+			v.Voltage.L2, v.Current.L2, v.Power.L2, v.Cosphi.L2)
 		fmt.Fprintf(w, "L3: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.L3Voltage, v.L3Current, v.L3Power, v.L3CosPhi)
+			v.Voltage.L3, v.Current.L3, v.Power.L3, v.Cosphi.L3)
 	})
 }
 
@@ -30,17 +30,6 @@ func MkLastValueHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Re
 		w.WriteHeader(http.StatusOK)
 		if err := last.JSON(w); err != nil {
 			log.Printf("Failed to create JSON representation of measurement %s", last.String())
-		}
-	})
-}
-
-func MkPowerLastValueHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		last := hc.GetLast()
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := last.PowerJSON(w); err != nil {
-			log.Printf("Failed to create JSON representation of power measurement %s", last.String())
 		}
 	})
 }
@@ -60,7 +49,6 @@ func Run_httpd(mc *MeasurementCache, url string) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", MkIndexHandler(mc))
 	router.HandleFunc("/last", MkLastValueHandler(mc))
-	router.HandleFunc("/power/last", MkPowerLastValueHandler(mc))
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgHandler(mc))
 	log.Fatal(http.ListenAndServe(url, router))
 }

@@ -99,18 +99,26 @@ func (q *QueryEngine) Produce() {
 	for {
 		q.datastream <- Readings{
 			Timestamp: time.Now(),
-			L1Voltage: q.queryOrFail(OpCodeL1Voltage),
-			L2Voltage: q.queryOrFail(OpCodeL2Voltage),
-			L3Voltage: q.queryOrFail(OpCodeL3Voltage),
-			L1Current: q.queryOrFail(OpCodeL1Current),
-			L2Current: q.queryOrFail(OpCodeL2Current),
-			L3Current: q.queryOrFail(OpCodeL3Current),
-			L1Power:   q.queryOrFail(OpCodeL1Power),
-			L2Power:   q.queryOrFail(OpCodeL2Power),
-			L3Power:   q.queryOrFail(OpCodeL3Power),
-			L1CosPhi:  q.queryOrFail(OpCodeL1PowerFactor),
-			L2CosPhi:  q.queryOrFail(OpCodeL2PowerFactor),
-			L3CosPhi:  q.queryOrFail(OpCodeL3PowerFactor),
+			Voltage: VoltageReadings{
+				L1: q.queryOrFail(OpCodeL1Voltage),
+				L2: q.queryOrFail(OpCodeL2Voltage),
+				L3: q.queryOrFail(OpCodeL3Voltage),
+			},
+			Current: CurrentReadings{
+				L1: q.queryOrFail(OpCodeL1Current),
+				L2: q.queryOrFail(OpCodeL2Current),
+				L3: q.queryOrFail(OpCodeL3Current),
+			},
+			Power: PowerReadings{
+				L1: q.queryOrFail(OpCodeL1Power),
+				L2: q.queryOrFail(OpCodeL2Power),
+				L3: q.queryOrFail(OpCodeL3Power),
+			},
+			Cosphi: CosphiReadings{
+				L1: q.queryOrFail(OpCodeL1PowerFactor),
+				L2: q.queryOrFail(OpCodeL2PowerFactor),
+				L3: q.queryOrFail(OpCodeL3PowerFactor),
+			},
 		}
 		time.Sleep(time.Duration(q.interval) * time.Second)
 	}
