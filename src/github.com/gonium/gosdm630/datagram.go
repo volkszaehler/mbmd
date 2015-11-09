@@ -25,6 +25,12 @@ type Readings struct {
 	L3CosPhi  float32
 }
 
+type PowerReadings struct {
+	L1 float32
+	L2 float32
+	L3 float32
+}
+
 func (r *Readings) String() string {
 	fmtString := "T: %s - L1: %.2fV %.2fA %.2fW %.2fcos | " +
 		"L2: %.2fV %.2fA %.2fW %.2fcos | " +
@@ -48,6 +54,15 @@ func (r *Readings) String() string {
 
 func (r *Readings) JSON(w io.Writer) error {
 	return json.NewEncoder(w).Encode(r)
+}
+
+func (r *Readings) PowerJSON(w io.Writer) error {
+	p := PowerReadings{
+		L1: r.L1Power,
+		L2: r.L2Power,
+		L3: r.L3Power,
+	}
+	return json.NewEncoder(w).Encode(p)
 }
 
 /*

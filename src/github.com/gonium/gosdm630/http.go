@@ -34,6 +34,17 @@ func MkLastValueHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Re
 	})
 }
 
+func MkPowerLastValueHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		last := hc.GetLast()
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := last.PowerJSON(w); err != nil {
+			log.Printf("Failed to create JSON representation of power measurement %s", last.String())
+		}
+	})
+}
+
 func MkLastMinuteAvgHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		last := hc.GetMinuteAvg()
@@ -49,6 +60,7 @@ func Run_httpd(mc *MeasurementCache, url string) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", MkIndexHandler(mc))
 	router.HandleFunc("/last", MkLastValueHandler(mc))
+	router.HandleFunc("/power/last", MkPowerLastValueHandler(mc))
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgHandler(mc))
 	log.Fatal(http.ListenAndServe(url, router))
 }
