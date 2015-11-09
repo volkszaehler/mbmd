@@ -4,9 +4,6 @@ go:
 env:
   - "PATH=/home/travis/gopath/bin:$PATH"
 before_install:
-  - go get github.com/mitchellh/gox
-  - gox -build-toolchain
-  - go get github.com/tcnksm/ghr
-after_success:
-  - gox -output "dist/{{.OS}}_{{.Arch}}_{{.Dir}}" ./...
-  - ghr --username gonium --token $GITHUB_TOKEN --replace --prerelease --debug pre-release dist/
+  - go get -u github.com/constabulary/gb/...
+script:
+  - gb build all
