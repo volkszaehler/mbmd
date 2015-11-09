@@ -103,3 +103,16 @@ also see the last received value printed as ASCII text:
 
 Please note: The
 exact representation might change in future releases.
+
+### Crosscompiling e.g. for Raspberry Pi
+
+Go has very good crosscompilation support. Typically, I develop under
+Mac OS and crosscompile a binary for my RPi. It is easy:
+
+    # clear whatever old binaries I have
+    rm -rf pkg bin
+    # start crosscompilation
+    GOOS=linux GOARCH=arm GOARM=5 gb build all
+
+You can then copy the binary from the ``bin`` subdirectory to the RPi
+and start it.
