@@ -9,16 +9,21 @@ import (
 	"time"
 )
 
+// See http://bg-etech.de/download/manual/SDM630Register.pdf
 const (
-	OpCodeL1Voltage     = 0x0000
-	OpCodeL2Voltage     = 0x0002
-	OpCodeL3Voltage     = 0x0004
-	OpCodeL1Current     = 0x0006
-	OpCodeL2Current     = 0x0008
-	OpCodeL3Current     = 0x000A
-	OpCodeL1Power       = 0x000C
-	OpCodeL2Power       = 0x000E
-	OpCodeL3Power       = 0x0010
+	OpCodeL1Voltage = 0x0000
+	OpCodeL2Voltage = 0x0002
+	OpCodeL3Voltage = 0x0004
+	OpCodeL1Current = 0x0006
+	OpCodeL2Current = 0x0008
+	OpCodeL3Current = 0x000A
+	//TODO: This is broken.
+	OpCodeL1Consumption = 0x000C
+	OpCodeL2Consumption = 0x000E
+	OpCodeL3Consumption = 0x0010
+	OpCodeL1Production  = 0x000C
+	OpCodeL2Production  = 0x000E
+	OpCodeL3Production  = 0x0010
 	OpCodeL1PowerFactor = 0x001e
 	OpCodeL2PowerFactor = 0x0020
 	OpCodeL3PowerFactor = 0x0022
@@ -109,10 +114,15 @@ func (q *QueryEngine) Produce() {
 				L2: q.queryOrFail(OpCodeL2Current),
 				L3: q.queryOrFail(OpCodeL3Current),
 			},
-			Power: PowerReadings{
-				L1: q.queryOrFail(OpCodeL1Power),
-				L2: q.queryOrFail(OpCodeL2Power),
-				L3: q.queryOrFail(OpCodeL3Power),
+			Consumption: PowerReadings{
+				L1: q.queryOrFail(OpCodeL1Consumption),
+				L2: q.queryOrFail(OpCodeL2Consumption),
+				L3: q.queryOrFail(OpCodeL3Consumption),
+			},
+			Production: PowerReadings{
+				L1: q.queryOrFail(OpCodeL1Production),
+				L2: q.queryOrFail(OpCodeL2Production),
+				L3: q.queryOrFail(OpCodeL3Production),
 			},
 			Cosphi: CosphiReadings{
 				L1: q.queryOrFail(OpCodeL1PowerFactor),

@@ -15,11 +15,11 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 		v := hc.GetLast()
 		fmt.Fprintf(w, "Last measurement taken %s:\r\n", v.Timestamp.Format(time.RFC850))
 		fmt.Fprintf(w, "L1: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.Voltage.L1, v.Current.L1, v.Power.L1, v.Cosphi.L1)
+			v.Voltage.L1, v.Current.L1, v.Consumption.L1, v.Cosphi.L1)
 		fmt.Fprintf(w, "L2: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.Voltage.L2, v.Current.L2, v.Power.L2, v.Cosphi.L2)
+			v.Voltage.L2, v.Current.L2, v.Consumption.L2, v.Cosphi.L2)
 		fmt.Fprintf(w, "L3: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.Voltage.L3, v.Current.L3, v.Power.L3, v.Cosphi.L3)
+			v.Voltage.L3, v.Current.L3, v.Consumption.L3, v.Cosphi.L3)
 	})
 }
 

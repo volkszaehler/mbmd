@@ -10,11 +10,12 @@ import (
 type ReadingChannel chan Readings
 
 type Readings struct {
-	Timestamp time.Time
-	Power     PowerReadings
-	Voltage   VoltageReadings
-	Current   CurrentReadings
-	Cosphi    CosphiReadings
+	Timestamp   time.Time
+	Consumption PowerReadings
+	Production  PowerReadings
+	Voltage     VoltageReadings
+	Current     CurrentReadings
+	Cosphi      CosphiReadings
 }
 
 type PowerReadings struct {
@@ -49,15 +50,15 @@ func (r *Readings) String() string {
 		r.Timestamp.Format(time.RFC3339),
 		r.Voltage.L1,
 		r.Current.L1,
-		r.Power.L1,
+		r.Consumption.L1,
 		r.Cosphi.L1,
 		r.Voltage.L2,
 		r.Current.L2,
-		r.Power.L2,
+		r.Consumption.L2,
 		r.Cosphi.L2,
 		r.Voltage.L3,
 		r.Current.L3,
-		r.Power.L3,
+		r.Consumption.L3,
 		r.Cosphi.L3,
 	)
 }
@@ -82,10 +83,10 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings) {
 			L2: lhs.Current.L2 + rhs.Current.L2,
 			L3: lhs.Current.L3 + rhs.Current.L3,
 		},
-		Power: PowerReadings{
-			L1: lhs.Power.L1 + rhs.Power.L1,
-			L2: lhs.Power.L2 + rhs.Power.L2,
-			L3: lhs.Power.L3 + rhs.Power.L3,
+		Consumption: PowerReadings{
+			L1: lhs.Consumption.L1 + rhs.Consumption.L1,
+			L2: lhs.Consumption.L2 + rhs.Consumption.L2,
+			L3: lhs.Consumption.L3 + rhs.Consumption.L3,
 		},
 		Cosphi: CosphiReadings{
 			L1: lhs.Cosphi.L1 + rhs.Cosphi.L1,
@@ -117,10 +118,10 @@ func (lhs *Readings) divide(scalar float32) (retval Readings) {
 			L2: lhs.Current.L2 / scalar,
 			L3: lhs.Current.L3 / scalar,
 		},
-		Power: PowerReadings{
-			L1: lhs.Power.L1 / scalar,
-			L2: lhs.Power.L2 / scalar,
-			L3: lhs.Power.L3 / scalar,
+		Consumption: PowerReadings{
+			L1: lhs.Consumption.L1 / scalar,
+			L2: lhs.Consumption.L2 / scalar,
+			L3: lhs.Consumption.L3 / scalar,
 		},
 		Cosphi: CosphiReadings{
 			L1: lhs.Cosphi.L1 / scalar,

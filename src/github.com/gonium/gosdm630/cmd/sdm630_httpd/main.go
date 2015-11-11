@@ -54,6 +54,7 @@ func main() {
 			c.Bool("verbose"),
 		)
 		go mc.ConsumeData()
+		log.Println("Starting API httpd.")
 		sdm630.Run_httpd(mc, c.String("url"))
 	}
 
