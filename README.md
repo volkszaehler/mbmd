@@ -99,10 +99,15 @@ You can see modbus traffic and the current readings on the command line.
 If you visit [http://localhost:8080](http://localhost:8080) you should
 also see the last received value printed as ASCII text:
 
-![Browser output](img/browser-ascii.png)
-
-Please note: The
-exact representation might change in future releases.
+    Last measurement taken Thursday, 12-Nov-15 14:18:10 CET:
+    +-------+-------------+-------------+-----------+--------------+--------------+--------------+
+    | PHASE | VOLTAGE [V] | CURRENT [A] | POWER [W] | POWER FACTOR | IMPORT [KWH] | EXPORT [KWH] |
+    +-------+-------------+-------------+-----------+--------------+--------------+--------------+
+    | L1    |      235.17 |        0.19 |     45.83 |         1.00 |         0.74 |         0.01 |
+    | L2    |        0.00 |        0.00 |      0.00 |         1.00 |         0.00 |         0.00 |
+    | L3    |        0.00 |        0.00 |      0.00 |         1.00 |         0.00 |         0.00 |
+    | ALL   | n/a         |        0.19 |     45.83 | n/a          |         0.74 |         0.01 |
+    +-------+-------------+-------------+-----------+--------------+--------------+--------------+
 
 ### Crosscompiling e.g. for Raspberry Pi
 
