@@ -32,6 +32,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/olekukonko/tablewriter",
+			"repository": "https://github.com/olekukonko/tablewriter",
+			"revision": "a5eefc286b03d5560735698ef36c83728a6ae560",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/zfjagann/golang-ring",
 			"repository": "https://github.com/zfjagann/golang-ring",
 			"revision": "17637388c9f6665e2f475e4beec439e6fc19fee9",

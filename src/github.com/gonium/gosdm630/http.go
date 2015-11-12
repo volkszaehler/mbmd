@@ -1,12 +1,21 @@
 package sdm630
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/olekukonko/tablewriter"
 	"log"
 	"net/http"
 	"time"
 )
+
+// formatFloat helper
+func fF(val float32) string {
+	var buffer bytes.Buffer
+	fmt.Fprintf(&buffer, "%.2f", val)
+	return buffer.String()
+}
 
 func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -14,12 +23,13 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 		w.WriteHeader(http.StatusOK)
 		v := hc.GetLast()
 		fmt.Fprintf(w, "Last measurement taken %s:\r\n", v.Timestamp.Format(time.RFC850))
-		fmt.Fprintf(w, "L1: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.Voltage.L1, v.Current.L1, v.Consumption.L1, v.Cosphi.L1)
-		fmt.Fprintf(w, "L2: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.Voltage.L2, v.Current.L2, v.Consumption.L2, v.Cosphi.L2)
-		fmt.Fprintf(w, "L3: %.2fV %.2fA %.2fW %.2fcos\r\n",
-			v.Voltage.L3, v.Current.L3, v.Consumption.L3, v.Cosphi.L3)
+		table := tablewriter.NewWriter(w)
+		table.SetHeader([]string{"Phase", "Voltage [V]", "Current [A]", "Power [W]", "Power Factor", "Import [kWh]", "Export [kWh]"})
+		table.Append([]string{"L1", fF(v.Voltage.L1), fF(v.Current.L1), fF(v.Power.L1), fF(v.Cosphi.L1), fF(v.Import.L1), fF(v.Export.L1)})
+		table.Append([]string{"L2", fF(v.Voltage.L2), fF(v.Current.L2), fF(v.Power.L2), fF(v.Cosphi.L2), fF(v.Import.L2), fF(v.Export.L2)})
+		table.Append([]string{"L3", fF(v.Voltage.L3), fF(v.Current.L3), fF(v.Power.L3), fF(v.Cosphi.L3), fF(v.Import.L3), fF(v.Export.L3)})
+		table.Append([]string{"ALL", "n/a", fF(v.Current.L1 + v.Current.L2 + v.Current.L3), fF(v.Power.L1 + v.Power.L2 + v.Power.L3), "n/a", fF(v.Import.L1 + v.Import.L2 + v.Import.L3), fF(v.Export.L1 + v.Export.L2 + v.Export.L3)})
+		table.Render()
 	})
 }
 

@@ -11,19 +11,21 @@ import (
 
 // See http://bg-etech.de/download/manual/SDM630Register.pdf
 const (
-	OpCodeL1Voltage = 0x0000
-	OpCodeL2Voltage = 0x0002
-	OpCodeL3Voltage = 0x0004
-	OpCodeL1Current = 0x0006
-	OpCodeL2Current = 0x0008
-	OpCodeL3Current = 0x000A
-	//TODO: This is broken.
-	OpCodeL1Consumption = 0x000C
-	OpCodeL2Consumption = 0x000E
-	OpCodeL3Consumption = 0x0010
-	OpCodeL1Production  = 0x000C
-	OpCodeL2Production  = 0x000E
-	OpCodeL3Production  = 0x0010
+	OpCodeL1Voltage     = 0x0000
+	OpCodeL2Voltage     = 0x0002
+	OpCodeL3Voltage     = 0x0004
+	OpCodeL1Current     = 0x0006
+	OpCodeL2Current     = 0x0008
+	OpCodeL3Current     = 0x000A
+	OpCodeL1Power       = 0x000C
+	OpCodeL2Power       = 0x000E
+	OpCodeL3Power       = 0x0010
+	OpCodeL1Import      = 0x015a
+	OpCodeL2Import      = 0x015c
+	OpCodeL3Import      = 0x015e
+	OpCodeL1Export      = 0x0160
+	OpCodeL2Export      = 0x0162
+	OpCodeL3Export      = 0x0164
 	OpCodeL1PowerFactor = 0x001e
 	OpCodeL2PowerFactor = 0x0020
 	OpCodeL3PowerFactor = 0x0022
@@ -104,30 +106,40 @@ func (q *QueryEngine) Produce() {
 	for {
 		q.datastream <- Readings{
 			Timestamp: time.Now(),
-			Voltage: VoltageReadings{
+			Voltage: ThreePhaseReadings{
 				L1: q.queryOrFail(OpCodeL1Voltage),
 				L2: q.queryOrFail(OpCodeL2Voltage),
 				L3: q.queryOrFail(OpCodeL3Voltage),
 			},
-			Current: CurrentReadings{
+			Current: ThreePhaseReadings{
 				L1: q.queryOrFail(OpCodeL1Current),
 				L2: q.queryOrFail(OpCodeL2Current),
 				L3: q.queryOrFail(OpCodeL3Current),
 			},
-			Consumption: PowerReadings{
-				L1: q.queryOrFail(OpCodeL1Consumption),
-				L2: q.queryOrFail(OpCodeL2Consumption),
-				L3: q.queryOrFail(OpCodeL3Consumption),
+			Power: ThreePhaseReadings{
+				L1: q.queryOrFail(OpCodeL1Power),
+				L2: q.queryOrFail(OpCodeL2Power),
+				L3: q.queryOrFail(OpCodeL3Power),
 			},
-			Production: PowerReadings{
-				L1: q.queryOrFail(OpCodeL1Production),
-				L2: q.queryOrFail(OpCodeL2Production),
-				L3: q.queryOrFail(OpCodeL3Production),
-			},
-			Cosphi: CosphiReadings{
+			//Production: PowerReadings{
+			//	L1: q.queryOrFail(OpCodeL1Production),
+			//	L2: q.queryOrFail(OpCodeL2Production),
+			//	L3: q.queryOrFail(OpCodeL3Production),
+			//},
+			Cosphi: ThreePhaseReadings{
 				L1: q.queryOrFail(OpCodeL1PowerFactor),
 				L2: q.queryOrFail(OpCodeL2PowerFactor),
 				L3: q.queryOrFail(OpCodeL3PowerFactor),
+			},
+			Import: ThreePhaseReadings{
+				L1: q.queryOrFail(OpCodeL1Import),
+				L2: q.queryOrFail(OpCodeL2Import),
+				L3: q.queryOrFail(OpCodeL3Import),
+			},
+			Export: ThreePhaseReadings{
+				L1: q.queryOrFail(OpCodeL1Export),
+				L2: q.queryOrFail(OpCodeL2Export),
+				L3: q.queryOrFail(OpCodeL3Export),
 			},
 		}
 		time.Sleep(time.Duration(q.interval) * time.Second)
