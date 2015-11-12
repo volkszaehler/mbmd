@@ -14,7 +14,11 @@ home. In the classic ui, this is how one of the graphs looks like:
 ![OpenHAB interface screenshot](img/openhab.png)
 
 Everything is in German, but the "Verlauf Strombezug" graph shows my
-power consumption for three phases.
+power consumption for three phases. I have a SDM630 installed in my
+distribution cabinet. A serial connection links it to a Raspberry Pi.
+This is where this piece of software runs and exposes the measurements
+via a RESTful API. OpenHAB connects to it and stores the values, just as
+it does with other sensors in my home.
 
 ## Installation
 
@@ -127,3 +131,41 @@ Mac OS and crosscompile a binary for my RPi. It is easy:
 
 You can then copy the binary from the ``bin`` subdirectory to the RPi
 and start it.
+
+## OpenHAB integration
+
+The API consists of two calls that return a JSON array. The "GET
+/last"-call simply returns the last measurements retrieved:
+
+    $ curl localhost:8080/last
+    {"Timestamp":"2015-11-12T15:51:00.297722068+01:00","Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":232.97672,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0.746,"L2":0,"L3":0},"Export":{"L1":0.011,"L2":0,"L3":0}}
+
+The "GET /minuteavg"-call returns the average measurements over the last
+minute:
+
+    $ curl localhost:8080/minuteavg
+    {"Timestamp":"2015-11-12T15:52:14.560779127+01:00","Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":233.11012,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}}
+
+It is very easy to translate this into OpenHAB items. I run the SDM630
+software on a Raspberry Pi with the IP ``192.168.1.44``. My items look
+like this:
+
+    Group Power_Chart
+    Number Power_L1 "Strombezug L1 [%.1f W]" <power> (Power, Power_Chart) { http="<[http://192.168.1.44:8080/last:60000:JS(SDM630GetL1Power.js)]" }
+
+I'm using the http plugin to call the ``/last`` endpoint every 60
+seconds. Then, I feed the result into a JSON transform stored in
+``SDM630GetL1Power.js``. The contents of
+``transform/SDM630GetL1Power.js`` looks like this:
+
+    JSON.parse(input).Power.L1;
+
+Just repeat these lines for each measurement you want to track. Finally,
+my sitemap contains the following lines:
+
+    Chart item=Power_Chart period=D refresh=1800
+
+This draws a chart of all items in the ``Power_Chart`` group.
+
+
+
