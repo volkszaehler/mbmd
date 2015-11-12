@@ -15,7 +15,8 @@ home. In the classic ui, this is how one of the graphs looks like:
 
 Everything is in German, but the "Verlauf Strombezug" graph shows my
 power consumption for three phases. I have a SDM630 installed in my
-distribution cabinet. A serial connection links it to a Raspberry Pi.
+distribution cabinet. A serial connection links it to a Raspberry Pi
+(RPi).
 This is where this piece of software runs and exposes the measurements
 via a RESTful API. OpenHAB connects to it and stores the values, just as
 it does with other sensors in my home.
@@ -59,17 +60,18 @@ block:
 ### Installing the software from source
 
 You need a working [Golang installation](http://golang.org) and the [GB
-build tool](http://getgb.io/) in order to compile your binary. You can
-install GB like this:
+build tool](http://getgb.io/) in order to compile your binary. Please
+install the Go compiler first. Afterwards you can install GB like this:
 
     go get github.com/constabulary/gb/...
 
-Afterwards you clone this repository:
+Clone this repository:
 
     git clone https://github.com/gonium/gosdm630.git
 
 and build it:
 
+    cd gosdm630
     gb build all
 
 Now, there should be a binary in the ````bin```` subfolder.
@@ -105,9 +107,10 @@ Now fire up the software:
     RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 3f 80 00 00 f6 78
     T: 2015-11-06T12:22:14+01:00 - L1: 235.84V 0.00A 0.00W 1.00cos | L2: 0.00V 0.00A 0.00W 1.00cos | L3: 0.00V 0.00A 0.00W 1.00cos
 
-You can see modbus traffic and the current readings on the command line.
-If you visit [http://localhost:8080](http://localhost:8080) you should
-also see the last received value printed as ASCII text:
+If you use the ``-v`` commandline switch you can see modbus traffic and
+the current readings on the command line.  If you visit
+[http://localhost:8080](http://localhost:8080) you should also see the
+last received value printed as ASCII text:
 
     Last measurement taken Thursday, 12-Nov-15 14:18:10 CET:
     +-------+-------------+-------------+-----------+--------------+--------------+--------------+
