@@ -8,7 +8,13 @@ automation system.
 
 ## How does it look like in OpenHAB?
 
-TODO
+I use [OpenHAB](http://openhab.org) to record various measurements at
+home. In the classic ui, this is how one of the graphs looks like:
+
+![OpenHAB interface screenshot](img/openhab.png)
+
+Everything is in German, but the "Verlauf Strombezug" graph shows my
+power consumption for three phases.
 
 ## Installation
 
