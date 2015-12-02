@@ -151,11 +151,11 @@ RS485 adapter is connected. Then, use
 
     # systemctl start sdm630
 
-to test your installation. A 
+to test your installation. If you're satisfied use
 
     # systemctl enable sdm630
 
-starts the service at boot time autmatically from now on.
+to start the service at boot time automatically.
 
 ## OpenHAB integration
 
