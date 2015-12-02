@@ -133,7 +133,29 @@ Mac OS and crosscompile a binary for my RPi. It is easy:
     GOOS=linux GOARCH=arm GOARM=5 gb build all
 
 You can then copy the binary from the ``bin`` subdirectory to the RPi
-and start it.
+and start it. I usually put the binary into ``/usr/local/bin`` and
+rename it to ``sdm630_httpd``. The following sytemd unit can be used to
+start the service (put this into ``/etc/systemd/system``):
+
+    [Unit]
+    Description=SDM630 via HTTP API
+    After=syslog.target
+    [Service]
+    ExecStart=/usr/local/bin/sdm630_httpd -d /dev/ttyAMA0
+    Restart=always
+    [Install]
+    WantedBy=multi-user.target
+
+You might need to adjust the ``-d`` parameter depending on where your
+RS485 adapter is connected. Then, use
+
+    # systemctl start sdm630
+
+to test your installation. A 
+
+    # systemctl enable sdm630
+
+starts the service at boot time autmatically from now on.
 
 ## OpenHAB integration
 
