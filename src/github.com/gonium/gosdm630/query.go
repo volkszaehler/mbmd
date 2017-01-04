@@ -77,7 +77,7 @@ func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
 	if err == nil {
 		retval = RtuToFloat32(results)
 	} else if q.verbose {
-		log.Printf("Failed to retrieve opcode %x, error was: %s\r\n", opcode, err.Error())
+		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", opcode, err.Error())
 	}
 	return retval, err
 }
