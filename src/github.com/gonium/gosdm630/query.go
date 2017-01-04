@@ -77,7 +77,7 @@ func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
 	if err == nil {
 		retval = RtuToFloat32(results)
 	} else if q.verbose {
-		log.Printf("Cannot retrieve opcode %d: %s\r\n", opcode, err.Error)
+		log.Printf("Failed to retrieve opcode %x, error was: %s\r\n", opcode, err.Error())
 	}
 	return retval, err
 }
@@ -88,12 +88,8 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
 		retval, err = q.retrieveOpCode(opcode)
 		if err != nil {
-			log.Printf("Closing broken handler, reconnecting attempt %d\r\n", tryCnt)
-			// Note: Just close the handler here. If a new handler is manually
-			// created it will create a resource leak (file descriptors). Just
-			// close the handler, the modbus library will recreate one as
-			// needed.
-			q.handler.Close()
+			log.Printf("Reconnecting, attempt %d of %d\r\n", tryCnt+1,
+				MaxRetryCount)
 			time.Sleep(time.Duration(1) * time.Second)
 		} else {
 			break
