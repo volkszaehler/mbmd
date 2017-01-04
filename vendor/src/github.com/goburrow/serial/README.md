@@ -1,5 +1,4 @@
 # serial [![Build Status](https://travis-ci.org/goburrow/serial.svg?branch=master)](https://travis-ci.org/goburrow/serial) [![GoDoc](https://godoc.org/github.com/goburrow/serial?status.svg)](https://godoc.org/github.com/goburrow/serial)
-For Windows users, a gcc compiler is required. See [cgo](https://github.com/golang/go/wiki/cgo#windows) for more information.
 ## Example
 ```go
 package main

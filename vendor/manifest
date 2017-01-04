@@ -4,37 +4,43 @@
 		{
 			"importpath": "github.com/codegangsta/cli",
 			"repository": "https://github.com/codegangsta/cli",
-			"revision": "70e3fa51ebed95df8c0fbe1519c1c1f9bc16bb13",
+			"revision": "0bdeddeeb0f650497d603c4ad7b20cfe685682f6",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/goburrow/modbus",
 			"repository": "https://github.com/goburrow/modbus",
-			"revision": "8b151e5eecacb1e3b87935d96bd33dd14b17175e",
+			"revision": "f7afd8db7d8dabd9f1cd3a9e2a9cb289ed6ac08a",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/goburrow/serial",
 			"repository": "https://github.com/goburrow/serial",
-			"revision": "bf1bf09b87e3ec7436f34f09ae59ce10537366ac",
+			"revision": "1b57be761cd3a66492333e9367a23c0869f9cc2e",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gorilla/context",
 			"repository": "https://github.com/gorilla/context",
-			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gorilla/mux",
 			"repository": "https://github.com/gorilla/mux",
-			"revision": "ad4d7a5882b961e07e2626045eb995c022ac6664",
+			"revision": "757bef944d0f21880861c2dd9c871ca543023cba",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/mattn/go-runewidth",
+			"repository": "https://github.com/mattn/go-runewidth",
+			"revision": "737072b4e32b7a5018b4a7125da8d12de90e8045",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/olekukonko/tablewriter",
 			"repository": "https://github.com/olekukonko/tablewriter",
-			"revision": "a5eefc286b03d5560735698ef36c83728a6ae560",
+			"revision": "44e365d423f4f06769182abfeeae2b91be9d529b",
 			"branch": "master"
 		},
 		{

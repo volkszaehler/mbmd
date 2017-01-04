@@ -1,8 +1,5 @@
 package serial
 
-// #include <windows.h>
-import "C"
-
 import (
 	"fmt"
 	"syscall"
@@ -27,16 +24,16 @@ func (p *port) Open(c *Config) (err error) {
 	}
 	// Read and write timeout
 	if c.Timeout > 0 {
-		timeout := C.DWORD(c.Timeout.Nanoseconds() / 1E6)
-		var timeouts C.COMMTIMEOUTS
+		timeout := toDWORD(int(c.Timeout.Nanoseconds() / 1E6))
+		var timeouts c_COMMTIMEOUTS
 		// wait until a byte arrived or time out
-		timeouts.ReadIntervalTimeout = C.MAXDWORD
-		timeouts.ReadTotalTimeoutMultiplier = C.MAXDWORD
+		timeouts.ReadIntervalTimeout = c_MAXDWORD
+		timeouts.ReadTotalTimeoutMultiplier = c_MAXDWORD
 		timeouts.ReadTotalTimeoutConstant = timeout
 		timeouts.WriteTotalTimeoutMultiplier = 0
 		timeouts.WriteTotalTimeoutConstant = timeout
-		if C.SetCommTimeouts(C.HANDLE(handle), &timeouts) == 0 {
-			err = fmt.Errorf("serial: could not set timeout: %v", syscall.GetLastError())
+		err = SetCommTimeouts(handle, &timeouts)
+		if err != nil {
 			syscall.CloseHandle(handle)
 			return
 		}
@@ -96,21 +93,25 @@ func newHandle(c *Config) (handle syscall.Handle, err error) {
 			syscall.CloseHandle(handle)
 		}
 	}()
-	var dcb C.DCB
-	dcb.BaudRate = C.DWORD(c.BaudRate)
+	var dcb c_DCB
+	if c.BaudRate == 0 {
+		dcb.BaudRate = 19200
+	} else {
+		dcb.BaudRate = toDWORD(c.BaudRate)
+	}
 	// Data bits
 	if c.DataBits == 0 {
 		dcb.ByteSize = 8
 	} else {
-		dcb.ByteSize = C.BYTE(c.DataBits)
+		dcb.ByteSize = toBYTE(c.DataBits)
 	}
 	// Stop bits
 	switch c.StopBits {
 	case 0, 1:
 		// Default is one stop bit.
-		dcb.StopBits = C.ONESTOPBIT
+		dcb.StopBits = c_ONESTOPBIT
 	case 2:
-		dcb.StopBits = C.TWOSTOPBITS
+		dcb.StopBits = c_TWOSTOPBITS
 	default:
 		err = fmt.Errorf("serial: unsupported stop bits %v", c.StopBits)
 		return
@@ -119,18 +120,15 @@ func newHandle(c *Config) (handle syscall.Handle, err error) {
 	switch c.Parity {
 	case "", "E":
 		// Default parity mode is Even.
-		dcb.Parity = C.EVENPARITY
+		dcb.Parity = c_EVENPARITY
 	case "O":
-		dcb.Parity = C.ODDPARITY
+		dcb.Parity = c_ODDPARITY
 	case "N":
-		dcb.Parity = C.NOPARITY
+		dcb.Parity = c_NOPARITY
 	default:
 		err = fmt.Errorf("serial: unsupported parity %v", c.Parity)
 		return
 	}
-	if C.SetCommState(C.HANDLE(handle), &dcb) == 0 {
-		err = fmt.Errorf("serial: could not set device state: %v", syscall.GetLastError())
-		return
-	}
+	err = SetCommState(handle, &dcb)
 	return
 }

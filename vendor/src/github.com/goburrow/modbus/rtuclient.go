@@ -63,8 +63,8 @@ func (mb *rtuPackager) Encode(pdu *ProtocolDataUnit) (adu []byte, err error) {
 	crc.reset().pushBytes(adu[0 : length-2])
 	checksum := crc.value()
 
-	adu[length-2] = byte(checksum >> 8)
-	adu[length-1] = byte(checksum)
+	adu[length-1] = byte(checksum >> 8)
+	adu[length-2] = byte(checksum)
 	return
 }
 
@@ -90,7 +90,7 @@ func (mb *rtuPackager) Decode(adu []byte) (pdu *ProtocolDataUnit, err error) {
 	// Calculate checksum
 	var crc crc
 	crc.reset().pushBytes(adu[0 : length-2])
-	checksum := uint16(adu[length-2])<<8 | uint16(adu[length-1])
+	checksum := uint16(adu[length-1])<<8 | uint16(adu[length-2])
 	if checksum != crc.value() {
 		err = fmt.Errorf("modbus: response crc '%v' does not match expected '%v'", checksum, crc.value())
 		return
@@ -122,16 +122,39 @@ func (mb *rtuSerialTransporter) Send(aduRequest []byte) (aduResponse []byte, err
 	if _, err = mb.port.Write(aduRequest); err != nil {
 		return
 	}
+	function := aduRequest[1]
+	functionFail := aduRequest[1] & 0x80
 	bytesToRead := calculateResponseLength(aduRequest)
 	time.Sleep(mb.calculateDelay(len(aduRequest) + bytesToRead))
 
 	var n int
+	var n1 int
 	var data [rtuMaxSize]byte
-	if bytesToRead > rtuMinSize && bytesToRead <= rtuMaxSize {
-		n, err = io.ReadFull(mb.port, data[:bytesToRead])
-	} else {
-		n, err = io.ReadAtLeast(mb.port, data[:], rtuMinSize)
+	//We first read the minimum length and then read either the full package
+	//or the error package, depending on the error status (byte 2 of the response)
+	n, err = io.ReadAtLeast(mb.port, data[:], rtuMinSize)
+	if err != nil {
+		return
 	}
+	//if the function is correct
+	if data[1] == function {
+		//we read the rest of the bytes
+		if n < bytesToRead {
+			if bytesToRead > rtuMinSize && bytesToRead <= rtuMaxSize {
+				if bytesToRead > n {
+					n1, err = io.ReadFull(mb.port, data[n:bytesToRead])
+					n += n1
+				}
+			}
+		}
+	} else if data[1] == functionFail {
+		//for error we need to read 5 bytes
+		if n < bytesToRead {
+			n1, err = io.ReadFull(mb.port, data[n:5])
+		}
+		n += n1
+	}
+
 	if err != nil {
 		return
 	}
