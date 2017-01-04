@@ -35,10 +35,10 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		// Check the interval - only values between 5 and 20 are
+		// Check the interval - only values between 3 and 20 are
 		// useful.
-		if c.Int("interval") < 5 || c.Int("interval") > 20 {
-			log.Fatal("the interval must be between 5 and 20 seconds.")
+		if c.Int("interval") < 3 {
+			log.Fatal("the interval must be greater than 3 seconds - the SDM630 cannot process faster. ")
 		}
 		var rc = make(sdm630.ReadingChannel)
 		qe := sdm630.NewQueryEngine(

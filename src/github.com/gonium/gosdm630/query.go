@@ -38,6 +38,7 @@ type QueryEngine struct {
 	interval   int
 	handler    modbus.RTUClientHandler
 	datastream ReadingChannel
+	verbose    bool
 }
 
 func NewQueryEngine(
@@ -67,7 +68,7 @@ func NewQueryEngine(
 	mbclient := modbus.NewClient(mbhandler)
 
 	return &QueryEngine{client: mbclient, interval: interval,
-		handler: *mbhandler, datastream: channel}
+		handler: *mbhandler, datastream: channel, verbose: verbose}
 }
 
 func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
@@ -75,6 +76,8 @@ func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
 	results, err := q.client.ReadInputRegisters(opcode, 2)
 	if err == nil {
 		retval = RtuToFloat32(results)
+	} else if q.verbose {
+		log.Printf("Cannot retrieve opcode %d: %s\r\n", opcode, err.Error)
 	}
 	return retval, err
 }
