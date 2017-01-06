@@ -5,17 +5,19 @@ import (
 	"github.com/gonium/gosdm630"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "sdm630_httpd"
 	app.Usage = "SDM630 power measurements via HTTP."
-	app.Version = "0.1.0"
+	app.Version = "0.2.0"
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "device, d",
+			Name:  "serialadapter, s",
 			Value: "/dev/ttyUSB0",
 			Usage: "path to serial RTU device",
 		},
@@ -33,19 +35,31 @@ func main() {
 			Value: 10,
 			Usage: "seconds between getting new values from the SDM630",
 		},
+		cli.StringFlag{
+			Name:  "device_list, d",
+			Value: "1",
+			Usage: "MODBUS device ID to query",
+		},
 	}
 	app.Action = func(c *cli.Context) {
-		// Check the interval - only values between 3 and 20 are
-		// useful.
-		if c.Int("interval") < 3 {
-			log.Fatal("the interval must be greater than 3 seconds - the SDM630 cannot process faster. ")
-		}
 		var rc = make(sdm630.ReadingChannel)
+		// Parse the device_list parameter
+		deviceslice := strings.Split(c.String("device_list"), ",")
+		devids := make([]uint8, 0, len(deviceslice))
+		for _, devid := range deviceslice {
+			id, err := strconv.Atoi(devid)
+			if err != nil {
+				log.Fatalf("Error parsing device id %s: %s", devid, err.Error())
+			}
+			devids = append(devids, uint8(id))
+		}
+		log.Println("Will query MODBUS IDs", devids)
 		qe := sdm630.NewQueryEngine(
-			c.String("device"),
+			c.String("serialadapter"),
 			c.Int("interval"),
 			c.Bool("verbose"),
 			rc,
+			devids,
 		)
 		go qe.Produce()
 		mc := sdm630.NewMeasurementCache(

@@ -38,6 +38,7 @@ type QueryEngine struct {
 	interval   int
 	handler    modbus.RTUClientHandler
 	datastream ReadingChannel
+	devids     []uint8
 	verbose    bool
 }
 
@@ -46,6 +47,7 @@ func NewQueryEngine(
 	interval int,
 	verbose bool,
 	channel ReadingChannel,
+	devids []uint8,
 ) *QueryEngine {
 	// Modbus RTU/ASCII
 	mbhandler := modbus.NewRTUClientHandler(rtuDevice)
@@ -53,8 +55,13 @@ func NewQueryEngine(
 	mbhandler.DataBits = 8
 	mbhandler.Parity = "N"
 	mbhandler.StopBits = 1
-	mbhandler.SlaveId = 1
+	// TODO: Add support for more than one slave ID.
+	mbhandler.SlaveId = devids[0]
 	mbhandler.Timeout = 1000 * time.Millisecond
+	if len(devids) > 1 {
+		log.Printf("INFO: querying only device %d - needs software change"+
+			" to work with more than one device.", devids[0])
+	}
 	if verbose {
 		mbhandler.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
 		log.Printf("Connecting to RTU via %s\r\n", rtuDevice)
@@ -68,7 +75,8 @@ func NewQueryEngine(
 	mbclient := modbus.NewClient(mbhandler)
 
 	return &QueryEngine{client: mbclient, interval: interval,
-		handler: *mbhandler, datastream: channel, verbose: verbose}
+		handler: *mbhandler, datastream: channel,
+		devids: devids, verbose: verbose}
 }
 
 func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
