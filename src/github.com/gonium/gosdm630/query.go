@@ -111,6 +111,7 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 
 func (q *QueryEngine) Produce() {
 	for {
+		//start := time.Now()
 		q.datastream <- Readings{
 			Timestamp: time.Now(),
 			Voltage: ThreePhaseReadings{
@@ -128,11 +129,6 @@ func (q *QueryEngine) Produce() {
 				L2: q.queryOrFail(OpCodeL2Power),
 				L3: q.queryOrFail(OpCodeL3Power),
 			},
-			//Production: PowerReadings{
-			//	L1: q.queryOrFail(OpCodeL1Production),
-			//	L2: q.queryOrFail(OpCodeL2Production),
-			//	L3: q.queryOrFail(OpCodeL3Production),
-			//},
 			Cosphi: ThreePhaseReadings{
 				L1: q.queryOrFail(OpCodeL1PowerFactor),
 				L2: q.queryOrFail(OpCodeL2PowerFactor),
@@ -149,7 +145,11 @@ func (q *QueryEngine) Produce() {
 				L3: q.queryOrFail(OpCodeL3Export),
 			},
 		}
-		time.Sleep(time.Duration(q.interval) * time.Second)
+		if q.interval > 0 {
+			time.Sleep(time.Duration(q.interval) * time.Second)
+		}
+		//elapsed := time.Since(start)
+		//log.Printf("Reading all values took %s", elapsed)
 	}
 	q.handler.Close()
 }
