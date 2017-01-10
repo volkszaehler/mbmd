@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
 	"github.com/gonium/gosdm630"
+	"gopkg.in/urfave/cli.v1"
 	"log"
 	"os"
 	"strconv"
