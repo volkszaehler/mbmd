@@ -36,7 +36,7 @@ const (
 type QueryEngine struct {
 	client     modbus.Client
 	interval   int
-	handler    modbus.RTUClientHandler
+	handler    *modbus.RTUClientHandler
 	datastream ReadingChannel
 	devids     []uint8
 	verbose    bool
@@ -50,32 +50,33 @@ func NewQueryEngine(
 	devids []uint8,
 ) *QueryEngine {
 	// Modbus RTU/ASCII
-	mbhandler := modbus.NewRTUClientHandler(rtuDevice)
-	mbhandler.BaudRate = 9600
-	mbhandler.DataBits = 8
-	mbhandler.Parity = "N"
-	mbhandler.StopBits = 1
+	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
+	rtuclient.BaudRate = 9600
+	rtuclient.DataBits = 8
+	rtuclient.Parity = "N"
+	rtuclient.StopBits = 1
 	// TODO: Add support for more than one slave ID.
-	mbhandler.SlaveId = devids[0]
-	mbhandler.Timeout = 1000 * time.Millisecond
+	rtuclient.SlaveId = devids[0]
+	rtuclient.Timeout = 1000 * time.Millisecond
 	if len(devids) > 1 {
 		log.Printf("INFO: querying only device %d - needs software change"+
 			" to work with more than one device.", devids[0])
 	}
 	if verbose {
-		mbhandler.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
+		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
 		log.Printf("Connecting to RTU via %s\r\n", rtuDevice)
 	}
 
-	err := mbhandler.Connect()
+	err := rtuclient.Connect()
 	if err != nil {
 		log.Fatal("Failed to connect: ", err)
 	}
+	defer rtuclient.Close()
 
-	mbclient := modbus.NewClient(mbhandler)
+	mbclient := modbus.NewClient(rtuclient)
 
 	return &QueryEngine{client: mbclient, interval: interval,
-		handler: *mbhandler, datastream: channel,
+		handler: rtuclient, datastream: channel,
 		devids: devids, verbose: verbose}
 }
 
@@ -83,7 +84,7 @@ func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
 	err error) {
 	results, err := q.client.ReadInputRegisters(opcode, 2)
 	if err == nil {
-		retval = RtuToFloat32(results)
+		retval = rtuToFload32(results)
 	} else if q.verbose {
 		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", opcode, err.Error())
 	}
@@ -112,38 +113,47 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 func (q *QueryEngine) Produce() {
 	for {
 		//start := time.Now()
-		q.datastream <- Readings{
-			Timestamp: time.Now(),
-			Voltage: ThreePhaseReadings{
-				L1: q.queryOrFail(OpCodeL1Voltage),
-				L2: q.queryOrFail(OpCodeL2Voltage),
-				L3: q.queryOrFail(OpCodeL3Voltage),
-			},
-			Current: ThreePhaseReadings{
-				L1: q.queryOrFail(OpCodeL1Current),
-				L2: q.queryOrFail(OpCodeL2Current),
-				L3: q.queryOrFail(OpCodeL3Current),
-			},
-			Power: ThreePhaseReadings{
-				L1: q.queryOrFail(OpCodeL1Power),
-				L2: q.queryOrFail(OpCodeL2Power),
-				L3: q.queryOrFail(OpCodeL3Power),
-			},
-			Cosphi: ThreePhaseReadings{
-				L1: q.queryOrFail(OpCodeL1PowerFactor),
-				L2: q.queryOrFail(OpCodeL2PowerFactor),
-				L3: q.queryOrFail(OpCodeL3PowerFactor),
-			},
-			Import: ThreePhaseReadings{
-				L1: q.queryOrFail(OpCodeL1Import),
-				L2: q.queryOrFail(OpCodeL2Import),
-				L3: q.queryOrFail(OpCodeL3Import),
-			},
-			Export: ThreePhaseReadings{
-				L1: q.queryOrFail(OpCodeL1Export),
-				L2: q.queryOrFail(OpCodeL2Export),
-				L3: q.queryOrFail(OpCodeL3Export),
-			},
+		for _, devid := range q.devids {
+			// Set the current device id as "slave id" in the modbus rtu
+			// library. Somewhat ugly...
+			q.handler.SlaveId = devid
+			timestamp := time.Now()
+			q.datastream <- Readings{
+				Timestamp:      timestamp,
+				Unix:           timestamp.Unix(),
+				ModbusDeviceId: devid,
+				Voltage: ThreePhaseReadings{
+					L1: q.queryOrFail(OpCodeL1Voltage),
+					L2: q.queryOrFail(OpCodeL2Voltage),
+					L3: q.queryOrFail(OpCodeL3Voltage),
+				},
+				Current: ThreePhaseReadings{
+					L1: q.queryOrFail(OpCodeL1Current),
+					L2: q.queryOrFail(OpCodeL2Current),
+					L3: q.queryOrFail(OpCodeL3Current),
+				},
+				Power: ThreePhaseReadings{
+					L1: q.queryOrFail(OpCodeL1Power),
+					L2: q.queryOrFail(OpCodeL2Power),
+					L3: q.queryOrFail(OpCodeL3Power),
+				},
+				Cosphi: ThreePhaseReadings{
+					L1: q.queryOrFail(OpCodeL1PowerFactor),
+					L2: q.queryOrFail(OpCodeL2PowerFactor),
+					L3: q.queryOrFail(OpCodeL3PowerFactor),
+				},
+				Import: ThreePhaseReadings{
+					L1: q.queryOrFail(OpCodeL1Import),
+					L2: q.queryOrFail(OpCodeL2Import),
+					L3: q.queryOrFail(OpCodeL3Import),
+				},
+				Export: ThreePhaseReadings{
+					L1: q.queryOrFail(OpCodeL1Export),
+					L2: q.queryOrFail(OpCodeL2Export),
+					L3: q.queryOrFail(OpCodeL3Export),
+				},
+			}
+			time.Sleep(10 * time.Millisecond)
 		}
 		if q.interval > 0 {
 			time.Sleep(time.Duration(q.interval) * time.Second)
@@ -154,7 +164,7 @@ func (q *QueryEngine) Produce() {
 	q.handler.Close()
 }
 
-func RtuToFloat32(b []byte) (f float32) {
+func rtuToFload32(b []byte) (f float32) {
 	bits := binary.BigEndian.Uint32(b)
 	f = math.Float32frombits(bits)
 	return

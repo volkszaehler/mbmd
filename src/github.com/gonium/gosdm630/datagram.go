@@ -10,13 +10,15 @@ import (
 type ReadingChannel chan Readings
 
 type Readings struct {
-	Timestamp time.Time
-	Power     ThreePhaseReadings
-	Voltage   ThreePhaseReadings
-	Current   ThreePhaseReadings
-	Cosphi    ThreePhaseReadings
-	Import    ThreePhaseReadings
-	Export    ThreePhaseReadings
+	Timestamp      time.Time
+	Unix           int64
+	ModbusDeviceId uint8
+	Power          ThreePhaseReadings
+	Voltage        ThreePhaseReadings
+	Current        ThreePhaseReadings
+	Cosphi         ThreePhaseReadings
+	Import         ThreePhaseReadings
+	Export         ThreePhaseReadings
 }
 
 type ThreePhaseReadings struct {
@@ -26,10 +28,11 @@ type ThreePhaseReadings struct {
 }
 
 func (r *Readings) String() string {
-	fmtString := "T: %s - L1: %.2fV %.2fA %.2fW %.2fcos | " +
+	fmtString := "ID: %d T: %s - L1: %.2fV %.2fA %.2fW %.2fcos | " +
 		"L2: %.2fV %.2fA %.2fW %.2fcos | " +
 		"L3: %.2fV %.2fA %.2fW %.2fcos"
 	return fmt.Sprintf(fmtString,
+		r.ModbusDeviceId,
 		r.Timestamp.Format(time.RFC3339),
 		r.Voltage.L1,
 		r.Current.L1,
@@ -47,6 +50,12 @@ func (r *Readings) String() string {
 }
 
 func (r *Readings) JSON(w io.Writer) error {
+	return json.NewEncoder(w).Encode(r)
+}
+
+type ReadingSlice []Readings
+
+func (r ReadingSlice) JSON(w io.Writer) error {
 	return json.NewEncoder(w).Encode(r)
 }
 
@@ -79,8 +88,9 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings) {
 	}
 	if lhs.Timestamp.After(rhs.Timestamp) {
 		retval.Timestamp = lhs.Timestamp
+		retval.Unix = lhs.Unix
 	} else {
-		retval.Timestamp = rhs.Timestamp
+		retval.Unix = rhs.Unix
 	}
 	return retval
 }
@@ -113,5 +123,6 @@ func (lhs *Readings) divide(scalar float32) (retval Readings) {
 		},
 	}
 	retval.Timestamp = lhs.Timestamp
+	retval.Unix = lhs.Unix
 	return retval
 }
