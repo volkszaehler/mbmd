@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -31,9 +32,9 @@ func main() {
 			Usage: "print verbose messages",
 		},
 		cli.IntFlag{
-			Name:  "interval, i",
+			Name:  "sleeptime, i",
 			Value: 10,
-			Usage: "seconds between getting new values from the SDM630",
+			Usage: "seconds between getting new values from the modbus network",
 		},
 		cli.StringFlag{
 			Name:  "device_list, d",
@@ -53,10 +54,12 @@ func main() {
 			}
 			devids = append(devids, uint8(id))
 		}
-		log.Println("Will query MODBUS IDs", devids)
+		log.Printf(
+			"Will query MODBUS IDs %v, sleeping %d seconds between queries",
+			devids, c.Int("sleeptime"))
 		qe := sdm630.NewQueryEngine(
 			c.String("serialadapter"),
-			c.Int("interval"),
+			c.Int("sleeptime"),
 			c.Bool("verbose"),
 			rc,
 			devids,
@@ -64,11 +67,11 @@ func main() {
 		go qe.Produce()
 		mc := sdm630.NewMeasurementCache(
 			rc,
-			c.Int("interval"),
+			120*time.Second, // TODO: How long to store data in the cache?.
 			c.Bool("verbose"),
 		)
 		go mc.ConsumeData()
-		log.Println("Starting API httpd.")
+		log.Printf("Starting API httpd at %s", c.String("url"))
 		sdm630.Run_httpd(mc, c.String("url"))
 	}
 

@@ -44,12 +44,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/zfjagann/golang-ring",
-			"repository": "https://github.com/zfjagann/golang-ring",
-			"revision": "17637388c9f6665e2f475e4beec439e6fc19fee9",
-			"branch": "master"
-		},
-		{
 			"importpath": "gopkg.in/urfave/cli.v1",
 			"repository": "https://gopkg.in/urfave/cli.v1",
 			"revision": "0bdeddeeb0f650497d603c4ad7b20cfe685682f6",

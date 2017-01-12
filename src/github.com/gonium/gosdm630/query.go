@@ -58,10 +58,6 @@ func NewQueryEngine(
 	// TODO: Add support for more than one slave ID.
 	rtuclient.SlaveId = devids[0]
 	rtuclient.Timeout = 1000 * time.Millisecond
-	if len(devids) > 1 {
-		log.Printf("INFO: querying only device %d - needs software change"+
-			" to work with more than one device.", devids[0])
-	}
 	if verbose {
 		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
 		log.Printf("Connecting to RTU via %s\r\n", rtuDevice)
@@ -97,15 +93,15 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
 		retval, err = q.retrieveOpCode(opcode)
 		if err != nil {
-			log.Printf("Reconnecting, attempt %d of %d\r\n", tryCnt+1,
+			log.Printf("Failed to retrieve opcode - retry attempt %d of %d\r\n", tryCnt+1,
 				MaxRetryCount)
-			time.Sleep(time.Duration(1) * time.Second)
+			time.Sleep(time.Duration(100) * time.Millisecond)
 		} else {
 			break
 		}
 	}
 	if tryCnt == MaxRetryCount {
-		log.Fatal("Cannot query the sensor, reached maximum retry count.")
+		log.Fatal("Cannot query the sensor, reached maximum retry count. Abort.")
 	}
 	return retval
 }
@@ -153,7 +149,7 @@ func (q *QueryEngine) Produce() {
 					L3: q.queryOrFail(OpCodeL3Export),
 				},
 			}
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(20 * time.Millisecond)
 		}
 		if q.interval > 0 {
 			time.Sleep(time.Duration(q.interval) * time.Second)

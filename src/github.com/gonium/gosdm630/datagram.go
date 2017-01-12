@@ -53,46 +53,55 @@ func (r *Readings) JSON(w io.Writer) error {
 	return json.NewEncoder(w).Encode(r)
 }
 
-type ReadingSlice []Readings
-
-func (r ReadingSlice) JSON(w io.Writer) error {
-	return json.NewEncoder(w).Encode(r)
+/*
+ * Returns true if the reading is older than the given timestamp.
+ */
+func (r *Readings) IsOlderThan(ts time.Time) (retval bool) {
+	return r.Timestamp.Before(ts)
 }
 
 /*
 * Adds two readings. The individual values are added except for
 * the time: the latter of the two times is copied over to the result
  */
-func (lhs *Readings) add(rhs *Readings) (retval Readings) {
-	retval = Readings{
-		Voltage: ThreePhaseReadings{
-			L1: lhs.Voltage.L1 + rhs.Voltage.L1,
-			L2: lhs.Voltage.L2 + rhs.Voltage.L2,
-			L3: lhs.Voltage.L3 + rhs.Voltage.L3,
-		},
-		Current: ThreePhaseReadings{
-			L1: lhs.Current.L1 + rhs.Current.L1,
-			L2: lhs.Current.L2 + rhs.Current.L2,
-			L3: lhs.Current.L3 + rhs.Current.L3,
-		},
-		Power: ThreePhaseReadings{
-			L1: lhs.Power.L1 + rhs.Power.L1,
-			L2: lhs.Power.L2 + rhs.Power.L2,
-			L3: lhs.Power.L3 + rhs.Power.L3,
-		},
-		Cosphi: ThreePhaseReadings{
-			L1: lhs.Cosphi.L1 + rhs.Cosphi.L1,
-			L2: lhs.Cosphi.L2 + rhs.Cosphi.L2,
-			L3: lhs.Cosphi.L3 + rhs.Cosphi.L3,
-		},
-	}
-	if lhs.Timestamp.After(rhs.Timestamp) {
-		retval.Timestamp = lhs.Timestamp
-		retval.Unix = lhs.Unix
+func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
+	if lhs.ModbusDeviceId != rhs.ModbusDeviceId {
+		return Readings{}, fmt.Errorf(
+			"Cannot add readings of different devices - got IDs %d and %d",
+			lhs.ModbusDeviceId, rhs.ModbusDeviceId)
 	} else {
-		retval.Unix = rhs.Unix
+		retval = Readings{
+			ModbusDeviceId: lhs.ModbusDeviceId,
+			Voltage: ThreePhaseReadings{
+				L1: lhs.Voltage.L1 + rhs.Voltage.L1,
+				L2: lhs.Voltage.L2 + rhs.Voltage.L2,
+				L3: lhs.Voltage.L3 + rhs.Voltage.L3,
+			},
+			Current: ThreePhaseReadings{
+				L1: lhs.Current.L1 + rhs.Current.L1,
+				L2: lhs.Current.L2 + rhs.Current.L2,
+				L3: lhs.Current.L3 + rhs.Current.L3,
+			},
+			Power: ThreePhaseReadings{
+				L1: lhs.Power.L1 + rhs.Power.L1,
+				L2: lhs.Power.L2 + rhs.Power.L2,
+				L3: lhs.Power.L3 + rhs.Power.L3,
+			},
+			Cosphi: ThreePhaseReadings{
+				L1: lhs.Cosphi.L1 + rhs.Cosphi.L1,
+				L2: lhs.Cosphi.L2 + rhs.Cosphi.L2,
+				L3: lhs.Cosphi.L3 + rhs.Cosphi.L3,
+			},
+		}
+		if lhs.Timestamp.After(rhs.Timestamp) {
+			retval.Timestamp = lhs.Timestamp
+			retval.Unix = lhs.Unix
+		} else {
+			retval.Timestamp = rhs.Timestamp
+			retval.Unix = rhs.Unix
+		}
+		return retval, nil
 	}
-	return retval
 }
 
 /*
@@ -124,5 +133,24 @@ func (lhs *Readings) divide(scalar float32) (retval Readings) {
 	}
 	retval.Timestamp = lhs.Timestamp
 	retval.Unix = lhs.Unix
+	retval.ModbusDeviceId = lhs.ModbusDeviceId
+	return retval
+}
+
+/* ReadingSlice is a type alias for a slice of readings.
+ */
+type ReadingSlice []Readings
+
+func (r ReadingSlice) JSON(w io.Writer) error {
+	return json.NewEncoder(w).Encode(r)
+}
+
+func (r ReadingSlice) NotOlderThan(ts time.Time) (retval ReadingSlice) {
+	retval = ReadingSlice{}
+	for _, reading := range r {
+		if !reading.IsOlderThan(ts) {
+			retval = append(retval, reading)
+		}
+	}
 	return retval
 }

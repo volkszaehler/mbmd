@@ -88,15 +88,47 @@ func MkLastSingleValuesHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 	})
 }
 
-func MkLastMinuteAvgHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
-	//TODO: Adjust for several measurement devices
+func MkLastMinuteAvgSingleHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		last := hc.GetMinuteAvg()
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		vars := mux.Vars(r)
+		id, err := strconv.Atoi(vars["id"])
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		avg, err := hc.GetMinuteAvg(byte(id))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, err.Error())
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		if err := avg.JSON(w); err != nil {
+			log.Printf("Failed to create JSON representation of measurement %s", avg.String())
+		}
+	})
+}
+
+func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := last.JSON(w); err != nil {
-			log.Printf("Failed to create JSON representation of measurement %s", last.String())
+		ids := hc.GetSortedIDs()
+		avgs := ReadingSlice{}
+		for _, id := range ids {
+			reading, err := hc.GetMinuteAvg(id)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, err.Error())
+				return
+			}
+			avgs = append(avgs, reading)
 		}
+		if err := avgs.JSON(w); err != nil {
+			log.Printf("Failed to create JSON representation of measurements: ", err.Error())
+		}
+
 	})
 }
 
@@ -105,6 +137,7 @@ func Run_httpd(mc *MeasurementCache, url string) {
 	router.HandleFunc("/", MkIndexHandler(mc))
 	router.HandleFunc("/last", MkLastAllValuesHandler(mc))
 	router.HandleFunc("/last/{id:[0-9]+}", MkLastSingleValuesHandler(mc))
-	router.HandleFunc("/minuteavg", MkLastMinuteAvgHandler(mc))
+	router.HandleFunc("/minuteavg", MkLastMinuteAvgAllHandler(mc))
+	router.HandleFunc("/minuteavg/{id:[0-9]+}", MkLastMinuteAvgSingleHandler(mc))
 	log.Fatal(http.ListenAndServe(url, router))
 }
