@@ -8,46 +8,63 @@ import (
 )
 
 type MemoryStatus struct {
-	Alloc      uint64
-	TotalAlloc uint64
-	HeapAlloc  uint64
-	HeapSys    uint64
+	Alloc     uint64
+	HeapAlloc uint64
+}
+
+type ModbusStatus struct {
+	TotalModbusRequests        uint64
+	ModbusRequestRatePerMinute float64
+	TotalModbusErrors          uint64
+	ModbusErrorRatePerMinute   float64
 }
 
 func CurrentMemoryStatus() MemoryStatus {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	return MemoryStatus{
-		Alloc:      mem.Alloc,
-		TotalAlloc: mem.TotalAlloc,
-		HeapAlloc:  mem.HeapAlloc,
-		HeapSys:    mem.HeapSys,
+		Alloc:     mem.Alloc,
+		HeapAlloc: mem.HeapAlloc,
 	}
 }
 
 type Status struct {
-	Memory           MemoryStatus
-	Starttime        time.Time
-	Uptime           float64
-	ModbusReconnects uint64
+	Starttime     time.Time
+	UptimeSeconds float64
+	Goroutines    int
+	Memory        MemoryStatus
+	Modbus        ModbusStatus
 }
 
 func NewStatus() *Status {
 	return &Status{
-		Memory:           CurrentMemoryStatus(),
-		Starttime:        time.Now(),
-		Uptime:           1,
-		ModbusReconnects: 0,
+		Memory:        CurrentMemoryStatus(),
+		Starttime:     time.Now(),
+		Goroutines:    runtime.NumGoroutine(),
+		UptimeSeconds: 1,
+		Modbus: ModbusStatus{
+			TotalModbusRequests:        0,
+			ModbusRequestRatePerMinute: 0,
+			TotalModbusErrors:          0,
+			ModbusErrorRatePerMinute:   0,
+		},
 	}
 }
 
+func (s *Status) IncreaseModbusRequestCounter() {
+	s.Modbus.TotalModbusRequests = s.Modbus.TotalModbusRequests + 1
+}
+
 func (s *Status) IncreaseModbusReconnectCounter() {
-	s.ModbusReconnects = s.ModbusReconnects + 1
+	s.Modbus.TotalModbusErrors = s.Modbus.TotalModbusErrors + 1
 }
 
 func (s *Status) Update() {
 	s.Memory = CurrentMemoryStatus()
-	s.Uptime = time.Since(s.Starttime).Seconds()
+	s.Goroutines = runtime.NumGoroutine()
+	s.UptimeSeconds = time.Since(s.Starttime).Seconds()
+	s.Modbus.ModbusErrorRatePerMinute =
+		float64(s.Modbus.TotalModbusErrors) / (s.UptimeSeconds / 60)
 }
 
 func (s *Status) UpdateAndJSON(w io.Writer) error {

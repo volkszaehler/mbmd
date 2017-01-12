@@ -82,6 +82,7 @@ func NewQueryEngine(
 
 func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
 	err error) {
+	q.status.IncreaseModbusRequestCounter()
 	results, err := q.client.ReadInputRegisters(opcode, 2)
 	if err == nil {
 		retval = rtuToFload32(results)
