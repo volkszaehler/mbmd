@@ -132,12 +132,23 @@ func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 	})
 }
 
-func Run_httpd(mc *MeasurementCache, url string) {
+func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := s.UpdateAndJSON(w); err != nil {
+			log.Printf("Failed to create JSON representation of measurements: ", err.Error())
+		}
+	})
+}
+
+func Run_httpd(mc *MeasurementCache, s *Status, url string) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", MkIndexHandler(mc))
 	router.HandleFunc("/last", MkLastAllValuesHandler(mc))
 	router.HandleFunc("/last/{id:[0-9]+}", MkLastSingleValuesHandler(mc))
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgAllHandler(mc))
 	router.HandleFunc("/minuteavg/{id:[0-9]+}", MkLastMinuteAvgSingleHandler(mc))
+	router.HandleFunc("/status", MkStatusHandler(s))
 	log.Fatal(http.ListenAndServe(url, router))
 }

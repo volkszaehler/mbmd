@@ -43,6 +43,7 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
+		status := sdm630.NewStatus()
 		var rc = make(sdm630.ReadingChannel)
 		// Parse the device_list parameter
 		deviceslice := strings.Split(c.String("device_list"), ",")
@@ -63,6 +64,7 @@ func main() {
 			c.Bool("verbose"),
 			rc,
 			devids,
+			status,
 		)
 		go qe.Produce()
 		mc := sdm630.NewMeasurementCache(
@@ -72,7 +74,7 @@ func main() {
 		)
 		go mc.ConsumeData()
 		log.Printf("Starting API httpd at %s", c.String("url"))
-		sdm630.Run_httpd(mc, c.String("url"))
+		sdm630.Run_httpd(mc, status, c.String("url"))
 	}
 
 	app.Run(os.Args)

@@ -40,6 +40,7 @@ type QueryEngine struct {
 	datastream ReadingChannel
 	devids     []uint8
 	verbose    bool
+	status     *Status
 }
 
 func NewQueryEngine(
@@ -48,6 +49,7 @@ func NewQueryEngine(
 	verbose bool,
 	channel ReadingChannel,
 	devids []uint8,
+	status *Status,
 ) *QueryEngine {
 	// Modbus RTU/ASCII
 	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
@@ -73,7 +75,9 @@ func NewQueryEngine(
 
 	return &QueryEngine{client: mbclient, interval: interval,
 		handler: rtuclient, datastream: channel,
-		devids: devids, verbose: verbose}
+		devids: devids, verbose: verbose,
+		status: status,
+	}
 }
 
 func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
@@ -93,6 +97,7 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
 		retval, err = q.retrieveOpCode(opcode)
 		if err != nil {
+			q.status.IncreaseModbusReconnectCounter()
 			log.Printf("Failed to retrieve opcode - retry attempt %d of %d\r\n", tryCnt+1,
 				MaxRetryCount)
 			time.Sleep(time.Duration(100) * time.Millisecond)
