@@ -71,6 +71,9 @@ Clone this repository:
 
 and build it:
 
+TODO: Mention Makefile
+
+
     cd gosdm630
     gb build all
 
@@ -80,7 +83,7 @@ Now, there should be a binary in the ````bin```` subfolder.
 
 Now fire up the software:
 
-    ./bin/sdm630_httpd -d /dev/ttyUSB1 -u localhost:8080 -v
+    ./bin/sdm630_httpd -s /dev/ttyUSB1 -u localhost:8080 -v
     RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 00 00 02 71 cb
     RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 43 6b d7 3d 01 fd
     RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 02 00 02 d0 0b
@@ -141,12 +144,12 @@ start the service (put this into ``/etc/systemd/system``):
     Description=SDM630 via HTTP API
     After=syslog.target
     [Service]
-    ExecStart=/usr/local/bin/sdm630_httpd -d /dev/ttyAMA0
+    ExecStart=/usr/local/bin/sdm630_httpd -s /dev/ttyAMA0
     Restart=always
     [Install]
     WantedBy=multi-user.target
 
-You might need to adjust the ``-d`` parameter depending on where your
+You might need to adjust the ``-s`` parameter depending on where your
 RS485 adapter is connected. Then, use
 
     # systemctl start sdm630
@@ -157,28 +160,31 @@ to test your installation. If you're satisfied use
 
 to start the service at boot time automatically.
 
-## OpenHAB integration
+## The API: OpenHAB integration
+
+TODO: Mention the use of several IDs
 
 The API consists of two calls that return a JSON array. The "GET
-/last"-call simply returns the last measurements retrieved:
+/last/{ID}"-call simply returns the last measurements of the device with
+the Modbus ID {ID}:
 
-    $ curl localhost:8080/last
-    {"Timestamp":"2015-11-12T15:51:00.297722068+01:00","Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":232.97672,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0.746,"L2":0,"L3":0},"Export":{"L1":0.011,"L2":0,"L3":0}}
+    $ curl localhost:8080/last/1
+		{"Timestamp":"2017-01-12T20:14:44.375777188Z","Unix":1484252084,"ModbusDeviceId":1,"Power":{"L1":309.1006,"L2":81.13953,"L3":0},"Voltage":{"L1":230.93193,"L2":231.07565,"L3":232.11107},"Current":{"L1":1.4531646,"L2":0.36446536,"L3":0},"Cosphi":{"L1":0.9210861,"L2":0.9629059,"L3":1},"Import":{"L1":2282.521,"L2":693.844,"L3":238.658},"Export":{"L1":0,"L2":0.005,"L3":0.024}}
 
 The "GET /minuteavg"-call returns the average measurements over the last
 minute:
 
-    $ curl localhost:8080/minuteavg
-    {"Timestamp":"2015-11-12T15:52:14.560779127+01:00","Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":233.11012,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}}
+    $ curl localhost:8080/minuteavg/1
+    {"Timestamp":"2017-01-12T20:15:17.17833005Z","Unix":1484252117,"ModbusDeviceId":1,"Power":{"L1":300.57672,"L2":81.01144,"L3":0},"Voltage":{"L1":231.22124,"L2":231.07536,"L3":231.94556},"Current":{"L1":1.3945557,"L2":0.3644369,"L3":0},"Cosphi":{"L1":0.9347229,"L2":0.961964,"L3":1},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}}
 
 It is very easy to translate this into OpenHAB items. I run the SDM630
 software on a Raspberry Pi with the IP ``192.168.1.44``. My items look
 like this:
 
     Group Power_Chart
-    Number Power_L1 "Strombezug L1 [%.1f W]" <power> (Power, Power_Chart) { http="<[http://192.168.1.44:8080/last:60000:JS(SDM630GetL1Power.js)]" }
+    Number Power_L1 "Strombezug L1 [%.1f W]" <power> (Power, Power_Chart) { http="<[http://192.168.1.44:8080/last/1:60000:JS(SDM630GetL1Power.js)]" }
 
-I'm using the http plugin to call the ``/last`` endpoint every 60
+I'm using the http plugin to call the ``/last/1`` endpoint every 60
 seconds. Then, I feed the result into a JSON transform stored in
 ``SDM630GetL1Power.js``. The contents of
 ``transform/SDM630GetL1Power.js`` looks like this:
@@ -191,6 +197,4 @@ my sitemap contains the following lines:
     Chart item=Power_Chart period=D refresh=1800
 
 This draws a chart of all items in the ``Power_Chart`` group.
-
-
 
