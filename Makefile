@@ -13,6 +13,6 @@ clean:
 
 dep:
 	@echo "Installing GB build tool"
-	go get github.com/constabulary/gb/...
+	@go get github.com/constabulary/gb/...
 
 .PHONY: all build clean

@@ -1,7 +1,7 @@
 # A HTTP interface to the SDM630-MODBUS smart meter
 
 This project provides a http interface to the Eastron SDM630 smart
-meter. The device comes in many flavour - make sure to get the "MODBUS"
+meter. The smart meter comes in many flavours - make sure to get the "MODBUS"
 version. The SDM630-MODBUS exposes all measured values over an RS485
 connection, making it very easy to integrate it into your home
 automation system.
@@ -23,7 +23,7 @@ it does with other sensors in my home.
 
 ## Installation
 
-The installation consists necessarily of a hardware and a software part.
+The installation consists of a hardware and a software part.
 Make sure you buy/fetch the following things before starting:
 
 * A SDM630 smart meter, the MODBUS version.
@@ -61,61 +61,110 @@ block:
 
 You need a working [Golang installation](http://golang.org) and the [GB
 build tool](http://getgb.io/) in order to compile your binary. Please
-install the Go compiler first. Afterwards you can install GB like this:
-
-    go get github.com/constabulary/gb/...
-
-Clone this repository:
+install the Go compiler first. Then clone this repository:
 
     git clone https://github.com/gonium/gosdm630.git
 
-and build it:
+If you have ``make`` installed you can
+use the ``Makefile`` to install the GB build tool:
 
-TODO: Mention Makefile
+    $ cd gosdm630
+    $ make dep
+    Installing GB build tool
 
+Or, if you prefer to install it manually, just run 
 
-    cd gosdm630
+    go get github.com/constabulary/gb/...
+
+You can then build the software using the ``Makefile``:
+
+    $ make
+    Building for host platform
+    Building binary for Raspberry Pi
+    github.com/gonium/gosdm630
+    github.com/gonium/gosdm630/cmd/sdm630_httpd
+    Created binaries:
+    sdm630_httpd
+    sdm630_httpd-linux-arm
+
+As you can see two binaries are built:
+
+ * ``bin/sdm630_httpd`` is the software built for the host platform
+ * ``bin/sdm630_httpd-linux-arm`` is the same for the Raspberry Pi.
+
+If you prefer to build manually you can build the host software using
+
     gb build all
 
-Now, there should be a binary in the ````bin```` subfolder.
+or, for the Raspberry Pi binary, use
+
+    GOOS=linux GOARCH=arm GOARM=5 gb build all
 
 ### Testing
 
 Now fire up the software:
 
-    ./bin/sdm630_httpd -s /dev/ttyUSB1 -u localhost:8080 -v
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 00 00 02 71 cb
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 43 6b d7 3d 01 fd
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 02 00 02 d0 0b
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 04 00 02 30 0a
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 06 00 02 91 ca
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 08 00 02 f0 09
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 0a 00 02 51 c9
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 0c 00 02 b1 c8
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 0e 00 02 10 08
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 10 00 02 70 0e
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 00 00 00 00 fb 84
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 1e 00 02 11 cd
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 3f 80 00 00 f6 78
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 20 00 02 70 01
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 3f 80 00 00 f6 78
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: sending 01 04 00 22 00 02 d1 c1
-    RTUClientHandler: 2015/11/06 12:22:14 modbus: received 01 04 04 3f 80 00 00 f6 78
+    $ ./bin/sdm630_httpd --help
+    NAME:
+       sdm630_httpd - SDM630 power measurements via HTTP.
+    
+    USAGE:
+       sdm630_httpd [global options] command [command options] [arguments...]
+    
+    COMMANDS:
+         help, h  Shows a list of commands or help for one command
+    
+    GLOBAL OPTIONS:
+       --serialadapter value, -s value  path to serial RTU device (default: "/dev/ttyUSB0")
+       --url value, -u value            the URL the server should respond on (default: ":8080")
+       --verbose, -v                    print verbose messages
+       --device_list value, -d value    MODBUS device ID to query (default: "1")
+       --help, -h                       show help
+    
+
+A typical invocation looks like this:
+
+		./bin/sdm630_httpd -s /dev/ttyUSB0 -d 11,12,13,14,15 -v
+    2017/01/25 16:34:26 Connecting to RTU via /dev/ttyUSB0
+    2017/01/25 16:34:26 Starting API httpd at :8080
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 00 00 02 71 61
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 43 6c 78 80 a7 bd
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 02 00 02 d0 a1
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 43 6c 74 9c a3 74
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 04 00 02 30 a0
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 00 00 00 00 51 84
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 06 00 02 91 60
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 00 00 00 00 51 84
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 08 00 02 f0 a3
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 00 00 00 00 51 84
+    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 0a 00 02 51 63
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 0c 00 02 b1 62
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 0e 00 02 10 a2
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 10 00 02 70 a4
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 1e 00 02 11 67
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3f 80 00 00 5c 78
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 20 00 02 70 ab
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3f 80 00 00 5c 78
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 22 00 02 d1 6b
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3f 80 00 00 5c 78
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 01 5a 00 02 50 8e
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3b 03 12 6f e0 2c
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 01 5c 00 02 b0 8f
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3b 03 12 6f e0 2c
+    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 01 5e 00 02 11 4f
     T: 2015-11-06T12:22:14+01:00 - L1: 235.84V 0.00A 0.00W 1.00cos | L2: 0.00V 0.00A 0.00W 1.00cos | L3: 0.00V 0.00A 0.00W 1.00cos
 
-If you use the ``-v`` commandline switch you can see modbus traffic and
-the current readings on the command line.  If you visit
+This call queries five devices with the IDs 11, 12, 13, 14 and 15. If
+you use the ``-v`` commandline switch you can see modbus traffic and the
+current readings on the command line.  At
 [http://localhost:8080](http://localhost:8080) you should also see the
 last received value printed as ASCII text:
 
-    Last measurement taken Thursday, 12-Nov-15 14:18:10 CET:
+    Modbus ID 11, last measurement taken Thursday, 12-Nov-15 14:18:10 CET:
     +-------+-------------+-------------+-----------+--------------+--------------+--------------+
     | PHASE | VOLTAGE [V] | CURRENT [A] | POWER [W] | POWER FACTOR | IMPORT [KWH] | EXPORT [KWH] |
     +-------+-------------+-------------+-----------+--------------+--------------+--------------+
@@ -125,17 +174,9 @@ last received value printed as ASCII text:
     | ALL   | n/a         |        0.19 |     45.83 | n/a          |         0.74 |         0.01 |
     +-------+-------------+-------------+-----------+--------------+--------------+--------------+
 
-### Crosscompiling e.g. for Raspberry Pi
+### Installation on the Raspberry Pi
 
-Go has very good crosscompilation support. Typically, I develop under
-Mac OS and crosscompile a binary for my RPi. It is easy:
-
-    # clear whatever old binaries I have
-    rm -rf pkg bin
-    # start crosscompilation
-    GOOS=linux GOARCH=arm GOARM=5 gb build all
-
-You can then copy the binary from the ``bin`` subdirectory to the RPi
+You simply copy the binary from the ``bin`` subdirectory to the RPi
 and start it. I usually put the binary into ``/usr/local/bin`` and
 rename it to ``sdm630_httpd``. The following sytemd unit can be used to
 start the service (put this into ``/etc/systemd/system``):
@@ -160,22 +201,105 @@ to test your installation. If you're satisfied use
 
 to start the service at boot time automatically.
 
-## The API: OpenHAB integration
+## The API
 
-TODO: Mention the use of several IDs
+As of version 0.2 the software supports more than one device. In order
+to query the API you need to provide the MODBUS ID of the device you
+want to query.
 
-The API consists of two calls that return a JSON array. The "GET
+The API consists of calls that return a JSON datastructure. The "GET
 /last/{ID}"-call simply returns the last measurements of the device with
 the Modbus ID {ID}:
 
     $ curl localhost:8080/last/1
-		{"Timestamp":"2017-01-12T20:14:44.375777188Z","Unix":1484252084,"ModbusDeviceId":1,"Power":{"L1":309.1006,"L2":81.13953,"L3":0},"Voltage":{"L1":230.93193,"L2":231.07565,"L3":232.11107},"Current":{"L1":1.4531646,"L2":0.36446536,"L3":0},"Cosphi":{"L1":0.9210861,"L2":0.9629059,"L3":1},"Import":{"L1":2282.521,"L2":693.844,"L3":238.658},"Export":{"L1":0,"L2":0.005,"L3":0.024}}
+    {
+      "Timestamp": "2017-01-25T16:40:28.706413719+01:00",
+      "Unix": 1485358828,
+      "ModbusDeviceId": 11,
+      "Power": {
+        "L1": 0,
+        "L2": 0,
+        "L3": 0
+      },
+      "Voltage": {
+        "L1": 236.27914,
+        "L2": 236.26003,
+        "L3": 0
+      },
+      "Current": {
+        "L1": 0,
+        "L2": 0,
+        "L3": 0
+      },
+      "Cosphi": {
+        "L1": 1,
+        "L2": 1,
+        "L3": 1
+      },
+      "Import": {
+        "L1": 0.002,
+        "L2": 0.002,
+        "L3": 0.001
+      },
+      "Export": {
+        "L1": 0,
+        "L2": 0,
+        "L3": 0
+      }
+    }
+
 
 The "GET /minuteavg"-call returns the average measurements over the last
 minute:
 
-    $ curl localhost:8080/minuteavg/1
-    {"Timestamp":"2017-01-12T20:15:17.17833005Z","Unix":1484252117,"ModbusDeviceId":1,"Power":{"L1":300.57672,"L2":81.01144,"L3":0},"Voltage":{"L1":231.22124,"L2":231.07536,"L3":231.94556},"Current":{"L1":1.3945557,"L2":0.3644369,"L3":0},"Cosphi":{"L1":0.9347229,"L2":0.961964,"L3":1},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}}
+    $ curl localhost:8080/minuteavg/11
+    {
+      "Timestamp": "2017-01-25T16:41:15.835808811+01:00",
+      "Unix": 1485358875,
+      "ModbusDeviceId": 11,
+      "Power": {
+        "L1": 0,
+        "L2": 0,
+        "L3": 0
+      },
+      "Voltage": {
+        "L1": 236.49846,
+        "L2": 236.4804,
+        "L3": 0
+      },
+      "Current": {
+        "L1": 0,
+        "L2": 0,
+        "L3": 0
+      },
+      "Cosphi": {
+        "L1": 1,
+        "L2": 1,
+        "L3": 1
+      },
+      "Import": {
+        "L1": 0,
+        "L2": 0,
+        "L3": 0
+      },
+      "Export": {
+        "L1": 0,
+        "L2": 0,
+        "L3": 0
+      }
+    }
+
+
+If you want to receive all measurements, you can use these two calls
+without the device ID:
+
+    curl localhost:8080/last
+    [{"Timestamp":"2017-01-25T16:39:56.211376135+01:00","Unix":1485358796,"ModbusDeviceId":11,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.50807,"L2":236.49356,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0.002,"L2":0.002,"L3":0.001},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:56.794948625+01:00","Unix":1485358796,"ModbusDeviceId":12,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.40024,"L2":236.46877,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0.001,"L2":0.002,"L3":0.001},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:57.37536849+01:00","Unix":1485358797,"ModbusDeviceId":13,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.50534,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":0,"L3":0},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:55.02659946+01:00","Unix":1485358795,"ModbusDeviceId":14,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.41461,"L2":236.50677,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0,"L2":0.001,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:55.627042868+01:00","Unix":1485358795,"ModbusDeviceId":15,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.52869,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":0,"L3":0},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}}]
+
+and so on. I recommend the [JSON Incremental Digger
+(jid)](https://github.com/simeji/jid) for exploring json datasets.
+
+## OpenHAB integration
 
 It is very easy to translate this into OpenHAB items. I run the SDM630
 software on a Raspberry Pi with the IP ``192.168.1.44``. My items look
@@ -197,4 +321,5 @@ my sitemap contains the following lines:
     Chart item=Power_Chart period=D refresh=1800
 
 This draws a chart of all items in the ``Power_Chart`` group.
+
 

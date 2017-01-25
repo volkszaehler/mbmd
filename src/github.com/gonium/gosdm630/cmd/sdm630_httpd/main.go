@@ -31,11 +31,6 @@ func main() {
 			Name:  "verbose, v",
 			Usage: "print verbose messages",
 		},
-		cli.IntFlag{
-			Name:  "sleeptime, i",
-			Value: 10,
-			Usage: "seconds between getting new values from the modbus network",
-		},
 		cli.StringFlag{
 			Name:  "device_list, d",
 			Value: "1",
@@ -55,12 +50,9 @@ func main() {
 			}
 			devids = append(devids, uint8(id))
 		}
-		log.Printf(
-			"Will query MODBUS IDs %v, sleeping %d seconds between queries",
-			devids, c.Int("sleeptime"))
 		qe := sdm630.NewQueryEngine(
 			c.String("serialadapter"),
-			c.Int("sleeptime"),
+			0, //TODO: Remove sleeptime parameter
 			c.Bool("verbose"),
 			rc,
 			devids,
