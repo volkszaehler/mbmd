@@ -65,6 +65,8 @@ func (s *Status) Update() {
 	s.UptimeSeconds = time.Since(s.Starttime).Seconds()
 	s.Modbus.ModbusErrorRatePerMinute =
 		float64(s.Modbus.TotalModbusErrors) / (s.UptimeSeconds / 60)
+	s.Modbus.ModbusRequestRatePerMinute =
+		float64(s.Modbus.TotalModbusRequests) / (s.UptimeSeconds / 60)
 }
 
 func (s *Status) UpdateAndJSON(w io.Writer) error {
