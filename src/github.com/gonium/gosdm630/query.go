@@ -35,7 +35,6 @@ const (
 
 type QueryEngine struct {
 	client     modbus.Client
-	interval   int
 	handler    *modbus.RTUClientHandler
 	datastream ReadingChannel
 	devids     []uint8
@@ -45,7 +44,6 @@ type QueryEngine struct {
 
 func NewQueryEngine(
 	rtuDevice string,
-	interval int,
 	verbose bool,
 	channel ReadingChannel,
 	devids []uint8,
@@ -73,7 +71,7 @@ func NewQueryEngine(
 
 	mbclient := modbus.NewClient(rtuclient)
 
-	return &QueryEngine{client: mbclient, interval: interval,
+	return &QueryEngine{client: mbclient,
 		handler: rtuclient, datastream: channel,
 		devids: devids, verbose: verbose,
 		status: status,
@@ -156,9 +154,6 @@ func (q *QueryEngine) Produce() {
 				},
 			}
 			time.Sleep(20 * time.Millisecond)
-		}
-		if q.interval > 0 {
-			time.Sleep(time.Duration(q.interval) * time.Second)
 		}
 		//elapsed := time.Since(start)
 		//log.Printf("Reading all values took %s", elapsed)

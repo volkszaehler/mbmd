@@ -52,7 +52,6 @@ func main() {
 		}
 		qe := sdm630.NewQueryEngine(
 			c.String("serialadapter"),
-			0, //TODO: Remove sleeptime parameter
 			c.Bool("verbose"),
 			rc,
 			devids,
