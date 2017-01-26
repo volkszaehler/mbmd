@@ -6,6 +6,19 @@ version. The SDM630-MODBUS exposes all measured values over an RS485
 connection, making it very easy to integrate it into your home
 automation system.
 
+Table of Contents:
+
+  * [How does it look like in OpenHAB?](#how-does-it-look-like-in-openhab)
+  * [Installation](#installation)
+    * [Hardware installation](#hardware-installation)
+    * [Installing the software from source](#installing-the-software-from-source)
+    * [Testing](#testing)
+    * [Installation on the Raspberry Pi](#installation-on-the-raspberry-pi)
+  * [The API](#the-api)
+  * [Monitoring](#monitoring)
+  * [OpenHAB integration](#openhab-integration)
+
+
 ## How does it look like in OpenHAB?
 
 I use [OpenHAB](http://openhab.org) to record various measurements at
@@ -298,6 +311,33 @@ without the device ID:
 
 and so on. I recommend the [JSON Incremental Digger
 (jid)](https://github.com/simeji/jid) for exploring json datasets.
+
+## Monitoring
+
+In order to monitor this long running process a status report is now
+available:
+
+    $ curl http://localhost:8080/status
+    {
+      "Starttime": "2017-01-25T16:35:50.839829945+01:00",
+      "UptimeSeconds": 65587.177092186,
+      "Goroutines": 11,
+      "Memory": {
+        "Alloc": 1568344,
+        "HeapAlloc": 1568344
+      },
+      "Modbus": {
+        "TotalModbusRequests": 1979122,
+        "ModbusRequestRatePerMinute": 1810.5264666764785,
+        "TotalModbusErrors": 738,
+        "ModbusErrorRatePerMinute": 0.6751319688261972
+      }
+    }
+
+This is a snapshot of a process running over night, along with the error
+statistics during that timeframe. The process queries 5 meters continuously,
+the cabling is not a shielded, twisted wire but something that I had laying
+around. With proper cabling the error rate should be lower, though.
 
 ## OpenHAB integration
 
