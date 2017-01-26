@@ -9,27 +9,7 @@ import (
 	"time"
 )
 
-// See http://bg-etech.de/download/manual/SDM630Register.pdf
 const (
-	OpCodeL1Voltage     = 0x0000
-	OpCodeL2Voltage     = 0x0002
-	OpCodeL3Voltage     = 0x0004
-	OpCodeL1Current     = 0x0006
-	OpCodeL2Current     = 0x0008
-	OpCodeL3Current     = 0x000A
-	OpCodeL1Power       = 0x000C
-	OpCodeL2Power       = 0x000E
-	OpCodeL3Power       = 0x0010
-	OpCodeL1Import      = 0x015a
-	OpCodeL2Import      = 0x015c
-	OpCodeL3Import      = 0x015e
-	OpCodeL1Export      = 0x0160
-	OpCodeL2Export      = 0x0162
-	OpCodeL3Export      = 0x0164
-	OpCodeL1PowerFactor = 0x001e
-	OpCodeL2PowerFactor = 0x0020
-	OpCodeL3PowerFactor = 0x0022
-
 	MaxRetryCount = 3
 )
 
@@ -138,9 +118,9 @@ func (q *QueryEngine) Produce() {
 					L3: q.queryOrFail(OpCodeL3Power),
 				},
 				Cosphi: ThreePhaseReadings{
-					L1: q.queryOrFail(OpCodeL1PowerFactor),
-					L2: q.queryOrFail(OpCodeL2PowerFactor),
-					L3: q.queryOrFail(OpCodeL3PowerFactor),
+					L1: q.queryOrFail(OpCodeL1Cosphi),
+					L2: q.queryOrFail(OpCodeL2Cosphi),
+					L3: q.queryOrFail(OpCodeL3Cosphi),
 				},
 				Import: ThreePhaseReadings{
 					L1: q.queryOrFail(OpCodeL1Import),

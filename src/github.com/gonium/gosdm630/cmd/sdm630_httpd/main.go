@@ -38,8 +38,6 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		status := sdm630.NewStatus()
-		var rc = make(sdm630.ReadingChannel)
 		// Parse the device_list parameter
 		deviceslice := strings.Split(c.String("device_list"), ",")
 		devids := make([]uint8, 0, len(deviceslice))
@@ -50,6 +48,11 @@ func main() {
 			}
 			devids = append(devids, uint8(id))
 		}
+		status := sdm630.NewStatus()
+
+		// Create Channels that link the goroutines
+		var rc = make(sdm630.ReadingChannel)
+
 		qe := sdm630.NewQueryEngine(
 			c.String("serialadapter"),
 			c.Bool("verbose"),

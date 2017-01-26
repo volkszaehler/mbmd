@@ -7,6 +7,36 @@ import (
 	"time"
 )
 
+/***
+ * Opcodes as defined by Eastron.
+ * See http://bg-etech.de/download/manual/SDM630Register.pdf
+ */
+const (
+	OpCodeL1Voltage = 0x0000
+	OpCodeL2Voltage = 0x0002
+	OpCodeL3Voltage = 0x0004
+	OpCodeL1Current = 0x0006
+	OpCodeL2Current = 0x0008
+	OpCodeL3Current = 0x000A
+	OpCodeL1Power   = 0x000C
+	OpCodeL2Power   = 0x000E
+	OpCodeL3Power   = 0x0010
+	OpCodeL1Import  = 0x015a
+	OpCodeL2Import  = 0x015c
+	OpCodeL3Import  = 0x015e
+	OpCodeL1Export  = 0x0160
+	OpCodeL2Export  = 0x0162
+	OpCodeL3Export  = 0x0164
+	OpCodeL1Cosphi  = 0x001e
+	OpCodeL2Cosphi  = 0x0020
+	OpCodeL3Cosphi  = 0x0022
+)
+
+/***
+ * This is the definition of the Reading datatype. It combines readings
+ * of all measurements into one data structure
+ */
+
 type ReadingChannel chan Readings
 
 type Readings struct {
@@ -153,4 +183,50 @@ func (r ReadingSlice) NotOlderThan(ts time.Time) (retval ReadingSlice) {
 		}
 	}
 	return retval
+}
+
+/***
+ * A QuerySnip is just a little snippet of query information. It
+ * encapsulates modbus query targets.
+ */
+
+type QuerySnip struct {
+	DeviceId uint8
+	OpCode   uint16
+	Value    float32
+}
+
+func (r *Readings) MergeSnip(q QuerySnip) {
+	switch q.OpCode {
+	case OpCodeL1Voltage:
+		r.Voltage.L1 = q.Value
+	case OpCodeL2Voltage:
+		r.Voltage.L2 = q.Value
+	case OpCodeL3Voltage:
+		r.Voltage.L3 = q.Value
+	case OpCodeL1Current:
+		r.Current.L1 = q.Value
+	case OpCodeL2Current:
+		r.Current.L2 = q.Value
+	case OpCodeL3Current:
+		r.Current.L3 = q.Value
+	case OpCodeL1Cosphi:
+		r.Cosphi.L1 = q.Value
+	case OpCodeL2Cosphi:
+		r.Cosphi.L2 = q.Value
+	case OpCodeL3Cosphi:
+		r.Cosphi.L3 = q.Value
+	case OpCodeL1Import:
+		r.Import.L1 = q.Value
+	case OpCodeL2Import:
+		r.Import.L2 = q.Value
+	case OpCodeL3Import:
+		r.Import.L3 = q.Value
+	case OpCodeL1Export:
+		r.Export.L1 = q.Value
+	case OpCodeL2Export:
+		r.Export.L2 = q.Value
+	case OpCodeL3Export:
+		r.Export.L3 = q.Value
+	}
 }
