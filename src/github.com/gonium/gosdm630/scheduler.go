@@ -1,7 +1,11 @@
 package sdm630
 
+import (
+	"math"
+)
+
 type Scheduler interface {
-	Run()
+	Produce()
 }
 
 type RoundRobinScheduler struct {
@@ -19,26 +23,28 @@ func NewRoundRobinScheduler(
 	}
 }
 
-func (s *RoundRobinScheduler) Run() {
-	for _, devid := range s.devids {
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Voltage}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Voltage}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Voltage}
+func (s *RoundRobinScheduler) Produce() {
+	for {
+		for _, devid := range s.devids {
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Voltage, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Voltage, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Voltage, Value: float32(math.NaN())}
 
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Current}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Current}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Current}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Current, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Current, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Current, Value: float32(math.NaN())}
 
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Cosphi}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Cosphi}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Cosphi}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Cosphi, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Cosphi, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Cosphi, Value: float32(math.NaN())}
 
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Import}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Import}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Import}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Import, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Import, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Import, Value: float32(math.NaN())}
 
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Export}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Export}
-		s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Export}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Export, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Export, Value: float32(math.NaN())}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Export, Value: float32(math.NaN())}
+		}
 	}
 }

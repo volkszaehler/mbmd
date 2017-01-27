@@ -232,3 +232,8 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		r.Export.L3 = q.Value
 	}
 }
+
+func (q QuerySnip) String() string {
+	return fmt.Sprintf("ID: %d, Opcode %#X: %.3f", q.DeviceId, q.OpCode,
+		q.Value)
+}

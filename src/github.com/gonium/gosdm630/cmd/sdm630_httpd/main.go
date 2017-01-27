@@ -51,22 +51,32 @@ func main() {
 		status := sdm630.NewStatus()
 
 		// Create Channels that link the goroutines
+		var sq = make(sdm630.QuerySnipChannel)
 		var rc = make(sdm630.ReadingChannel)
+
+		scheduler := sdm630.NewRoundRobinScheduler(
+			sq,
+			devids,
+		)
+		go scheduler.Produce()
 
 		qe := sdm630.NewQueryEngine(
 			c.String("serialadapter"),
 			c.Bool("verbose"),
+			sq,
 			rc,
 			devids,
 			status,
 		)
-		go qe.Produce()
+		go qe.Transform()
+
 		mc := sdm630.NewMeasurementCache(
 			rc,
 			120*time.Second, // TODO: How long to store data in the cache?.
 			c.Bool("verbose"),
 		)
-		go mc.ConsumeData()
+		go mc.Consume()
+
 		log.Printf("Starting API httpd at %s", c.String("url"))
 		sdm630.Run_httpd(mc, status, c.String("url"))
 	}

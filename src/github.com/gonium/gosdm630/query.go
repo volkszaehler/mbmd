@@ -14,18 +14,20 @@ const (
 )
 
 type QueryEngine struct {
-	client     modbus.Client
-	handler    *modbus.RTUClientHandler
-	datastream ReadingChannel
-	devids     []uint8
-	verbose    bool
-	status     *Status
+	client       modbus.Client
+	handler      *modbus.RTUClientHandler
+	inputStream  QuerySnipChannel
+	outputStream ReadingChannel
+	devids       []uint8
+	verbose      bool
+	status       *Status
 }
 
 func NewQueryEngine(
 	rtuDevice string,
 	verbose bool,
-	channel ReadingChannel,
+	inputChannel QuerySnipChannel,
+	outputChannel ReadingChannel,
 	devids []uint8,
 	status *Status,
 ) *QueryEngine {
@@ -51,8 +53,9 @@ func NewQueryEngine(
 
 	mbclient := modbus.NewClient(rtuclient)
 
-	return &QueryEngine{client: mbclient,
-		handler: rtuclient, datastream: channel,
+	return &QueryEngine{
+		client: mbclient, handler: rtuclient,
+		inputStream: inputChannel, outputStream: outputChannel,
 		devids: devids, verbose: verbose,
 		status: status,
 	}
@@ -90,53 +93,59 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 	return retval
 }
 
-func (q *QueryEngine) Produce() {
+func (q *QueryEngine) Transform() {
 	for {
-		//start := time.Now()
-		for _, devid := range q.devids {
-			// Set the current device id as "slave id" in the modbus rtu
-			// library. Somewhat ugly...
-			q.handler.SlaveId = devid
-			timestamp := time.Now()
-			q.datastream <- Readings{
-				Timestamp:      timestamp,
-				Unix:           timestamp.Unix(),
-				ModbusDeviceId: devid,
-				Voltage: ThreePhaseReadings{
-					L1: q.queryOrFail(OpCodeL1Voltage),
-					L2: q.queryOrFail(OpCodeL2Voltage),
-					L3: q.queryOrFail(OpCodeL3Voltage),
-				},
-				Current: ThreePhaseReadings{
-					L1: q.queryOrFail(OpCodeL1Current),
-					L2: q.queryOrFail(OpCodeL2Current),
-					L3: q.queryOrFail(OpCodeL3Current),
-				},
-				Power: ThreePhaseReadings{
-					L1: q.queryOrFail(OpCodeL1Power),
-					L2: q.queryOrFail(OpCodeL2Power),
-					L3: q.queryOrFail(OpCodeL3Power),
-				},
-				Cosphi: ThreePhaseReadings{
-					L1: q.queryOrFail(OpCodeL1Cosphi),
-					L2: q.queryOrFail(OpCodeL2Cosphi),
-					L3: q.queryOrFail(OpCodeL3Cosphi),
-				},
-				Import: ThreePhaseReadings{
-					L1: q.queryOrFail(OpCodeL1Import),
-					L2: q.queryOrFail(OpCodeL2Import),
-					L3: q.queryOrFail(OpCodeL3Import),
-				},
-				Export: ThreePhaseReadings{
-					L1: q.queryOrFail(OpCodeL1Export),
-					L2: q.queryOrFail(OpCodeL2Export),
-					L3: q.queryOrFail(OpCodeL3Export),
-				},
-			}
-			time.Sleep(20 * time.Millisecond)
-		}
-		//elapsed := time.Since(start)
-		//log.Printf("Reading all values took %s", elapsed)
+		snip := <-q.inputStream
+		q.handler.SlaveId = snip.DeviceId
+		value := q.queryOrFail(snip.OpCode)
+		snip.Value = value
+		log.Printf("Snip: %s", snip)
+
+		//		//start := time.Now()
+		//		for _, devid := range q.devids {
+		//			// Set the current device id as "slave id" in the modbus rtu
+		//			// library. Somewhat ugly...
+		//			q.handler.SlaveId = devid
+		//			timestamp := time.Now()
+		//			q.outputStream <- Readings{
+		//				Timestamp:      timestamp,
+		//				Unix:           timestamp.Unix(),
+		//				ModbusDeviceId: devid,
+		//				Voltage: ThreePhaseReadings{
+		//					L1: q.queryOrFail(OpCodeL1Voltage),
+		//					L2: q.queryOrFail(OpCodeL2Voltage),
+		//					L3: q.queryOrFail(OpCodeL3Voltage),
+		//				},
+		//				Current: ThreePhaseReadings{
+		//					L1: q.queryOrFail(OpCodeL1Current),
+		//					L2: q.queryOrFail(OpCodeL2Current),
+		//					L3: q.queryOrFail(OpCodeL3Current),
+		//				},
+		//				Power: ThreePhaseReadings{
+		//					L1: q.queryOrFail(OpCodeL1Power),
+		//					L2: q.queryOrFail(OpCodeL2Power),
+		//					L3: q.queryOrFail(OpCodeL3Power),
+		//				},
+		//				Cosphi: ThreePhaseReadings{
+		//					L1: q.queryOrFail(OpCodeL1Cosphi),
+		//					L2: q.queryOrFail(OpCodeL2Cosphi),
+		//					L3: q.queryOrFail(OpCodeL3Cosphi),
+		//				},
+		//				Import: ThreePhaseReadings{
+		//					L1: q.queryOrFail(OpCodeL1Import),
+		//					L2: q.queryOrFail(OpCodeL2Import),
+		//					L3: q.queryOrFail(OpCodeL3Import),
+		//				},
+		//				Export: ThreePhaseReadings{
+		//					L1: q.queryOrFail(OpCodeL1Export),
+		//					L2: q.queryOrFail(OpCodeL2Export),
+		//					L3: q.queryOrFail(OpCodeL3Export),
+		//				},
+		//			}
+		//			time.Sleep(20 * time.Millisecond)
+		//		}
+		//		//elapsed := time.Since(start)
+		//		//log.Printf("Reading all values took %s", elapsed)
 	}
 	q.handler.Close()
 }

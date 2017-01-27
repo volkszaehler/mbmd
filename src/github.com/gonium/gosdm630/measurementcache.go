@@ -48,7 +48,7 @@ func NewMeasurementCache(ds ReadingChannel, secondsToStore time.Duration, isVerb
 	}
 }
 
-func (mc *MeasurementCache) ConsumeData() {
+func (mc *MeasurementCache) Consume() {
 	for {
 		reading := <-mc.datastream
 		devid := reading.ModbusDeviceId
