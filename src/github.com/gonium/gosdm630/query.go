@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	MaxRetryCount = 3
+	MaxRetryCount = 5
 )
 
 type QueryEngine struct {

@@ -196,6 +196,8 @@ type QuerySnip struct {
 	Value    float32
 }
 
+type QuerySnipChannel chan QuerySnip
+
 func (r *Readings) MergeSnip(q QuerySnip) {
 	switch q.OpCode {
 	case OpCodeL1Voltage:
