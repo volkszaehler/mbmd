@@ -52,7 +52,8 @@ func main() {
 
 		// Create Channels that link the goroutines
 		var sq = make(sdm630.QuerySnipChannel)
-		var rc = make(sdm630.ReadingChannel)
+		//		var rc = make(sdm630.ReadingChannel)
+		var rc = make(sdm630.QuerySnipChannel)
 
 		scheduler := sdm630.NewRoundRobinScheduler(
 			sq,

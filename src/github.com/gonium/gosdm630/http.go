@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/olekukonko/tablewriter"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,19 +13,40 @@ import (
 )
 
 // formatFloat helper
-func fF(val float32) string {
+func fF(val float64) string {
 	var buffer bytes.Buffer
 	fmt.Fprintf(&buffer, "%.2f", val)
 	return buffer.String()
 }
 
 func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
 
+	const mainTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+		 <meta http-equiv="refresh" content="{{.ReloadInterval}}" />
+    <title>GoSDM630 overview page</title>
+  </head>
+  <body>
+		<pre>
+Reloading every {{.ReloadInterval}} seconds.
+{{.Content}}
+		</pre>
+  </body>
+</html>
+`
+	t, err := template.New("gosdm630").Parse(mainTemplate)
+	if err != nil {
+		log.Fatal("Failed to create main page template: ", err.Error())
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		var buffer bytes.Buffer
 		ids := hc.GetSortedIDs()
-		//fmt.Fprintf(w, "Available Modbus IDs: %v\r\n", ids)
 		for _, id := range ids {
 			v, err := hc.GetLast(id)
 			if err != nil {
@@ -32,15 +54,26 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 				fmt.Fprintf(w, err.Error())
 				return
 			}
-			fmt.Fprintf(w, "\r\n\r\nModbus ID %d, last measurement taken %s:\r\n",
+			fmt.Fprintf(&buffer, "\r\n\r\nModbus ID %d, last measurement taken %s:\r\n",
 				v.ModbusDeviceId, v.Timestamp.Format(time.RFC850))
-			table := tablewriter.NewWriter(w)
+			table := tablewriter.NewWriter(&buffer)
 			table.SetHeader([]string{"Phase", "Voltage [V]", "Current [A]", "Power [W]", "Power Factor", "Import [kWh]", "Export [kWh]"})
 			table.Append([]string{"L1", fF(v.Voltage.L1), fF(v.Current.L1), fF(v.Power.L1), fF(v.Cosphi.L1), fF(v.Import.L1), fF(v.Export.L1)})
 			table.Append([]string{"L2", fF(v.Voltage.L2), fF(v.Current.L2), fF(v.Power.L2), fF(v.Cosphi.L2), fF(v.Import.L2), fF(v.Export.L2)})
 			table.Append([]string{"L3", fF(v.Voltage.L3), fF(v.Current.L3), fF(v.Power.L3), fF(v.Cosphi.L3), fF(v.Import.L3), fF(v.Export.L3)})
 			table.Append([]string{"ALL", "n/a", fF(v.Current.L1 + v.Current.L2 + v.Current.L3), fF(v.Power.L1 + v.Power.L2 + v.Power.L3), "n/a", fF(v.Import.L1 + v.Import.L2 + v.Import.L3), fF(v.Export.L1 + v.Export.L2 + v.Export.L3)})
 			table.Render()
+		}
+		data := struct {
+			Content        string
+			ReloadInterval int
+		}{
+			Content:        buffer.String(),
+			ReloadInterval: 2,
+		}
+		err := t.Execute(w, data)
+		if err != nil {
+			log.Fatal("Failed to render main page: ", err.Error())
 		}
 	})
 }

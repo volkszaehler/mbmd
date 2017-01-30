@@ -52,9 +52,9 @@ type Readings struct {
 }
 
 type ThreePhaseReadings struct {
-	L1 float32
-	L2 float32
-	L3 float32
+	L1 float64
+	L2 float64
+	L3 float64
 }
 
 func (r *Readings) String() string {
@@ -138,7 +138,7 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
 * Dive a reading by an integer. The individual values are divided except
 * for the time: it is simply copied over to the result
  */
-func (lhs *Readings) divide(scalar float32) (retval Readings) {
+func (lhs *Readings) divide(scalar float64) (retval Readings) {
 	retval = Readings{
 		Voltage: ThreePhaseReadings{
 			L1: lhs.Voltage.L1 / scalar,
@@ -191,14 +191,22 @@ func (r ReadingSlice) NotOlderThan(ts time.Time) (retval ReadingSlice) {
  */
 
 type QuerySnip struct {
-	DeviceId uint8
-	OpCode   uint16
-	Value    float32
+	DeviceId      uint8
+	OpCode        uint16
+	Value         float64
+	ReadTimestamp time.Time
 }
 
 type QuerySnipChannel chan QuerySnip
 
+/**
+ * MergeSnip adds the values represented by the QuerySnip to the
+ * Readings. It also updates the current time stamp with the actual
+ * time.
+ */
 func (r *Readings) MergeSnip(q QuerySnip) {
+	r.Timestamp = q.ReadTimestamp
+	r.Unix = r.Timestamp.Unix()
 	switch q.OpCode {
 	case OpCodeL1Voltage:
 		r.Voltage.L1 = q.Value

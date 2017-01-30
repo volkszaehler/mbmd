@@ -17,7 +17,7 @@ type QueryEngine struct {
 	client       modbus.Client
 	handler      *modbus.RTUClientHandler
 	inputStream  QuerySnipChannel
-	outputStream ReadingChannel
+	outputStream QuerySnipChannel
 	devids       []uint8
 	verbose      bool
 	status       *Status
@@ -27,7 +27,7 @@ func NewQueryEngine(
 	rtuDevice string,
 	verbose bool,
 	inputChannel QuerySnipChannel,
-	outputChannel ReadingChannel,
+	outputChannel QuerySnipChannel,
 	devids []uint8,
 	status *Status,
 ) *QueryEngine {
@@ -61,19 +61,19 @@ func NewQueryEngine(
 	}
 }
 
-func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float32,
+func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float64,
 	err error) {
 	q.status.IncreaseModbusRequestCounter()
 	results, err := q.client.ReadInputRegisters(opcode, 2)
 	if err == nil {
-		retval = rtuToFload32(results)
+		retval = rtuToFloat64(results)
 	} else if q.verbose {
 		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", opcode, err.Error())
 	}
 	return retval, err
 }
 
-func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
+func (q *QueryEngine) queryOrFail(opcode uint16) (retval float64) {
 	var err error
 	tryCnt := 0
 	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
@@ -94,64 +94,27 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float32) {
 }
 
 func (q *QueryEngine) Transform() {
+	var previousDeviceId uint8 = 0
 	for {
 		snip := <-q.inputStream
 		q.handler.SlaveId = snip.DeviceId
+		// apparently the turnaround timeout must be respected
+		// See http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
+		// 3.5 chars at 9600 Baud take 36 ms
+		if previousDeviceId != snip.DeviceId {
+			time.Sleep(time.Duration(40) * time.Millisecond)
+		}
+		previousDeviceId = snip.DeviceId
 		value := q.queryOrFail(snip.OpCode)
 		snip.Value = value
-		log.Printf("Snip: %s", snip)
-
-		//		//start := time.Now()
-		//		for _, devid := range q.devids {
-		//			// Set the current device id as "slave id" in the modbus rtu
-		//			// library. Somewhat ugly...
-		//			q.handler.SlaveId = devid
-		//			timestamp := time.Now()
-		//			q.outputStream <- Readings{
-		//				Timestamp:      timestamp,
-		//				Unix:           timestamp.Unix(),
-		//				ModbusDeviceId: devid,
-		//				Voltage: ThreePhaseReadings{
-		//					L1: q.queryOrFail(OpCodeL1Voltage),
-		//					L2: q.queryOrFail(OpCodeL2Voltage),
-		//					L3: q.queryOrFail(OpCodeL3Voltage),
-		//				},
-		//				Current: ThreePhaseReadings{
-		//					L1: q.queryOrFail(OpCodeL1Current),
-		//					L2: q.queryOrFail(OpCodeL2Current),
-		//					L3: q.queryOrFail(OpCodeL3Current),
-		//				},
-		//				Power: ThreePhaseReadings{
-		//					L1: q.queryOrFail(OpCodeL1Power),
-		//					L2: q.queryOrFail(OpCodeL2Power),
-		//					L3: q.queryOrFail(OpCodeL3Power),
-		//				},
-		//				Cosphi: ThreePhaseReadings{
-		//					L1: q.queryOrFail(OpCodeL1Cosphi),
-		//					L2: q.queryOrFail(OpCodeL2Cosphi),
-		//					L3: q.queryOrFail(OpCodeL3Cosphi),
-		//				},
-		//				Import: ThreePhaseReadings{
-		//					L1: q.queryOrFail(OpCodeL1Import),
-		//					L2: q.queryOrFail(OpCodeL2Import),
-		//					L3: q.queryOrFail(OpCodeL3Import),
-		//				},
-		//				Export: ThreePhaseReadings{
-		//					L1: q.queryOrFail(OpCodeL1Export),
-		//					L2: q.queryOrFail(OpCodeL2Export),
-		//					L3: q.queryOrFail(OpCodeL3Export),
-		//				},
-		//			}
-		//			time.Sleep(20 * time.Millisecond)
-		//		}
-		//		//elapsed := time.Since(start)
-		//		//log.Printf("Reading all values took %s", elapsed)
+		snip.ReadTimestamp = time.Now()
+		q.outputStream <- snip
 	}
 	q.handler.Close()
 }
 
-func rtuToFload32(b []byte) (f float32) {
+func rtuToFloat64(b []byte) float64 {
 	bits := binary.BigEndian.Uint32(b)
-	f = math.Float32frombits(bits)
-	return
+	f := math.Float32frombits(bits)
+	return float64(f)
 }

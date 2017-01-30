@@ -33,13 +33,13 @@ func NewDeviceReadings(secondsToStore time.Duration, isVerbose bool) (retval *De
 }
 
 type MeasurementCache struct {
-	datastream     ReadingChannel
+	datastream     QuerySnipChannel
 	deviceReadings map[uint8]*DeviceReadings
 	secondsToStore time.Duration
 	verbose        bool
 }
 
-func NewMeasurementCache(ds ReadingChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
+func NewMeasurementCache(ds QuerySnipChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
 	return &MeasurementCache{
 		datastream:     ds,
 		deviceReadings: make(map[uint8]*DeviceReadings),
@@ -50,13 +50,21 @@ func NewMeasurementCache(ds ReadingChannel, secondsToStore time.Duration, isVerb
 
 func (mc *MeasurementCache) Consume() {
 	for {
-		reading := <-mc.datastream
-		devid := reading.ModbusDeviceId
+		snip := <-mc.datastream
+		devid := snip.DeviceId
 		if devreading, ok := mc.deviceReadings[devid]; ok {
 			// The device has already a DeviceReadings object
+			// 1. Merge the snip to the last values.
+			reading := devreading.lastreading
+			reading.MergeSnip(snip)
+			// 2. store it
 			devreading.lastreading = reading
 			devreading.lastminutereadings = append(devreading.lastminutereadings, reading)
 		} else {
+			reading := Readings{
+				ModbusDeviceId: devid,
+			}
+			reading.MergeSnip(snip)
 			// create a new DeviceReadings object
 			mc.deviceReadings[devid] = NewDeviceReadings(mc.secondsToStore,
 				mc.verbose)
@@ -103,7 +111,7 @@ func (mc *MeasurementCache) GetMinuteAvg(id byte) (Readings, error) {
 			return avg, err
 		}
 	}
-	retval := avg.divide(float32(len(lastminute)))
+	retval := avg.divide(float64(len(lastminute)))
 	if mc.verbose {
 		log.Printf("Averaging over %d measurements:\r\n%s\r\n",
 			len(measurements), retval.String())
