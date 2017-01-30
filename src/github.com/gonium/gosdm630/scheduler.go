@@ -34,6 +34,10 @@ func (s *RoundRobinScheduler) Produce() {
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Current, Value: math.NaN()}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Current, Value: math.NaN()}
 
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Power, Value: math.NaN()}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Power, Value: math.NaN()}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Power, Value: math.NaN()}
+
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Cosphi, Value: math.NaN()}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Cosphi, Value: math.NaN()}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Cosphi, Value: math.NaN()}

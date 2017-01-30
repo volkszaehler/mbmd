@@ -220,6 +220,12 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		r.Current.L2 = q.Value
 	case OpCodeL3Current:
 		r.Current.L3 = q.Value
+	case OpCodeL1Power:
+		r.Power.L1 = q.Value
+	case OpCodeL2Power:
+		r.Power.L2 = q.Value
+	case OpCodeL3Power:
+		r.Power.L3 = q.Value
 	case OpCodeL1Cosphi:
 		r.Cosphi.L1 = q.Value
 	case OpCodeL2Cosphi:
