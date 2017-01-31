@@ -32,9 +32,21 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/jcuga/golongpoll",
+			"repository": "https://github.com/jcuga/golongpoll",
+			"revision": "6f70b008d155ed04693bcb8ebe0b693820bebee5",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/mattn/go-runewidth",
 			"repository": "https://github.com/mattn/go-runewidth",
 			"revision": "737072b4e32b7a5018b4a7125da8d12de90e8045",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/nu7hatch/gouuid",
+			"repository": "https://github.com/nu7hatch/gouuid",
+			"revision": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3",
 			"branch": "master"
 		},
 		{

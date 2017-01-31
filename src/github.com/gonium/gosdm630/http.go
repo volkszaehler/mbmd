@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jcuga/golongpoll"
 	"github.com/olekukonko/tablewriter"
 	"html/template"
 	"log"
@@ -175,7 +176,50 @@ func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	})
 }
 
-func Run_httpd(mc *MeasurementCache, s *Status, url string) {
+type Firehose struct {
+	lpManager *golongpoll.LongpollManager
+	in        QuerySnipChannel
+}
+
+func NewFirehose(inChannel QuerySnipChannel, verbose bool) *Firehose {
+	// see https://github.com/jcuga/golongpoll/blob/master/longpoll.go#L81
+	options := golongpoll.Options{
+		LoggingEnabled:                 false,
+		MaxLongpollTimeoutSeconds:      60,
+		MaxEventBufferSize:             250,
+		EventTimeToLiveSeconds:         60,
+		DeleteEventAfterFirstRetrieval: true,
+	}
+	if verbose {
+		options.LoggingEnabled = true
+	}
+	manager, err := golongpoll.StartLongpoll(options)
+	if err != nil {
+		log.Fatalf("Failed to create firehose longpoll manager: %q", err)
+	}
+	return &Firehose{
+		lpManager: manager,
+		in:        inChannel,
+	}
+}
+
+func (f *Firehose) Run() {
+	for {
+		snip := <-f.in
+		f.lpManager.Publish("all", snip)
+	}
+}
+
+func (f *Firehose) GetHandler() func(w http.ResponseWriter, r *http.Request) {
+	return f.lpManager.SubscriptionHandler
+}
+
+func Run_httpd(
+	mc *MeasurementCache,
+	firehose *Firehose,
+	s *Status,
+	url string,
+) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", MkIndexHandler(mc))
 	router.HandleFunc("/last", MkLastAllValuesHandler(mc))
@@ -183,5 +227,6 @@ func Run_httpd(mc *MeasurementCache, s *Status, url string) {
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgAllHandler(mc))
 	router.HandleFunc("/minuteavg/{id:[0-9]+}", MkLastMinuteAvgSingleHandler(mc))
 	router.HandleFunc("/status", MkStatusHandler(s))
+	router.HandleFunc("/firehose", firehose.GetHandler())
 	log.Fatal(http.ListenAndServe(url, router))
 }

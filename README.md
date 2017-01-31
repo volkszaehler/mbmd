@@ -362,4 +362,21 @@ my sitemap contains the following lines:
 
 This draws a chart of all items in the ``Power_Chart`` group.
 
+## Firehose
 
+The firehose enables you to observe the data read from the smart meter
+in realtime: as soon as a new value is available, you will be notified.
+We're using [HTTP Long Polling as described in RFC
+6202](https://tools.ietf.org/html/rfc6202) for the data transfer. This
+essentially means that you can connect to an HTTP endpoint. The server
+will accept the connection and send you the new values as soon as they
+are available. Then, you either reconnect or use the same TCP connection
+for the next request. If you want to get all values, you can do the
+following:
+
+    $ while true; do curl --silent "http://localhost:8080/firehose?timeout=45&category=all" | jq; done
+
+This requests the last values in a loop with curl and pipes the result
+through jq. Of course this also closes the connection after each reply,
+so this is rather costly. In production you can leave the connection
+intact and reuse it.

@@ -51,12 +51,13 @@ func main() {
 		status := sdm630.NewStatus()
 
 		// Create Channels that link the goroutines
-		var sq = make(sdm630.QuerySnipChannel)
-		//		var rc = make(sdm630.ReadingChannel)
-		var rc = make(sdm630.QuerySnipChannel)
+		var scheduler2queryengine = make(sdm630.QuerySnipChannel)
+		var queryengine2duplicator = make(sdm630.QuerySnipChannel)
+		var duplicator2cache = make(sdm630.QuerySnipChannel)
+		var duplicator2firehose = make(sdm630.QuerySnipChannel)
 
 		scheduler := sdm630.NewRoundRobinScheduler(
-			sq,
+			scheduler2queryengine,
 			devids,
 		)
 		go scheduler.Produce()
@@ -64,22 +65,43 @@ func main() {
 		qe := sdm630.NewQueryEngine(
 			c.String("serialadapter"),
 			c.Bool("verbose"),
-			sq,
-			rc,
+			scheduler2queryengine,
+			queryengine2duplicator,
 			devids,
 			status,
 		)
 		go qe.Transform()
 
+		// This is the duplicator
+		go func(in sdm630.QuerySnipChannel,
+			out1 sdm630.QuerySnipChannel,
+			out2 sdm630.QuerySnipChannel,
+		) {
+			for {
+				snip := <-in
+				out1 <- snip
+				out2 <- snip
+			}
+		}(queryengine2duplicator, duplicator2cache, duplicator2firehose)
+
+		firehose := sdm630.NewFirehose(duplicator2firehose,
+			c.Bool("verbose"))
+		go firehose.Run()
+
 		mc := sdm630.NewMeasurementCache(
-			rc,
+			duplicator2cache,
 			120*time.Second, // TODO: How long to store data in the cache?.
 			c.Bool("verbose"),
 		)
 		go mc.Consume()
 
 		log.Printf("Starting API httpd at %s", c.String("url"))
-		sdm630.Run_httpd(mc, status, c.String("url"))
+		sdm630.Run_httpd(
+			mc,
+			firehose,
+			status,
+			c.String("url"),
+		)
 	}
 
 	app.Run(os.Args)
