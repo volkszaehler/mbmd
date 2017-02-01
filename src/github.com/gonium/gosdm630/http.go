@@ -206,6 +206,7 @@ func NewFirehose(inChannel QuerySnipChannel, verbose bool) *Firehose {
 func (f *Firehose) Run() {
 	for {
 		snip := <-f.in
+		// TODO: Convert snip into external representation
 		f.lpManager.Publish("all", snip)
 	}
 }
