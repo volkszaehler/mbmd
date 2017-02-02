@@ -28,15 +28,6 @@ type eventResponse struct {
 	Events *[]lpEvent `json:"events"`
 }
 
-func handleEvents(rawevents []byte) {
-	var events eventResponse
-	err := json.Unmarshal(rawevents, &events)
-	if err != nil {
-		log.Fatal("Failed to decode JSON events: ", err.Error())
-	}
-	log.Printf("%+v", events)
-}
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "sdm630_monitor"
@@ -59,12 +50,19 @@ func main() {
 			Value: 45,
 			Usage: "timeout value in seconds",
 		},
+		cli.IntFlag{
+			Name:  "device, d",
+			Usage: "specify the MODBUS id of the device to monitor",
+		},
 		cli.BoolFlag{
 			Name:  "verbose, v",
 			Usage: "print verbose messages",
 		},
 	}
 	app.Action = func(c *cli.Context) {
+		if !c.IsSet("device") {
+			log.Fatal("No device id given -- aborting. See --help for more information")
+		}
 		endpointUrl :=
 			fmt.Sprintf("http://%s/firehose?timeout=%d&category=%s",
 				c.String("url"), c.Int("timeout"), c.String("category"))
@@ -91,12 +89,31 @@ func main() {
 			if err != nil {
 				log.Fatal("Failed to read from endpoint: ", err.Error())
 			}
-			events, err := ioutil.ReadAll(resp.Body)
+			rawevents, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				log.Fatal("Failed to process message: ", err.Error())
 			} else {
 				// handle the events.
-				handleEvents(events)
+				var events eventResponse
+				err := json.Unmarshal(rawevents, &events)
+				if err != nil {
+					log.Fatal("Failed to decode JSON events: ", err.Error())
+				}
+				for _, event := range *events.Events {
+					snip := event.Data
+					if snip.DeviceId == uint8(c.Int("device")) {
+						if snip.IEC61850 == "WLocPhsA" {
+							log.Printf("Device %d: L1 %.2f W", snip.DeviceId, snip.Value)
+						}
+						if snip.IEC61850 == "WLocPhsB" {
+							log.Printf("Device %d: L2 %.2f W", snip.DeviceId, snip.Value)
+						}
+						if snip.IEC61850 == "WLocPhsC" {
+							log.Printf("Device %d: L3 %.2f W", snip.DeviceId, snip.Value)
+						}
+					}
+				}
+
 			}
 			if resp.Body != nil {
 				resp.Body.Close()
