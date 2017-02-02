@@ -194,7 +194,8 @@ type QuerySnip struct {
 	DeviceId      uint8
 	OpCode        uint16 `json:"-"`
 	Value         float64
-	Unit          string
+	IEC61850      string
+	Description   string
 	ReadTimestamp time.Time
 }
 

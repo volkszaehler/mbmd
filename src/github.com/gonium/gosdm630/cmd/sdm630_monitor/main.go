@@ -1,8 +1,9 @@
 package main
 
 import (
-	//"github.com/gonium/gosdm630"
+	"encoding/json"
 	"fmt"
+	"github.com/gonium/gosdm630"
 	"gopkg.in/urfave/cli.v1"
 	"io/ioutil"
 	"log"
@@ -11,6 +12,30 @@ import (
 	"os"
 	"time"
 )
+
+// Copied from
+// https://github.com/jcuga/golongpoll/blob/master/events.go:
+type lpEvent struct {
+	// Timestamp is milliseconds since epoch to match javascrits Date.getTime()
+	Timestamp int64  `json:"timestamp"`
+	Category  string `json:"category"`
+	// NOTE: Data can be anything that is able to passed to json.Marshal()
+	Data sdm630.QuerySnip `json:"data"`
+}
+
+// eventResponse is the json response that carries longpoll events.
+type eventResponse struct {
+	Events *[]lpEvent `json:"events"`
+}
+
+func handleEvents(rawevents []byte) {
+	var events eventResponse
+	err := json.Unmarshal(rawevents, &events)
+	if err != nil {
+		log.Fatal("Failed to decode JSON events: ", err.Error())
+	}
+	log.Printf("%+v", events)
+}
 
 func main() {
 	app := cli.NewApp()
@@ -49,12 +74,16 @@ func main() {
 		client := &http.Client{
 			Timeout: time.Duration(c.Int("timeout")) * time.Second,
 			Transport: &http.Transport{
-				MaxIdleConnsPerHost: 20,
+				// 0 means: no limit.
+				MaxIdleConns:        0,
+				MaxIdleConnsPerHost: 0,
+				IdleConnTimeout:     0,
 				Dial: (&net.Dialer{
 					Timeout:   30 * time.Second,
-					KeepAlive: 30 * time.Second,
+					KeepAlive: time.Minute,
 				}).Dial,
 				TLSHandshakeTimeout: 10 * time.Second,
+				DisableKeepAlives:   false,
 			},
 		}
 		for {
@@ -66,7 +95,8 @@ func main() {
 			if err != nil {
 				log.Fatal("Failed to process message: ", err.Error())
 			} else {
-				log.Printf(string(events))
+				// handle the events.
+				handleEvents(events)
 			}
 			if resp.Body != nil {
 				resp.Body.Close()

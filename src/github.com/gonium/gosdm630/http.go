@@ -229,5 +229,12 @@ func Run_httpd(
 	router.HandleFunc("/minuteavg/{id:[0-9]+}", MkLastMinuteAvgSingleHandler(mc))
 	router.HandleFunc("/status", MkStatusHandler(s))
 	router.HandleFunc("/firehose", firehose.GetHandler())
-	log.Fatal(http.ListenAndServe(url, router))
+	srv := http.Server{
+		Addr:         url,
+		Handler:      router,
+		ReadTimeout:  time.Minute,
+		WriteTimeout: time.Minute,
+	}
+	srv.SetKeepAlivesEnabled(true)
+	log.Fatal(srv.ListenAndServe())
 }
