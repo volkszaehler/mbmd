@@ -1,10 +1,17 @@
-# A HTTP interface to the SDM630-MODBUS smart meter
+# A HTTP interface to the Eastron SDM-MODBUS smart meter series
 
-This project provides a http interface to the Eastron SDM630 smart
-meter. The smart meter comes in many flavours - make sure to get the "MODBUS"
-version. The SDM630-MODBUS exposes all measured values over an RS485
+This project provides a http interface to the Eastron SDM smart
+meter series with MODBUS interface. The smart meter comes in many flavours - make sure to get the "MODBUS"
+version. These meters exposes all measured values over an RS485
 connection, making it very easy to integrate it into your home
 automation system.
+
+Suported Devices:
+
+ * SDM120
+ * SDM220, SDM230
+ * SDM530
+ * SDM630 v1 and v2, both MID and non-MID
 
 Table of Contents:
 
