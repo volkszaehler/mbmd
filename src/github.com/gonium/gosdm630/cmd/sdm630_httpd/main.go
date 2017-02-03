@@ -22,6 +22,15 @@ func main() {
 			Value: "/dev/ttyUSB0",
 			Usage: "path to serial RTU device",
 		},
+		cli.IntFlag{
+			Name:  "comset, c",
+			Value: 2,
+			Usage: `which communication settings to use. Valid settings are
+		1:  1200 baud, 8N1
+		2:  9600 baud, 8N1
+		3: 19200 baud, 8N1
+			`,
+		},
 		cli.StringFlag{
 			Name:  "url, u",
 			Value: ":8080",
@@ -34,7 +43,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "device_list, d",
 			Value: "1",
-			Usage: "MODBUS device ID to query",
+			Usage: "MODBUS device ID to query, separated by comma. Example: -d 11,12,13",
 		},
 	}
 	app.Action = func(c *cli.Context) {
@@ -64,6 +73,7 @@ func main() {
 
 		qe := sdm630.NewQueryEngine(
 			c.String("serialadapter"),
+			c.Int("comset"),
 			c.Bool("verbose"),
 			scheduler2queryengine,
 			queryengine2duplicator,

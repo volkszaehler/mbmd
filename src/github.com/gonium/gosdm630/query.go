@@ -25,6 +25,7 @@ type QueryEngine struct {
 
 func NewQueryEngine(
 	rtuDevice string,
+	comset int,
 	verbose bool,
 	inputChannel QuerySnipChannel,
 	outputChannel QuerySnipChannel,
@@ -33,16 +34,27 @@ func NewQueryEngine(
 ) *QueryEngine {
 	// Modbus RTU/ASCII
 	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
-	rtuclient.BaudRate = 9600
+	// TODO: Switch based on comset
+	switch comset {
+	case 1:
+		rtuclient.BaudRate = 2400
+	case 2:
+		rtuclient.BaudRate = 9600
+	case 3:
+		rtuclient.BaudRate = 19200
+	default:
+		log.Fatal("Invalid communication set specified. See -h for help.")
+	}
 	rtuclient.DataBits = 8
 	rtuclient.Parity = "N"
 	rtuclient.StopBits = 1
-	// TODO: Add support for more than one slave ID.
 	rtuclient.SlaveId = devids[0]
 	rtuclient.Timeout = 1000 * time.Millisecond
 	if verbose {
 		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
-		log.Printf("Connecting to RTU via %s\r\n", rtuDevice)
+		log.Printf("Connecting to RTU via %s, %d %d%s%d\r\n", rtuDevice,
+			rtuclient.BaudRate, rtuclient.DataBits, rtuclient.Parity,
+			rtuclient.StopBits)
 	}
 
 	err := rtuclient.Connect()
@@ -88,7 +100,7 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float64) {
 		}
 	}
 	if tryCnt == MaxRetryCount {
-		log.Fatal("Cannot query the sensor, reached maximum retry count. Abort.")
+		log.Fatal("Cannot query the sensor, reached maximum retry count. Did you specify the correct device id and communication parameters?")
 	}
 	return retval
 }
