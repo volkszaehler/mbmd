@@ -6,14 +6,18 @@ version. These meters exposes all measured values over an RS485
 connection, making it very easy to integrate it into your home
 automation system.
 
-Suported Devices:
+## Suported Devices:
 
  * SDM120
  * SDM220, SDM230
  * SDM530
  * SDM630 v1 and v2, both MID and non-MID
 
-Table of Contents:
+Some of my test devices have been provided by [B+G
+E-Tech](http://bg-etech.de/) - please consider to buy your meter from
+them!
+
+# Table of Contents:
 
   * [How does it look like in OpenHAB?](#how-does-it-look-like-in-openhab)
   * [Installation](#installation)
