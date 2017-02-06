@@ -14,7 +14,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "sdm630_httpd"
 	app.Usage = "SDM630 power measurements via HTTP."
-	app.Version = "0.2.0"
+	app.Version = "0.3.0"
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
