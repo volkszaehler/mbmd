@@ -26,10 +26,19 @@ release-build: clean
 	@echo "Created binaries:"
 	@ls -1 bin
 
-
+release: release-build
+	@echo "Starting packaging"
+	@echo "... for Linux"
+	@zip sdm630-linux-386 bin/*-linux-386*
+	@zip sdm630-linux-amd64 bin/*-linux-amd64
+	@zip sdm630-linux-arm bin/*-linux-arm*
+	@echo "... for Mac OS"
+	@zip sdm630-darwin-amd64 bin/*-darwin-amd64
+	@echo "... for Windows"
+	@zip sdm630-windows-386 bin/*-windows-386*
 
 clean:
-	@rm -rf bin/ pkg/
+	@rm -rf bin/ pkg/ *.zip
 
 dep:
 	@echo "Installing GB build tool"
