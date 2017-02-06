@@ -26,7 +26,7 @@ func main() {
 			Name:  "comset, c",
 			Value: 2,
 			Usage: `which communication settings to use. Valid settings are
-		1:  1200 baud, 8N1
+		1:  2400 baud, 8N1
 		2:  9600 baud, 8N1
 		3: 19200 baud, 8N1
 			`,

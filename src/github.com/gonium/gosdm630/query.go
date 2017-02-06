@@ -40,7 +40,7 @@ func NewQueryEngine(
 		rtuclient.BaudRate = 2400
 	case 2:
 		rtuclient.BaudRate = 9600
-	case 3:
+	case 4:
 		rtuclient.BaudRate = 19200
 	default:
 		log.Fatal("Invalid communication set specified. See -h for help.")
