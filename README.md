@@ -1,14 +1,19 @@
 # A HTTP interface to the Eastron SDM-MODBUS smart meter series
 
 This project provides a http interface to the Eastron SDM smart
-meter series with MODBUS interface. The smart meter comes in many flavours - make sure to get the "MODBUS"
-version. These meters exposes all measured values over an RS485
-connection, making it very easy to integrate it into your home
-automation system.
+meter series with MODBUS interface. These smart meters are available in
+many flavours - make sure to get the "MODBUS" version. The meters
+exposes all measured values over an RS485 connection, making it very
+easy to integrate it into your home automation system. This repository
+contains software that reads the values over the RS485 connection and
+provides a HTTP interface to access them. Both a REST-style API and a
+streaming API are available.
 
 ## Suported Devices:
 
- * SDM120
+ * SDM120 (Note: Communication parameters can only be set over MODBUS,
+		 which is currently not supported by this project. You can use e.g.
+		 [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.)
  * SDM220, SDM230
  * SDM530
  * SDM630 v1 and v2, both MID and non-MID
@@ -373,7 +378,7 @@ my sitemap contains the following lines:
 
 This draws a chart of all items in the ``Power_Chart`` group.
 
-## Firehose
+## A streaming API: The Firehose
 
 The firehose enables you to observe the data read from the smart meter
 in realtime: as soon as a new value is available, you will be notified.
@@ -391,3 +396,12 @@ This requests the last values in a loop with curl and pipes the result
 through jq. Of course this also closes the connection after each reply,
 so this is rather costly. In production you can leave the connection
 intact and reuse it.
+
+We also provide a commandline utility to monitor single devices. If you
+run
+
+    $ ./bin/sdm630_monitor -d 23 -u localhost:8080
+
+it will connect to the firehose and print power readings for device 23.
+Please note that this is all it does, the monitor can serve as a
+starting point for your own experiments.
