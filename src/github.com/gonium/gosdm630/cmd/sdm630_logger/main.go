@@ -38,82 +38,140 @@ func main() {
 	app.Usage = "SDM630 Logger"
 	app.Version = "0.3.0"
 	app.HideVersion = true
-
+	// Global flags
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "url, u",
-			Value: "localhost:8080",
-			Usage: "the URL of the server we should connect to",
-		},
-		cli.StringFlag{
-			Name:  "category, c",
-			Value: "all",
-			Usage: "the firehose category to subscribe to",
-		},
-		cli.IntFlag{
-			Name:  "timeout, t",
-			Value: 45,
-			Usage: "timeout value in seconds",
-		},
 		cli.BoolFlag{
 			Name:  "verbose, v",
 			Usage: "print verbose messages",
 		},
 	}
-	app.Action = func(c *cli.Context) {
-		endpointUrl :=
-			fmt.Sprintf("http://%s/firehose?timeout=%d&category=%s",
-				c.String("url"), c.Int("timeout"), c.String("category"))
-		if c.Bool("verbose") {
-			log.Printf("Client startup - will connect to %s", endpointUrl)
-		}
-		client := &http.Client{
-			Timeout: time.Duration(c.Int("timeout")) * time.Second,
-			Transport: &http.Transport{
-				// 0 means: no limit.
-				MaxIdleConns:        0,
-				MaxIdleConnsPerHost: 0,
-				IdleConnTimeout:     0,
-				Dial: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: time.Minute,
-				}).Dial,
-				TLSHandshakeTimeout: 10 * time.Second,
-				DisableKeepAlives:   false,
+	app.Commands = []cli.Command{
+		{
+			Name:    "record",
+			Aliases: []string{"r"},
+			Usage:   "Record all measurements",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "url, u",
+					Value: "localhost:8080",
+					Usage: "the URL of the server we should connect to",
+				},
+				cli.StringFlag{
+					Name:  "category, c",
+					Value: "all",
+					Usage: "the firehose category to subscribe to",
+				},
+				cli.StringFlag{
+					Name:  "dbfile, f",
+					Value: "log.db",
+					Usage: "the database file to record to",
+				},
+				cli.IntFlag{
+					Name:  "timeout, t",
+					Value: 45,
+					Usage: "timeout value in seconds",
+				},
+				cli.IntFlag{
+					Name:  "sleeptime, s",
+					Value: 60 * 5,
+					Usage: "seconds to sleep between writes to disk",
+				},
 			},
-		}
-		for {
-			resp, err := client.Get(endpointUrl)
-			if err != nil {
-				log.Println("Failed to read from endpoint: ", err.Error())
-				time.Sleep(ERROR_WAITTIME_MS * time.Millisecond)
-				continue
-			}
-			rawevents, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Println("Failed to process message: ", err.Error())
-				continue
-			} else {
-				// handle the events.
-				var events eventResponse
-				err := json.Unmarshal(rawevents, &events)
-				if err != nil {
-					log.Println("Failed to decode JSON events: ", err.Error())
-					continue
+			Action: func(c *cli.Context) {
+				rec := NewRecorder(c.String("dbfile"), c.Int("sleeptime"))
+				go rec.Run()
+				endpointUrl :=
+					fmt.Sprintf("http://%s/firehose?timeout=%d&category=%s",
+						c.String("url"), c.Int("timeout"), c.String("category"))
+				if c.GlobalBool("verbose") {
+					log.Printf("recorder startup - will connect to %s", endpointUrl)
 				}
-				for _, event := range *events.Events {
-					snip := event.Data
-					if c.Bool("verbose") {
-						log.Printf("%s: device %d, %s: %.2f", snip.ReadTimestamp,
-							snip.DeviceId, snip.IEC61850, snip.Value)
+				client := &http.Client{
+					Timeout: time.Duration(c.Int("timeout")) * time.Second,
+					Transport: &http.Transport{
+						// 0 means: no limit.
+						MaxIdleConns:        0,
+						MaxIdleConnsPerHost: 0,
+						IdleConnTimeout:     0,
+						Dial: (&net.Dialer{
+							Timeout:   30 * time.Second,
+							KeepAlive: time.Minute,
+						}).Dial,
+						TLSHandshakeTimeout: 10 * time.Second,
+						DisableKeepAlives:   false,
+					},
+				}
+				for {
+					resp, err := client.Get(endpointUrl)
+					if err != nil {
+						log.Println("Failed to read from endpoint: ", err.Error())
+						time.Sleep(ERROR_WAITTIME_MS * time.Millisecond)
+						continue
+					}
+					rawevents, err := ioutil.ReadAll(resp.Body)
+					if err != nil {
+						log.Println("Failed to process message: ", err.Error())
+						continue
+					} else {
+						// handle the events.
+						var events eventResponse
+						err := json.Unmarshal(rawevents, &events)
+						if err != nil {
+							log.Println("Failed to decode JSON events: ", err.Error())
+							continue
+						}
+						for _, event := range *events.Events {
+							snip := event.Data
+							if c.GlobalBool("verbose") {
+								log.Printf("%s: device %d, %s: %.2f", snip.ReadTimestamp,
+									snip.DeviceId, snip.IEC61850, snip.Value)
+							}
+							rec.AddSnip(snip)
+						}
+
+					}
+					if resp.Body != nil {
+						resp.Body.Close()
 					}
 				}
+			},
+		},
+		{
+			Name:    "export",
+			Aliases: []string{"e"},
+			Usage:   "export all measurements",
+			Flags: []cli.Flag{
+				cli.IntFlag{
+					Name:  "timeout, t",
+					Value: 45,
+					Usage: "timeout value in seconds",
+				},
+			},
+			Action: func(c *cli.Context) {
+				if c.GlobalBool("verbose") {
+					log.Printf("exporter startup")
+				}
 
-			}
-			if resp.Body != nil {
-				resp.Body.Close()
-			}
-		}
+			},
+		},
+		{
+			Name:    "inspect",
+			Aliases: []string{"i"},
+			Usage:   "inspect a recorded database",
+			Flags: []cli.Flag{
+				cli.IntFlag{
+					Name:  "timeout, t",
+					Value: 45,
+					Usage: "timeout value in seconds",
+				},
+			},
+			Action: func(c *cli.Context) {
+				if c.GlobalBool("verbose") {
+					log.Printf("inspector startup")
+				}
+
+			},
+		},
 	}
 	app.Run(os.Args)
 }
