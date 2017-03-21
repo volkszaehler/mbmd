@@ -38,6 +38,7 @@ func main() {
 	app.Usage = "SDM630 Logger"
 	app.Version = "0.3.0"
 	app.HideVersion = true
+
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "url, u",
@@ -54,19 +55,12 @@ func main() {
 			Value: 45,
 			Usage: "timeout value in seconds",
 		},
-		cli.IntFlag{
-			Name:  "device, d",
-			Usage: "specify the MODBUS id of the device to monitor",
-		},
 		cli.BoolFlag{
 			Name:  "verbose, v",
 			Usage: "print verbose messages",
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		if !c.IsSet("device") {
-			log.Fatal("No device id given -- aborting. See --help for more information")
-		}
 		endpointUrl :=
 			fmt.Sprintf("http://%s/firehose?timeout=%d&category=%s",
 				c.String("url"), c.Int("timeout"), c.String("category"))
@@ -109,17 +103,9 @@ func main() {
 				}
 				for _, event := range *events.Events {
 					snip := event.Data
-					if snip.DeviceId == uint8(c.Int("device")) {
-						//TODO: Log all values
-						if snip.IEC61850 == "WLocPhsA" {
-							log.Printf("Device %d: L1 %.2f W", snip.DeviceId, snip.Value)
-						}
-						if snip.IEC61850 == "WLocPhsB" {
-							log.Printf("Device %d: L2 %.2f W", snip.DeviceId, snip.Value)
-						}
-						if snip.IEC61850 == "WLocPhsC" {
-							log.Printf("Device %d: L3 %.2f W", snip.DeviceId, snip.Value)
-						}
+					if c.Bool("verbose") {
+						log.Printf("%s: device %d, %s: %.2f", snip.ReadTimestamp,
+							snip.DeviceId, snip.IEC61850, snip.Value)
 					}
 				}
 
