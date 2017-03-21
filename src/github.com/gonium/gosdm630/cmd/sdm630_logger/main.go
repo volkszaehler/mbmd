@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+const (
+	ERROR_WAITTIME_MS = 100
+)
+
 // Copied from
 // https://github.com/jcuga/golongpoll/blob/master/events.go:
 type lpEvent struct {
@@ -88,6 +92,7 @@ func main() {
 			resp, err := client.Get(endpointUrl)
 			if err != nil {
 				log.Println("Failed to read from endpoint: ", err.Error())
+				time.Sleep(ERROR_WAITTIME_MS * time.Millisecond)
 				continue
 			}
 			rawevents, err := ioutil.ReadAll(resp.Body)
