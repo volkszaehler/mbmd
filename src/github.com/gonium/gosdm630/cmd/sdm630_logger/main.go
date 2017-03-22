@@ -78,8 +78,8 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) {
-				rec := NewRecorder(c.String("dbfile"), c.Int("sleeptime"))
-				go rec.Run()
+				db := NewSnipDB(c.String("dbfile"))
+				go db.RunRecorder(c.Int("sleeptime"))
 				endpointUrl :=
 					fmt.Sprintf("http://%s/firehose?timeout=%d&category=%s",
 						c.String("url"), c.Int("timeout"), c.String("category"))
@@ -126,7 +126,7 @@ func main() {
 								log.Printf("%s: device %d, %s: %.2f", snip.ReadTimestamp,
 									snip.DeviceId, snip.IEC61850, snip.Value)
 							}
-							rec.AddSnip(snip)
+							db.AddSnip(snip)
 						}
 
 					}
@@ -139,17 +139,31 @@ func main() {
 		{
 			Name:    "export",
 			Aliases: []string{"e"},
-			Usage:   "export all measurements",
+			Usage:   "export all measurements from a database",
 			Flags: []cli.Flag{
-				cli.IntFlag{
-					Name:  "timeout, t",
-					Value: 45,
-					Usage: "timeout value in seconds",
+				cli.StringFlag{
+					Name:  "dbfile, f",
+					Value: "log.db",
+					Usage: "the database file that contains all stored readings",
+				},
+				cli.StringFlag{
+					Name:  "tsv, t",
+					Value: "log.tsv",
+					Usage: "the TSV file to export to",
 				},
 			},
 			Action: func(c *cli.Context) {
 				if c.GlobalBool("verbose") {
 					log.Printf("exporter startup")
+				}
+				if c.GlobalBool("verbose") {
+					log.Printf("Exporting database %s into TSV file %s",
+						c.String("dbfile"), c.String("tsv"))
+				}
+				db := NewSnipDB(c.String("dbfile"))
+				err := db.ExportCSV(c.String("tsv"))
+				if err != nil {
+					log.Fatalf("%s", err.Error())
 				}
 
 			},
@@ -159,17 +173,21 @@ func main() {
 			Aliases: []string{"i"},
 			Usage:   "inspect a recorded database",
 			Flags: []cli.Flag{
-				cli.IntFlag{
-					Name:  "timeout, t",
-					Value: 45,
-					Usage: "timeout value in seconds",
+				cli.StringFlag{
+					Name:  "dbfile, f",
+					Value: "log.db",
+					Usage: "the database file to record to",
 				},
 			},
 			Action: func(c *cli.Context) {
 				if c.GlobalBool("verbose") {
-					log.Printf("inspector startup")
+					log.Printf("Inspecting database %s", c.String("dbfile"))
 				}
-
+				db := NewSnipDB(c.String("dbfile"))
+				err := db.Inspect(os.Stdout)
+				if err != nil {
+					log.Fatalf("%s", err.Error())
+				}
 			},
 		},
 	}
