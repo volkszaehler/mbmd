@@ -37,7 +37,6 @@ func (r *SnipDB) AddSnip(snip sdm630.QuerySnip) {
 	r.Lock()
 	defer r.Unlock()
 	r.snips = append(r.snips, snip)
-	log.Printf("Number of cached snips: %d", len(r.snips))
 }
 
 func (r *SnipDB) RunRecorder(sleepSeconds int) {

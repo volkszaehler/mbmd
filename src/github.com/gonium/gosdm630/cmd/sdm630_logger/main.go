@@ -73,7 +73,7 @@ func main() {
 				},
 				cli.IntFlag{
 					Name:  "sleeptime, s",
-					Value: 60 * 5,
+					Value: 60 * 2,
 					Usage: "seconds to sleep between writes to disk",
 				},
 			},
