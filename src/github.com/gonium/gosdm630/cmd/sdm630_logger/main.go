@@ -105,6 +105,7 @@ func main() {
 					resp, err := client.Get(endpointUrl)
 					if err != nil {
 						log.Println("Failed to read from endpoint: ", err.Error())
+						// TODO: Exponential backoff
 						time.Sleep(ERROR_WAITTIME_MS * time.Millisecond)
 						continue
 					}

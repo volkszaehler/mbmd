@@ -395,9 +395,35 @@ following:
 This requests the last values in a loop with curl and pipes the result
 through jq. Of course this also closes the connection after each reply,
 so this is rather costly. In production you can leave the connection
-intact and reuse it.
+intact and reuse it. A resulting reading looks like this:
 
-We also provide a commandline utility to monitor single devices. If you
+````json
+{
+  "events": [
+    {
+      "timestamp": 1490605909544,
+      "category": "all",
+      "data": {
+        "DeviceId": 12,
+        "Value": 0.054999999701976776,
+        "IEC61850": "TotkWhExportPhsB",
+        "Description": "L2 Export (kWh)",
+        "ReadTimestamp": "2017-03-27T11:11:49.544236817+02:00"
+      }
+    }
+  ]
+}
+
+````
+
+Please note that the ``events`` structure is formatted by the long
+polling library we use. The ``data`` element contains the information
+just read from the MODBUS device. Events are emitted as soon as they are
+received over the serial connection.
+
+### Stream Utilities
+
+We provide a simple command line utility to monitor single devices. If you
 run
 
     $ ./bin/sdm630_monitor -d 23 -u localhost:8080
@@ -405,3 +431,40 @@ run
 it will connect to the firehose and print power readings for device 23.
 Please note that this is all it does, the monitor can serve as a
 starting point for your own experiments.
+
+If you want to log data in the highest possible resolution you can use
+the ``sdm630_logger`` command:
+
+````
+$ sdm630_logger record -s 120 -f log.db
+````
+
+This will connect to the ``sdm630_httpd`` process on localhost and
+serialize all measurements into ``log.db``. Received values will be
+cached for 120 seconds and then written in bulk. We use
+[BoltDB](https://github.com/boltdb/bolt) for data storage in order to
+minimize runtime dependencies. You can use the ``inspect`` subcommand to
+get some information about the database:
+
+````
+$ ./bin/sdm630_logger inspect -f log.db
+Found 529 records:
+* First recorded on 2017-03-22 11:17:39.911271769 +0100 CET
+* Last recorded on 2017-03-22 11:39:10.099236381 +0100 CET
+````
+
+If you want to export the dataset to TSV, you can use the ``export``
+subcommand:
+
+````
+./bin/sdm630_logger export -t log.tsv -f log.db
+2017/03/27 11:22:23 Exported 529 records.
+````
+
+The ``sdm630_logger`` tool is still under development and lacks certain
+features. Please note that the storage functions are rather inefficient
+and require a lot of storage.
+
+
+
+
