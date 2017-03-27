@@ -13,6 +13,43 @@ const (
 	MaxRetryCount = 5
 )
 
+/***
+ * Opcodes as defined by Eastron.
+ * See http://bg-etech.de/download/manual/SDM630Register.pdf
+ * Please note that this is the superset of all SDM devices - some
+ * opcodes might not work on some devices.
+ */
+const (
+	OpCodeL1Voltage   = 0x0000
+	OpCodeL2Voltage   = 0x0002
+	OpCodeL3Voltage   = 0x0004
+	OpCodeL1Current   = 0x0006
+	OpCodeL2Current   = 0x0008
+	OpCodeL3Current   = 0x000A
+	OpCodeL1Power     = 0x000C
+	OpCodeL2Power     = 0x000E
+	OpCodeL3Power     = 0x0010
+	OpCodeL1Import    = 0x015a
+	OpCodeL2Import    = 0x015c
+	OpCodeL3Import    = 0x015e
+	OpCodeTotalImport = 0x0048
+	OpCodeL1Export    = 0x0160
+	OpCodeL2Export    = 0x0162
+	OpCodeL3Export    = 0x0164
+	OpCodeTotalExport = 0x004a
+	OpCodeL1Cosphi    = 0x001e
+	OpCodeL2Cosphi    = 0x0020
+	OpCodeL3Cosphi    = 0x0022
+	//OpCodeL1THDCurrent         = 0x00F0
+	//OpCodeL2THDCurrent         = 0x00F2
+	//OpCodeL3THDCurrent         = 0x00F4
+	//OpCodeAvgTHDCurrent        = 0x00Fa
+	OpCodeL1THDVoltageNeutral  = 0x00ea
+	OpCodeL2THDVoltageNeutral  = 0x00ec
+	OpCodeL3THDVoltageNeutral  = 0x00ee
+	OpCodeAvgTHDVoltageNeutral = 0x00F8
+)
+
 type ModbusEngine struct {
 	client       modbus.Client
 	handler      *modbus.RTUClientHandler
