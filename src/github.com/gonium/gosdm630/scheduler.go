@@ -17,8 +17,7 @@ func NewRoundRobinScheduler(
 	out QuerySnipChannel,
 	devices []uint8,
 ) *RoundRobinScheduler {
-	return &RoundRobinScheduler{
-		out:    out,
+	return &RoundRobinScheduler{out: out,
 		devids: devices,
 	}
 }
@@ -58,6 +57,16 @@ func (s *RoundRobinScheduler) Produce() {
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Export, Value: math.NaN(), Description: "L2 Export (kWh)", IEC61850: "TotkWhExportPhsB"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Export, Value: math.NaN(), Description: "L3 Export (kWh)", IEC61850: "TotkWhExportPhsC"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeTotalExport, Value: math.NaN(), Description: "Total Export (kWh)", IEC61850: "TotkWhExport"}
+
+			//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1THDCurrent, Value: math.NaN(), Description: "L1 Current THD (%)", IEC61850: "ThdAPhsA"}
+			//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2THDCurrent, Value: math.NaN(), Description: "L2 Current THD (%)", IEC61850: "ThdAPhsB"}
+			//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3THDCurrent, Value: math.NaN(), Description: "L3 Current THD (%)", IEC61850: "ThdAPhsC"}
+			//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeAvgTHDCurrent, Value: math.NaN(), Description: "Average current to neutral THD (%)", IEC61850: "ThdAmp"}
+
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1THDVoltageNeutral, Value: math.NaN(), Description: "L1 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsA"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2THDVoltageNeutral, Value: math.NaN(), Description: "L2 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsB"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3THDVoltageNeutral, Value: math.NaN(), Description: "L3 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsC"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeAvgTHDVoltageNeutral, Value: math.NaN(), Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"}
 		}
 	}
 }

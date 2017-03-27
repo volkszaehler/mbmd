@@ -32,7 +32,7 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
   </head>
   <body>
 		<pre>
-Reloading every {{.ReloadInterval}} seconds.
+SDM630 HTTP server, version {{.SoftwareVersion}}. Reloading every {{.ReloadInterval}} seconds.
 {{.Content}}
 		</pre>
   </body>
@@ -58,19 +58,31 @@ Reloading every {{.ReloadInterval}} seconds.
 			fmt.Fprintf(&buffer, "\r\n\r\nModbus ID %d, last measurement taken %s:\r\n",
 				v.ModbusDeviceId, v.Timestamp.Format(time.RFC850))
 			table := tablewriter.NewWriter(&buffer)
-			table.SetHeader([]string{"Phase", "Voltage [V]", "Current [A]", "Power [W]", "Power Factor", "Import [kWh]", "Export [kWh]"})
-			table.Append([]string{"L1", fF(v.Voltage.L1), fF(v.Current.L1), fF(v.Power.L1), fF(v.Cosphi.L1), fF(v.Import.L1), fF(v.Export.L1)})
-			table.Append([]string{"L2", fF(v.Voltage.L2), fF(v.Current.L2), fF(v.Power.L2), fF(v.Cosphi.L2), fF(v.Import.L2), fF(v.Export.L2)})
-			table.Append([]string{"L3", fF(v.Voltage.L3), fF(v.Current.L3), fF(v.Power.L3), fF(v.Cosphi.L3), fF(v.Import.L3), fF(v.Export.L3)})
-			table.Append([]string{"ALL", "n/a", fF(v.Current.L1 + v.Current.L2 + v.Current.L3), fF(v.Power.L1 + v.Power.L2 + v.Power.L3), "n/a", fF(v.TotalImport), fF(v.TotalExport)})
+			table.SetHeader([]string{"Phase", "Voltage [V]", "Current [A]",
+				"Power [W]", "Power Factor", "Import [kWh]", "Export [kWh]",
+				"THD Voltage (Neutral) [%]"})
+			table.Append([]string{"L1", fF(v.Voltage.L1), fF(v.Current.L1),
+				fF(v.Power.L1), fF(v.Cosphi.L1), fF(v.Import.L1),
+				fF(v.Export.L1), fF(v.THD.VoltageNeutral.L1)})
+			table.Append([]string{"L2", fF(v.Voltage.L2), fF(v.Current.L2),
+				fF(v.Power.L2), fF(v.Cosphi.L2), fF(v.Import.L2),
+				fF(v.Export.L2), fF(v.THD.VoltageNeutral.L2)})
+			table.Append([]string{"L3", fF(v.Voltage.L3), fF(v.Current.L3),
+				fF(v.Power.L3), fF(v.Cosphi.L3), fF(v.Import.L3),
+				fF(v.Export.L3), fF(v.THD.VoltageNeutral.L3)})
+			table.Append([]string{"ALL", "n/a", fF(v.Current.L1 + v.Current.L2 + v.Current.L3),
+				fF(v.Power.L1 + v.Power.L2 + v.Power.L3), "n/a", fF(v.TotalImport),
+				fF(v.TotalExport), fF(v.THD.AvgVoltageNeutral)})
 			table.Render()
 		}
 		data := struct {
-			Content        string
-			ReloadInterval int
+			Content         string
+			ReloadInterval  int
+			SoftwareVersion string
 		}{
-			Content:        buffer.String(),
-			ReloadInterval: 2,
+			Content:         buffer.String(),
+			ReloadInterval:  2,
+			SoftwareVersion: RELEASEVERSION,
 		}
 		err := t.Execute(w, data)
 		if err != nil {

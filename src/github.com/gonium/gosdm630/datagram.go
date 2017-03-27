@@ -11,7 +11,7 @@ import (
  * Opcodes as defined by Eastron.
  * See http://bg-etech.de/download/manual/SDM630Register.pdf
  * Please note that this is the superset of all SDM devices - some
- * opcodes might not work.
+ * opcodes might not work on some devices.
  */
 const (
 	OpCodeL1Voltage   = 0x0000
@@ -34,6 +34,14 @@ const (
 	OpCodeL1Cosphi    = 0x001e
 	OpCodeL2Cosphi    = 0x0020
 	OpCodeL3Cosphi    = 0x0022
+	//OpCodeL1THDCurrent         = 0x00F0
+	//OpCodeL2THDCurrent         = 0x00F2
+	//OpCodeL3THDCurrent         = 0x00F4
+	//OpCodeAvgTHDCurrent        = 0x00Fa
+	OpCodeL1THDVoltageNeutral  = 0x00ea
+	OpCodeL2THDVoltageNeutral  = 0x00ec
+	OpCodeL3THDVoltageNeutral  = 0x00ee
+	OpCodeAvgTHDVoltageNeutral = 0x00F8
 )
 
 /***
@@ -55,6 +63,12 @@ type Readings struct {
 	TotalImport    float64
 	Export         ThreePhaseReadings
 	TotalExport    float64
+	THD            struct {
+		//	Current           ThreePhaseReadings
+		//	AvgCurrent        float64
+		VoltageNeutral    ThreePhaseReadings
+		AvgVoltageNeutral float64
+	}
 }
 
 type ThreePhaseReadings struct {
@@ -256,7 +270,25 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		r.Export.L3 = q.Value
 	case OpCodeTotalExport:
 		r.TotalExport = q.Value
+		//	case OpCodeL1THDCurrent:
+		//		r.THD.Current.L1 = q.Value
+		//	case OpCodeL2THDCurrent:
+		//		r.THD.Current.L2 = q.Value
+		//	case OpCodeL3THDCurrent:
+		//		r.THD.Current.L3 = q.Value
+		//	case OpCodeAvgTHDCurrent:
+		//		r.THD.AvgCurrent = q.Value
+	case OpCodeL1THDVoltageNeutral:
+		r.THD.VoltageNeutral.L1 = q.Value
+	case OpCodeL2THDVoltageNeutral:
+		r.THD.VoltageNeutral.L2 = q.Value
+	case OpCodeL3THDVoltageNeutral:
+		r.THD.VoltageNeutral.L3 = q.Value
+	case OpCodeAvgTHDVoltageNeutral:
+		r.THD.AvgVoltageNeutral = q.Value
+
 	}
+
 }
 
 func (q QuerySnip) String() string {

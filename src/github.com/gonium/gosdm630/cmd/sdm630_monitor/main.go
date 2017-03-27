@@ -32,7 +32,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "sdm630_monitor"
 	app.Usage = "SDM630 monitor"
-	app.Version = "0.3.0"
+	app.Version = sdm630.RELEASEVERSION
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

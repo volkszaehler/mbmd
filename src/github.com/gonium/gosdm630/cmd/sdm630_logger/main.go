@@ -36,7 +36,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "sdm630_logger"
 	app.Usage = "SDM630 Logger"
-	app.Version = "0.3.0"
+	app.Version = sdm630.RELEASEVERSION
 	app.HideVersion = true
 	// Global flags
 	app.Flags = []cli.Flag{
