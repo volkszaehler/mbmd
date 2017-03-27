@@ -16,7 +16,7 @@ import (
 // formatFloat helper
 func fF(val float64) string {
 	var buffer bytes.Buffer
-	fmt.Fprintf(&buffer, "%.2f", val)
+	fmt.Fprintf(&buffer, "%.3f", val)
 	return buffer.String()
 }
 
@@ -62,7 +62,7 @@ Reloading every {{.ReloadInterval}} seconds.
 			table.Append([]string{"L1", fF(v.Voltage.L1), fF(v.Current.L1), fF(v.Power.L1), fF(v.Cosphi.L1), fF(v.Import.L1), fF(v.Export.L1)})
 			table.Append([]string{"L2", fF(v.Voltage.L2), fF(v.Current.L2), fF(v.Power.L2), fF(v.Cosphi.L2), fF(v.Import.L2), fF(v.Export.L2)})
 			table.Append([]string{"L3", fF(v.Voltage.L3), fF(v.Current.L3), fF(v.Power.L3), fF(v.Cosphi.L3), fF(v.Import.L3), fF(v.Export.L3)})
-			table.Append([]string{"ALL", "n/a", fF(v.Current.L1 + v.Current.L2 + v.Current.L3), fF(v.Power.L1 + v.Power.L2 + v.Power.L3), "n/a", fF(v.Import.L1 + v.Import.L2 + v.Import.L3), fF(v.Export.L1 + v.Export.L2 + v.Export.L3)})
+			table.Append([]string{"ALL", "n/a", fF(v.Current.L1 + v.Current.L2 + v.Current.L3), fF(v.Power.L1 + v.Power.L2 + v.Power.L3), "n/a", fF(v.TotalImport), fF(v.TotalExport)})
 			table.Render()
 		}
 		data := struct {

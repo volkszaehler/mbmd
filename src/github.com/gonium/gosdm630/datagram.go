@@ -10,26 +10,30 @@ import (
 /***
  * Opcodes as defined by Eastron.
  * See http://bg-etech.de/download/manual/SDM630Register.pdf
+ * Please note that this is the superset of all SDM devices - some
+ * opcodes might not work.
  */
 const (
-	OpCodeL1Voltage = 0x0000
-	OpCodeL2Voltage = 0x0002
-	OpCodeL3Voltage = 0x0004
-	OpCodeL1Current = 0x0006
-	OpCodeL2Current = 0x0008
-	OpCodeL3Current = 0x000A
-	OpCodeL1Power   = 0x000C
-	OpCodeL2Power   = 0x000E
-	OpCodeL3Power   = 0x0010
-	OpCodeL1Import  = 0x015a
-	OpCodeL2Import  = 0x015c
-	OpCodeL3Import  = 0x015e
-	OpCodeL1Export  = 0x0160
-	OpCodeL2Export  = 0x0162
-	OpCodeL3Export  = 0x0164
-	OpCodeL1Cosphi  = 0x001e
-	OpCodeL2Cosphi  = 0x0020
-	OpCodeL3Cosphi  = 0x0022
+	OpCodeL1Voltage   = 0x0000
+	OpCodeL2Voltage   = 0x0002
+	OpCodeL3Voltage   = 0x0004
+	OpCodeL1Current   = 0x0006
+	OpCodeL2Current   = 0x0008
+	OpCodeL3Current   = 0x000A
+	OpCodeL1Power     = 0x000C
+	OpCodeL2Power     = 0x000E
+	OpCodeL3Power     = 0x0010
+	OpCodeL1Import    = 0x015a
+	OpCodeL2Import    = 0x015c
+	OpCodeL3Import    = 0x015e
+	OpCodeTotalImport = 0x0048
+	OpCodeL1Export    = 0x0160
+	OpCodeL2Export    = 0x0162
+	OpCodeL3Export    = 0x0164
+	OpCodeTotalExport = 0x004a
+	OpCodeL1Cosphi    = 0x001e
+	OpCodeL2Cosphi    = 0x0020
+	OpCodeL3Cosphi    = 0x0022
 )
 
 /***
@@ -48,7 +52,9 @@ type Readings struct {
 	Current        ThreePhaseReadings
 	Cosphi         ThreePhaseReadings
 	Import         ThreePhaseReadings
+	TotalImport    float64
 	Export         ThreePhaseReadings
+	TotalExport    float64
 }
 
 type ThreePhaseReadings struct {
@@ -240,12 +246,16 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		r.Import.L2 = q.Value
 	case OpCodeL3Import:
 		r.Import.L3 = q.Value
+	case OpCodeTotalImport:
+		r.TotalImport = q.Value
 	case OpCodeL1Export:
 		r.Export.L1 = q.Value
 	case OpCodeL2Export:
 		r.Export.L2 = q.Value
 	case OpCodeL3Export:
 		r.Export.L3 = q.Value
+	case OpCodeTotalExport:
+		r.TotalExport = q.Value
 	}
 }
 

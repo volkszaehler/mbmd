@@ -52,10 +52,12 @@ func (s *RoundRobinScheduler) Produce() {
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Import, Value: math.NaN(), Description: "L2 Import (kWh)",
 				IEC61850: "TotkWhImportPhsB"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Import, Value: math.NaN(), Description: "L3 Import (kWh)", IEC61850: "TotkWhImportPhsC"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeTotalImport, Value: math.NaN(), Description: "Total Import (kWh)", IEC61850: "TotkWhImport"}
 
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Export, Value: math.NaN(), Description: "L1 Export (kWh)", IEC61850: "TotkWhExportPhsA"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Export, Value: math.NaN(), Description: "L2 Export (kWh)", IEC61850: "TotkWhExportPhsB"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Export, Value: math.NaN(), Description: "L3 Export (kWh)", IEC61850: "TotkWhExportPhsC"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeTotalExport, Value: math.NaN(), Description: "Total Export (kWh)", IEC61850: "TotkWhExport"}
 		}
 	}
 }
