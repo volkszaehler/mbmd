@@ -71,7 +71,7 @@ func main() {
 		)
 		go scheduler.Produce()
 
-		qe := sdm630.NewQueryEngine(
+		qe := sdm630.NewModbusEngine(
 			c.String("serialadapter"),
 			c.Int("comset"),
 			c.Bool("verbose"),

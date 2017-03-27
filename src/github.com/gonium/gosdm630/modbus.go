@@ -13,7 +13,7 @@ const (
 	MaxRetryCount = 5
 )
 
-type QueryEngine struct {
+type ModbusEngine struct {
 	client       modbus.Client
 	handler      *modbus.RTUClientHandler
 	inputStream  QuerySnipChannel
@@ -23,7 +23,7 @@ type QueryEngine struct {
 	status       *Status
 }
 
-func NewQueryEngine(
+func NewModbusEngine(
 	rtuDevice string,
 	comset int,
 	verbose bool,
@@ -31,7 +31,7 @@ func NewQueryEngine(
 	outputChannel QuerySnipChannel,
 	devids []uint8,
 	status *Status,
-) *QueryEngine {
+) *ModbusEngine {
 	// Modbus RTU/ASCII
 	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
 	// TODO: Switch based on comset
@@ -65,7 +65,7 @@ func NewQueryEngine(
 
 	mbclient := modbus.NewClient(rtuclient)
 
-	return &QueryEngine{
+	return &ModbusEngine{
 		client: mbclient, handler: rtuclient,
 		inputStream: inputChannel, outputStream: outputChannel,
 		devids: devids, verbose: verbose,
@@ -73,7 +73,7 @@ func NewQueryEngine(
 	}
 }
 
-func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float64,
+func (q *ModbusEngine) retrieveOpCode(opcode uint16) (retval float64,
 	err error) {
 	q.status.IncreaseModbusRequestCounter()
 	results, err := q.client.ReadInputRegisters(opcode, 2)
@@ -85,7 +85,7 @@ func (q *QueryEngine) retrieveOpCode(opcode uint16) (retval float64,
 	return retval, err
 }
 
-func (q *QueryEngine) queryOrFail(opcode uint16) (retval float64) {
+func (q *ModbusEngine) queryOrFail(opcode uint16) (retval float64) {
 	var err error
 	tryCnt := 0
 	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
@@ -105,7 +105,7 @@ func (q *QueryEngine) queryOrFail(opcode uint16) (retval float64) {
 	return retval
 }
 
-func (q *QueryEngine) Transform() {
+func (q *ModbusEngine) Transform() {
 	var previousDeviceId uint8 = 0
 	for {
 		snip := <-q.inputStream
