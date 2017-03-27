@@ -193,15 +193,17 @@ current readings on the command line.  At
 [http://localhost:8080](http://localhost:8080) you should also see the
 last received value printed as ASCII text:
 
-    Modbus ID 11, last measurement taken Thursday, 12-Nov-15 14:18:10 CET:
-    +-------+-------------+-------------+-----------+--------------+--------------+--------------+
-    | PHASE | VOLTAGE [V] | CURRENT [A] | POWER [W] | POWER FACTOR | IMPORT [KWH] | EXPORT [KWH] |
-    +-------+-------------+-------------+-----------+--------------+--------------+--------------+
-    | L1    |      235.17 |        0.19 |     45.83 |         1.00 |         0.74 |         0.01 |
-    | L2    |        0.00 |        0.00 |      0.00 |         1.00 |         0.00 |         0.00 |
-    | L3    |        0.00 |        0.00 |      0.00 |         1.00 |         0.00 |         0.00 |
-    | ALL   | n/a         |        0.19 |     45.83 | n/a          |         0.74 |         0.01 |
-    +-------+-------------+-------------+-----------+--------------+--------------+--------------+
+````
+Modbus ID 11, last measurement taken Monday, 27-Mar-17 15:14:29 CEST:
++-------+-------------+-------------+-----------+--------------+--------------+--------------+---------------------------+
+| PHASE | VOLTAGE [V] | CURRENT [A] | POWER [W] | POWER FACTOR | IMPORT [KWH] | EXPORT [KWH] | THD VOLTAGE (NEUTRAL) [%] |
++-------+-------------+-------------+-----------+--------------+--------------+--------------+---------------------------+
+| L1    |     233.449 |       0.000 |     0.000 |        1.000 |        0.166 |        0.000 |                     1.147 |
+| L2    |     233.449 |       0.195 |   -45.429 |       -0.999 |        0.110 |        0.301 |                     1.093 |
+| L3    |       0.000 |       0.000 |     0.000 |        1.000 |        0.001 |        0.000 |                     0.000 |
+| ALL   | n/a         |       0.195 |   -45.429 | n/a          |        0.277 |        0.301 |                     0.747 |
++-------+-------------+-------------+-----------+--------------+--------------+--------------+---------------------------+
+````
 
 ### Installation on the Raspberry Pi
 
@@ -240,86 +242,109 @@ The API consists of calls that return a JSON datastructure. The "GET
 /last/{ID}"-call simply returns the last measurements of the device with
 the Modbus ID {ID}:
 
-    $ curl localhost:8080/last/1
-    {
-      "Timestamp": "2017-01-25T16:40:28.706413719+01:00",
-      "Unix": 1485358828,
-      "ModbusDeviceId": 11,
-      "Power": {
-        "L1": 0,
-        "L2": 0,
-        "L3": 0
-      },
-      "Voltage": {
-        "L1": 236.27914,
-        "L2": 236.26003,
-        "L3": 0
-      },
-      "Current": {
-        "L1": 0,
-        "L2": 0,
-        "L3": 0
-      },
-      "Cosphi": {
-        "L1": 1,
-        "L2": 1,
-        "L3": 1
-      },
-      "Import": {
-        "L1": 0.002,
-        "L2": 0.002,
-        "L3": 0.001
-      },
-      "Export": {
-        "L1": 0,
-        "L2": 0,
-        "L3": 0
-      }
-    }
-
+````
+$ curl localhost:8080/last/11
+{
+  "Timestamp": "2017-03-27T15:15:09.243729874+02:00",
+  "Unix": 1490620509,
+  "ModbusDeviceId": 11,
+  "Power": {
+    "L1": 0,
+    "L2": -45.28234100341797,
+    "L3": 0
+  },
+  "Voltage": {
+    "L1": 233.1257781982422,
+    "L2": 233.12904357910156,
+    "L3": 0
+  },
+  "Current": {
+    "L1": 0,
+    "L2": 0.19502629339694977,
+    "L3": 0
+  },
+  "Cosphi": {
+    "L1": 1,
+    "L2": -0.9995147585868835,
+    "L3": 1
+  },
+  "Import": {
+    "L1": 0.16599999368190765,
+    "L2": 0.10999999940395355,
+    "L3": 0.0010000000474974513
+  },
+  "TotalImport": 0.2770000100135803,
+  "Export": {
+    "L1": 0,
+    "L2": 0.3019999861717224,
+    "L3": 0
+  },
+  "TotalExport": 0.3019999861717224,
+  "THD": {
+    "VoltageNeutral": {
+      "L1": 0,
+      "L2": 0,
+      "L3": 0
+    },
+    "AvgVoltageNeutral": 0
+  }
+}
+````
 
 The "GET /minuteavg"-call returns the average measurements over the last
 minute:
 
-    $ curl localhost:8080/minuteavg/11
-    {
-      "Timestamp": "2017-01-25T16:41:15.835808811+01:00",
-      "Unix": 1485358875,
-      "ModbusDeviceId": 11,
-      "Power": {
-        "L1": 0,
-        "L2": 0,
-        "L3": 0
-      },
-      "Voltage": {
-        "L1": 236.49846,
-        "L2": 236.4804,
-        "L3": 0
-      },
-      "Current": {
-        "L1": 0,
-        "L2": 0,
-        "L3": 0
-      },
-      "Cosphi": {
-        "L1": 1,
-        "L2": 1,
-        "L3": 1
-      },
-      "Import": {
-        "L1": 0,
-        "L2": 0,
-        "L3": 0
-      },
-      "Export": {
-        "L1": 0,
-        "L2": 0,
-        "L3": 0
-      }
-    }
+$ curl localhost:8080/minuteavg/11
+{
+  "Timestamp": "2017-03-27T15:19:06.470316939+02:00",
+  "Unix": 1490620746,
+  "ModbusDeviceId": 11,
+  "Power": {
+    "L1": 0,
+    "L2": -45.333974165794174,
+    "L3": 0
+  },
+  "Voltage": {
+    "L1": 233.06608112041766,
+    "L2": 233.0702075958252,
+    "L3": 0
+  },
+  "Current": {
+    "L1": 0,
+    "L2": 0.19468470108814728,
+    "L3": 0
+  },
+  "Cosphi": {
+    "L1": 1,
+    "L2": -0.9989471855836037,
+    "L3": 1
+  },
+  "Import": {
+    "L1": 0,
+    "L2": 0,
+    "L3": 0
+  },
+  "TotalImport": 0,
+  "Export": {
+    "L1": 0,
+    "L2": 0,
+    "L3": 0
+  },
+  "TotalExport": 0,
+  "THD": {
+    "VoltageNeutral": {
+      "L1": 0,
+      "L2": 0,
+      "L3": 0
+    },
+    "AvgVoltageNeutral": 0
+  }
+}
 
+Please note: The calculation of ``Import``, ``TotalImport``, ``Export``,
+``TotalExport`` and ``THD`` is currently broken.
 
-If you want to receive all measurements, you can use these two calls
+If you want to receive all measurements of all devices, you can use these two calls
 without the device ID:
 
     curl localhost:8080/last
