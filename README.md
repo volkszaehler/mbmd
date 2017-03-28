@@ -11,12 +11,29 @@ streaming API are available.
 
 ## Suported Devices:
 
- * SDM120 (Note: Communication parameters can only be set over MODBUS,
+The meters have slightly different capabilities. The SDM630 offers
+a lot of features, while the smaller devices only support basic
+features.  This table gives you an overview:
+
+| Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line-neutral THD |
+|---|---|---|---|---|---|---|---|---|---|
+| SDM120 | 1 | + | + | + | + | + | + | - | - |
+| SDM220 | 1 | + | + | + | + | + | + | - | - |
+| SDM220 | 1 | + | + | + | + | + | + | - | - |
+| SDM530 | 3 | + | + | + | + | + | + | - | - |
+| SDM630 v1 | 3 | + | + | + | + | + | + | + | + |
+| SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
+
+
+ * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS,
 		 which is currently not supported by this project. You can use e.g.
-		 [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.)
- * SDM220, SDM230
- * SDM530
- * SDM630 v1 and v2, both MID and non-MID
+		 [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
+ * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and
+ button.
+ * SDM530: Very big (7TE) - takes up a lot of space, but all connections are
+ on the underside of the meter.
+ * SDM630 v1 and v2, both MID and non-MID. Compact (4TE) and with lots
+ of features.
 
 Some of my test devices have been provided by [B+G
 E-Tech](http://bg-etech.de/) - please consider to buy your meter from
