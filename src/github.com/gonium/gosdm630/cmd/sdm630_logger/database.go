@@ -83,7 +83,7 @@ func (r *SnipDB) RunRecorder(sleepSeconds int) {
 			return nil
 		})
 		if err != nil {
-			log.Fatal("Failed to store records: %s", err.Error())
+			log.Fatalf("Failed to store records: %s", err.Error())
 		} else {
 			// clear the cache
 			r.snips = []sdm630.QuerySnip{}
