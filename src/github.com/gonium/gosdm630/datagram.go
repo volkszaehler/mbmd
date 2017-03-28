@@ -249,7 +249,6 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		r.THD.VoltageNeutral.L3 = q.Value
 	case OpCodeAvgTHDVoltageNeutral:
 		r.THD.AvgVoltageNeutral = q.Value
-
 	}
 
 }
