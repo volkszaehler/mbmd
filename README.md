@@ -13,9 +13,10 @@ streaming API are available.
 
 The meters have slightly different capabilities. The SDM630 offers
 a lot of features, while the smaller devices only support basic
-features.  This table gives you an overview:
+features.  This table gives you an overview (please note: check the
+manuals for yourself, I could be wrong):
 
-| Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line-neutral THD |
+| Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
 |---|---|---|---|---|---|---|---|---|---|
 | SDM120 | 1 | + | + | + | + | + | + | - | - |
 | SDM220 | 1 | + | + | + | + | + | + | - | - |
@@ -24,6 +25,8 @@ features.  This table gives you an overview:
 | SDM630 v1 | 3 | + | + | + | + | + | + | + | + |
 | SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
 
+Please note that voltage, current, power and power factor are always
+reported for each connected phase.
 
  * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS,
 		 which is currently not supported by this project. You can use e.g.
@@ -33,7 +36,9 @@ features.  This table gives you an overview:
  * SDM530: Very big (7TE) - takes up a lot of space, but all connections are
  on the underside of the meter.
  * SDM630 v1 and v2, both MID and non-MID. Compact (4TE) and with lots
- of features.
+ of features. Can be configured for 1P2 (single phase with neutral), 3P3
+ (three phase without neutral) and 3P4 (three phase with neutral)
+	systems.
 
 Some of my test devices have been provided by [B+G
 E-Tech](http://bg-etech.de/) - please consider to buy your meter from
