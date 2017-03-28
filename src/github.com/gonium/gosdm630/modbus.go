@@ -159,7 +159,9 @@ func (q *ModbusEngine) Transform() {
 		snip.ReadTimestamp = time.Now()
 		q.outputStream <- snip
 	}
-	q.handler.Close()
+	// go vet reports this as unreachable (correctly), so
+	// just commented out.
+	//q.handler.Close()
 }
 
 func rtuToFloat64(b []byte) float64 {

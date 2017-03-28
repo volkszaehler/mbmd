@@ -107,7 +107,7 @@ func MkLastAllValuesHandler(hc *MeasurementCache) func(http.ResponseWriter, *htt
 			lasts = append(lasts, *reading)
 		}
 		if err := lasts.JSON(w); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: ", err.Error())
+			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
 }
@@ -172,7 +172,7 @@ func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 			avgs = append(avgs, reading)
 		}
 		if err := avgs.JSON(w); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: ", err.Error())
+			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 
 	})
@@ -183,7 +183,7 @@ func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 		if err := s.UpdateAndJSON(w); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: ", err.Error())
+			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
 }
