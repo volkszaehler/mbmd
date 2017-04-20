@@ -24,11 +24,11 @@ func main() {
 		},
 		cli.IntFlag{
 			Name:  "comset, c",
-			Value: 2,
-			Usage: `which communication settings to use. Valid settings are
-		1:  2400 baud, 8N1
-		2:  9600 baud, 8N1
-		3: 19200 baud, 8N1
+			Value: sdm630.ModbusComset9600,
+			Usage: `which communication parameter set to use. Valid sets are
+		` + strconv.Itoa(sdm630.ModbusComset2400) + `:  2400 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset9600) + `:  9600 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset19200) + `: 19200 baud, 8N1
 			`,
 		},
 		cli.StringFlag{
@@ -43,7 +43,8 @@ func main() {
 		cli.StringFlag{
 			Name:  "device_list, d",
 			Value: "1",
-			Usage: "MODBUS device ID to query, separated by comma. Example: -d 11,12,13",
+			Usage: `MODBUS device ID to query, separated by comma. 
+			Example: -d 11,12,13`,
 		},
 	}
 	app.Action = func(c *cli.Context) {

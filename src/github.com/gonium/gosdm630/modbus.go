@@ -50,6 +50,12 @@ const (
 	OpCodeAvgTHDVoltageNeutral = 0x00F8
 )
 
+const (
+	ModbusComset2400  = 1
+	ModbusComset9600  = 2
+	ModbusComset19200 = 3
+)
+
 type ModbusEngine struct {
 	client       modbus.Client
 	handler      *modbus.RTUClientHandler
@@ -71,13 +77,12 @@ func NewModbusEngine(
 ) *ModbusEngine {
 	// Modbus RTU/ASCII
 	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
-	// TODO: Switch based on comset
 	switch comset {
-	case 1:
+	case ModbusComset2400:
 		rtuclient.BaudRate = 2400
-	case 2:
+	case ModbusComset9600:
 		rtuclient.BaudRate = 9600
-	case 4:
+	case ModbusComset19200:
 		rtuclient.BaudRate = 19200
 	default:
 		log.Fatal("Invalid communication set specified. See -h for help.")
