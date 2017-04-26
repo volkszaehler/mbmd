@@ -11,6 +11,7 @@ func TestQuerySnipMerge(t *testing.T) {
 		Timestamp:      time.Now(),
 		Unix:           time.Now().Unix(),
 		ModbusDeviceId: 1,
+		UniqueId: "Instrument1",
 		Power: sdm630.ThreePhaseReadings{
 			L1: 1, L2: 2, L3: 3,
 		},
