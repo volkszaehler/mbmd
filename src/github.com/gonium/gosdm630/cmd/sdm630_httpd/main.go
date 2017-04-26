@@ -46,8 +46,17 @@ func main() {
 			Usage: `MODBUS device ID to query, separated by comma. 
 			Example: -d 11,12,13`,
 		},
+		cli.StringFlag{
+			Name: "unique_id_format, f",
+			Value: "Instrument%d",
+			Usage: `Unique ID format.
+			Example: -f Instrument%d
+			The %d is replaced by the device ID`,
+		},
 	}
 	app.Action = func(c *cli.Context) {
+		// Set unique ID format
+		sdm630.UniqueIdFormat = c.String("unique_id_format")
 		// Parse the device_list parameter
 		deviceslice := strings.Split(c.String("device_list"), ",")
 		devids := make([]uint8, 0, len(deviceslice))
