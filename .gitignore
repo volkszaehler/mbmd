@@ -1,3 +1,7 @@
+# Editor files
+*~
+*.sw[op]
+
 # gb-compiled binaries
 bin
 pkg
