@@ -62,6 +62,7 @@ func (mc *MeasurementCache) Consume() {
 			devreading.lastminutereadings = append(devreading.lastminutereadings, reading)
 		} else {
 			reading := Readings{
+				UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
 				ModbusDeviceId: devid,
 			}
 			reading.MergeSnip(snip)
@@ -103,7 +104,7 @@ func (mc *MeasurementCache) GetMinuteAvg(id byte) (Readings, error) {
 	measurements := mc.deviceReadings[id].lastminutereadings
 	lastminute := measurements.NotOlderThan(time.Now().Add(-1 *
 		time.Minute))
-	avg := Readings{ModbusDeviceId: id}
+	avg := Readings{UniqueId: fmt.Sprintf(UniqueIdFormat, id), ModbusDeviceId: id}
 	for _, r := range lastminute {
 		var err error
 		avg, err = r.add(&avg)

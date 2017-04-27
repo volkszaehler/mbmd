@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+// UniqueIdFormat is a format string for unique ID generation.
+// It expects one %d conversion specifier,
+// which will be replaced with the device ID.
+// The UniqueIdFormat can be changed on program startup,
+// before any additional goroutines are started.
+var UniqueIdFormat string = "Instrument%d"
+
 /***
  * This is the definition of the Reading datatype. It combines readings
  * of all measurements into one data structure
@@ -15,6 +22,7 @@ import (
 type ReadingChannel chan Readings
 
 type Readings struct {
+	UniqueId       string
 	Timestamp      time.Time
 	Unix           int64
 	ModbusDeviceId uint8
@@ -41,10 +49,11 @@ type ThreePhaseReadings struct {
 }
 
 func (r *Readings) String() string {
-	fmtString := "ID: %d T: %s - L1: %.2fV %.2fA %.2fW %.2fcos | " +
+	fmtString := "UniqueId: %s ID: %d T: %s - L1: %.2fV %.2fA %.2fW %.2fcos | " +
 		"L2: %.2fV %.2fA %.2fW %.2fcos | " +
 		"L3: %.2fV %.2fA %.2fW %.2fcos"
 	return fmt.Sprintf(fmtString,
+		r.UniqueId,
 		r.ModbusDeviceId,
 		r.Timestamp.Format(time.RFC3339),
 		r.Voltage.L1,
@@ -84,6 +93,7 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
 			lhs.ModbusDeviceId, rhs.ModbusDeviceId)
 	} else {
 		retval = Readings{
+			UniqueId: lhs.UniqueId,
 			ModbusDeviceId: lhs.ModbusDeviceId,
 			Voltage: ThreePhaseReadings{
 				L1: lhs.Voltage.L1 + rhs.Voltage.L1,
@@ -147,6 +157,7 @@ func (lhs *Readings) divide(scalar float64) (retval Readings) {
 	retval.Timestamp = lhs.Timestamp
 	retval.Unix = lhs.Unix
 	retval.ModbusDeviceId = lhs.ModbusDeviceId
+	retval.UniqueId = lhs.UniqueId
 	return retval
 }
 
