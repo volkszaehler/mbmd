@@ -59,7 +59,7 @@ them!
 
 ## How does it look like in OpenHAB?
 
-I use [OpenHAB](http://openhab.org) to record various measurements at
+I use [OpenHAB 1.8](http://openhab.org) to record various measurements at
 home. In the classic ui, this is how one of the graphs looks like:
 
 ![OpenHAB interface screenshot](img/openhab.png)
@@ -403,6 +403,10 @@ the cabling is not a shielded, twisted wire but something that I had laying
 around. With proper cabling the error rate should be lower, though.
 
 ## OpenHAB integration
+
+*Please note: The following integration guide was written for OpenHAB
+1.8. We currently do not have an OpenHAB 2.x instructions, but would
+appreciate any contributions.*
 
 It is very easy to translate this into OpenHAB items. I run the SDM630
 software on a Raspberry Pi with the IP ``192.168.1.44``. My items look
