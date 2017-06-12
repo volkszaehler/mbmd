@@ -8,7 +8,7 @@ build:
 	@echo "Created binaries:"
 	@ls -1 bin
 
-release-build: clean
+release-build: test clean
 	@echo "Building binaries..."
 	@echo "... for Linux/32bit"
 	@GOOS=linux GOARCH=386 gb build all
@@ -36,6 +36,10 @@ release: release-build
 	@zip sdm630-darwin-amd64 bin/*-darwin-amd64
 	@echo "... for Windows"
 	@zip sdm630-windows-386 bin/*-windows-386*
+
+test:
+	@echo "Running testsuite"
+	@gb test
 
 clean:
 	@rm -rf bin/ pkg/ *.zip
