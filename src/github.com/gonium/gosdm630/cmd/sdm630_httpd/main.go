@@ -47,7 +47,7 @@ func main() {
 			Example: -d 11,12,13`,
 		},
 		cli.StringFlag{
-			Name: "unique_id_format, f",
+			Name:  "unique_id_format, f",
 			Value: "Instrument%d",
 			Usage: `Unique ID format.
 			Example: -f Instrument%d
@@ -85,12 +85,13 @@ func main() {
 			c.String("serialadapter"),
 			c.Int("comset"),
 			c.Bool("verbose"),
-			scheduler2queryengine,
-			queryengine2duplicator,
-			devids,
 			status,
 		)
-		go qe.Transform()
+
+		go qe.Transform(
+			scheduler2queryengine,
+			queryengine2duplicator,
+		)
 
 		// This is the duplicator
 		go func(in sdm630.QuerySnipChannel,

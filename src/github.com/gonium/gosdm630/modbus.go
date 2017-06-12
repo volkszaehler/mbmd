@@ -57,22 +57,16 @@ const (
 )
 
 type ModbusEngine struct {
-	client       modbus.Client
-	handler      *modbus.RTUClientHandler
-	inputStream  QuerySnipChannel
-	outputStream QuerySnipChannel
-	devids       []uint8
-	verbose      bool
-	status       *Status
+	client  modbus.Client
+	handler *modbus.RTUClientHandler
+	verbose bool
+	status  *Status
 }
 
 func NewModbusEngine(
 	rtuDevice string,
 	comset int,
 	verbose bool,
-	inputChannel QuerySnipChannel,
-	outputChannel QuerySnipChannel,
-	devids []uint8,
 	status *Status,
 ) *ModbusEngine {
 	// Modbus RTU/ASCII
@@ -90,7 +84,6 @@ func NewModbusEngine(
 	rtuclient.DataBits = 8
 	rtuclient.Parity = "N"
 	rtuclient.StopBits = 1
-	rtuclient.SlaveId = devids[0]
 	rtuclient.Timeout = 1000 * time.Millisecond
 	if verbose {
 		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
@@ -109,9 +102,8 @@ func NewModbusEngine(
 
 	return &ModbusEngine{
 		client: mbclient, handler: rtuclient,
-		inputStream: inputChannel, outputStream: outputChannel,
-		devids: devids, verbose: verbose,
-		status: status,
+		verbose: verbose,
+		status:  status,
 	}
 }
 
@@ -147,10 +139,43 @@ func (q *ModbusEngine) queryOrFail(opcode uint16) (retval float64) {
 	return retval
 }
 
-func (q *ModbusEngine) Transform() {
+func (q *ModbusEngine) Scan() {
+	log.Printf("Starting bus scan")
+	devicelist := make([]int, 0)
+	oldtimeout := q.handler.Timeout
+	q.handler.Timeout = 50 * time.Millisecond
+	// loop over all valid slave adresses
+	for devid := 1; devid <= 247; devid++ {
+		// update the slave id in the handler
+		q.handler.SlaveId = uint8(devid)
+		// try to query L1 voltage
+		voltage_L1, err := q.retrieveOpCode(OpCodeL1Voltage)
+		if err != nil {
+			log.Printf("Device %d: n/a\r\n", devid)
+		} else {
+			log.Printf("Device %d: found, L1 voltage: %.2f\r\n", devid, voltage_L1)
+			devicelist = append(devicelist, devid)
+		}
+		// give the bus some time to recover before querying the next device
+		time.Sleep(time.Duration(40) * time.Millisecond)
+	}
+	q.handler.Timeout = oldtimeout
+	log.Printf("Found %d active devices:\r\n", len(devicelist))
+	for _, devid := range devicelist {
+		log.Printf("* slave address %d\r\n", devid)
+	}
+	log.Println("WARNING: This lists only the devices that responded to " +
+		"an L1 voltage read input register request. Devices with " +
+		"different function code definitions might not be detected.")
+}
+
+func (q *ModbusEngine) Transform(
+	inputStream QuerySnipChannel,
+	outputStream QuerySnipChannel,
+) {
 	var previousDeviceId uint8 = 0
 	for {
-		snip := <-q.inputStream
+		snip := <-inputStream
 		q.handler.SlaveId = snip.DeviceId
 		// apparently the turnaround timeout must be respected
 		// See http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
@@ -162,7 +187,7 @@ func (q *ModbusEngine) Transform() {
 		value := q.queryOrFail(snip.OpCode)
 		snip.Value = value
 		snip.ReadTimestamp = time.Now()
-		q.outputStream <- snip
+		outputStream <- snip
 	}
 	// go vet reports this as unreachable (correctly), so
 	// just commented out.
