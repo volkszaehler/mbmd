@@ -84,7 +84,7 @@ func NewModbusEngine(
 	rtuclient.DataBits = 8
 	rtuclient.Parity = "N"
 	rtuclient.StopBits = 1
-	rtuclient.Timeout = 1000 * time.Millisecond
+	rtuclient.Timeout = 200 * time.Millisecond
 	if verbose {
 		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
 		log.Printf("Connecting to RTU via %s, %d %d%s%d\r\n", rtuDevice,
