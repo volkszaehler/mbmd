@@ -107,9 +107,11 @@ func NewModbusEngine(
 	}
 }
 
-func (q *ModbusEngine) retrieveOpCode(opcode uint16) (retval float64,
+func (q *ModbusEngine) retrieveOpCode(deviceid uint8, opcode uint16) (retval float64,
 	err error) {
 	q.status.IncreaseModbusRequestCounter()
+	// update the slave id in the handler
+	q.handler.SlaveId = deviceid
 	results, err := q.client.ReadInputRegisters(opcode, 2)
 	if err == nil {
 		retval = rtuToFloat64(results)
@@ -119,11 +121,11 @@ func (q *ModbusEngine) retrieveOpCode(opcode uint16) (retval float64,
 	return retval, err
 }
 
-func (q *ModbusEngine) queryOrFail(opcode uint16) (retval float64) {
+func (q *ModbusEngine) queryOrFail(deviceid uint8, opcode uint16) (retval float64) {
 	var err error
 	tryCnt := 0
 	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
-		retval, err = q.retrieveOpCode(opcode)
+		retval, err = q.retrieveOpCode(deviceid, opcode)
 		if err != nil {
 			q.status.IncreaseModbusReconnectCounter()
 			log.Printf("Failed to retrieve opcode - retry attempt %d of %d\r\n", tryCnt+1,
@@ -141,15 +143,14 @@ func (q *ModbusEngine) queryOrFail(opcode uint16) (retval float64) {
 
 func (q *ModbusEngine) Scan() {
 	log.Printf("Starting bus scan")
-	devicelist := make([]int, 0)
+	devicelist := make([]uint8, 0)
 	oldtimeout := q.handler.Timeout
 	q.handler.Timeout = 50 * time.Millisecond
 	// loop over all valid slave adresses
-	for devid := 1; devid <= 247; devid++ {
-		// update the slave id in the handler
-		q.handler.SlaveId = uint8(devid)
+	var devid uint8
+	for devid = 1; devid <= 247; devid++ {
 		// try to query L1 voltage
-		voltage_L1, err := q.retrieveOpCode(OpCodeL1Voltage)
+		voltage_L1, err := q.retrieveOpCode(devid, OpCodeL1Voltage)
 		if err != nil {
 			log.Printf("Device %d: n/a\r\n", devid)
 		} else {
@@ -176,7 +177,6 @@ func (q *ModbusEngine) Transform(
 	var previousDeviceId uint8 = 0
 	for {
 		snip := <-inputStream
-		q.handler.SlaveId = snip.DeviceId
 		// apparently the turnaround timeout must be respected
 		// See http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 		// 3.5 chars at 9600 Baud take 36 ms
@@ -184,7 +184,7 @@ func (q *ModbusEngine) Transform(
 			time.Sleep(time.Duration(40) * time.Millisecond)
 		}
 		previousDeviceId = snip.DeviceId
-		value := q.queryOrFail(snip.OpCode)
+		value := q.queryOrFail(snip.DeviceId, snip.OpCode)
 		snip.Value = value
 		snip.ReadTimestamp = time.Now()
 		outputStream <- snip
