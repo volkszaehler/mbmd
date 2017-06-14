@@ -233,6 +233,8 @@ func Run_httpd(
 	router.HandleFunc("/minuteavg/{id:[0-9]+}", MkLastMinuteAvgSingleHandler(mc))
 	router.HandleFunc("/status", MkStatusHandler(s))
 	router.HandleFunc("/firehose", firehose.GetHandler())
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
+		GetEmbeddedContent()))
 	srv := http.Server{
 		Addr:         url,
 		Handler:      router,

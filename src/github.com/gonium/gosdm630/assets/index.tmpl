@@ -2,14 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-		 <meta http-equiv="refresh" content="{{.ReloadInterval}}" />
+		 <!--meta http-equiv="refresh" content="{{.ReloadInterval}}" /-->
     <title>GoSDM630 overview page</title>
+	<script src="/static/js/vue.js"></script>
+	<script src="/static/js/jquery-3.2.1.js"></script>
   </head>
   <body>
 		<pre>
 SDM630 HTTP server, version {{.SoftwareVersion}}. Reloading every {{.ReloadInterval}} seconds.
 {{.Content}}
 		</pre>
+
+	<div id="meters">
+	  ${ meterdata[23]["VolLocPhsA"] }}
+	</div>
+	<div id="status">
+	  ${ message }
+	</div>
+	<script src="/static/js/app.js"></script>
   </body>
 </html>
 
