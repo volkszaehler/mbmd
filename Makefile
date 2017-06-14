@@ -1,6 +1,6 @@
 all: build
 
-build:
+build: assets
 	@echo "Building for host platform"
 	@gb build all
 	@echo "Building binary for Raspberry Pi"
@@ -8,7 +8,11 @@ build:
 	@echo "Created binaries:"
 	@ls -1 bin
 
-release-build: test clean
+assets:
+	@echo "Generating embedded assets"
+	@gb generate src/github.com/gonium/gosdm630/http.go
+
+release-build: test clean assets
 	@echo "Building binaries..."
 	@echo "... for Linux/32bit"
 	@GOOS=linux GOARCH=386 gb build all
@@ -47,5 +51,7 @@ clean:
 dep:
 	@echo "Installing GB build tool"
 	@go get github.com/constabulary/gb/...
+	@echo "Installing embed tool"
+	@go get github.com/aprice/embed/cmd/embed
 
 .PHONY: all build clean

@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+// Generate the embedded assets using https://github.com/aprice/embed
+//go:generate embed -c "embed.json"
+
 // formatFloat helper
 func fF(val float64) string {
 	var buffer bytes.Buffer
@@ -22,23 +25,12 @@ func fF(val float64) string {
 
 func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 
-	const mainTemplate = `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-		 <meta http-equiv="refresh" content="{{.ReloadInterval}}" />
-    <title>GoSDM630 overview page</title>
-  </head>
-  <body>
-		<pre>
-SDM630 HTTP server, version {{.SoftwareVersion}}. Reloading every {{.ReloadInterval}} seconds.
-{{.Content}}
-		</pre>
-  </body>
-</html>
-`
-	t, err := template.New("gosdm630").Parse(mainTemplate)
+	loader := GetEmbeddedContent()
+	mainTemplate, err := loader.GetContents("/index.tmpl")
+	if err != nil {
+		log.Fatal("Failed to load embedded template: " + err.Error())
+	}
+	t, err := template.New("gosdm630").Parse(string(mainTemplate))
 	if err != nil {
 		log.Fatal("Failed to create main page template: ", err.Error())
 	}

@@ -8,6 +8,13 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/aprice/embed/loader",
+			"repository": "https://github.com/aprice/embed",
+			"revision": "e0f543275bf966271e2c3b3ab70265f635f0394a",
+			"branch": "master",
+			"path": "/loader"
+		},
+		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
 			"revision": "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd",

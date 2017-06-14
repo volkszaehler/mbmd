@@ -1,0 +1,19 @@
+{
+	"RootPath": "assets",
+	"Recurse": true,
+	"IncludePattern": "",
+	"ExcludePattern": "(^\\.|\\.go$)",
+	"OutputPath": "embeddedassets.go",
+	"BuildConstraints": "",
+	"PackageName": "sdm630",
+	"DevOutputPath": "",
+	"DevBuildConstraints": "",
+	"MinifyTypes": {
+		"\\.html?$": "text/html",
+		"\\.css$": "text/css",
+		"\\.js$": "application/javascript"
+	},
+	"CompressPattern": "\\.(css|js|html)$",
+	"NoCompressPattern": "\\.(jpe?g|png|gif|woff2?|eot|ttf|ico)$",
+	"OverrideModDate": false
+}
