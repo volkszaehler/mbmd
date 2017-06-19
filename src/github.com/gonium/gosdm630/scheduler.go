@@ -28,7 +28,7 @@ func (s *RoundRobinScheduler) Produce() {
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Voltage,
 				Value: math.NaN(), Description: "L1 Voltage (V)", IEC61850: "VolLocPhsA"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Voltage,
-				Value: math.NaN(), Description: "L2 Voltage (V)", IEC61850: "VolLocPhsA"}
+				Value: math.NaN(), Description: "L2 Voltage (V)", IEC61850: "VolLocPhsB"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Voltage,
 				Value: math.NaN(), Description: "L3 Voltage (V)", IEC61850: "VolLocPhsC"}
 
