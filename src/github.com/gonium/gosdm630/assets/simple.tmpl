@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+	<meta http-equiv="refresh" content="{{.ReloadInterval}}" />
+    <title>GoSDM630 overview page</title>
+  </head>
+  <body>
+	<p><a href="/">Fancy view</a></p>
+	<pre>
+SDM630 HTTP server, version {{.SoftwareVersion}}. Reloading every {{.ReloadInterval}} seconds.
+{{.Content}}
+	</pre>
+  </body>
+</html>

@@ -24,9 +24,34 @@ func fF(val float64) string {
 }
 
 func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
-
 	loader := GetEmbeddedContent()
 	mainTemplate, err := loader.GetContents("/index.tmpl")
+	if err != nil {
+		log.Fatal("Failed to load embedded template: " + err.Error())
+	}
+	t, err := template.New("gosdm630").Parse(string(mainTemplate))
+	if err != nil {
+		log.Fatal("Failed to create main page template: ", err.Error())
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		data := struct {
+			SoftwareVersion string
+		}{
+			SoftwareVersion: RELEASEVERSION,
+		}
+		err := t.Execute(w, data)
+		if err != nil {
+			log.Fatal("Failed to render main page: ", err.Error())
+		}
+	})
+}
+
+func MkSimpleIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+	loader := GetEmbeddedContent()
+	mainTemplate, err := loader.GetContents("/simple.tmpl")
 	if err != nil {
 		log.Fatal("Failed to load embedded template: " + err.Error())
 	}
@@ -227,6 +252,7 @@ func Run_httpd(
 ) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", MkIndexHandler(mc))
+	router.HandleFunc("/simple", MkSimpleIndexHandler(mc))
 	router.HandleFunc("/last", MkLastAllValuesHandler(mc))
 	router.HandleFunc("/last/{id:[0-9]+}", MkLastSingleValuesHandler(mc))
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgAllHandler(mc))

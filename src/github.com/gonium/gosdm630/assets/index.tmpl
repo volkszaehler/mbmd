@@ -2,22 +2,83 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-		 <!--meta http-equiv="refresh" content="{{.ReloadInterval}}" /-->
-    <title>GoSDM630 overview page</title>
+    <title>GoSDM630</title>
 	<script src="/static/js/vue.js"></script>
 	<script src="/static/js/jquery-3.2.1.js"></script>
   </head>
   <body>
-		<pre>
-SDM630 HTTP server, version {{.SoftwareVersion}}. Reloading every {{.ReloadInterval}} seconds.
-{{.Content}}
-		</pre>
-
+	<h2>GoSDM630 overview</h2>
+	<p><a href="/simple">Simple view</a></p>
 	<div id="meters">
-	  ${ meterdata[23]["VolLocPhsA"] }}
-	</div>
-	<div id="status">
-	  ${ message }
+	  <p>${ time }</p>
+	  <table v-for="(meter, idx) in meters">
+		<tr>
+		  <th>Meter ${ idx }</th>
+		  <th>L1</th>
+		  <th>L2</th>
+		  <th>L3</th>
+		  <th>Total</th>
+		  <th>Unit</th>
+		</tr>
+		<tr>
+		  <td>Voltage</td>
+		  <td>${ meter.VolLocPhsA }</td>
+		  <td>${ meter.VolLocPhsB }</td>
+		  <td>${ meter.VolLocPhsC }</td>
+		  <td>-</td>
+		  <td>Volt</td>
+		</tr>
+		<tr>
+		  <td>Current</td>
+		  <td>${ meter.AmpLocPhsA }</td>
+		  <td>${ meter.AmpLocPhsB }</td>
+		  <td>${ meter.AmpLocPhsC }</td>
+		  <td>-</td>
+		  <td>Ampere</td>
+		</tr>
+		<tr>
+		  <td>Power</td>
+		  <td>${ meter.WLocPhsA }</td>
+		  <td>${ meter.WLocPhsB }</td>
+		  <td>${ meter.WLocPhsC }</td>
+		  <td>${ (parseFloat(meter.WLocPhsA) + parseFloat(meter.WLocPhsB)
+			+ parseFloat(meter.WLocPhsC)).toFixed(2) }</td>
+		  <td>Watt</td>
+		</tr>
+		<tr>
+		  <td>Power Factor</td>
+		  <td>${ meter.AngLocPhsA }</td>
+		  <td>${ meter.AngLocPhsB }</td>
+		  <td>${ meter.AngLocPhsC }</td>
+		  <td>-</td>
+		  <td></td>
+		</tr>
+		<tr>
+		  <td>THD voltage</td>
+		  <td>${ meter.ThdVolPhsA }</td>
+		  <td>${ meter.ThdVolPhsB }</td>
+		  <td>${ meter.ThdVolPhsC }</td>
+		  <td>${ meter.ThdVol }</td>
+		  <td>Percent</td>
+		</tr>
+		<tr>
+		  <td>Import</td>
+		  <td>${ meter.TotkWhImportPhsA }</td>
+		  <td>${ meter.TotkWhImportPhsB }</td>
+		  <td>${ meter.TotkWhImportPhsC }</td>
+		  <td>${ meter.TotkWhImport }</td>
+		  <td>kWh</td>
+		</tr>
+		<tr>
+		  <td>Export</td>
+		  <td>${ meter.TotkWhExportPhsA }</td>
+		  <td>${ meter.TotkWhExportPhsB }</td>
+		  <td>${ meter.TotkWhExportPhsC }</td>
+		  <td>${ meter.TotkWhExport }</td>
+		  <td>kWh</td>
+		</tr>
+	  </table>
+	  <p>${ message }</p>
 	</div>
 	<script src="/static/js/app.js"></script>
   </body>
