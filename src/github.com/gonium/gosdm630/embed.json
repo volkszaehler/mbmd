@@ -15,5 +15,5 @@
 	},
 	"CompressPattern": "\\.(js|css|html)$",
 	"NoCompressPattern": "\\.(pe?g|png|gif|woff2?|eot|ttf|ico)$",
-	"OverrideModDate": false
+	"OverrideModDate": true
 }

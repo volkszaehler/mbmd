@@ -3,6 +3,7 @@ package sdm630
 import (
 	"bytes"
 	"fmt"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jcuga/golongpoll"
 	"github.com/olekukonko/tablewriter"
@@ -263,7 +264,7 @@ func Run_httpd(
 		GetEmbeddedContent()))
 	srv := http.Server{
 		Addr:         url,
-		Handler:      router,
+		Handler:      handlers.CompressHandler(router),
 		ReadTimeout:  time.Minute,
 		WriteTimeout: time.Minute,
 	}

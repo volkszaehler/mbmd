@@ -1,13 +1,21 @@
-
 var meterapp = new Vue({
   el: '#meters',
   delimiters: ['${', '}'],
   data: {
 	meters: {},
-	time: 'n/a',
 	message: 'Loading...'
   }
 })
+
+var timeapp = new Vue({
+  el: '#time',
+  delimiters: ['${', '}'],
+  data: {
+	time: 'n/a',
+	date: 'n/a'
+  }
+})
+
 
 
 var isActive = true;
@@ -16,35 +24,41 @@ $().ready(function () {
   pollServer();
 });
 
-	
-function timeConverter(UNIX_timestamp){
+function convert_date(UNIX_timestamp){
   var date = new Date(UNIX_timestamp);
-  // Hours part from the timestamp
+  var day = "0" + date.getDate();
+  var month = "0" + date.getMonth();
+  var year = date.getFullYear();
+  return year + '/' + month.substr(-2) + '/' + day.substr(-2);
+}
+
+function convert_time(UNIX_timestamp){
+  var date = new Date(UNIX_timestamp);
   var hours = date.getHours();
-  // Minutes part from the timestamp
   var minutes = "0" + date.getMinutes();
-  // Seconds part from the timestamp
   var seconds = "0" + date.getSeconds();
   return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 }
 
 function pollServer() {
+  var loc = window.location;
+  var firehose =  loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/firehose?timeout=45&category=all";
   if (isActive) {
 	window.setTimeout(function () {
       $.ajax({
-		url: window.location.href + "/firehose?timeout=45&category=all",
+		url: firehose,
 		type: "GET",
 		success: function (result) {
+		  var timestamp = result["events"][0]["timestamp"]
+		  timeapp.time = convert_time(timestamp)
+		  timeapp.date = convert_date(timestamp)
 		  // extract the last update
 		  var payload = result["events"][0]["data"]
-		  var timestamp = result["events"][0]["timestamp"]
-		  var time = timeConverter(timestamp)
 		  var id = payload["DeviceId"]
 		  var iec61850 = payload["IEC61850"]
 		  var reading = payload["Value"].toFixed(2)
-		  // put into statusline & update page
-		  meterapp.message = time + ": " + id + "/" + iec61850 + " - " + reading
-		  meterapp.time = time
+		  // put into statusline
+		  meterapp.message = "Received " + id + " / " + reading + " - " + iec61850
 		  // update data table
 		  var datadict = meterapp.meters[id]
 		  if (!datadict) {

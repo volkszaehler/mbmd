@@ -1,0 +1,13 @@
+body {
+  padding-top: 5rem;
+}
+.mainsection {
+  padding: 3rem 1.5rem;
+}
+.metertable {
+  padding: 3rem 1.5rem;
+  text-align: left;
+}
+.metervalue {
+  text-align: right;
+}

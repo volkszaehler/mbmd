@@ -47,6 +47,11 @@ func (s *RoundRobinScheduler) Produce() {
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Cosphi, Value: math.NaN(), Description: "L2 Cosphi", IEC61850: "AngLocPhsB"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3Cosphi, Value: math.NaN(), Description: "L3 Cosphi", IEC61850: "AngLocPhsC"}
 
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1THDVoltageNeutral, Value: math.NaN(), Description: "L1 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsA"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2THDVoltageNeutral, Value: math.NaN(), Description: "L2 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsB"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3THDVoltageNeutral, Value: math.NaN(), Description: "L3 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsC"}
+			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeAvgTHDVoltageNeutral, Value: math.NaN(), Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"}
+
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1Import, Value: math.NaN(), Description: "L1 Import (kWh)", IEC61850: "TotkWhImportPhsA"}
 			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2Import, Value: math.NaN(), Description: "L2 Import (kWh)",
 				IEC61850: "TotkWhImportPhsB"}
@@ -62,11 +67,6 @@ func (s *RoundRobinScheduler) Produce() {
 			//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2THDCurrent, Value: math.NaN(), Description: "L2 Current THD (%)", IEC61850: "ThdAPhsB"}
 			//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3THDCurrent, Value: math.NaN(), Description: "L3 Current THD (%)", IEC61850: "ThdAPhsC"}
 			//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeAvgTHDCurrent, Value: math.NaN(), Description: "Average current to neutral THD (%)", IEC61850: "ThdAmp"}
-
-			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1THDVoltageNeutral, Value: math.NaN(), Description: "L1 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsA"}
-			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2THDVoltageNeutral, Value: math.NaN(), Description: "L2 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsB"}
-			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3THDVoltageNeutral, Value: math.NaN(), Description: "L3 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsC"}
-			s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeAvgTHDVoltageNeutral, Value: math.NaN(), Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"}
 		}
 	}
 }
