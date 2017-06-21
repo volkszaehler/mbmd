@@ -2,8 +2,8 @@ var meterapp = new Vue({
   el: '#meters',
   delimiters: ['${', '}'],
   data: {
-	meters: {},
-	message: 'Loading...'
+		meters: {},
+		message: 'Loading...'
   }
 })
 
@@ -11,8 +11,8 @@ var timeapp = new Vue({
   el: '#time',
   delimiters: ['${', '}'],
   data: {
-	time: 'n/a',
-	date: 'n/a'
+		time: 'n/a',
+		date: 'n/a'
   }
 })
 
