@@ -272,7 +272,7 @@ As mentioned there, add the following parameter to your
     dwc_otg.speed=1
 
 This switches the internal ``dwc`` USB hub of the Raspberry Pi to
-USB1.1. While this reduces the available speed, the device now works
+USB1.1. While this reduces the available USB speed, the device now works
 reliably.
 
 ## The API
@@ -337,6 +337,7 @@ $ curl localhost:8080/last/11
 The "GET /minuteavg"-call returns the average measurements over the last
 minute:
 
+````
 $ curl localhost:8080/minuteavg/11
 {
   "Timestamp": "2017-03-27T15:19:06.470316939+02:00",
@@ -383,9 +384,7 @@ $ curl localhost:8080/minuteavg/11
     "AvgVoltageNeutral": 0
   }
 }
-
-Please note: The calculation of ``Import``, ``TotalImport``, ``Export``,
-``TotalExport`` and ``THD`` is currently broken.
+````
 
 If you want to receive all measurements of all devices, you can use these two calls
 without the device ID:
