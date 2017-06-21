@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -40,8 +41,10 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 		w.WriteHeader(http.StatusOK)
 		data := struct {
 			SoftwareVersion string
+			GolangVersion   string
 		}{
 			SoftwareVersion: RELEASEVERSION,
+			GolangVersion:   runtime.Version(),
 		}
 		err := t.Execute(w, data)
 		if err != nil {
