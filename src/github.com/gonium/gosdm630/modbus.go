@@ -84,7 +84,7 @@ func NewModbusEngine(
 	rtuclient.DataBits = 8
 	rtuclient.Parity = "N"
 	rtuclient.StopBits = 1
-	rtuclient.Timeout = 200 * time.Millisecond
+	rtuclient.Timeout = 300 * time.Millisecond
 	if verbose {
 		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
 		log.Printf("Connecting to RTU via %s, %d %d%s%d\r\n", rtuDevice,
@@ -181,7 +181,7 @@ func (q *ModbusEngine) Transform(
 		// See http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 		// 3.5 chars at 9600 Baud take 36 ms
 		if previousDeviceId != snip.DeviceId {
-			time.Sleep(time.Duration(40) * time.Millisecond)
+			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
 		previousDeviceId = snip.DeviceId
 		value := q.queryOrFail(snip.DeviceId, snip.OpCode)
