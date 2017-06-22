@@ -1,12 +1,10 @@
 package sdm630
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jcuga/golongpoll"
-	"github.com/olekukonko/tablewriter"
 	"html/template"
 	"log"
 	"net/http"
@@ -17,13 +15,6 @@ import (
 
 // Generate the embedded assets using https://github.com/aprice/embed
 //go:generate embed -c "embed.json"
-
-// formatFloat helper
-func fF(val float64) string {
-	var buffer bytes.Buffer
-	fmt.Fprintf(&buffer, "%.3f", val)
-	return buffer.String()
-}
 
 func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	loader := GetEmbeddedContent()
@@ -45,65 +36,6 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 		}{
 			SoftwareVersion: RELEASEVERSION,
 			GolangVersion:   runtime.Version(),
-		}
-		err := t.Execute(w, data)
-		if err != nil {
-			log.Fatal("Failed to render main page: ", err.Error())
-		}
-	})
-}
-
-func MkSimpleIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
-	loader := GetEmbeddedContent()
-	mainTemplate, err := loader.GetContents("/simple.tmpl")
-	if err != nil {
-		log.Fatal("Failed to load embedded template: " + err.Error())
-	}
-	t, err := template.New("gosdm630").Parse(string(mainTemplate))
-	if err != nil {
-		log.Fatal("Failed to create main page template: ", err.Error())
-	}
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		var buffer bytes.Buffer
-		ids := hc.GetSortedIDs()
-		for _, id := range ids {
-			v, err := hc.GetLast(id)
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, err.Error())
-				return
-			}
-			fmt.Fprintf(&buffer, "\r\n\r\nModbus ID %d, last measurement taken %s:\r\n",
-				v.ModbusDeviceId, v.Timestamp.Format(time.RFC850))
-			table := tablewriter.NewWriter(&buffer)
-			table.SetHeader([]string{"Phase", "Voltage [V]", "Current [A]",
-				"Power [W]", "Power Factor", "Import [kWh]", "Export [kWh]",
-				"THD Voltage (Neutral) [%]"})
-			table.Append([]string{"L1", fF(v.Voltage.L1), fF(v.Current.L1),
-				fF(v.Power.L1), fF(v.Cosphi.L1), fF(v.Import.L1),
-				fF(v.Export.L1), fF(v.THD.VoltageNeutral.L1)})
-			table.Append([]string{"L2", fF(v.Voltage.L2), fF(v.Current.L2),
-				fF(v.Power.L2), fF(v.Cosphi.L2), fF(v.Import.L2),
-				fF(v.Export.L2), fF(v.THD.VoltageNeutral.L2)})
-			table.Append([]string{"L3", fF(v.Voltage.L3), fF(v.Current.L3),
-				fF(v.Power.L3), fF(v.Cosphi.L3), fF(v.Import.L3),
-				fF(v.Export.L3), fF(v.THD.VoltageNeutral.L3)})
-			table.Append([]string{"ALL", "n/a", fF(v.Current.L1 + v.Current.L2 + v.Current.L3),
-				fF(v.Power.L1 + v.Power.L2 + v.Power.L3), "n/a", fF(v.TotalImport),
-				fF(v.TotalExport), fF(v.THD.AvgVoltageNeutral)})
-			table.Render()
-		}
-		data := struct {
-			Content         string
-			ReloadInterval  int
-			SoftwareVersion string
-		}{
-			Content:         buffer.String(),
-			ReloadInterval:  2,
-			SoftwareVersion: RELEASEVERSION,
 		}
 		err := t.Execute(w, data)
 		if err != nil {
@@ -256,7 +188,6 @@ func Run_httpd(
 ) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", MkIndexHandler(mc))
-	router.HandleFunc("/simple", MkSimpleIndexHandler(mc))
 	router.HandleFunc("/last", MkLastAllValuesHandler(mc))
 	router.HandleFunc("/last/{id:[0-9]+}", MkLastSingleValuesHandler(mc))
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgAllHandler(mc))

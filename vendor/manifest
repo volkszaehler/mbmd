@@ -69,12 +69,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/olekukonko/tablewriter",
-			"repository": "https://github.com/olekukonko/tablewriter",
-			"revision": "44e365d423f4f06769182abfeeae2b91be9d529b",
-			"branch": "master"
-		},
-		{
 			"importpath": "gopkg.in/urfave/cli.v1",
 			"repository": "https://gopkg.in/urfave/cli.v1",
 			"revision": "0bdeddeeb0f650497d603c4ad7b20cfe685682f6",
