@@ -44,7 +44,7 @@ function pollServer() {
   var loc = window.location;
   var firehose =  loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/firehose?timeout=45&category=all";
   if (isActive) {
-	window.setTimeout(function () {
+	//window.setTimeout(function () {
       $.ajax({
 		url: firehose,
 		type: "GET",
@@ -77,6 +77,6 @@ function pollServer() {
 		  pollServer();
 		}
 	  });
-	}, 1);
+	//}, 0);
   }
 }
