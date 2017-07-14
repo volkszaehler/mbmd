@@ -140,7 +140,6 @@ func (q *ModbusEngine) retrieveOpCode(deviceid uint8, funccode uint8, opcode uin
 	// update the slave id in the handler
 	q.handler.SlaveId = deviceid
 	var results []byte
-	log.Printf("Using funccode %d", funccode)
 	switch funccode {
 	case ReadInputReg:
 		results, err = q.client.ReadInputRegisters(opcode, 2)
@@ -216,22 +215,21 @@ func (q *ModbusEngine) Transform(
 	var previousDeviceId uint8 = 0
 	for {
 		snip := <-inputStream
-		// apparently the turnaround timeout must be respected
-		// See http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
-		// 3.5 chars at 9600 Baud take 36 ms
+		// The SDM devices need to have a little pause between querying
+		// different devices.
 		if previousDeviceId != snip.DeviceId {
 			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
-		if snip.OpCode == 0x00 {
-			log.Printf("Skipping invalid Snip %+v", snip)
-		} else {
-			log.Printf("Executing Snip %+v", snip)
-			previousDeviceId = snip.DeviceId
-			value := q.queryOrFail(snip.DeviceId, snip.FuncCode, snip.OpCode)
-			snip.Value = value
-			snip.ReadTimestamp = time.Now()
-			outputStream <- snip
-		}
+		//if snip.OpCode == 0x00 {
+		//	log.Printf("Skipping invalid Snip %+v", snip)
+		//} else {
+		//log.Printf("Executing Snip %+v", snip)
+		previousDeviceId = snip.DeviceId
+		value := q.queryOrFail(snip.DeviceId, snip.FuncCode, snip.OpCode)
+		snip.Value = value
+		snip.ReadTimestamp = time.Now()
+		outputStream <- snip
+		//}
 	}
 }
 

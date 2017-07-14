@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"time"
 )
@@ -278,6 +279,8 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		r.THD.VoltageNeutral.L3 = &q.Value
 	case "ThdVol":
 		r.THD.AvgVoltageNeutral = &q.Value
+	default:
+		log.Fatalf("Cannot merge unknown snip type - snip is %+v", q)
 	}
 
 }

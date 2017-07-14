@@ -43,8 +43,11 @@ func main() {
 		cli.StringFlag{
 			Name:  "device_list, d",
 			Value: "1",
-			Usage: `MODBUS device ID to query, separated by comma. 
-			Example: -d 11,12,13`,
+			Usage: `MODBUS device type and ID to query, separated by comma.
+			Valid types are:
+			"SDM" for Eastron SDM meters
+			"JANITZA" for Janitza B-Series DIN-Rail meters
+			Example: -d JANITZA:1,SDM:22,SDM:23`,
 		},
 		cli.StringFlag{
 			Name:  "unique_id_format, f",
@@ -55,19 +58,47 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
+		status := sdm630.NewStatus()
+
 		// Set unique ID format
 		sdm630.UniqueIdFormat = c.String("unique_id_format")
+
+		// Parse the device_list parameter
+		//deviceslice := strings.Split(c.String("device_list"), ",")
+		//devids := make([]uint8, 0, len(deviceslice))
+		//for _, devid := range deviceslice {
+		//	id, err := strconv.Atoi(devid)
+		//	if err != nil {
+		//		log.Fatalf("Error parsing device id %s: %s", devid, err.Error())
+		//	}
+		//	devids = append(devids, uint8(id))
+		//}
+
 		// Parse the device_list parameter
 		deviceslice := strings.Split(c.String("device_list"), ",")
-		devids := make([]uint8, 0, len(deviceslice))
-		for _, devid := range deviceslice {
+		meters := make([]*sdm630.Meter, 0, len(deviceslice))
+		for _, meterdef := range deviceslice {
+			var meter *sdm630.Meter
+			splitdef := strings.Split(meterdef, ":")
+			if len(splitdef) != 2 {
+				log.Fatalf("Cannot parse device definition %s. See -h for help.", meterdef)
+			}
+			metertype, devid := splitdef[0], splitdef[1]
 			id, err := strconv.Atoi(devid)
 			if err != nil {
-				log.Fatalf("Error parsing device id %s: %s", devid, err.Error())
+				log.Fatalf("Error parsing device id %s: %s. See -h for help.", meterdef, err.Error())
 			}
-			devids = append(devids, uint8(id))
+			metertype = strings.ToUpper(metertype)
+			switch metertype {
+			case sdm630.METER_JANITZA:
+				meter = sdm630.NewMeter(uint8(id), sdm630.NewJanitzaRoundRobinScheduler())
+			case sdm630.METER_SDM:
+				meter = sdm630.NewMeter(uint8(id), sdm630.NewSDMRoundRobinScheduler())
+			default:
+				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
+			}
+			meters = append(meters, meter)
 		}
-		status := sdm630.NewStatus()
 
 		// Create Channels that link the goroutines
 		var scheduler2queryengine = make(sdm630.QuerySnipChannel)
@@ -75,12 +106,11 @@ func main() {
 		var duplicator2cache = make(sdm630.QuerySnipChannel)
 		var duplicator2firehose = make(sdm630.QuerySnipChannel)
 
-		//scheduler := sdm630.NewSDMRoundRobinScheduler(
-		scheduler := sdm630.NewJanitzaRoundRobinScheduler(
+		scheduler := sdm630.NewQueryScheduler(
 			scheduler2queryengine,
-			devids,
+			meters,
 		)
-		go scheduler.Produce()
+		go scheduler.Run()
 
 		qe := sdm630.NewModbusEngine(
 			c.String("serialadapter"),
