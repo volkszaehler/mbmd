@@ -75,7 +75,8 @@ func main() {
 		var duplicator2cache = make(sdm630.QuerySnipChannel)
 		var duplicator2firehose = make(sdm630.QuerySnipChannel)
 
-		scheduler := sdm630.NewRoundRobinScheduler(
+		//scheduler := sdm630.NewSDMRoundRobinScheduler(
+		scheduler := sdm630.NewJanitzaRoundRobinScheduler(
 			scheduler2queryengine,
 			devids,
 		)

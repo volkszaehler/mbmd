@@ -10,44 +10,71 @@ import (
 )
 
 const (
-	MaxRetryCount = 5
+	MaxRetryCount  = 5
+	ReadInputReg   = 4
+	ReadHoldingReg = 3
 )
 
-/***
- * Opcodes as defined by Eastron.
- * See http://bg-etech.de/download/manual/SDM630Register.pdf
- * Please note that this is the superset of all SDM devices - some
- * opcodes might not work on some devices.
- */
 const (
-	OpCodeL1Voltage   = 0x0000
-	OpCodeL2Voltage   = 0x0002
-	OpCodeL3Voltage   = 0x0004
-	OpCodeL1Current   = 0x0006
-	OpCodeL2Current   = 0x0008
-	OpCodeL3Current   = 0x000A
-	OpCodeL1Power     = 0x000C
-	OpCodeL2Power     = 0x000E
-	OpCodeL3Power     = 0x0010
-	OpCodeL1Import    = 0x015a
-	OpCodeL2Import    = 0x015c
-	OpCodeL3Import    = 0x015e
-	OpCodeTotalImport = 0x0048
-	OpCodeL1Export    = 0x0160
-	OpCodeL2Export    = 0x0162
-	OpCodeL3Export    = 0x0164
-	OpCodeTotalExport = 0x004a
-	OpCodeL1Cosphi    = 0x001e
-	OpCodeL2Cosphi    = 0x0020
-	OpCodeL3Cosphi    = 0x0022
+	/***
+	 * Opcodes as defined by Eastron.
+	 * See http://bg-etech.de/download/manual/SDM630Register.pdf
+	 * Please note that this is the superset of all SDM devices - some
+	 * opcodes might not work on some devices.
+	 */
+	OpCodeSDML1Voltage   = 0x0000
+	OpCodeSDML2Voltage   = 0x0002
+	OpCodeSDML3Voltage   = 0x0004
+	OpCodeSDML1Current   = 0x0006
+	OpCodeSDML2Current   = 0x0008
+	OpCodeSDML3Current   = 0x000A
+	OpCodeSDML1Power     = 0x000C
+	OpCodeSDML2Power     = 0x000E
+	OpCodeSDML3Power     = 0x0010
+	OpCodeSDML1Import    = 0x015a
+	OpCodeSDML2Import    = 0x015c
+	OpCodeSDML3Import    = 0x015e
+	OpCodeSDMTotalImport = 0x0048
+	OpCodeSDML1Export    = 0x0160
+	OpCodeSDML2Export    = 0x0162
+	OpCodeSDML3Export    = 0x0164
+	OpCodeSDMTotalExport = 0x004a
+	OpCodeSDML1Cosphi    = 0x001e
+	OpCodeSDML2Cosphi    = 0x0020
+	OpCodeSDML3Cosphi    = 0x0022
 	//OpCodeL1THDCurrent         = 0x00F0
 	//OpCodeL2THDCurrent         = 0x00F2
 	//OpCodeL3THDCurrent         = 0x00F4
 	//OpCodeAvgTHDCurrent        = 0x00Fa
-	OpCodeL1THDVoltageNeutral  = 0x00ea
-	OpCodeL2THDVoltageNeutral  = 0x00ec
-	OpCodeL3THDVoltageNeutral  = 0x00ee
-	OpCodeAvgTHDVoltageNeutral = 0x00F8
+	OpCodeSDML1THDVoltageNeutral  = 0x00ea
+	OpCodeSDML2THDVoltageNeutral  = 0x00ec
+	OpCodeSDML3THDVoltageNeutral  = 0x00ee
+	OpCodeSDMAvgTHDVoltageNeutral = 0x00F8
+
+	/***
+	 * Opcodes for Janitza B23.
+	 * See https://www.janitza.de/betriebsanleitungen.html?file=files/download/manuals/current/B-Series/MID-Energy-Meters-Product-Manual.pdf
+	 */
+	OpCodeJanitzaL1Voltage   = 0x4A38
+	OpCodeJanitzaL2Voltage   = 0x4A3A
+	OpCodeJanitzaL3Voltage   = 0x4A3C
+	OpCodeJanitzaL1Current   = 0x4A44
+	OpCodeJanitzaL2Current   = 0x4A46
+	OpCodeJanitzaL3Current   = 0x4A48
+	OpCodeJanitzaL1Power     = 0x4A4C
+	OpCodeJanitzaL2Power     = 0x4A4E
+	OpCodeJanitzaL3Power     = 0x4A50
+	OpCodeJanitzaL1Import    = 0x4A76
+	OpCodeJanitzaL2Import    = 0x4A78
+	OpCodeJanitzaL3Import    = 0x4A7A
+	OpCodeJanitzaTotalImport = 0x4A7C
+	OpCodeJanitzaL1Export    = 0x4A7E
+	OpCodeJanitzaL2Export    = 0x4A80
+	OpCodeJanitzaL3Export    = 0x4A82
+	OpCodeJanitzaTotalExport = 0x4A84
+	OpCodeJanitzaL1Cosphi    = 0x4A64
+	OpCodeJanitzaL2Cosphi    = 0x4A66
+	OpCodeJanitzaL3Cosphi    = 0x4A68
 )
 
 const (
@@ -107,12 +134,22 @@ func NewModbusEngine(
 	}
 }
 
-func (q *ModbusEngine) retrieveOpCode(deviceid uint8, opcode uint16) (retval float64,
+func (q *ModbusEngine) retrieveOpCode(deviceid uint8, funccode uint8, opcode uint16) (retval float64,
 	err error) {
 	q.status.IncreaseModbusRequestCounter()
 	// update the slave id in the handler
 	q.handler.SlaveId = deviceid
-	results, err := q.client.ReadInputRegisters(opcode, 2)
+	var results []byte
+	log.Printf("Using funccode %d", funccode)
+	switch funccode {
+	case ReadInputReg:
+		results, err = q.client.ReadInputRegisters(opcode, 2)
+	case ReadHoldingReg:
+		results, err = q.client.ReadHoldingRegisters(opcode, 2)
+	default:
+		log.Fatalf("Unknown function code %d - cannot query device.",
+			funccode)
+	}
 	if err == nil {
 		retval = rtuToFloat64(results)
 	} else if q.verbose {
@@ -121,11 +158,11 @@ func (q *ModbusEngine) retrieveOpCode(deviceid uint8, opcode uint16) (retval flo
 	return retval, err
 }
 
-func (q *ModbusEngine) queryOrFail(deviceid uint8, opcode uint16) (retval float64) {
+func (q *ModbusEngine) queryOrFail(deviceid uint8, funccode uint8, opcode uint16) (retval float64) {
 	var err error
 	tryCnt := 0
 	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
-		retval, err = q.retrieveOpCode(deviceid, opcode)
+		retval, err = q.retrieveOpCode(deviceid, funccode, opcode)
 		if err != nil {
 			q.status.IncreaseModbusReconnectCounter()
 			log.Printf("Failed to retrieve opcode - retry attempt %d of %d\r\n", tryCnt+1,
@@ -150,7 +187,9 @@ func (q *ModbusEngine) Scan() {
 	var devid uint8
 	for devid = 1; devid <= 247; devid++ {
 		// try to query L1 voltage
-		voltage_L1, err := q.retrieveOpCode(devid, OpCodeL1Voltage)
+		// TODO: Implement this for Janitza devices as well (different
+		// function code)
+		voltage_L1, err := q.retrieveOpCode(devid, ReadInputReg, OpCodeSDML1Voltage)
 		if err != nil {
 			log.Printf("Device %d: n/a\r\n", devid)
 		} else {
@@ -183,15 +222,17 @@ func (q *ModbusEngine) Transform(
 		if previousDeviceId != snip.DeviceId {
 			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
-		previousDeviceId = snip.DeviceId
-		value := q.queryOrFail(snip.DeviceId, snip.OpCode)
-		snip.Value = value
-		snip.ReadTimestamp = time.Now()
-		outputStream <- snip
+		if snip.OpCode == 0x00 {
+			log.Printf("Skipping invalid Snip %+v", snip)
+		} else {
+			log.Printf("Executing Snip %+v", snip)
+			previousDeviceId = snip.DeviceId
+			value := q.queryOrFail(snip.DeviceId, snip.FuncCode, snip.OpCode)
+			snip.Value = value
+			snip.ReadTimestamp = time.Now()
+			outputStream <- snip
+		}
 	}
-	// go vet reports this as unreachable (correctly), so
-	// just commented out.
-	//q.handler.Close()
 }
 
 func rtuToFloat64(b []byte) float64 {

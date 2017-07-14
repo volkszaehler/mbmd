@@ -467,7 +467,7 @@ Pjwvc2NyaXB0PgogIDwvYm9keT4KPC9odG1sPgoK
 	l.Add(&loader.Content{
 		Path:   "/js/app.js",
 		Hash:    "Vb-bvlWJl8Uf9qg0qwGnXg",
-		Modified: time.Unix(1498141258, 0),
+		Modified: time.Unix(1499946304, 0),
 		Compressed: `
 H4sIAAAAAAAA/5xUX2/TPhR9z6fIz78JJ0qWjokhlCqaENtgEvDAYAJV0WTs29bItSP/yVZF+e7I+dM2
 2+CBh6rJOafn+vT63procAMWNKmqQsJ9eOsgakDk+P8ONjhlIPiG++d8gY8anOIWlykjluRNr8mbNt2A

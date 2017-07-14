@@ -203,6 +203,7 @@ func (r ReadingSlice) NotOlderThan(ts time.Time) (retval ReadingSlice) {
 
 type QuerySnip struct {
 	DeviceId      uint8
+	FuncCode      uint8
 	OpCode        uint16 `json:"-"`
 	Value         float64
 	IEC61850      string
@@ -220,46 +221,46 @@ type QuerySnipChannel chan QuerySnip
 func (r *Readings) MergeSnip(q QuerySnip) {
 	r.Timestamp = q.ReadTimestamp
 	r.Unix = r.Timestamp.Unix()
-	switch q.OpCode {
-	case OpCodeL1Voltage:
+	switch q.IEC61850 {
+	case "VolLocPhsA":
 		r.Voltage.L1 = &q.Value
-	case OpCodeL2Voltage:
+	case "VolLocPhsB":
 		r.Voltage.L2 = &q.Value
-	case OpCodeL3Voltage:
+	case "VolLocPhsC":
 		r.Voltage.L3 = &q.Value
-	case OpCodeL1Current:
+	case "AmpLocPhsA":
 		r.Current.L1 = &q.Value
-	case OpCodeL2Current:
+	case "AmpLocPhsB":
 		r.Current.L2 = &q.Value
-	case OpCodeL3Current:
+	case "AmpLocPhsC":
 		r.Current.L3 = &q.Value
-	case OpCodeL1Power:
+	case "WLocPhsA":
 		r.Power.L1 = &q.Value
-	case OpCodeL2Power:
+	case "WLocPhsB":
 		r.Power.L2 = &q.Value
-	case OpCodeL3Power:
+	case "WLocPhsC":
 		r.Power.L3 = &q.Value
-	case OpCodeL1Cosphi:
+	case "AngLocPhsA":
 		r.Cosphi.L1 = &q.Value
-	case OpCodeL2Cosphi:
+	case "AngLocPhsB":
 		r.Cosphi.L2 = &q.Value
-	case OpCodeL3Cosphi:
+	case "AngLocPhsC":
 		r.Cosphi.L3 = &q.Value
-	case OpCodeL1Import:
+	case "TotkWhImportPhsA":
 		r.Import.L1 = &q.Value
-	case OpCodeL2Import:
+	case "TotkWhImportPhsB":
 		r.Import.L2 = &q.Value
-	case OpCodeL3Import:
+	case "TotkWhImportPhsC":
 		r.Import.L3 = &q.Value
-	case OpCodeTotalImport:
+	case "TotkWhImport":
 		r.TotalImport = &q.Value
-	case OpCodeL1Export:
+	case "TotkWhExportPhsA":
 		r.Export.L1 = &q.Value
-	case OpCodeL2Export:
+	case "TotkWhExportPhsB":
 		r.Export.L2 = &q.Value
-	case OpCodeL3Export:
+	case "TotkWhExportPhsC":
 		r.Export.L3 = &q.Value
-	case OpCodeTotalExport:
+	case "TotkWhExport":
 		r.TotalExport = &q.Value
 		//	case OpCodeL1THDCurrent:
 		//		r.THD.Current.L1 = &q.Value
@@ -269,19 +270,19 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		//		r.THD.Current.L3 = &q.Value
 		//	case OpCodeAvgTHDCurrent:
 		//		r.THD.AvgCurrent = &q.Value
-	case OpCodeL1THDVoltageNeutral:
+	case "ThdVolPhsA":
 		r.THD.VoltageNeutral.L1 = &q.Value
-	case OpCodeL2THDVoltageNeutral:
+	case "ThdVolPhsB":
 		r.THD.VoltageNeutral.L2 = &q.Value
-	case OpCodeL3THDVoltageNeutral:
+	case "ThdVolPhsC":
 		r.THD.VoltageNeutral.L3 = &q.Value
-	case OpCodeAvgTHDVoltageNeutral:
+	case "ThdVol":
 		r.THD.AvgVoltageNeutral = &q.Value
 	}
 
 }
 
 func (q QuerySnip) String() string {
-	return fmt.Sprintf("ID: %d, Opcode %#X: %.3f", q.DeviceId, q.OpCode,
-		q.Value)
+	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode %x: Value: %.3f",
+		q.DeviceId, q.FuncCode, q.OpCode, q.Value)
 }
