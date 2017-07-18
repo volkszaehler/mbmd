@@ -2,6 +2,7 @@ package sdm630
 
 import (
 	"encoding/binary"
+	"fmt"
 	"github.com/goburrow/modbus"
 	"log"
 	"math"
@@ -157,24 +158,93 @@ func (q *ModbusEngine) retrieveOpCode(deviceid uint8, funccode uint8, opcode uin
 	return retval, err
 }
 
-func (q *ModbusEngine) queryOrFail(deviceid uint8, funccode uint8, opcode uint16) (retval float64) {
-	var err error
-	tryCnt := 0
-	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
-		retval, err = q.retrieveOpCode(deviceid, funccode, opcode)
-		if err != nil {
-			q.status.IncreaseModbusReconnectCounter()
-			log.Printf("Failed to retrieve opcode - retry attempt %d of %d\r\n", tryCnt+1,
-				MaxRetryCount)
+//func (q *ModbusEngine) queryOrFail(
+//	deviceid uint8,
+//	funccode uint8,
+//	opcode uint16,
+//	errorStream QueryErrorChannel,
+//) (retval float64) {
+//	var err error
+//	tryCnt := 0
+//	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
+//		retval, err = q.retrieveOpCode(deviceid, funccode, opcode)
+//		if err != nil {
+//			q.status.IncreaseModbusReconnectCounter()
+//			log.Printf("Failed to retrieve opcode - retry attempt %d of %d\r\n", tryCnt+1,
+//				MaxRetryCount)
+//			time.Sleep(time.Duration(100) * time.Millisecond)
+//		} else {
+//			break
+//		}
+//	}
+//	if tryCnt == MaxRetryCount {
+//		errorsnip := QueryError{
+//			Error: fmt.Sprintf("Device %d did not respond.", deviceid),
+//		}
+//		errorStream <- errorsnip
+//	}
+//	return nil
+//}
+
+func (q *ModbusEngine) Transform(
+	inputStream QuerySnipChannel,
+	controlStream ControlSnipChannel,
+	outputStream QuerySnipChannel,
+) {
+	var previousDeviceId uint8 = 0
+	for {
+		snip := <-inputStream
+		// The SDM devices need to have a little pause between querying
+		// different devices.
+		if previousDeviceId != snip.DeviceId {
 			time.Sleep(time.Duration(100) * time.Millisecond)
+		}
+		//if snip.OpCode == 0x00 {
+		//	log.Printf("Skipping invalid Snip %+v", snip)
+		//} else {
+		//log.Printf("Executing Snip %+v", snip)
+		previousDeviceId = snip.DeviceId
+		//		value := q.queryOrFail(snip.DeviceId, snip.FuncCode, snip.OpCode, errorStream)
+
+		var err error
+		var reading float64
+		tryCnt := 0
+		for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
+			reading, err = q.retrieveOpCode(snip.DeviceId, snip.FuncCode, snip.OpCode)
+			if err != nil {
+				q.status.IncreaseModbusReconnectCounter()
+				log.Printf("Device %d failed to respond - retry attempt %d of %d",
+					snip.DeviceId, tryCnt+1, MaxRetryCount)
+				time.Sleep(time.Duration(100) * time.Millisecond)
+			} else {
+				break
+			}
+		}
+		if tryCnt == MaxRetryCount {
+			errorSnip := ControlSnip{
+				Type:     CONTROLSNIP_ERROR,
+				Message:  fmt.Sprintf("Device %d did not respond.", snip.DeviceId),
+				DeviceId: snip.DeviceId,
+			}
+			controlStream <- errorSnip
 		} else {
-			break
+			snip.Value = reading
+			snip.ReadTimestamp = time.Now()
+			outputStream <- snip
+			successSnip := ControlSnip{
+				Type:     CONTROLSNIP_OK,
+				Message:  "OK",
+				DeviceId: snip.DeviceId,
+			}
+			controlStream <- successSnip
 		}
 	}
-	if tryCnt == MaxRetryCount {
-		log.Fatal("Cannot query the sensor, reached maximum retry count. Did you specify the correct device id and communication parameters?")
-	}
-	return retval
+}
+
+func rtuToFloat64(b []byte) float64 {
+	bits := binary.BigEndian.Uint32(b)
+	f := math.Float32frombits(bits)
+	return float64(f)
 }
 
 func (q *ModbusEngine) Scan() {
@@ -206,35 +276,4 @@ func (q *ModbusEngine) Scan() {
 	log.Println("WARNING: This lists only the devices that responded to " +
 		"an L1 voltage read input register request. Devices with " +
 		"different function code definitions might not be detected.")
-}
-
-func (q *ModbusEngine) Transform(
-	inputStream QuerySnipChannel,
-	outputStream QuerySnipChannel,
-) {
-	var previousDeviceId uint8 = 0
-	for {
-		snip := <-inputStream
-		// The SDM devices need to have a little pause between querying
-		// different devices.
-		if previousDeviceId != snip.DeviceId {
-			time.Sleep(time.Duration(100) * time.Millisecond)
-		}
-		//if snip.OpCode == 0x00 {
-		//	log.Printf("Skipping invalid Snip %+v", snip)
-		//} else {
-		//log.Printf("Executing Snip %+v", snip)
-		previousDeviceId = snip.DeviceId
-		value := q.queryOrFail(snip.DeviceId, snip.FuncCode, snip.OpCode)
-		snip.Value = value
-		snip.ReadTimestamp = time.Now()
-		outputStream <- snip
-		//}
-	}
-}
-
-func rtuToFloat64(b []byte) float64 {
-	bits := binary.BigEndian.Uint32(b)
-	f := math.Float32frombits(bits)
-	return float64(f)
 }

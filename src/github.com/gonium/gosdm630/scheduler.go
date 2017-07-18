@@ -1,37 +1,104 @@
 package sdm630
 
 import (
+	"log"
 	"math"
+	"time"
 )
 
-type QueryScheduler struct {
-	out    QuerySnipChannel
-	meters []*Meter
+type MeterScheduler struct {
+	out     QuerySnipChannel
+	control ControlSnipChannel
+	meters  []*Meter
 }
 
-func NewQueryScheduler(
+func NewMeterScheduler(
 	out QuerySnipChannel,
+	control ControlSnipChannel,
 	devices []*Meter,
-) *QueryScheduler {
-	return &QueryScheduler{
-		out:    out,
-		meters: devices,
+) *MeterScheduler {
+	return &MeterScheduler{
+		out:     out,
+		meters:  devices,
+		control: control,
 	}
 }
 
-func (q *QueryScheduler) Run() {
+func (q *MeterScheduler) produceSnips(out QuerySnipChannel) {
 	for {
 		for _, meter := range q.meters {
 			// TODO: Implement state of meter, skip/probe defective ones.
 			// TODO: The probe function can also be used by the sdm-detect program.
-			meter.Scheduler.Produce(q.out, meter.DevId)
+			sniplist := meter.Scheduler.Produce(meter.DeviceId)
+			for _, snip := range sniplist {
+				// Check if meter is still valid
+				if meter.GetState() != METERSTATE_UNAVAILABLE {
+					q.out <- snip
+				}
+			}
+		}
+	}
+}
+
+func (q *MeterScheduler) supervisor() {
+	for {
+		for _, meter := range q.meters {
+			if meter.GetState() == METERSTATE_UNAVAILABLE {
+				// TODO: Ping device, set state accordingly
+				log.Printf("Attempting to ping unavailable meter %d", meter.DeviceId)
+				// inject probe snip - the re-enabling logic is in Run()
+				q.out <- meter.Scheduler.GetProbeSnip(meter.DeviceId)
+			}
+		}
+		time.Sleep(60 * time.Second)
+	}
+}
+
+func (q *MeterScheduler) Run() {
+	source := make(QuerySnipChannel)
+	go q.supervisor()
+	go q.produceSnips(source)
+	for {
+		// TODO: Implement state of meter, skip/probe defective ones.
+		// TODO: The probe function can also be used by the sdm-detect program.
+		// TODO: Error handling, setting state of meter & invalidate
+		// currently cached readings.
+		select {
+		case snip := <-source:
+			q.out <- snip
+		case controlSnip := <-q.control:
+			switch controlSnip.Type {
+			case CONTROLSNIP_ERROR:
+				// TODO: understand control and error snips
+				log.Printf("Failure - deactivating meter %d: %s",
+					controlSnip.DeviceId, controlSnip.Message)
+				// search meter and deactivate it...
+				for _, meter := range q.meters {
+					if meter.DeviceId == controlSnip.DeviceId {
+						meter.UpdateState(METERSTATE_UNAVAILABLE)
+					}
+				}
+			case CONTROLSNIP_OK:
+				// search meter and deactivate it...
+				for _, meter := range q.meters {
+					if meter.DeviceId == controlSnip.DeviceId {
+						if meter.GetState() != METERSTATE_AVAILABLE {
+							log.Printf("Re-activating meter %d", controlSnip.DeviceId)
+							meter.UpdateState(METERSTATE_AVAILABLE)
+						}
+					}
+				}
+			default:
+				log.Fatal("Received unknown control snip - something weird happened.")
+			}
 		}
 	}
 }
 
 // This is the interface each scheduler must implement.
 type Scheduler interface {
-	Produce(out QuerySnipChannel, devid uint8)
+	Produce(devid uint8) []QuerySnip
+	GetProbeSnip(devid uint8) QuerySnip
 }
 
 // ####################################################################
@@ -44,66 +111,68 @@ func NewSDMRoundRobinScheduler() *SDMRoundRobinScheduler {
 	return &SDMRoundRobinScheduler{}
 }
 
-func (s *SDMRoundRobinScheduler) Produce(out QuerySnipChannel, devid uint8) {
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
+func (s *SDMRoundRobinScheduler) GetProbeSnip(devid uint8) (retval QuerySnip) {
+	retval = QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
 		OpCode: OpCodeSDML1Voltage, Value: math.NaN(), Description: "L1 Voltage (V)", IEC61850: "VolLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML2Voltage, Value: math.NaN(), Description: "L2 Voltage (V)", IEC61850: "VolLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML3Voltage, Value: math.NaN(), Description: "L3 Voltage (V)", IEC61850: "VolLocPhsC"}
+	return retval
+}
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML1Current, Value: math.NaN(), Description: "L1 Current (A)", IEC61850: "AmpLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML2Current, Value: math.NaN(), Description: "L2 Current (A)", IEC61850: "AmpLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML3Current, Value: math.NaN(), Description: "L3 Current (A)", IEC61850: "AmpLocPhsC"}
+func (s *SDMRoundRobinScheduler) Produce(devid uint8) (retval []QuerySnip) {
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
+		OpCode: OpCodeSDML1Voltage, Value: math.NaN(), Description: "L1 Voltage (V)", IEC61850: "VolLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2Voltage, Value: math.NaN(),
+		Description: "L2 Voltage (V)", IEC61850: "VolLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3Voltage, Value: math.NaN(),
+		Description: "L3 Voltage (V)", IEC61850: "VolLocPhsC"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1Current, Value: math.NaN(),
+		Description: "L1 Current (A)", IEC61850: "AmpLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2Current, Value: math.NaN(),
+		Description: "L2 Current (A)", IEC61850: "AmpLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3Current, Value: math.NaN(),
+		Description: "L3 Current (A)", IEC61850: "AmpLocPhsC"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML1Power, Value: math.NaN(), Description: "L1 Power (W)", IEC61850: "WLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML2Power, Value: math.NaN(), Description: "L2 Power (W)", IEC61850: "WLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML3Power, Value: math.NaN(), Description: "L3 Power (W)", IEC61850: "WLocPhsC"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1Power, Value: math.NaN(),
+		Description: "L1 Power (W)", IEC61850: "WLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2Power, Value: math.NaN(),
+		Description: "L2 Power (W)", IEC61850: "WLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3Power, Value: math.NaN(),
+		Description: "L3 Power (W)", IEC61850: "WLocPhsC"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML1Cosphi, Value: math.NaN(), Description: "L1 Cosphi", IEC61850: "AngLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML2Cosphi, Value: math.NaN(), Description: "L2 Cosphi", IEC61850: "AngLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML3Cosphi, Value: math.NaN(), Description: "L3 Cosphi", IEC61850: "AngLocPhsC"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1Cosphi, Value: math.NaN(),
+		Description: "L1 Cosphi", IEC61850: "AngLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2Cosphi, Value: math.NaN(),
+		Description: "L2 Cosphi", IEC61850: "AngLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3Cosphi, Value: math.NaN(),
+		Description: "L3 Cosphi", IEC61850: "AngLocPhsC"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML1THDVoltageNeutral, Value: math.NaN(), Description: "L1 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML2THDVoltageNeutral, Value: math.NaN(), Description: "L2 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML3THDVoltageNeutral, Value: math.NaN(), Description: "L3 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsC"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDMAvgTHDVoltageNeutral, Value: math.NaN(), Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1THDVoltageNeutral, Value: math.NaN(),
+		Description: "L1 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2THDVoltageNeutral, Value: math.NaN(),
+		Description: "L2 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3THDVoltageNeutral, Value: math.NaN(),
+		Description: "L3 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsC"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMAvgTHDVoltageNeutral, Value: math.NaN(),
+		Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML1Import, Value: math.NaN(), Description: "L1 Import (kWh)", IEC61850: "TotkWhImportPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML2Import, Value: math.NaN(), Description: "L2 Import (kWh)", IEC61850: "TotkWhImportPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML3Import, Value: math.NaN(), Description: "L3 Import (kWh)", IEC61850: "TotkWhImportPhsC"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDMTotalImport, Value: math.NaN(), Description: "Total Import (kWh)", IEC61850: "TotkWhImport"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1Import, Value: math.NaN(),
+		Description: "L1 Import (kWh)", IEC61850: "TotkWhImportPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2Import, Value: math.NaN(),
+		Description: "L2 Import (kWh)", IEC61850: "TotkWhImportPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3Import, Value: math.NaN(),
+		Description: "L3 Import (kWh)", IEC61850: "TotkWhImportPhsC"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMTotalImport, Value: math.NaN(),
+		Description: "Total Import (kWh)", IEC61850: "TotkWhImport"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML1Export, Value: math.NaN(), Description: "L1 Export (kWh)", IEC61850: "TotkWhExportPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML2Export, Value: math.NaN(), Description: "L2 Export (kWh)", IEC61850: "TotkWhExportPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDML3Export, Value: math.NaN(), Description: "L3 Export (kWh)", IEC61850: "TotkWhExportPhsC"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadInputReg,
-		OpCode: OpCodeSDMTotalExport, Value: math.NaN(), Description: "Total Export (kWh)", IEC61850: "TotkWhExport"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1Export, Value: math.NaN(),
+		Description: "L1 Export (kWh)", IEC61850: "TotkWhExportPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2Export, Value: math.NaN(),
+		Description: "L2 Export (kWh)", IEC61850: "TotkWhExportPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3Export, Value: math.NaN(),
+		Description: "L3 Export (kWh)", IEC61850: "TotkWhExportPhsC"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMTotalExport, Value: math.NaN(),
+		Description: "Total Export (kWh)", IEC61850: "TotkWhExport"})
 
-	//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL1THDCurrent, Value: math.NaN(), Description: "L1 Current THD (%)", IEC61850: "ThdAPhsA"}
-	//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL2THDCurrent, Value: math.NaN(), Description: "L2 Current THD (%)", IEC61850: "ThdAPhsB"}
-	//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeL3THDCurrent, Value: math.NaN(), Description: "L3 Current THD (%)", IEC61850: "ThdAPhsC"}
-	//	s.out <- QuerySnip{DeviceId: devid, OpCode: OpCodeAvgTHDCurrent, Value: math.NaN(), Description: "Average current to neutral THD (%)", IEC61850: "ThdAmp"}
+	return retval
 }
 
 // ####################################################################
@@ -117,49 +186,57 @@ func NewJanitzaRoundRobinScheduler() *JanitzaRoundRobinScheduler {
 	return &JanitzaRoundRobinScheduler{}
 }
 
-func (s *JanitzaRoundRobinScheduler) Produce(out QuerySnipChannel, devid uint8) {
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
+func (s *JanitzaRoundRobinScheduler) GetProbeSnip(devid uint8) (retval QuerySnip) {
+	retval = QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
 		OpCode: OpCodeJanitzaL1Voltage, Value: math.NaN(), Description: "L1 Voltage (V)", IEC61850: "VolLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL2Voltage, Value: math.NaN(), Description: "L2 Voltage (V)", IEC61850: "VolLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL3Voltage, Value: math.NaN(), Description: "L3 Voltage (V)", IEC61850: "VolLocPhsC"}
+	return retval
+}
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL1Current, Value: math.NaN(), Description: "L1 Current (A)", IEC61850: "AmpLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL2Current, Value: math.NaN(), Description: "L2 Current (A)", IEC61850: "AmpLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL3Current, Value: math.NaN(), Description: "L3 Current (A)", IEC61850: "AmpLocPhsC"}
+func (s *JanitzaRoundRobinScheduler) Produce(devid uint8) (retval []QuerySnip) {
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
+		OpCode: OpCodeJanitzaL1Voltage, Value: math.NaN(), Description: "L1 Voltage (V)", IEC61850: "VolLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
+		OpCode: OpCodeJanitzaL2Voltage, Value: math.NaN(), Description: "L2 Voltage (V)", IEC61850: "VolLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
+		OpCode: OpCodeJanitzaL3Voltage, Value: math.NaN(), Description: "L3 Voltage (V)", IEC61850: "VolLocPhsC"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL1Power, Value: math.NaN(), Description: "L1 Power (W)", IEC61850: "WLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL2Power, Value: math.NaN(), Description: "L2 Power (W)", IEC61850: "WLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL3Power, Value: math.NaN(), Description: "L3 Power (W)", IEC61850: "WLocPhsC"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL1Current, Value: math.NaN(),
+		Description: "L1 Current (A)", IEC61850: "AmpLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL2Current, Value: math.NaN(),
+		Description: "L2 Current (A)", IEC61850: "AmpLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL3Current, Value: math.NaN(),
+		Description: "L3 Current (A)", IEC61850: "AmpLocPhsC"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL1Cosphi, Value: math.NaN(), Description: "L1 Cosphi", IEC61850: "AngLocPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL2Cosphi, Value: math.NaN(), Description: "L2 Cosphi", IEC61850: "AngLocPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL3Cosphi, Value: math.NaN(), Description: "L3 Cosphi", IEC61850: "AngLocPhsC"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL1Power, Value: math.NaN(),
+		Description: "L1 Power (W)", IEC61850: "WLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL2Power, Value: math.NaN(),
+		Description: "L2 Power (W)", IEC61850: "WLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL3Power, Value: math.NaN(),
+		Description: "L3 Power (W)", IEC61850: "WLocPhsC"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL1Import, Value: math.NaN(), Description: "L1 Import (kWh)", IEC61850: "TotkWhImportPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL2Import, Value: math.NaN(), Description: "L2 Import (kWh)", IEC61850: "TotkWhImportPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL3Import, Value: math.NaN(), Description: "L3 Import (kWh)", IEC61850: "TotkWhImportPhsC"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaTotalImport, Value: math.NaN(), Description: "Total Import (kWh)", IEC61850: "TotkWhImport"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL1Cosphi, Value: math.NaN(),
+		Description: "L1 Cosphi", IEC61850: "AngLocPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL2Cosphi, Value: math.NaN(),
+		Description: "L2 Cosphi", IEC61850: "AngLocPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL3Cosphi, Value: math.NaN(),
+		Description: "L3 Cosphi", IEC61850: "AngLocPhsC"})
 
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL1Export, Value: math.NaN(), Description: "L1 Export (kWh)", IEC61850: "TotkWhExportPhsA"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL2Export, Value: math.NaN(), Description: "L2 Export (kWh)", IEC61850: "TotkWhExportPhsB"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaL3Export, Value: math.NaN(), Description: "L3 Export (kWh)", IEC61850: "TotkWhExportPhsC"}
-	out <- QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg,
-		OpCode: OpCodeJanitzaTotalExport, Value: math.NaN(), Description: "Total Export (kWh)", IEC61850: "TotkWhExport"}
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL1Import, Value: math.NaN(),
+		Description: "L1 Import (kWh)", IEC61850: "TotkWhImportPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL2Import, Value: math.NaN(),
+		Description: "L2 Import (kWh)", IEC61850: "TotkWhImportPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL3Import, Value: math.NaN(),
+		Description: "L3 Import (kWh)", IEC61850: "TotkWhImportPhsC"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaTotalImport, Value: math.NaN(),
+		Description: "Total Import (kWh)", IEC61850: "TotkWhImport"})
+
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL1Export, Value: math.NaN(),
+		Description: "L1 Export (kWh)", IEC61850: "TotkWhExportPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL2Export, Value: math.NaN(),
+		Description: "L2 Export (kWh)", IEC61850: "TotkWhExportPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaL3Export, Value: math.NaN(),
+		Description: "L3 Export (kWh)", IEC61850: "TotkWhExportPhsC"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadHoldingReg, OpCode: OpCodeJanitzaTotalExport, Value: math.NaN(),
+		Description: "Total Export (kWh)", IEC61850: "TotkWhExport"})
+	return retval
 }

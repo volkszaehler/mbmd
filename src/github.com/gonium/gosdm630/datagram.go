@@ -289,3 +289,22 @@ func (q QuerySnip) String() string {
 	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode %x: Value: %.3f",
 		q.DeviceId, q.FuncCode, q.OpCode, q.Value)
 }
+
+/***
+ * A Controlsnip wraps control information such as query success or
+ * failure.
+ */
+type ControlSnip struct {
+	Type     ControlSnipType
+	Message  string
+	DeviceId uint8
+}
+
+type ControlSnipType uint8
+
+const (
+	CONTROLSNIP_OK = iota
+	CONTROLSNIP_ERROR
+)
+
+type ControlSnipChannel chan ControlSnip

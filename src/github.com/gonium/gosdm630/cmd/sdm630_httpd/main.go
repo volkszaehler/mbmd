@@ -90,10 +90,12 @@ func main() {
 			}
 			metertype = strings.ToUpper(metertype)
 			switch metertype {
-			case sdm630.METER_JANITZA:
-				meter = sdm630.NewMeter(uint8(id), sdm630.NewJanitzaRoundRobinScheduler())
-			case sdm630.METER_SDM:
-				meter = sdm630.NewMeter(uint8(id), sdm630.NewSDMRoundRobinScheduler())
+			case sdm630.METERTYPE_JANITZA:
+				meter = sdm630.NewMeter(sdm630.METERTYPE_JANITZA,
+					uint8(id), sdm630.NewJanitzaRoundRobinScheduler())
+			case sdm630.METERTYPE_SDM:
+				meter = sdm630.NewMeter(sdm630.METERTYPE_SDM,
+					uint8(id), sdm630.NewSDMRoundRobinScheduler())
 			default:
 				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
 			}
@@ -102,12 +104,14 @@ func main() {
 
 		// Create Channels that link the goroutines
 		var scheduler2queryengine = make(sdm630.QuerySnipChannel)
+		var queryengine2scheduler = make(sdm630.ControlSnipChannel)
 		var queryengine2duplicator = make(sdm630.QuerySnipChannel)
 		var duplicator2cache = make(sdm630.QuerySnipChannel)
 		var duplicator2firehose = make(sdm630.QuerySnipChannel)
 
-		scheduler := sdm630.NewQueryScheduler(
+		scheduler := sdm630.NewMeterScheduler(
 			scheduler2queryengine,
+			queryengine2scheduler,
 			meters,
 		)
 		go scheduler.Run()
@@ -120,8 +124,9 @@ func main() {
 		)
 
 		go qe.Transform(
-			scheduler2queryengine,
-			queryengine2duplicator,
+			scheduler2queryengine,  // input
+			queryengine2scheduler,  // error
+			queryengine2duplicator, // output
 		)
 
 		// This is the duplicator
