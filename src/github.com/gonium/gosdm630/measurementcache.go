@@ -7,42 +7,17 @@ import (
 	"time"
 )
 
-type DeviceReadings struct {
-	lastminutereadings ReadingSlice
-	lastreading        Readings
-}
-
-func NewDeviceReadings(secondsToStore time.Duration, isVerbose bool) (retval *DeviceReadings) {
-	retval = &DeviceReadings{
-		lastminutereadings: ReadingSlice{},
-	}
-	go func() {
-		for {
-			time.Sleep(time.Minute * 1)
-			before := len(retval.lastminutereadings)
-			retval.lastminutereadings =
-				retval.lastminutereadings.NotOlderThan(time.Now().Add(-1 *
-					secondsToStore))
-			after := len(retval.lastminutereadings)
-			if isVerbose {
-				log.Printf("Cache cleanup: Before %d, after %d", before, after)
-			}
-		}
-	}()
-	return retval
-}
-
 type MeasurementCache struct {
 	datastream     QuerySnipChannel
-	deviceReadings map[uint8]*DeviceReadings
+	meters         map[uint8]*Meter
 	secondsToStore time.Duration
 	verbose        bool
 }
 
-func NewMeasurementCache(ds QuerySnipChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
+func NewMeasurementCache(meters map[uint8]*Meter, ds QuerySnipChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
 	return &MeasurementCache{
 		datastream:     ds,
-		deviceReadings: make(map[uint8]*DeviceReadings),
+		meters:         meters,
 		secondsToStore: secondsToStore,
 		verbose:        isVerbose,
 	}
@@ -52,37 +27,22 @@ func (mc *MeasurementCache) Consume() {
 	for {
 		snip := <-mc.datastream
 		devid := snip.DeviceId
-		if devreading, ok := mc.deviceReadings[devid]; ok {
-			// The device has already a DeviceReadings object
-			// 1. Merge the snip to the last values.
-			reading := devreading.lastreading
-			reading.MergeSnip(snip)
-			// 2. store it
-			devreading.lastreading = reading
-			devreading.lastminutereadings = append(devreading.lastminutereadings, reading)
-		} else {
-			reading := Readings{
-				UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
-				ModbusDeviceId: devid,
+		// Search corresponding meter
+		if meter, ok := mc.meters[devid]; ok {
+			// add the snip to the meter's cache
+			meter.AddSnip(snip)
+			if mc.verbose {
+				log.Printf("%s\r\n", meter.MeterReadings.lastreading.String())
 			}
-			reading.MergeSnip(snip)
-			// create a new DeviceReadings object
-			mc.deviceReadings[devid] = NewDeviceReadings(mc.secondsToStore,
-				mc.verbose)
-			devreading = mc.deviceReadings[devid]
-			devreading.lastreading = reading
-			devreading.lastminutereadings = append(devreading.lastminutereadings, reading)
-		}
-		if mc.verbose {
-			devreading := mc.deviceReadings[devid]
-			log.Printf("%s\r\n", devreading.lastreading.String())
+		} else {
+			log.Fatal("Snip for unknown meter received - this should not happen.")
 		}
 	}
 }
 
 func (mc *MeasurementCache) GetSortedIDs() []byte {
 	var keys ByteSlice
-	for k := range mc.deviceReadings {
+	for k, _ := range mc.meters {
 		keys = append(keys, k)
 	}
 	sort.Sort(keys)
@@ -90,18 +50,18 @@ func (mc *MeasurementCache) GetSortedIDs() []byte {
 }
 
 func (mc *MeasurementCache) GetLast(id byte) (*Readings, error) {
-	if r, ok := mc.deviceReadings[id]; ok {
-		return &r.lastreading, nil
+	if meter, ok := mc.meters[id]; ok {
+		return &meter.MeterReadings.lastreading, nil
 	} else {
 		return nil, fmt.Errorf("No device with id %d available.", id)
 	}
 }
 
 func (mc *MeasurementCache) GetMinuteAvg(id byte) (Readings, error) {
-	if _, ok := mc.deviceReadings[id]; !ok {
+	if _, ok := mc.meters[id]; !ok {
 		return Readings{}, fmt.Errorf("No device with id %d available.", id)
 	}
-	measurements := mc.deviceReadings[id].lastminutereadings
+	measurements := mc.meters[id].MeterReadings.lastminutereadings
 	lastminute := measurements.NotOlderThan(time.Now().Add(-1 *
 		time.Minute))
 	avg := Readings{UniqueId: fmt.Sprintf(UniqueIdFormat, id), ModbusDeviceId: id}

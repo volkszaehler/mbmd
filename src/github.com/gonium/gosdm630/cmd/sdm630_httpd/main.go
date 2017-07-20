@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	DEFAULT_METER_STORE_SECONDS = 120
+)
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "sdm630_httpd"
@@ -64,19 +68,8 @@ func main() {
 		sdm630.UniqueIdFormat = c.String("unique_id_format")
 
 		// Parse the device_list parameter
-		//deviceslice := strings.Split(c.String("device_list"), ",")
-		//devids := make([]uint8, 0, len(deviceslice))
-		//for _, devid := range deviceslice {
-		//	id, err := strconv.Atoi(devid)
-		//	if err != nil {
-		//		log.Fatalf("Error parsing device id %s: %s", devid, err.Error())
-		//	}
-		//	devids = append(devids, uint8(id))
-		//}
-
-		// Parse the device_list parameter
 		deviceslice := strings.Split(c.String("device_list"), ",")
-		meters := make([]*sdm630.Meter, 0, len(deviceslice))
+		meters := make(map[uint8]*sdm630.Meter)
 		for _, meterdef := range deviceslice {
 			var meter *sdm630.Meter
 			splitdef := strings.Split(meterdef, ":")
@@ -99,7 +92,7 @@ func main() {
 			default:
 				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
 			}
-			meters = append(meters, meter)
+			meters[uint8(id)] = meter
 		}
 
 		// Create Channels that link the goroutines
@@ -146,8 +139,9 @@ func main() {
 		go firehose.Run()
 
 		mc := sdm630.NewMeasurementCache(
+			meters,
 			duplicator2cache,
-			120*time.Second, // TODO: How long to store data in the cache?.
+			DEFAULT_METER_STORE_SECONDS,
 			c.Bool("verbose"),
 		)
 		go mc.Consume()

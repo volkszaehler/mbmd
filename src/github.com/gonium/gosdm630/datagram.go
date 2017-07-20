@@ -110,6 +110,10 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
 			"Cannot add readings of different devices - got IDs %d and %d",
 			lhs.ModbusDeviceId, rhs.ModbusDeviceId)
 	} else {
+		fmt.Println("LHS: ", lhs)
+		fmt.Println("RHS: ", rhs)
+		// TODO: This fails if L1 etc is nil. To trigger,
+		// curl --silent http://localhost/minuteavg
 		retval = Readings{
 			UniqueId:       lhs.UniqueId,
 			ModbusDeviceId: lhs.ModbusDeviceId,
