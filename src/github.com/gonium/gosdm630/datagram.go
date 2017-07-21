@@ -36,12 +36,14 @@ type Readings struct {
 	TotalImport    *float64
 	Export         ThreePhaseReadings
 	TotalExport    *float64
-	THD            struct {
-		//	Current           ThreePhaseReadings
-		//	AvgCurrent        float64
-		VoltageNeutral    ThreePhaseReadings
-		AvgVoltageNeutral *float64
-	}
+	THD            THDInfo
+}
+
+type THDInfo struct {
+	//	Current           ThreePhaseReadings
+	//	AvgCurrent        float64
+	VoltageNeutral    ThreePhaseReadings
+	AvgVoltageNeutral *float64
 }
 
 type ThreePhaseReadings struct {
@@ -52,7 +54,13 @@ type ThreePhaseReadings struct {
 
 // Helper: Converts float64 to *float64
 func F2fp(x float64) *float64 {
-	return &x
+	if math.IsNaN(x) {
+		fmt.Printf("F2fp: Received %f, returning NaN\r\n", x)
+		return nil
+	} else {
+		fmt.Printf("F2fp: Received %f, returning Pointer\r\n", x)
+		return &x
+	}
 }
 
 // Helper: Converts *float64 to float64, correctly handles uninitialized
@@ -105,37 +113,62 @@ func (r *Readings) IsOlderThan(ts time.Time) (retval bool) {
 * the time: the latter of the two times is copied over to the result
  */
 func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
+	fmt.Printf("Adding %v to %v\r\n", lhs, rhs)
 	if lhs.ModbusDeviceId != rhs.ModbusDeviceId {
 		return Readings{}, fmt.Errorf(
 			"Cannot add readings of different devices - got IDs %d and %d",
 			lhs.ModbusDeviceId, rhs.ModbusDeviceId)
 	} else {
-		fmt.Println("LHS: ", lhs)
-		fmt.Println("RHS: ", rhs)
 		// TODO: This fails if L1 etc is nil. To trigger,
 		// curl --silent http://localhost/minuteavg
 		retval = Readings{
 			UniqueId:       lhs.UniqueId,
 			ModbusDeviceId: lhs.ModbusDeviceId,
 			Voltage: ThreePhaseReadings{
-				L1: F2fp((*lhs.Voltage.L1) + (*rhs.Voltage.L1)),
-				L2: F2fp((*lhs.Voltage.L2) + (*rhs.Voltage.L2)),
-				L3: F2fp((*lhs.Voltage.L3) + (*rhs.Voltage.L3)),
+				L1: F2fp(Fp2f(lhs.Voltage.L1) + Fp2f(rhs.Voltage.L1)),
+				L2: F2fp(Fp2f(lhs.Voltage.L2) + Fp2f(rhs.Voltage.L2)),
+				L3: F2fp(Fp2f(lhs.Voltage.L3) + Fp2f(rhs.Voltage.L3)),
 			},
 			Current: ThreePhaseReadings{
-				L1: F2fp((*lhs.Current.L1) + (*rhs.Current.L1)),
-				L2: F2fp((*lhs.Current.L2) + (*rhs.Current.L2)),
-				L3: F2fp((*lhs.Current.L3) + (*rhs.Current.L3)),
+				L1: F2fp(Fp2f(lhs.Current.L1) + Fp2f(rhs.Current.L1)),
+				L2: F2fp(Fp2f(lhs.Current.L2) + Fp2f(rhs.Current.L2)),
+				L3: F2fp(Fp2f(lhs.Current.L3) + Fp2f(rhs.Current.L3)),
 			},
 			Power: ThreePhaseReadings{
-				L1: F2fp((*lhs.Power.L1) + (*rhs.Power.L1)),
-				L2: F2fp((*lhs.Power.L2) + (*rhs.Power.L2)),
-				L3: F2fp((*lhs.Power.L3) + (*rhs.Power.L3)),
+				L1: F2fp(Fp2f(lhs.Power.L1) + Fp2f(rhs.Power.L1)),
+				L2: F2fp(Fp2f(lhs.Power.L2) + Fp2f(rhs.Power.L2)),
+				L3: F2fp(Fp2f(lhs.Power.L3) + Fp2f(rhs.Power.L3)),
 			},
 			Cosphi: ThreePhaseReadings{
-				L1: F2fp((*lhs.Cosphi.L1) + (*rhs.Cosphi.L1)),
-				L2: F2fp((*lhs.Cosphi.L2) + (*rhs.Cosphi.L2)),
-				L3: F2fp((*lhs.Cosphi.L3) + (*rhs.Cosphi.L3)),
+				L1: F2fp(Fp2f(lhs.Cosphi.L1) + Fp2f(rhs.Cosphi.L1)),
+				L2: F2fp(Fp2f(lhs.Cosphi.L2) + Fp2f(rhs.Cosphi.L2)),
+				L3: F2fp(Fp2f(lhs.Cosphi.L3) + Fp2f(rhs.Cosphi.L3)),
+			},
+			Import: ThreePhaseReadings{
+				L1: F2fp(Fp2f(lhs.Import.L1) + Fp2f(rhs.Import.L1)),
+				L2: F2fp(Fp2f(lhs.Import.L2) + Fp2f(rhs.Import.L2)),
+				L3: F2fp(Fp2f(lhs.Import.L3) + Fp2f(rhs.Import.L3)),
+			},
+			TotalImport: F2fp(Fp2f(lhs.TotalImport) +
+				Fp2f(rhs.TotalImport)),
+			Export: ThreePhaseReadings{
+				L1: F2fp(Fp2f(lhs.Export.L1) + Fp2f(rhs.Export.L1)),
+				L2: F2fp(Fp2f(lhs.Export.L2) + Fp2f(rhs.Export.L2)),
+				L3: F2fp(Fp2f(lhs.Export.L3) + Fp2f(rhs.Export.L3)),
+			},
+			TotalExport: F2fp(Fp2f(lhs.TotalExport) +
+				Fp2f(rhs.TotalExport)),
+			THD: THDInfo{
+				VoltageNeutral: ThreePhaseReadings{
+					L1: F2fp(Fp2f(lhs.THD.VoltageNeutral.L1) +
+						Fp2f(rhs.THD.VoltageNeutral.L1)),
+					L2: F2fp(Fp2f(lhs.THD.VoltageNeutral.L2) +
+						Fp2f(rhs.THD.VoltageNeutral.L2)),
+					L3: F2fp(Fp2f(lhs.THD.VoltageNeutral.L3) +
+						Fp2f(rhs.THD.VoltageNeutral.L3)),
+				},
+				AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) +
+					Fp2f(rhs.THD.AvgVoltageNeutral)),
 			},
 		}
 		if lhs.Timestamp.After(rhs.Timestamp) {
@@ -156,24 +189,24 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
 func (lhs *Readings) divide(scalar float64) (retval Readings) {
 	retval = Readings{
 		Voltage: ThreePhaseReadings{
-			L1: F2fp(*lhs.Voltage.L1 / scalar),
-			L2: F2fp(*lhs.Voltage.L2 / scalar),
-			L3: F2fp(*lhs.Voltage.L3 / scalar),
+			L1: F2fp(Fp2f(lhs.Voltage.L1) / scalar),
+			L2: F2fp(Fp2f(lhs.Voltage.L2) / scalar),
+			L3: F2fp(Fp2f(lhs.Voltage.L3) / scalar),
 		},
 		Current: ThreePhaseReadings{
-			L1: F2fp(*lhs.Current.L1 / scalar),
-			L2: F2fp(*lhs.Current.L2 / scalar),
-			L3: F2fp(*lhs.Current.L3 / scalar),
+			L1: F2fp(Fp2f(lhs.Current.L1) / scalar),
+			L2: F2fp(Fp2f(lhs.Current.L2) / scalar),
+			L3: F2fp(Fp2f(lhs.Current.L3) / scalar),
 		},
 		Power: ThreePhaseReadings{
-			L1: F2fp(*lhs.Power.L1 / scalar),
-			L2: F2fp(*lhs.Power.L2 / scalar),
-			L3: F2fp(*lhs.Power.L3 / scalar),
+			L1: F2fp(Fp2f(lhs.Power.L1) / scalar),
+			L2: F2fp(Fp2f(lhs.Power.L2) / scalar),
+			L3: F2fp(Fp2f(lhs.Power.L3) / scalar),
 		},
 		Cosphi: ThreePhaseReadings{
-			L1: F2fp(*lhs.Cosphi.L1 / scalar),
-			L2: F2fp(*lhs.Cosphi.L2 / scalar),
-			L3: F2fp(*lhs.Cosphi.L3 / scalar),
+			L1: F2fp(Fp2f(lhs.Cosphi.L1) / scalar),
+			L2: F2fp(Fp2f(lhs.Cosphi.L2) / scalar),
+			L3: F2fp(Fp2f(lhs.Cosphi.L3) / scalar),
 		},
 	}
 	retval.Timestamp = lhs.Timestamp

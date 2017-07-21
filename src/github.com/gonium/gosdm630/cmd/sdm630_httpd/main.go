@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DEFAULT_METER_STORE_SECONDS = 120
+	DEFAULT_METER_STORE_SECONDS = 120 * time.Second
 )
 
 func main() {
@@ -85,10 +85,12 @@ func main() {
 			switch metertype {
 			case sdm630.METERTYPE_JANITZA:
 				meter = sdm630.NewMeter(sdm630.METERTYPE_JANITZA,
-					uint8(id), sdm630.NewJanitzaRoundRobinScheduler())
+					uint8(id), sdm630.NewJanitzaRoundRobinScheduler(),
+					DEFAULT_METER_STORE_SECONDS)
 			case sdm630.METERTYPE_SDM:
 				meter = sdm630.NewMeter(sdm630.METERTYPE_SDM,
-					uint8(id), sdm630.NewSDMRoundRobinScheduler())
+					uint8(id), sdm630.NewSDMRoundRobinScheduler(),
+					DEFAULT_METER_STORE_SECONDS)
 			default:
 				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
 			}

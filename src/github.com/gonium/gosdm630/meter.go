@@ -32,8 +32,9 @@ func NewMeter(
 	typeid MeterType,
 	devid uint8,
 	scheduler Scheduler,
+	timeToCacheReadings time.Duration,
 ) *Meter {
-	r := NewMeterReadings(devid, DEFAULT_METER_STORE_SECONDS)
+	r := NewMeterReadings(devid, timeToCacheReadings)
 	return &Meter{
 		Type:          typeid,
 		Scheduler:     scheduler,
@@ -78,15 +79,13 @@ func NewMeterReadings(devid uint8, secondsToStore time.Duration) (retval *MeterR
 	}
 	go func() {
 		for {
-			time.Sleep(time.Minute * 1)
+			time.Sleep(secondsToStore)
 			//before := len(retval.lastminutereadings)
 			retval.lastminutereadings =
 				retval.lastminutereadings.NotOlderThan(time.Now().Add(-1 *
 					secondsToStore))
 			//after := len(retval.lastminutereadings)
-			//if isVerbose {
-			//	log.Printf("Cache cleanup: Before %d, after %d", before, after)
-			//}
+			//fmt.Printf("Cache cleanup: Before %d, after %d\r\n", before, after)
 		}
 	}()
 	return retval

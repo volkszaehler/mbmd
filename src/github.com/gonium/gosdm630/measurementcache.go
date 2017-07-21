@@ -64,15 +64,22 @@ func (mc *MeasurementCache) GetMinuteAvg(id byte) (Readings, error) {
 	measurements := mc.meters[id].MeterReadings.lastminutereadings
 	lastminute := measurements.NotOlderThan(time.Now().Add(-1 *
 		time.Minute))
-	avg := Readings{UniqueId: fmt.Sprintf(UniqueIdFormat, id), ModbusDeviceId: id}
-	for _, r := range lastminute {
-		var err error
-		avg, err = r.add(&avg)
-		if err != nil {
-			return avg, err
+	var err error
+	var avg Readings
+	for idx, r := range lastminute {
+		if idx == 0 {
+			// This is the first element - initialize our accumulator
+			avg = r
+		} else {
+			avg, err = r.add(&avg)
+			if err != nil {
+				return avg, err
+			}
 		}
 	}
+	fmt.Println("avg1:", avg)
 	retval := avg.divide(float64(len(lastminute)))
+	fmt.Println("retval:", retval)
 	if mc.verbose {
 		log.Printf("Averaging over %d measurements:\r\n%s\r\n",
 			len(measurements), retval.String())
