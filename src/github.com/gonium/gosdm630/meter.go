@@ -2,6 +2,7 @@ package sdm630
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -59,13 +60,30 @@ func (m *Meter) GetState() MeterState {
 	return m.state
 }
 
+func (m *Meter) GetReadableState() string {
+	var retval string
+	switch m.GetState() {
+	case METERSTATE_AVAILABLE:
+		retval = "available"
+	case METERSTATE_UNAVAILABLE:
+		retval = "unavailable"
+	default:
+		log.Fatal("Unknown meter state, aborting.")
+	}
+	return retval
+}
+
+func (m *Meter) GetMeterType() MeterType {
+	return m.Type
+}
+
 func (m *Meter) AddSnip(snip QuerySnip) {
 	m.MeterReadings.AddSnip(snip)
 }
 
 type MeterReadings struct {
-	lastminutereadings ReadingSlice
-	lastreading        Readings
+	Lastminutereadings ReadingSlice
+	Lastreading        Readings
 }
 
 func NewMeterReadings(devid uint8, secondsToStore time.Duration) (retval *MeterReadings) {
@@ -74,15 +92,15 @@ func NewMeterReadings(devid uint8, secondsToStore time.Duration) (retval *MeterR
 		ModbusDeviceId: devid,
 	}
 	retval = &MeterReadings{
-		lastminutereadings: ReadingSlice{},
-		lastreading:        reading,
+		Lastminutereadings: ReadingSlice{},
+		Lastreading:        reading,
 	}
 	go func() {
 		for {
 			time.Sleep(secondsToStore)
 			//before := len(retval.lastminutereadings)
-			retval.lastminutereadings =
-				retval.lastminutereadings.NotOlderThan(time.Now().Add(-1 *
+			retval.Lastminutereadings =
+				retval.Lastminutereadings.NotOlderThan(time.Now().Add(-1 *
 					secondsToStore))
 			//after := len(retval.lastminutereadings)
 			//fmt.Printf("Cache cleanup: Before %d, after %d\r\n", before, after)
@@ -92,8 +110,8 @@ func NewMeterReadings(devid uint8, secondsToStore time.Duration) (retval *MeterR
 }
 
 func (mr *MeterReadings) Purge(devid uint8) {
-	mr.lastminutereadings = ReadingSlice{}
-	mr.lastreading = Readings{
+	mr.Lastminutereadings = ReadingSlice{}
+	mr.Lastreading = Readings{
 		UniqueId:       fmt.Sprintf(UniqueIdFormat, devid),
 		ModbusDeviceId: devid,
 	}
@@ -101,9 +119,9 @@ func (mr *MeterReadings) Purge(devid uint8) {
 
 func (mr *MeterReadings) AddSnip(snip QuerySnip) {
 	// 1. Merge the snip to the last values.
-	reading := mr.lastreading
+	reading := mr.Lastreading
 	reading.MergeSnip(snip)
 	// 2. store it
-	mr.lastreading = reading
-	mr.lastminutereadings = append(mr.lastminutereadings, reading)
+	mr.Lastreading = reading
+	mr.Lastminutereadings = append(mr.Lastminutereadings, reading)
 }

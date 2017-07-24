@@ -62,7 +62,6 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		status := sdm630.NewStatus()
 
 		// Set unique ID format
 		sdm630.UniqueIdFormat = c.String("unique_id_format")
@@ -96,6 +95,8 @@ func main() {
 			}
 			meters[uint8(id)] = meter
 		}
+
+		status := sdm630.NewStatus(meters)
 
 		// Create Channels that link the goroutines
 		var scheduler2queryengine = make(sdm630.QuerySnipChannel)

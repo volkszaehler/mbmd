@@ -29,14 +29,22 @@ func CurrentMemoryStatus() MemoryStatus {
 }
 
 type Status struct {
-	Starttime     time.Time
-	UptimeSeconds float64
-	Goroutines    int
-	Memory        MemoryStatus
-	Modbus        ModbusStatus
+	Starttime        time.Time
+	UptimeSeconds    float64
+	Goroutines       int
+	Memory           MemoryStatus
+	Modbus           ModbusStatus
+	ConfiguredMeters []MeterStatus
+	metermap         map[uint8]*Meter
 }
 
-func NewStatus() *Status {
+type MeterStatus struct {
+	Id     uint8
+	Type   MeterType
+	Status string
+}
+
+func NewStatus(metermap map[uint8]*Meter) *Status {
 	return &Status{
 		Memory:        CurrentMemoryStatus(),
 		Starttime:     time.Now(),
@@ -48,6 +56,8 @@ func NewStatus() *Status {
 			TotalModbusErrors:          0,
 			ModbusErrorRatePerMinute:   0,
 		},
+		ConfiguredMeters: nil,
+		metermap:         metermap,
 	}
 }
 
@@ -67,6 +77,17 @@ func (s *Status) Update() {
 		float64(s.Modbus.TotalModbusErrors) / (s.UptimeSeconds / 60)
 	s.Modbus.ModbusRequestRatePerMinute =
 		float64(s.Modbus.TotalModbusRequests) / (s.UptimeSeconds / 60)
+	var confmeters []MeterStatus
+	for id, meter := range s.metermap {
+		ms := MeterStatus{
+			Id:     id,
+			Type:   meter.GetMeterType(),
+			Status: meter.GetReadableState(),
+		}
+
+		confmeters = append(confmeters, ms)
+	}
+	s.ConfiguredMeters = confmeters
 }
 
 func (s *Status) UpdateAndJSON(w io.Writer) error {

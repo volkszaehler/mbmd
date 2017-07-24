@@ -53,11 +53,18 @@ func MkLastAllValuesHandler(hc *MeasurementCache) func(http.ResponseWriter, *htt
 		for _, id := range ids {
 			reading, err := hc.GetLast(id)
 			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, err.Error())
-				return
+				// Skip this meter, it will simply not be displayed
+				continue
+				//w.WriteHeader(http.StatusBadRequest)
+				//fmt.Fprintf(w, err.Error())
+				//return
 			}
 			lasts = append(lasts, *reading)
+		}
+		if len(lasts) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "All meters are inactive.")
+			return
 		}
 		if err := lasts.JSON(w); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
@@ -118,11 +125,15 @@ func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 		for _, id := range ids {
 			reading, err := hc.GetMinuteAvg(id)
 			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, err.Error())
-				return
+				// Skip this meter, it will simply not be displayed
+				continue
 			}
-			avgs = append(avgs, reading)
+			avgs = append(avgs, *reading)
+		}
+		if len(avgs) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "All meters are inactive.")
+			return
 		}
 		if err := avgs.JSON(w); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())

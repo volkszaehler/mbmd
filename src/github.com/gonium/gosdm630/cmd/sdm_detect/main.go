@@ -34,7 +34,7 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		status := sdm630.NewStatus()
+		status := sdm630.NewStatus(nil)
 		qe := sdm630.NewModbusEngine(
 			c.String("serialadapter"),
 			c.Int("comset"),

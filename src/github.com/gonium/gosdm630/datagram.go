@@ -55,10 +55,8 @@ type ThreePhaseReadings struct {
 // Helper: Converts float64 to *float64
 func F2fp(x float64) *float64 {
 	if math.IsNaN(x) {
-		fmt.Printf("F2fp: Received %f, returning NaN\r\n", x)
 		return nil
 	} else {
-		fmt.Printf("F2fp: Received %f, returning Pointer\r\n", x)
 		return &x
 	}
 }
@@ -113,14 +111,11 @@ func (r *Readings) IsOlderThan(ts time.Time) (retval bool) {
 * the time: the latter of the two times is copied over to the result
  */
 func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
-	fmt.Printf("Adding %v to %v\r\n", lhs, rhs)
 	if lhs.ModbusDeviceId != rhs.ModbusDeviceId {
 		return Readings{}, fmt.Errorf(
 			"Cannot add readings of different devices - got IDs %d and %d",
 			lhs.ModbusDeviceId, rhs.ModbusDeviceId)
 	} else {
-		// TODO: This fails if L1 etc is nil. To trigger,
-		// curl --silent http://localhost/minuteavg
 		retval = Readings{
 			UniqueId:       lhs.UniqueId,
 			ModbusDeviceId: lhs.ModbusDeviceId,
@@ -207,6 +202,27 @@ func (lhs *Readings) divide(scalar float64) (retval Readings) {
 			L1: F2fp(Fp2f(lhs.Cosphi.L1) / scalar),
 			L2: F2fp(Fp2f(lhs.Cosphi.L2) / scalar),
 			L3: F2fp(Fp2f(lhs.Cosphi.L3) / scalar),
+		},
+		Import: ThreePhaseReadings{
+			L1: F2fp(Fp2f(lhs.Import.L1) / scalar),
+			L2: F2fp(Fp2f(lhs.Import.L2) / scalar),
+			L3: F2fp(Fp2f(lhs.Import.L3) / scalar),
+		},
+		TotalImport: F2fp(Fp2f(lhs.TotalImport) / scalar),
+		Export: ThreePhaseReadings{
+			L1: F2fp(Fp2f(lhs.Export.L1) / scalar),
+			L2: F2fp(Fp2f(lhs.Export.L2) / scalar),
+			L3: F2fp(Fp2f(lhs.Export.L3) / scalar),
+		},
+		TotalExport: F2fp(Fp2f(lhs.TotalExport) / scalar),
+		THD: THDInfo{
+			VoltageNeutral: ThreePhaseReadings{
+				L1: F2fp(Fp2f(lhs.THD.VoltageNeutral.L1) / scalar),
+				L2: F2fp(Fp2f(lhs.THD.VoltageNeutral.L2) / scalar),
+				L3: F2fp(Fp2f(lhs.THD.VoltageNeutral.L3) / scalar),
+			},
+			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) /
+				scalar),
 		},
 	}
 	retval.Timestamp = lhs.Timestamp
