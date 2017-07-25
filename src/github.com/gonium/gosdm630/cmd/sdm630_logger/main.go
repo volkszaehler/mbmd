@@ -58,7 +58,7 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:  "category, c",
-					Value: "all",
+					Value: "meterupdate",
 					Usage: "the firehose category to subscribe to",
 				},
 				cli.StringFlag{

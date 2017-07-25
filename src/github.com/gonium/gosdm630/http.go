@@ -183,7 +183,7 @@ func NewFirehose(inChannel QuerySnipChannel, verbose bool) *Firehose {
 func (f *Firehose) Run() {
 	for {
 		snip := <-f.in
-		f.lpManager.Publish("all", snip)
+		f.lpManager.Publish("meterupdate", snip)
 	}
 }
 

@@ -139,15 +139,6 @@ func (s *SDMRoundRobinScheduler) Produce(devid uint8) (retval []QuerySnip) {
 	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3Cosphi, Value: math.NaN(),
 		Description: "L3 Cosphi", IEC61850: "AngLocPhsC"})
 
-	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1THDVoltageNeutral, Value: math.NaN(),
-		Description: "L1 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsA"})
-	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2THDVoltageNeutral, Value: math.NaN(),
-		Description: "L2 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsB"})
-	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3THDVoltageNeutral, Value: math.NaN(),
-		Description: "L3 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsC"})
-	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMAvgTHDVoltageNeutral, Value: math.NaN(),
-		Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"})
-
 	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1Import, Value: math.NaN(),
 		Description: "L1 Import (kWh)", IEC61850: "TotkWhImportPhsA"})
 	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2Import, Value: math.NaN(),
@@ -165,6 +156,15 @@ func (s *SDMRoundRobinScheduler) Produce(devid uint8) (retval []QuerySnip) {
 		Description: "L3 Export (kWh)", IEC61850: "TotkWhExportPhsC"})
 	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMTotalExport, Value: math.NaN(),
 		Description: "Total Export (kWh)", IEC61850: "TotkWhExport"})
+
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML1THDVoltageNeutral, Value: math.NaN(),
+		Description: "L1 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsA"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML2THDVoltageNeutral, Value: math.NaN(),
+		Description: "L2 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsB"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDML3THDVoltageNeutral, Value: math.NaN(),
+		Description: "L3 Voltage to neutral THD (%)", IEC61850: "ThdVolPhsC"})
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMAvgTHDVoltageNeutral, Value: math.NaN(),
+		Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"})
 
 	return retval
 }
