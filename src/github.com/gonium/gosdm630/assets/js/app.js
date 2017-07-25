@@ -40,43 +40,44 @@ function convert_time(UNIX_timestamp){
   return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 }
 
-function pollServer() {
+function pollServer(since_time) {
+	if (since_time == undefined) {
+		since_time = Date.now()
+	}
   var loc = window.location;
-  var firehose =  loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/firehose?timeout=45&category=all";
   if (isActive) {
-	//window.setTimeout(function () {
-      $.ajax({
-		url: firehose,
-		type: "GET",
-		success: function (result) {
-		  var timestamp = result["events"][0]["timestamp"]
-		  timeapp.time = convert_time(timestamp)
-		  timeapp.date = convert_date(timestamp)
-		  // extract the last update
-		  var payload = result["events"][0]["data"]
-		  var id = payload["DeviceId"]
-		  var iec61850 = payload["IEC61850"]
-		  var reading = payload["Value"].toFixed(2)
-		  // put into statusline
-		  meterapp.message = "Received " + id + " / " + reading + " - " + iec61850
-		  // update data table
-		  var datadict = meterapp.meters[id]
-		  if (!datadict) {
-			// this is the first time we touch this meter, create an
-			// empty dict
-			var datadict = {}
-		  }
-		  datadict[iec61850] = reading
-		  // make update reactive, see
-		  // https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
-		  Vue.set(meterapp.meters, id, datadict)
-		  pollServer();
-		},
-		error: function () {
-		  meterapp.message = "Error retrieving updates"
-		  pollServer();
-		}
+		var firehose =  loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/firehose?timeout=45&category=all&since_time="+since_time;
+		$.ajax({
+			url: firehose,
+			type: "GET",
+			success: function (result) {
+				var timestamp = result["events"][0]["timestamp"]
+				timeapp.time = convert_time(timestamp)
+				timeapp.date = convert_date(timestamp)
+				// extract the last update
+				var payload = result["events"][0]["data"]
+				var id = payload["DeviceId"]
+				var iec61850 = payload["IEC61850"]
+				var reading = payload["Value"].toFixed(2)
+				// put into statusline
+				meterapp.message = "Received " + id + " / " + reading + " - " + iec61850
+				// update data table
+				var datadict = meterapp.meters[id]
+				if (!datadict) {
+				// this is the first time we touch this meter, create an
+				// empty dict
+				var datadict = {}
+				}
+				datadict[iec61850] = reading
+				// make update reactive, see
+				// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
+				Vue.set(meterapp.meters, id, datadict)
+				pollServer(timestamp);
+			},
+			error: function () {
+				meterapp.message = "Error retrieving updates"
+				pollServer();
+			}
 	  });
-	//}, 0);
   }
 }
