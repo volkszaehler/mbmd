@@ -158,8 +158,8 @@ type Firehose struct {
 }
 
 func NewFirehose(inChannel QuerySnipChannel, verbose bool) *Firehose {
-	// see https://github.com/jcuga/golongpoll/blob/master/longpoll.go#L81
 	options := golongpoll.Options{}
+	// see https://github.com/jcuga/golongpoll/blob/master/longpoll.go#L81
 	//options := golongpoll.Options{
 	//	LoggingEnabled:                 false,
 	//	MaxLongpollTimeoutSeconds:      60,

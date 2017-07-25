@@ -248,32 +248,51 @@ func rtuToFloat64(b []byte) float64 {
 }
 
 func (q *ModbusEngine) Scan() {
-	log.Printf("Starting bus scan")
-	devicelist := make([]uint8, 0)
+	type Device struct {
+		BusId      uint8
+		DeviceType MeterType
+	}
+	devicelist := make([]Device, 0)
 	oldtimeout := q.handler.Timeout
 	q.handler.Timeout = 50 * time.Millisecond
+	log.Printf("Starting bus scan")
 	// loop over all valid slave adresses
 	var devid uint8
 	for devid = 1; devid <= 247; devid++ {
-		// try to query L1 voltage
-		// TODO: Implement this for Janitza devices as well (different
-		// function code)
+		// Check if a SDM device responds: try to query L1 voltage
 		voltage_L1, err := q.retrieveOpCode(devid, ReadInputReg, OpCodeSDML1Voltage)
-		if err != nil {
-			log.Printf("Device %d: n/a\r\n", devid)
+		if err == nil {
+			log.Printf("Device %d: SDM type device found, L1 voltage: %.2f\r\n", devid, voltage_L1)
+			dev := Device{
+				BusId:      devid,
+				DeviceType: METERTYPE_SDM,
+			}
+			devicelist = append(devicelist, dev)
 		} else {
-			log.Printf("Device %d: found, L1 voltage: %.2f\r\n", devid, voltage_L1)
-			devicelist = append(devicelist, devid)
+			// Check if a Janitza device responds: try to query L1 voltage
+			voltage_L1, err := q.retrieveOpCode(devid, ReadHoldingReg, OpCodeJanitzaL1Voltage)
+			if err == nil {
+				log.Printf("Device %d: Janitza type device found, L1 voltage: %.2f\r\n", devid, voltage_L1)
+				dev := Device{
+					BusId:      devid,
+					DeviceType: METERTYPE_JANITZA,
+				}
+				devicelist = append(devicelist, dev)
+			} else {
+				log.Printf("Device %d: n/a\r\n", devid)
+			}
 		}
 		// give the bus some time to recover before querying the next device
 		time.Sleep(time.Duration(40) * time.Millisecond)
 	}
+	// restore timeout to old value
 	q.handler.Timeout = oldtimeout
 	log.Printf("Found %d active devices:\r\n", len(devicelist))
-	for _, devid := range devicelist {
-		log.Printf("* slave address %d\r\n", devid)
+	for _, device := range devicelist {
+		log.Printf("* slave address %d: type %s\r\n", device.BusId,
+			device.DeviceType)
 	}
 	log.Println("WARNING: This lists only the devices that responded to " +
-		"an L1 voltage read input register request. Devices with " +
+		"a known L1 voltage request. Devices with " +
 		"different function code definitions might not be detected.")
 }
