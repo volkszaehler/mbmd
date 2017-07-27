@@ -138,6 +138,7 @@ func main() {
 		}(queryengine2duplicator, duplicator2cache, duplicator2firehose)
 
 		firehose := sdm630.NewFirehose(duplicator2firehose,
+			status,
 			c.Bool("verbose"))
 		go firehose.Run()
 

@@ -16,8 +16,17 @@ var timeapp = new Vue({
   }
 })
 
+var statusapp = new Vue({
+  el: '#status',
+  delimiters: ['${', '}'],
+  data: {
+		meterstatus: {}
+  }
+})
+
 $().ready(function () {
-  pollServer();
+  pollMeterUpdates();
+	pollStatusUpdates();
 });
 
 function convert_date(UNIX_timestamp){
@@ -36,7 +45,47 @@ function convert_time(UNIX_timestamp){
   return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 }
 
-function pollServer(since_time) {
+
+function pollStatusUpdates(since_time) {
+	if (since_time == undefined) {
+		since_time = Date.now()
+	}
+  var loc = window.location;
+	var firehose =  loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/firehose?timeout=45&category=statusupdate&since_time="+since_time;
+	$.ajax({
+		url: firehose,
+		type: "GET",
+		success: function (result) {
+			var timestamp = result["events"][0]["timestamp"]
+			var payload = JSON.parse(result["events"][0]["data"])
+			var meters = payload["ConfiguredMeters"]
+			var meter = meters[0]
+			var meterid = meter["Id"]
+			var metertype = meter["Type"]
+			var meterstatus = meter["Status"]
+			// update data table
+			var datadict = statusapp.meterstatus[meterid]
+			if (!datadict) {
+				// this is the first time we touch this meter, create an
+				// empty dict
+				var datadict = {}
+			}
+			datadict["Id"] = meter["Id"]
+			datadict["Type"] = meter["Type"]
+			datadict["Status"] = meter["Status"]
+			// make update reactive, see
+			// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
+			Vue.set(statusapp.meterstatus, meterid, datadict)
+			pollStatusUpdates(timestamp);
+		},
+		error: function () {
+			console.log("Failed to retrieve status update. Retrying.")
+			pollStatusUpdates();
+		}
+	});
+}
+
+function pollMeterUpdates(since_time) {
 	if (since_time == undefined) {
 		since_time = Date.now()
 	}
@@ -59,19 +108,19 @@ function pollServer(since_time) {
 			// update data table
 			var datadict = meterapp.meters[id]
 			if (!datadict) {
-			// this is the first time we touch this meter, create an
-			// empty dict
-			var datadict = {}
+				// this is the first time we touch this meter, create an
+				// empty dict
+				var datadict = {}
 			}
 			datadict[iec61850] = reading
 			// make update reactive, see
 			// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
 			Vue.set(meterapp.meters, id, datadict)
-			pollServer(timestamp);
+			pollMeterUpdates(timestamp);
 		},
 		error: function () {
 			meterapp.message = "Error retrieving updates"
-			pollServer();
+			pollMeterUpdates();
 		}
 	});
 }

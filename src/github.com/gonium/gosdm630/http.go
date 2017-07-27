@@ -1,6 +1,7 @@
 package sdm630
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -11,6 +12,10 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+)
+
+const (
+	SECONDS_BETWEEN_STATUSUPDATE = 1
 )
 
 // Generate the embedded assets using https://github.com/aprice/embed
@@ -153,11 +158,12 @@ func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 }
 
 type Firehose struct {
-	lpManager *golongpoll.LongpollManager
-	in        QuerySnipChannel
+	lpManager  *golongpoll.LongpollManager
+	in         QuerySnipChannel
+	statstream chan string
 }
 
-func NewFirehose(inChannel QuerySnipChannel, verbose bool) *Firehose {
+func NewFirehose(inChannel QuerySnipChannel, status *Status, verbose bool) *Firehose {
 	options := golongpoll.Options{}
 	// see https://github.com/jcuga/golongpoll/blob/master/longpoll.go#L81
 	//options := golongpoll.Options{
@@ -174,16 +180,34 @@ func NewFirehose(inChannel QuerySnipChannel, verbose bool) *Firehose {
 	if err != nil {
 		log.Fatalf("Failed to create firehose longpoll manager: %q", err)
 	}
+	// Attach a goroutine that will push meter status information
+	// periodically
+	var statusstream = make(chan string)
+	go func() {
+		for {
+			time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
+			var buffer bytes.Buffer
+			if err := status.UpdateAndJSON(&buffer); err == nil {
+				statusstream <- buffer.String()
+				buffer.Reset()
+			}
+		}
+	}()
 	return &Firehose{
-		lpManager: manager,
-		in:        inChannel,
+		lpManager:  manager,
+		in:         inChannel,
+		statstream: statusstream,
 	}
 }
 
 func (f *Firehose) Run() {
 	for {
-		snip := <-f.in
-		f.lpManager.Publish("meterupdate", snip)
+		select {
+		case snip := <-f.in:
+			f.lpManager.Publish("meterupdate", snip)
+		case statupdate := <-f.statstream:
+			f.lpManager.Publish("statusupdate", statupdate)
+		}
 	}
 }
 
