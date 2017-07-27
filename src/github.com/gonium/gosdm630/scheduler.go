@@ -47,7 +47,7 @@ func (q *MeterScheduler) supervisor() {
 				q.out <- meter.Scheduler.GetProbeSnip(meter.DeviceId)
 			}
 		}
-		time.Sleep(60 * time.Second)
+		time.Sleep(15 * time.Minute)
 	}
 }
 
