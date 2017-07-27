@@ -21,7 +21,7 @@ func _initEmbeddedContent() {
 	l.Add(&loader.Content{
 		Path:   "/css/app.css",
 		Hash:    "7nLzpOqE34oG40uL1rzJOQ",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1501178436, 0),
 		Compressed: `
 H4sIAAAAAAAA/2zKQQrCMBAF0Kt4gRZE3MTTTM03DkwmZfyKUnJ3NxFcdP3e0vJnWyVn9TKxrekcqH2u
 ov7Aldr8p+kUqIfjPAKIoCyGPb8Qb05iWjwZbhz/JfbE9meh5c7+DQAA//8uBWoXhAAAAA
@@ -31,7 +31,7 @@ ov7Aldr8p+kUqIfjPAKIoCyGPb8Qb05iWjwZbhz/JfbE9meh5c7+DQAA//8uBWoXhAAAAA
 	l.Add(&loader.Content{
 		Path:   "/css/bootstrap.min.css",
 		Hash:    "TtIasBr9iZKCsY9q9vnrKw",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1501178436, 0),
 		Compressed: `
 H4sIAAAAAAAA/+y9a3PjNtIo/P38Cj3ZSlWciAp1syypktrJzD6J89rOJDN5sjM584EiIYke3g5J2ZR1
 9P72UwRAEpcGQHl80WSzW7sjA43uRqMBdDeBxrdf/9fXnR/iOM/y1Ek6N6Oe3bMtJ0jWTu+089U6z5Ns
@@ -382,7 +382,7 @@ DgD5SzVM/y8AAP//Fzzuh8ZNAgA
 	l.Add(&loader.Content{
 		Path:   "/index.tmpl",
 		Hash:    "ZxwgPgAlmOtQql69bzj0qw",
-		Modified: time.Unix(1501150488, 0),
+		Modified: time.Unix(1501178444, 0),
 		Raw: `
 PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9
 InV0Zi04Ij4KICAgIDx0aXRsZT5Hb1NETTYzMDwvdGl0bGU+Cgk8bWV0YSBuYW1lPSJ2aWV3cG9ydCIg
@@ -479,7 +479,7 @@ PC9ib2R5Pgo8L2h0bWw+Cgo
 	l.Add(&loader.Content{
 		Path:   "/js/app.js",
 		Hash:    "74TnfHO1P9ChXBuaZmGD_A",
-		Modified: time.Unix(1501150771, 0),
+		Modified: time.Unix(1501178444, 0),
 		Compressed: `
 H4sIAAAAAAAA/9RWXW/bNhR996/QuKCSIJXOinUYZAh9aJMtw9oBTRtsMIyCE68dDjIp8MOpIei/D/zQ
 V5UF2562N/Ocw3vPlXgon4iMjqBBkqYpOTxEdwaSFuoi/trBKs4p1OzI7O9iG1+0cR538S6nRJOi9Zqi
@@ -502,7 +502,7 @@ GL692DmYXeXj2x5E7iaffcImommUn8iv0zE6RvcNnFgFQwwZVN998/3Ly1Fwc/XaIUFgP8OMH0b+jtQG
 	l.Add(&loader.Content{
 		Path:   "/js/bootstrap.min.js",
 		Hash:    "Xymfz5cWxII85CkgMywy4g",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1501178436, 0),
 		Compressed: `
 H4sIAAAAAAAA/8y9fXvbNpYo/v/vU0jY35WJMUzL7ezMDhXGj2OrrW4dK2sr7cz6avTQImShoQgNCTnx
 WNrPfh+8kQAIynba7p1/EgsA8XJwcN4PcPyH7h867yhlJSuSdefhj2E/7B8l2XqZhH/qBEvG1mV0fHyP
@@ -712,7 +712,7 @@ AJdG/m8AAAD//5iIHbg1tgAA
 	l.Add(&loader.Content{
 		Path:   "/js/jquery-3.2.1.min.js",
 		Hash:    "55TByDVJ4QkSIAgU_5rRbw",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1501178436, 0),
 		Compressed: `
 H4sIAAAAAAAA/8z9C5ejNtIwjn+VNjsPQW2ZtifJvm9waziTTGaT3dw2M7nsg5kcAQLjxuAG3N0Tw372
 /1FJAoHxJPs8//ec35kzbUB3qVSqKtXl5nq2++eRle+vHj62n9urq+bKCtHV399cvS6OeUTrtMivaB5d
@@ -1226,7 +1226,7 @@ Ffp3SDAQl7AkHSG2bpX68i/Bs/nmn/JK9qv8/cwO/H3zqtlX2zo/8TF1e/5Mrhyg/D7jvwpkSVB1mTPq
 	l.Add(&loader.Content{
 		Path:   "/js/tether.min.js",
 		Hash:    "HEpZmaK0PN06qoigTyTJYQ",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1501178436, 0),
 		Compressed: `
 H4sIAAAAAAAA/+x8/XPbNrbovyJxdjlAdcRK7s3d+8jAniTNvnYmrTtN+pGn0cvQImQhpQiVhGwrEv/3
 N8ABSFCiHGf37Q937v5iE18HwMHB+YaGy22xUEIWRAGn+8AVA8bUbsPlcpDxpSh4GOL/KF1nV/hJOI0D
@@ -1357,7 +1357,7 @@ qpU+0fnhNJhONDf1qkpdhX4Igb9AbdKvDLrcsY+Y0IZ8ebQRLVLg+5om/y8AAP//R8Hs1zhgAAA
 	l.Add(&loader.Content{
 		Path:   "/js/vue.min.js",
 		Hash:    "oYoDP0XyXOtmKQWZr5TL9g",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1501178436, 0),
 		Compressed: `
 H4sIAAAAAAAA/7y963LbuNYo+P88hcXyMMAWrMjp/Z0zmwyiSpx0J925deKkL2p9KpqCbMQyoAYhX2Lq
 PPvUWgBIkFKy96mZmj8SiRuBBWBh3fHwH4N/HHzeiNGX6uD60eiH0fh//OOAlPTg0fj4n0ePxsf/6+DF
@@ -1844,7 +1844,7 @@ RsXhIBr4qtMSjri5KavvrvO0QeB1R/ZK+xFC0xQqI5b/dwAAAP//RD4sM4YyAQA
 	l.Add(&loader.Content{
 		Path:   "/simple.tmpl",
 		Hash:    "j0z_McCKu_3Dz4CEA2yXIw",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1501178436, 0),
 		Raw: `
 PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9
 InV0Zi04Ij4KCTxtZXRhIGh0dHAtZXF1aXY9InJlZnJlc2giIGNvbnRlbnQ9Int7LlJlbG9hZEludGVy
