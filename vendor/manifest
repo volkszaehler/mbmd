@@ -23,7 +23,7 @@
 		{
 			"importpath": "github.com/goburrow/modbus",
 			"repository": "https://github.com/goburrow/modbus",
-			"revision": "9ffe737f567a07534d91277866779e28145440e0",
+			"revision": "0d0a427beb37599ff34f8d74617af5ac403e9700",
 			"branch": "master"
 		},
 		{
