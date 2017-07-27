@@ -120,6 +120,9 @@ func (db *SnipDB) Inspect(w io.Writer) error {
 
 	err = blt.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(DEFAULT_BUCKET))
+		if b == nil {
+			return fmt.Errorf("No bucket found in database - empty?")
+		}
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -173,6 +176,9 @@ func (db *SnipDB) ExportCSV(csvfile string) error {
 	numSnips := 0
 	err = blt.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(DEFAULT_BUCKET))
+		if b == nil {
+			return fmt.Errorf("No bucket found in database - empty?")
+		}
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
