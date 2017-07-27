@@ -94,12 +94,14 @@ First, you should integrate the meter into your fuse box. Please ask a
 professional to do this for you - I don't want you to hurt yourself!
 Refer to the meter installation manual on how to do this. You need to
 set the MODBUS communication parameters to ``9600 8N1``. 
-After this you need to connect the USB adaptor to the meter. This is
+After this you need to connect a RS485 adaptor to the meter. This is
 how I did the wiring:
 
 ![USB-SDM630 wiring](img/wiring.jpg)
 
-I got this [Digitus USB-RS485
+You can try to use a cheap USB-RS485 adaptor, or you can [build your own
+isolated adaptor](https://github.com/gonium/usb-iso-rs485). I did my
+first experiments with a [Digitus USB-RS485
 adaptor](http://www.digitus.info/en/products/accessories/adapter-and-converter/r-usb-serial-adapter-usb-20-da-70157/)
 which comes with a handy terminal block. I mounted the [bias
 network](https://en.wikipedia.org/wiki/RS-485) directly on the terminal
@@ -107,7 +109,19 @@ block:
 
 ![bias network](img/USB-RS485-Adaptor.jpg)
 
-TODO: Update this to reflect other adaptors.
+Since then, I tested various adaptors:
+
+* Supercheap adaptors from China: No ground connection, one worked fine,
+	another one was unstable
+* Industrial adaptors like the [Meilhaus RedCOM
+USB-COMi-SI](https://www.meilhaus.de/usb-comi-si.htm) or the [ADAM
+4561](http://www.advantech.com/products/gf-5u7m/adam-4561/mod_92dc04b1-c0fe-4f2b-baf6-5c27e79900c6)
+isolate the RS-485 bus from the USB line and work extremely reliable.
+But they are really expensive.
+
+I started to develop [my own isolated
+adaptor](https://github.com/gonium/usb-iso-rs485). Please check this
+link for more information.
 
 ### Using the precompiled binaries
 
@@ -562,10 +576,13 @@ subcommand:
 ````
 
 The ``sdm630_logger`` tool is still under development and lacks certain
-features. Please note that the storage functions are rather inefficient
-and require a lot of storage.
+features: 
 
-### Detecting connected SDMs
+* The storage functions are rather inefficient and require a lot of
+storage. 
+* The TSV export currently only exports the power readings.
+
+### Detecting connected meters
 
 MODBUS/RTU does not provide a mechanism to discover devices. There is no
 reliable way to detect all attached devices. The ``sdm_detect`` tool
@@ -577,14 +594,16 @@ which one replied correctly:
 2017/06/21 10:22:34 Starting bus scan
 2017/06/21 10:22:35 Device 1: n/a
 ...
-2017/06/21 10:22:37 Device 21: n/a
-2017/06/21 10:22:37 Device 22: found, L1 voltage: 232.61
-2017/06/21 10:22:37 Device 23: found, L1 voltage: 233.00
-2017/06/21 10:22:37 Device 24: n/a
+2017/07/27 16:16:39 Device 21: SDM type device found, L1 voltage: 234.86
+2017/07/27 16:16:40 Device 22: n/a
+2017/07/27 16:16:40 Device 23: n/a
+2017/07/27 16:16:40 Device 24: n/a
+2017/07/27 16:16:40 Device 25: n/a
+2017/07/27 16:16:40 Device 26: Janitza type device found, L1 voltage: 235.10
 ...
-2017/06/21 10:23:51 Device 247: n/a
-2017/06/21 10:23:51 Found 2 active devices:
-2017/06/21 10:23:51 * slave address 22
-2017/06/21 10:23:51 * slave address 23
-2017/06/21 10:23:51 WARNING: This lists only the devices that responded to an L1 voltage read input register request. Devices with different function code definitions might not be detected.
+2017/07/27 16:17:25 Device 247: n/a
+2017/07/27 16:17:25 Found 2 active devices:
+2017/07/27 16:17:25 * slave address 21: type SDM
+2017/07/27 16:17:25 * slave address 26: type JANITZA
+2017/07/27 16:17:25 WARNING: This lists only the devices that responded to a known L1 voltage request. Devices with different function code definitions might not be detected.
 ````
