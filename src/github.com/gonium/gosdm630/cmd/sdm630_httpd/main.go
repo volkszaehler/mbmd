@@ -46,7 +46,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "device_list, d",
-			Value: "1",
+			Value: "SDM:1",
 			Usage: `MODBUS device type and ID to query, separated by comma.
 			Valid types are:
 			"SDM" for Eastron SDM meters

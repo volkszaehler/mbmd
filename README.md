@@ -1,17 +1,16 @@
-# A HTTP interface to the Eastron SDM-MODBUS smart meter series
+# A HTTP interface to MODBUS smart meters
 
-This project provides a http interface to the Eastron SDM smart
-meter series with MODBUS interface. These smart meters are available in
-many flavours - make sure to get the "MODBUS" version. The meters
-exposes all measured values over an RS485 connection, making it very
-easy to integrate it into your home automation system. This repository
-contains software that reads the values over the RS485 connection and
-provides a HTTP interface to access them. Both a REST-style API and a
-streaming API are available.
+This project provides a http interface to smart
+meters with a MODBUS interface. Beside the EASTRON SDM series, the
+software also supports the Janitza B23 DIN-rail meters. The meters
+provide all measured values over an RS485 connection. The software reads
+the measurements and wraps them into a HTTP interface, making it very
+easy to integrate it into your home automation system. Both a REST-style
+API and a streaming API are available.
 
 ## Suported Devices:
 
-The meters have slightly different capabilities. The SDM630 offers
+The meters have slightly different capabilities. The EASTRON SDM630 offers
 a lot of features, while the smaller devices only support basic
 features.  This table gives you an overview (please note: check the
 manuals for yourself, I could be wrong):
@@ -24,6 +23,7 @@ manuals for yourself, I could be wrong):
 | SDM530 | 3 | + | + | + | + | + | + | - | - |
 | SDM630 v1 | 3 | + | + | + | + | + | + | + | + |
 | SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
+| Janitza B23 | 3 | + | + | + | + | + | + | - | - |
 
 Please note that voltage, current, power and power factor are always
 reported for each connected phase.
@@ -39,6 +39,8 @@ reported for each connected phase.
  of features. Can be configured for 1P2 (single phase with neutral), 3P3
  (three phase without neutral) and 3P4 (three phase with neutral)
 	systems.
+ * Janitza B23: These meters have a higher update rate than the Eastron
+ devices, but they are more expensive.
 
 Some of my test devices have been provided by [B+G
 E-Tech](http://bg-etech.de/) - please consider to buy your meter from
@@ -77,7 +79,7 @@ it does with other sensors in my home.
 The installation consists of a hardware and a software part.
 Make sure you buy/fetch the following things before starting:
 
-* An Eastron SDM smart meter, the MODBUS version.
+* A supported Modbus/RTU smart meter.
 * A USB RS485 adaptor. I use a homegrown one, please see [my
 USB-ISO-RS485 project](https://github.com/gonium/usb-iso-rs485)
 * Some cables to connect the adapter to the SDM630 (for testing, I use
@@ -88,11 +90,11 @@ installation, a shielded CAT5 cable seems adequate)
 
 ![SDM630 in my test setup](img/SDM630-MODBUS.jpg)
 
-First, you should integrate the SDM630 into your fuse box. Please ask a
+First, you should integrate the meter into your fuse box. Please ask a
 professional to do this for you - I don't want you to hurt yourself!
-Refer to the SDM630 installation manual on how to do this. You need to
+Refer to the meter installation manual on how to do this. You need to
 set the MODBUS communication parameters to ``9600 8N1``. 
-After this you need to connect the USB adaptor to the SDM630. This is
+After this you need to connect the USB adaptor to the meter. This is
 how I did the wiring:
 
 ![USB-SDM630 wiring](img/wiring.jpg)
@@ -107,16 +109,22 @@ block:
 
 TODO: Update this to reflect other adaptors.
 
+### Using the precompiled binaries
+
+You can use the [precompiled releases](https://github.com/gonium/gosdm630/releases) if you like. Just
+download the right binary for your platform and unzip.
+
 ### Installing the software from source
 
-You need a working [Golang installation](http://golang.org) and the [GB
-build tool](http://getgb.io/) in order to compile your binary. Please
-install the Go compiler first. Then clone this repository:
+You need a working [Golang installation](http://golang.org), the [GB
+build tool](http://getgb.io/) and
+[Embed](http://github.com/aprice/embed) in order to compile your binary.
+Please install the Go compiler first. Then clone this repository:
 
     git clone https://github.com/gonium/gosdm630.git
 
 If you have ``make`` installed you can
-use the ``Makefile`` to install the GB build tool:
+use the ``Makefile`` to install the ``gb`` and ``embed`` tools:
 
     $ cd gosdm630
     $ make dep
@@ -192,43 +200,13 @@ Now fire up the software:
 
 A typical invocation looks like this:
 
-		./bin/sdm630_httpd -s /dev/ttyUSB0 -d 11,12,13,14,15 -v
+		$ ./bin/sdm630_httpd -s /dev/ttyUSB0 -d janitza:26,sdm:1
     2017/01/25 16:34:26 Connecting to RTU via /dev/ttyUSB0
     2017/01/25 16:34:26 Starting API httpd at :8080
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 00 00 02 71 61
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 43 6c 78 80 a7 bd
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 02 00 02 d0 a1
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 43 6c 74 9c a3 74
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 04 00 02 30 a0
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 00 00 00 00 51 84
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 06 00 02 91 60
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 00 00 00 00 51 84
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 08 00 02 f0 a3
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: received 0b 04 04 00 00 00 00 51 84
-    RTUClientHandler: 2017/01/25 16:34:26 modbus: sending 0b 04 00 0a 00 02 51 63
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 0c 00 02 b1 62
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 0e 00 02 10 a2
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 10 00 02 70 a4
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 00 00 00 00 51 84
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 1e 00 02 11 67
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3f 80 00 00 5c 78
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 20 00 02 70 ab
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3f 80 00 00 5c 78
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 00 22 00 02 d1 6b
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3f 80 00 00 5c 78
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 01 5a 00 02 50 8e
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3b 03 12 6f e0 2c
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 01 5c 00 02 b0 8f
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: received 0b 04 04 3b 03 12 6f e0 2c
-    RTUClientHandler: 2017/01/25 16:34:27 modbus: sending 0b 04 01 5e 00 02 11 4f
-    T: 2015-11-06T12:22:14+01:00 - L1: 235.84V 0.00A 0.00W 1.00cos | L2: 0.00V 0.00A 0.00W 1.00cos | L3: 0.00V 0.00A 0.00W 1.00cos
 
-This call queries five devices with the IDs 11, 12, 13, 14 and 15. If
-you use the ``-v`` commandline switch you can see modbus traffic and the
-current readings on the command line.  At
+This call queries a Janitza B23 meter with ID 26 and an Eastron SDM
+meter at ID 1. It . If you use the ``-v`` commandline switch you can see
+modbus traffic and the current readings on the command line.  At
 [http://localhost:8080](http://localhost:8080) you can see an embedded
 web page that updates itself with the latest values:
 
@@ -275,7 +253,7 @@ This switches the internal ``dwc`` USB hub of the Raspberry Pi to
 USB1.1. While this reduces the available USB speed, the device now works
 reliably.
 
-## The API
+## The REST API
 
 As of version 0.2 the software supports more than one device. In order
 to query the API you need to provide the MODBUS ID of the device you
@@ -416,11 +394,18 @@ available:
         "ModbusRequestRatePerMinute": 1810.5264666764785,
         "TotalModbusErrors": 738,
         "ModbusErrorRatePerMinute": 0.6751319688261972
-      }
+      },
+			"ConfiguredMeters": [
+				{
+					"Id": 26,
+					"Type": "JANITZA",
+					"Status": "available"
+				}
+			]
     }
 
 This is a snapshot of a process running over night, along with the error
-statistics during that timeframe. The process queries 5 meters continuously,
+statistics during that timeframe. The process queries continuously,
 the cabling is not a shielded, twisted wire but something that I had laying
 around. With proper cabling the error rate should be lower, though.
 
@@ -463,7 +448,7 @@ are available. Then, you either reconnect or use the same TCP connection
 for the next request. If you want to get all values, you can do the
 following:
 
-    $ while true; do curl --silent "http://localhost:8080/firehose?timeout=45&category=all" | jq; done
+    $ while true; do curl --silent "http://localhost:8080/firehose?timeout=45&category=meterupdates" | jq; done
 
 This requests the last values in a loop with curl and pipes the result
 through jq. Of course this also closes the connection after each reply,
@@ -493,6 +478,48 @@ Please note that the ``events`` structure is formatted by the long
 polling library we use. The ``data`` element contains the information
 just read from the MODBUS device. Events are emitted as soon as they are
 received over the serial connection.
+
+In addition, you can also use the firehose to receive status updates:
+
+````
+$ while true; do curl --silent "http://localhost:8080/firehose?timeout=45&category=statusupdate" | jq; done
+````
+
+responds each second with the current status, e.g.
+
+````json
+{
+  "events": [
+    {
+      "timestamp": 1501163437772,
+      "category": "statusupdate",
+      "data": {
+				"Starttime": "2017-07-27T10:21:04.790877012+02:00",
+				"UptimeSeconds": 10.000907389,
+				"Goroutines": 22,
+				"Memory": {
+					"Alloc": 3605376,
+					"HeapAlloc": 3605376
+				},
+				"Modbus": {
+					"TotalModbusRequests": 325,
+					"ModbusRequestRatePerMinute": 1943.823619582965,
+					"TotalModbusErrors": 0,
+					"ModbusErrorRatePerMinute": 0
+				},
+				"ConfiguredMeters": [
+					{
+						"Id": 26,
+						"Type": "JANITZA",
+						"Status": "available"
+					}
+				]
+			}
+		}
+  ]
+}
+
+````
 
 ### Stream Utilities
 
