@@ -382,7 +382,7 @@ DgD5SzVM/y8AAP//Fzzuh8ZNAgA
 	l.Add(&loader.Content{
 		Path:   "/index.tmpl",
 		Hash:    "5Kv-7r1FSja5i-gRgG-RSQ",
-		Modified: time.Unix(1501241762, 0),
+		Modified: time.Unix(1501248393, 0),
 		Raw: `
 PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9
 InV0Zi04Ij4KICAgIDx0aXRsZT5Hb1NETTYzMDwvdGl0bGU+CgkJPG1ldGEgbmFtZT0idmlld3BvcnQi
@@ -477,7 +477,7 @@ ICA8L2JvZHk+CjwvaHRtbD4KCg
 	l.Add(&loader.Content{
 		Path:   "/js/app.js",
 		Hash:    "74TnfHO1P9ChXBuaZmGD_A",
-		Modified: time.Unix(1501150771, 0),
+		Modified: time.Unix(1501248393, 0),
 		Compressed: `
 H4sIAAAAAAAA/9RWXW/bNhR996/QuKCSIJXOinUYZAh9aJMtw9oBTRtsMIyCE68dDjIp8MOpIei/D/zQ
 V5UF2562N/Ocw3vPlXgon4iMjqBBkqYpOTxEdwaSFuoi/trBKs4p1OzI7O9iG1+0cR538S6nRJOi9Zqi
