@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>GoSDM630</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=yes"/>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
 	<link href="/static/css/app.css" rel="stylesheet">
   </head>
@@ -46,37 +46,33 @@
 						<th class="metervalue">L2</th>
 						<th class="metervalue">L3</th>
 						<th class="metervalue">Total</th>
-						<th>Unit</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
-						<td>Voltage</td>
+						<td>Voltage (Volt)</td>
 						<td class="metervalue">${ meter.VolLocPhsA }</td>
 						<td class="metervalue">${ meter.VolLocPhsB }</td>
 						<td class="metervalue">${ meter.VolLocPhsC }</td>
 						<td class="metervalue">-</td>
-						<td>Volt</td>
 						</tr>
 						<tr>
-						<td>Current</td>
+						<td>Current (Ampere)</td>
 						<td class="metervalue">${ meter.AmpLocPhsA }</td>
 						<td class="metervalue">${ meter.AmpLocPhsB }</td>
 						<td class="metervalue">${ meter.AmpLocPhsC }</td>
 						<td class="metervalue">${ (parseFloat(meter.AmpLocPhsA)
 							+ parseFloat(meter.AmpLocPhsB)
 							+ parseFloat(meter.AmpLocPhsC)).toFixed(2) }</td>
-						<td>Ampere</td>
 						</tr>
 						<tr>
-						<td>Power</td>
+						<td>Power (Watt)</td>
 						<td class="metervalue">${ meter.WLocPhsA }</td>
 						<td class="metervalue">${ meter.WLocPhsB }</td>
 						<td class="metervalue">${ meter.WLocPhsC }</td>
 						<td class="metervalue">${ (parseFloat(meter.WLocPhsA)
 							+ parseFloat(meter.WLocPhsB)
 							+ parseFloat(meter.WLocPhsC)).toFixed(2) }</td>
-						<td>Watt</td>
 						</tr>
 						<tr>
 						<td>Power Factor</td>
@@ -84,31 +80,27 @@
 						<td class="metervalue">${ meter.AngLocPhsB }</td>
 						<td class="metervalue">${ meter.AngLocPhsC }</td>
 						<td class="metervalue">-</td>
-						<td></td>
 						</tr>
 						<tr>
-						<td>Import</td>
+						<td>Import (kWh)</td>
 						<td class="metervalue">${ meter.TotkWhImportPhsA }</td>
 						<td class="metervalue">${ meter.TotkWhImportPhsB }</td>
 						<td class="metervalue">${ meter.TotkWhImportPhsC }</td>
 						<td class="metervalue">${ meter.TotkWhImport }</td>
-						<td>kWh</td>
 						</tr>
 						<tr>
-						<td>Export</td>
+						<td>Export (kWh)</td>
 						<td class="metervalue">${ meter.TotkWhExportPhsA }</td>
 						<td class="metervalue">${ meter.TotkWhExportPhsB }</td>
 						<td class="metervalue">${ meter.TotkWhExportPhsC }</td>
 						<td class="metervalue">${ meter.TotkWhExport }</td>
-						<td>kWh</td>
 						</tr>
 						<tr>
-						<td>THD voltage</td>
+						<td>THD voltage (%)</td>
 						<td class="metervalue">${ meter.ThdVolPhsA }</td>
 						<td class="metervalue">${ meter.ThdVolPhsB }</td>
 						<td class="metervalue">${ meter.ThdVolPhsC }</td>
 						<td class="metervalue">${ meter.ThdVol }</td>
-						<td>Percent</td>
 						</tr>
 					<tbody>
 					</table>
