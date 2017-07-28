@@ -208,7 +208,7 @@ Now fire up the software:
        --serialadapter value, -s value  path to serial RTU device (default: "/dev/ttyUSB0")
        --url value, -u value            the URL the server should respond on (default: ":8080")
        --verbose, -v                    print verbose messages
-       --device_list value, -d value    MODBUS device ID to query (default: "1")
+       --device_list value, -d value    MODBUS device ID to query (default: "SDM:1")
        --help, -h                       show help
     
 
@@ -540,7 +540,7 @@ responds each second with the current status, e.g.
 We provide a simple command line utility to monitor single devices. If you
 run
 
-    $ ./bin/sdm630_monitor -d 23 -u localhost:8080
+    $ ./bin/sdm630_monitor -d sdm:23 -u localhost:8080
 
 it will connect to the firehose and print power readings for device 23.
 Please note that this is all it does, the monitor can serve as a
