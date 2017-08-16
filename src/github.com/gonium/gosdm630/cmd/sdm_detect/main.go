@@ -21,11 +21,11 @@ func main() {
 		},
 		cli.IntFlag{
 			Name:  "comset, c",
-			Value: sdm630.ModbusComset9600,
+			Value: sdm630.ModbusComset9600_8N1,
 			Usage: `which communication parameter set to use. Valid sets are
-		` + strconv.Itoa(sdm630.ModbusComset2400) + `:  2400 baud, 8N1
-		` + strconv.Itoa(sdm630.ModbusComset9600) + `:  9600 baud, 8N1
-		` + strconv.Itoa(sdm630.ModbusComset19200) + `: 19200 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset2400_8N1) + `:  2400 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset9600_8N1) + `:  9600 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset19200_8N1) + `: 19200 baud, 8N1
 			`,
 		},
 		cli.BoolFlag{

@@ -28,11 +28,14 @@ func main() {
 		},
 		cli.IntFlag{
 			Name:  "comset, c",
-			Value: sdm630.ModbusComset9600,
+			Value: sdm630.ModbusComset9600_8N1,
 			Usage: `which communication parameter set to use. Valid sets are
-		` + strconv.Itoa(sdm630.ModbusComset2400) + `:  2400 baud, 8N1
-		` + strconv.Itoa(sdm630.ModbusComset9600) + `:  9600 baud, 8N1
-		` + strconv.Itoa(sdm630.ModbusComset19200) + `: 19200 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset2400_8N1) + `:  2400 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset9600_8N1) + `:  9600 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset19200_8N1) + `: 19200 baud, 8N1
+		` + strconv.Itoa(sdm630.ModbusComset2400_8E1) + `:  2400 baud, 8E1
+		` + strconv.Itoa(sdm630.ModbusComset9600_8E1) + `:  9600 baud, 8E1
+		` + strconv.Itoa(sdm630.ModbusComset19200_8E1) + `: 19200 baud, 8E1
 			`,
 		},
 		cli.StringFlag{
@@ -51,7 +54,8 @@ func main() {
 			Valid types are:
 			"SDM" for Eastron SDM meters
 			"JANITZA" for Janitza B-Series DIN-Rail meters
-			Example: -d JANITZA:1,SDM:22,SDM:23`,
+			"DZG" for the DZG Metering GmbH DVH4013 DIN-Rail meter
+			Example: -d JANITZA:1,SDM:22,DZG:23`,
 		},
 		cli.StringFlag{
 			Name:  "unique_id_format, f",
@@ -89,6 +93,10 @@ func main() {
 			case sdm630.METERTYPE_SDM:
 				meter = sdm630.NewMeter(sdm630.METERTYPE_SDM,
 					uint8(id), sdm630.NewSDMRoundRobinScheduler(),
+					DEFAULT_METER_STORE_SECONDS)
+			case sdm630.METERTYPE_DZG:
+				meter = sdm630.NewMeter(sdm630.METERTYPE_DZG,
+					uint8(id), sdm630.NewDZGRoundRobinScheduler(),
 					DEFAULT_METER_STORE_SECONDS)
 			default:
 				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)

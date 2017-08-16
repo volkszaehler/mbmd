@@ -76,12 +76,40 @@ const (
 	OpCodeJanitzaL1Cosphi    = 0x4A64
 	OpCodeJanitzaL2Cosphi    = 0x4A66
 	OpCodeJanitzaL3Cosphi    = 0x4A68
+
+	/***
+	 * Opcodes for DZG DVH4014.
+	 * See "User Manual DVH4013", not public.
+	 */
+	OpCodeDZGL1Voltage   = 0x0004
+	OpCodeDZGL2Voltage   = 0x0006
+	OpCodeDZGL3Voltage   = 0x0008
+	OpCodeDZGL1Current   = 0x000A
+	OpCodeDZGL2Current   = 0x000C
+	OpCodeDZGL3Current   = 0x000E
+	OpCodeDZGL1Power     = 0x4A4C
+	OpCodeDZGL2Power     = 0x4A4E
+	OpCodeDZGL3Power     = 0x4A50
+	OpCodeDZGL1Import    = 0x4A76
+	OpCodeDZGL2Import    = 0x4A78
+	OpCodeDZGL3Import    = 0x4A7A
+	OpCodeDZGTotalImport = 0x0000
+	OpCodeDZGL1Export    = 0x4A7E
+	OpCodeDZGL2Export    = 0x4A80
+	OpCodeDZGL3Export    = 0x4A82
+	OpCodeDZGTotalExport = 0x0002
+	OpCodeDZGL1Cosphi    = 0x4A64
+	OpCodeDZGL2Cosphi    = 0x4A66
+	OpCodeDZGL3Cosphi    = 0x4A68
 )
 
 const (
-	ModbusComset2400  = 1
-	ModbusComset9600  = 2
-	ModbusComset19200 = 3
+	ModbusComset2400_8N1  = 1
+	ModbusComset9600_8N1  = 2
+	ModbusComset19200_8N1 = 3
+	ModbusComset2400_8E1  = 4
+	ModbusComset9600_8E1  = 5
+	ModbusComset19200_8E1 = 6
 )
 
 type ModbusEngine struct {
@@ -100,18 +128,39 @@ func NewModbusEngine(
 	// Modbus RTU/ASCII
 	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
 	switch comset {
-	case ModbusComset2400:
+	case ModbusComset2400_8N1:
 		rtuclient.BaudRate = 2400
-	case ModbusComset9600:
+		rtuclient.DataBits = 8
+		rtuclient.Parity = "N"
+		rtuclient.StopBits = 1
+	case ModbusComset9600_8N1:
 		rtuclient.BaudRate = 9600
-	case ModbusComset19200:
+		rtuclient.DataBits = 8
+		rtuclient.Parity = "N"
+		rtuclient.StopBits = 1
+	case ModbusComset19200_8N1:
 		rtuclient.BaudRate = 19200
+		rtuclient.DataBits = 8
+		rtuclient.Parity = "N"
+		rtuclient.StopBits = 1
+	case ModbusComset2400_8E1:
+		rtuclient.BaudRate = 2400
+		rtuclient.DataBits = 8
+		rtuclient.Parity = "E"
+		rtuclient.StopBits = 1
+	case ModbusComset9600_8E1:
+		rtuclient.BaudRate = 9600
+		rtuclient.DataBits = 8
+		rtuclient.Parity = "E"
+		rtuclient.StopBits = 1
+	case ModbusComset19200_8E1:
+		rtuclient.BaudRate = 19200
+		rtuclient.DataBits = 8
+		rtuclient.Parity = "E"
+		rtuclient.StopBits = 1
 	default:
 		log.Fatal("Invalid communication set specified. See -h for help.")
 	}
-	rtuclient.DataBits = 8
-	rtuclient.Parity = "N"
-	rtuclient.StopBits = 1
 	rtuclient.Timeout = 300 * time.Millisecond
 	if verbose {
 		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
@@ -135,56 +184,25 @@ func NewModbusEngine(
 	}
 }
 
-func (q *ModbusEngine) retrieveOpCode(deviceid uint8, funccode uint8, opcode uint16) (retval float64,
-	err error) {
+func (q *ModbusEngine) retrieveOpCode(deviceid uint8, funccode uint8,
+	opcode uint16) (retval []byte, err error) {
 	q.status.IncreaseModbusRequestCounter()
 	// update the slave id in the handler
 	q.handler.SlaveId = deviceid
-	var results []byte
 	switch funccode {
 	case ReadInputReg:
-		results, err = q.client.ReadInputRegisters(opcode, 2)
+		retval, err = q.client.ReadInputRegisters(opcode, 2)
 	case ReadHoldingReg:
-		results, err = q.client.ReadHoldingRegisters(opcode, 2)
+		retval, err = q.client.ReadHoldingRegisters(opcode, 2)
 	default:
 		log.Fatalf("Unknown function code %d - cannot query device.",
 			funccode)
 	}
-	if err == nil {
-		retval = rtuToFloat64(results)
-	} else if q.verbose {
+	if err != nil && q.verbose {
 		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", opcode, err.Error())
 	}
 	return retval, err
 }
-
-//func (q *ModbusEngine) queryOrFail(
-//	deviceid uint8,
-//	funccode uint8,
-//	opcode uint16,
-//	errorStream QueryErrorChannel,
-//) (retval float64) {
-//	var err error
-//	tryCnt := 0
-//	for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
-//		retval, err = q.retrieveOpCode(deviceid, funccode, opcode)
-//		if err != nil {
-//			q.status.IncreaseModbusReconnectCounter()
-//			log.Printf("Failed to retrieve opcode - retry attempt %d of %d\r\n", tryCnt+1,
-//				MaxRetryCount)
-//			time.Sleep(time.Duration(100) * time.Millisecond)
-//		} else {
-//			break
-//		}
-//	}
-//	if tryCnt == MaxRetryCount {
-//		errorsnip := QueryError{
-//			Error: fmt.Sprintf("Device %d did not respond.", deviceid),
-//		}
-//		errorStream <- errorsnip
-//	}
-//	return nil
-//}
 
 func (q *ModbusEngine) Transform(
 	inputStream QuerySnipChannel,
@@ -207,7 +225,7 @@ func (q *ModbusEngine) Transform(
 		//		value := q.queryOrFail(snip.DeviceId, snip.FuncCode, snip.OpCode, errorStream)
 
 		var err error
-		var reading float64
+		var reading []byte
 		tryCnt := 0
 		for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
 			reading, err = q.retrieveOpCode(snip.DeviceId, snip.FuncCode, snip.OpCode)
@@ -228,7 +246,13 @@ func (q *ModbusEngine) Transform(
 			}
 			controlStream <- errorSnip
 		} else {
-			snip.Value = reading
+			//Now: convert bytes to value. Assume float64 conversion by
+			//default.
+			if snip.Transform != nil {
+				snip.Value = snip.Transform(reading)
+			} else {
+				snip.Value = rtuToFloat64(reading)
+			}
 			snip.ReadTimestamp = time.Now()
 			outputStream <- snip
 			successSnip := ControlSnip{
@@ -239,12 +263,6 @@ func (q *ModbusEngine) Transform(
 			controlStream <- successSnip
 		}
 	}
-}
-
-func rtuToFloat64(b []byte) float64 {
-	bits := binary.BigEndian.Uint32(b)
-	f := math.Float32frombits(bits)
-	return float64(f)
 }
 
 func (q *ModbusEngine) Scan() {
@@ -295,4 +313,25 @@ func (q *ModbusEngine) Scan() {
 	log.Println("WARNING: This lists only the devices that responded to " +
 		"a known L1 voltage request. Devices with " +
 		"different function code definitions might not be detected.")
+}
+
+// Transform functions to convert RTU bytes to meaningfull data types.
+type RTUTransform func([]byte) float64
+
+func rtuScaledIntToFloat64(b []byte, scalar float64) float64 {
+	unscaled := float64(binary.BigEndian.Uint32(b))
+	f := unscaled / scalar
+	return float64(f)
+}
+
+func MkRTUScaledIntToFloat64(scalar float64) RTUTransform {
+	return RTUTransform(func(b []byte) float64 {
+		return rtuScaledIntToFloat64(b, scalar)
+	})
+}
+
+func rtuToFloat64(b []byte) float64 {
+	bits := binary.BigEndian.Uint32(b)
+	f := math.Float32frombits(bits)
+	return float64(f)
 }

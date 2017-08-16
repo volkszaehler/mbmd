@@ -263,6 +263,7 @@ type QuerySnip struct {
 	IEC61850      string
 	Description   string
 	ReadTimestamp time.Time
+	Transform     RTUTransform
 }
 
 type QuerySnipChannel chan QuerySnip
