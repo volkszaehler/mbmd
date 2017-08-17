@@ -24,6 +24,7 @@ manuals for yourself, I could be wrong):
 | SDM630 v1 | 3 | + | + | + | + | + | + | + | + |
 | SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
 | Janitza B23 | 3 | + | + | + | + | + | + | - | - |
+| DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
 
 Please note that voltage, current, power and power factor are always
 reported for each connected phase.
@@ -41,6 +42,14 @@ reported for each connected phase.
 	systems.
  * Janitza B23: These meters have a higher update rate than the Eastron
  devices, but they are more expensive.
+ * DZG DVH4013: This meter does not provide raw phase power measurements
+ and only aggregated import/export measurements. The meter is only
+ partially implemented and not recommended. If you want to use it: By
+ default, the meter communicates using 9600 8E1 (comset 5). The meter ID
+ is derived from the serial number: take the last two numbers of the
+ serial number (top right of the device), e.g. 23, and add one (24).
+ Assume this is a hexadecimal number and convert it to decimal (36). Use
+ this as the meter ID.
 
 Some of my test devices have been provided by [B+G
 E-Tech](http://bg-etech.de/) - please consider to buy your meter from
