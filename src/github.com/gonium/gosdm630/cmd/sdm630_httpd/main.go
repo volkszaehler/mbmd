@@ -95,6 +95,9 @@ func main() {
 					uint8(id), sdm630.NewSDMRoundRobinScheduler(),
 					DEFAULT_METER_STORE_SECONDS)
 			case sdm630.METERTYPE_DZG:
+				log.Println(`WARNING: The DZG DVH 4013 does not report the same
+				measurements as the other meters. Only limited functionality is 
+				implemented.`)
 				meter = sdm630.NewMeter(sdm630.METERTYPE_DZG,
 					uint8(id), sdm630.NewDZGRoundRobinScheduler(),
 					DEFAULT_METER_STORE_SECONDS)

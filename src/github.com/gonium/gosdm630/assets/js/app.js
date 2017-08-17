@@ -48,7 +48,7 @@ function convert_time(UNIX_timestamp){
 
 function pollStatusUpdates(since_time) {
 	if (since_time == undefined) {
-		since_time = Date.now()
+		since_time = Date.now()-1000
 	}
   var loc = window.location;
 	var firehose =  loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/firehose?timeout=45&category=statusupdate&since_time="+since_time;
@@ -87,7 +87,7 @@ function pollStatusUpdates(since_time) {
 
 function pollMeterUpdates(since_time) {
 	if (since_time == undefined) {
-		since_time = Date.now()
+		since_time = Date.now() - 1000
 	}
   var loc = window.location;
 	var firehose =  loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "") + "/firehose?timeout=45&category=meterupdate&since_time="+since_time;
@@ -95,7 +95,17 @@ function pollMeterUpdates(since_time) {
 		url: firehose,
 		type: "GET",
 		success: function (result) {
-			var timestamp = result["events"][0]["timestamp"]
+			var events = result["events"]
+			if (! events) {
+				console.log("No event data found, retrying.")
+				pollMeterUpdates()
+			}
+			var firstevent = events[0]
+			if (! firstevent) {
+				console.log("Empty event data, retrying.")
+				pollMeterUpdates()
+			}
+			var timestamp = firstevent["timestamp"]
 			timeapp.time = convert_time(timestamp)
 			timeapp.date = convert_date(timestamp)
 			// extract the last update

@@ -257,13 +257,13 @@ func (r ReadingSlice) NotOlderThan(ts time.Time) (retval ReadingSlice) {
 
 type QuerySnip struct {
 	DeviceId      uint8
-	FuncCode      uint8
+	FuncCode      uint8  `json:"-"`
 	OpCode        uint16 `json:"-"`
 	Value         float64
 	IEC61850      string
 	Description   string
 	ReadTimestamp time.Time
-	Transform     RTUTransform
+	Transform     RTUTransform `json:"-"`
 }
 
 type QuerySnipChannel chan QuerySnip

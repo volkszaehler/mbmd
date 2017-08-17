@@ -204,6 +204,14 @@ func (f *Firehose) Run() {
 	for {
 		select {
 		case snip := <-f.in:
+			//log.Printf("FooSnip: %+v", snip)
+			//var buffer bytes.Buffer
+			//err := json.NewEncoder(&buffer).Encode(snip)
+			//if err != nil {
+			//	log.Println("FooError: ", err.Error())
+			//} else {
+			//	log.Println("FooSuccess: ", buffer.String())
+			//}
 			f.lpManager.Publish("meterupdate", snip)
 		case statupdate := <-f.statstream:
 			f.lpManager.Publish("statusupdate", statupdate)

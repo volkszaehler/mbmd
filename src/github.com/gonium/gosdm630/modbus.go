@@ -81,26 +81,22 @@ const (
 	 * Opcodes for DZG DVH4014.
 	 * See "User Manual DVH4013", not public.
 	 */
-	OpCodeDZGL1Voltage   = 0x0004
-	OpCodeDZGL2Voltage   = 0x0006
-	OpCodeDZGL3Voltage   = 0x0008
-	OpCodeDZGL1Current   = 0x000A
-	OpCodeDZGL2Current   = 0x000C
-	OpCodeDZGL3Current   = 0x000E
-	OpCodeDZGL1Power     = 0x4A4C
-	OpCodeDZGL2Power     = 0x4A4E
-	OpCodeDZGL3Power     = 0x4A50
-	OpCodeDZGL1Import    = 0x4A76
-	OpCodeDZGL2Import    = 0x4A78
-	OpCodeDZGL3Import    = 0x4A7A
-	OpCodeDZGTotalImport = 0x0000
-	OpCodeDZGL1Export    = 0x4A7E
-	OpCodeDZGL2Export    = 0x4A80
-	OpCodeDZGL3Export    = 0x4A82
-	OpCodeDZGTotalExport = 0x0002
-	OpCodeDZGL1Cosphi    = 0x4A64
-	OpCodeDZGL2Cosphi    = 0x4A66
-	OpCodeDZGL3Cosphi    = 0x4A68
+	OpCodeDZGTotalImportPower = 0x0000
+	OpCodeDZGTotalExportPower = 0x0002
+	OpCodeDZGL1Voltage        = 0x0004
+	OpCodeDZGL2Voltage        = 0x0006
+	OpCodeDZGL3Voltage        = 0x0008
+	OpCodeDZGL1Current        = 0x000A
+	OpCodeDZGL2Current        = 0x000C
+	OpCodeDZGL3Current        = 0x000E
+	OpCodeDZGL1Import         = 0x4020
+	OpCodeDZGL2Import         = 0x4040
+	OpCodeDZGL3Import         = 0x4060
+	OpCodeDZGTotalImport      = 0x4000
+	OpCodeDZGL1Export         = 0x4120
+	OpCodeDZGL2Export         = 0x4140
+	OpCodeDZGL3Export         = 0x4160
+	OpCodeDZGTotalExport      = 0x4100
 )
 
 const (
