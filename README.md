@@ -23,7 +23,7 @@ manuals for yourself, I could be wrong):
 | SDM530 | 3 | + | + | + | + | + | + | - | - |
 | SDM630 v1 | 3 | + | + | + | + | + | + | + | + |
 | SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
-| Janitza B23 | 3 | + | + | + | + | + | + | - | - |
+| Janitza B23-312 | 3 | + | + | + | + | + | + | - | - |
 | DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
 
 Please note that voltage, current, power and power factor are always
@@ -40,8 +40,8 @@ reported for each connected phase.
  of features. Can be configured for 1P2 (single phase with neutral), 3P3
  (three phase without neutral) and 3P4 (three phase with neutral)
 	systems.
- * Janitza B23: These meters have a higher update rate than the Eastron
- devices, but they are more expensive.
+ * Janitza B23-312: These meters have a higher update rate than the Eastron
+ devices, but they are more expensive. The -312 variant is the one with a MODBUS interface.
  * DZG DVH4013: This meter does not provide raw phase power measurements
  and only aggregated import/export measurements. The meter is only
  partially implemented and not recommended. If you want to use it: By
