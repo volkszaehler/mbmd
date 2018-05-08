@@ -3,11 +3,12 @@ package sdm630
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/goburrow/modbus"
 	"log"
 	"math"
 	"os"
 	"time"
+
+	"github.com/goburrow/modbus"
 )
 
 const (
@@ -174,7 +175,8 @@ func NewModbusEngine(
 	mbclient := modbus.NewClient(rtuclient)
 
 	return &ModbusEngine{
-		client: mbclient, handler: rtuclient,
+		client:  mbclient,
+		handler: rtuclient,
 		verbose: verbose,
 		status:  status,
 	}
@@ -276,7 +278,7 @@ func (q *ModbusEngine) Scan() {
 		// Check if a SDM device responds: try to query L1 voltage
 		voltage_L1, err := q.retrieveOpCode(devid, ReadInputReg, OpCodeSDML1Voltage)
 		if err == nil {
-			log.Printf("Device %d: SDM type device found, L1 voltage: %.2f\r\n", devid, voltage_L1)
+			log.Printf("Device %d: SDM type device found, L1 voltage: %.2f\r\n", devid, rtuToFloat64(voltage_L1))
 			dev := Device{
 				BusId:      devid,
 				DeviceType: METERTYPE_SDM,
@@ -286,7 +288,7 @@ func (q *ModbusEngine) Scan() {
 			// Check if a Janitza device responds: try to query L1 voltage
 			voltage_L1, err := q.retrieveOpCode(devid, ReadHoldingReg, OpCodeJanitzaL1Voltage)
 			if err == nil {
-				log.Printf("Device %d: Janitza type device found, L1 voltage: %.2f\r\n", devid, voltage_L1)
+				log.Printf("Device %d: Janitza type device found, L1 voltage: %.2f\r\n", devid, rtuToFloat64(voltage_L1))
 				dev := Device{
 					BusId:      devid,
 					DeviceType: METERTYPE_JANITZA,
