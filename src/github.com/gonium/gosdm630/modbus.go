@@ -295,7 +295,18 @@ func (q *ModbusEngine) Scan() {
 				}
 				devicelist = append(devicelist, dev)
 			} else {
-				log.Printf("Device %d: n/a\r\n", devid)
+				// Check if a Janitza device responds: try to query L1 voltage
+				voltage_L1, err := q.retrieveOpCode(devid, ReadHoldingReg, OpCodeDZGL1Voltage)
+				if err == nil {
+					log.Printf("Device %d: DZG type device found, L1 voltage: %.2f\r\n", devid, rtuToFloat64(voltage_L1))
+					dev := Device{
+						BusId:      devid,
+						DeviceType: METERTYPE_DZG,
+					}
+					devicelist = append(devicelist, dev)
+				} else {
+					log.Printf("Device %d: n/a\r\n", devid)
+				}
 			}
 		}
 		// give the bus some time to recover before querying the next device
