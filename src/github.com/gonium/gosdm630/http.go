@@ -3,15 +3,16 @@ package sdm630
 import (
 	"bytes"
 	"fmt"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/jcuga/golongpoll"
 	"html/template"
 	"log"
 	"net/http"
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/jcuga/golongpoll"
 )
 
 const (
@@ -147,7 +148,6 @@ func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 		if err := avgs.JSON(w); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
-
 	})
 }
 
@@ -160,6 +160,12 @@ func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
+}
+
+func MkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ServeWebsocket(hub, w, r)
+	}
 }
 
 type Firehose struct {
@@ -209,14 +215,6 @@ func (f *Firehose) Run() {
 	for {
 		select {
 		case snip := <-f.in:
-			//log.Printf("FooSnip: %+v", snip)
-			//var buffer bytes.Buffer
-			//err := json.NewEncoder(&buffer).Encode(snip)
-			//if err != nil {
-			//	log.Println("FooError: ", err.Error())
-			//} else {
-			//	log.Println("FooSuccess: ", buffer.String())
-			//}
 			f.lpManager.Publish("meterupdate", snip)
 		case statupdate := <-f.statstream:
 			f.lpManager.Publish("statusupdate", statupdate)
@@ -231,25 +229,39 @@ func (f *Firehose) GetHandler() func(w http.ResponseWriter, r *http.Request) {
 func Run_httpd(
 	mc *MeasurementCache,
 	firehose *Firehose,
+	hub *SocketHub,
 	s *Status,
 	url string,
 ) {
 	router := mux.NewRouter().StrictSlash(true)
+
+	// static
 	router.HandleFunc("/", MkIndexHandler(mc))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
+		GetEmbeddedContent()))
+
+	// api
 	router.HandleFunc("/last", MkLastAllValuesHandler(mc))
 	router.HandleFunc("/last/{id:[0-9]+}", MkLastSingleValuesHandler(mc))
 	router.HandleFunc("/minuteavg", MkLastMinuteAvgAllHandler(mc))
 	router.HandleFunc("/minuteavg/{id:[0-9]+}", MkLastMinuteAvgSingleHandler(mc))
 	router.HandleFunc("/status", MkStatusHandler(s))
-	router.HandleFunc("/firehose", firehose.GetHandler())
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
-		GetEmbeddedContent()))
+
+	// longpoll
+	if firehose != nil {
+		router.HandleFunc("/firehose", firehose.GetHandler())
+	}
+
+	// websocket
+	router.HandleFunc("/ws", MkSocketHandler(hub))
+
 	srv := http.Server{
 		Addr:         url,
 		Handler:      handlers.CompressHandler(router),
 		ReadTimeout:  time.Minute,
 		WriteTimeout: time.Minute,
 	}
+
 	srv.SetKeepAlivesEnabled(true)
 	log.Fatal(srv.ListenAndServe())
 }

@@ -208,7 +208,7 @@ func (q *ModbusEngine) Transform(
 	controlStream ControlSnipChannel,
 	outputStream QuerySnipChannel,
 ) {
-	var previousDeviceId uint8 = 0
+	var previousDeviceId uint8
 	for {
 		snip := <-inputStream
 		// The SDM devices need to have a little pause between querying

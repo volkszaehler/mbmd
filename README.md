@@ -459,13 +459,23 @@ my sitemap contains the following lines:
 
 This draws a chart of all items in the ``Power_Chart`` group.
 
-## A streaming API: The Firehose
+## Streaming API
 
-The firehose enables you to observe the data read from the smart meter
-in realtime: as soon as a new value is available, you will be notified.
-We're using [HTTP Long Polling as described in RFC
-6202](https://tools.ietf.org/html/rfc6202) for the data transfer. This
-essentially means that you can connect to an HTTP endpoint. The server
+GoSDM supports both websockets and long polling to transfer status and
+meter updates to connected clients.
+
+Data read from the smart meter can be observed by clients in realtime:
+as soon as a new value is available, you will be notified.
+
+### Streaming API
+
+Websocket API is available on `/ws`. All connected clients receive status and meter
+updates for all connected meters without further subscription.
+
+### Long polling API
+
+We're using [HTTP Long Polling as described in RFC6202](https://tools.ietf.org/html/rfc6202)
+for the data transfer. This essentially means that you can connect to an HTTP endpoint. The server
 will accept the connection and send you the new values as soon as they
 are available. Then, you either reconnect or use the same TCP connection
 for the next request. If you want to get all values, you can do the
@@ -591,7 +601,7 @@ features:
 storage. 
 * The TSV export currently only exports the power readings.
 
-### Detecting connected meters
+## Detecting connected meters
 
 MODBUS/RTU does not provide a mechanism to discover devices. There is no
 reliable way to detect all attached devices. The ``sdm_detect`` tool

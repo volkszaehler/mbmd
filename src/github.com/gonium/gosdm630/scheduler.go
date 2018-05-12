@@ -24,6 +24,28 @@ func NewMeterScheduler(
 	}
 }
 
+// SetupScheduler creates a scheduler and its wiring
+func SetupScheduler(meters map[uint8]*Meter, qe *ModbusEngine) (*MeterScheduler, QuerySnipChannel) {
+	// Create Channels that link the goroutines
+	var scheduler2queryengine = make(QuerySnipChannel)
+	var queryengine2scheduler = make(ControlSnipChannel)
+	var queryengine2tee = make(QuerySnipChannel)
+
+	scheduler := NewMeterScheduler(
+		scheduler2queryengine,
+		queryengine2scheduler,
+		meters,
+	)
+
+	go qe.Transform(
+		scheduler2queryengine, // input
+		queryengine2scheduler, // error
+		queryengine2tee,       // output
+	)
+
+	return scheduler, queryengine2tee
+}
+
 func (q *MeterScheduler) produceSnips(out QuerySnipChannel) {
 	for {
 		for _, meter := range q.meters {

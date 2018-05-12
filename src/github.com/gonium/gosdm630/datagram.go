@@ -182,7 +182,7 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
 }
 
 /*
-* Dive a reading by an integer. The individual values are divided except
+* Divide a reading by an integer. The individual values are divided except
 * for the time: it is simply copied over to the result
  */
 func (lhs *Readings) divide(scalar float64) (retval Readings) {
@@ -255,11 +255,7 @@ func (r ReadingSlice) NotOlderThan(ts time.Time) (retval ReadingSlice) {
 	return retval
 }
 
-/***
- * A QuerySnip is just a little snippet of query information. It
- * encapsulates modbus query targets.
- */
-
+// QuerySnip encapsulates modbus query targets.
 type QuerySnip struct {
 	DeviceId      uint8
 	FuncCode      uint8  `json:"-"`
@@ -271,13 +267,59 @@ type QuerySnip struct {
 	Transform     RTUTransform `json:"-"`
 }
 
+// MarshalJSON converts QuerySnip to json, replaceing ReadTimestamp with unix tiem representation
+func (q *QuerySnip) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		DeviceId    uint8
+		Value       float64
+		IEC61850    string
+		Description string
+		Timestamp   int64
+	}{
+		DeviceId:    q.DeviceId,
+		Value:       q.Value,
+		IEC61850:    q.IEC61850,
+		Description: q.Description,
+		Timestamp:   q.ReadTimestamp.UnixNano() / 1e6,
+	})
+}
+
 type QuerySnipChannel chan QuerySnip
 
-/**
- * MergeSnip adds the values represented by the QuerySnip to the
- * Readings. It also updates the current time stamp with the actual
- * time.
- */
+// QuerySnipBroadcaster acts as hub for broadcating QuerySnips
+// to multiple recipients
+type QuerySnipBroadcaster struct {
+	in         QuerySnipChannel
+	recipients []QuerySnipChannel
+}
+
+// NewQuerySnipBroadcaster creates QuerySnipBroadcaster
+func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
+	return &QuerySnipBroadcaster{
+		in:         in,
+		recipients: make([]QuerySnipChannel, 0),
+	}
+}
+
+// Run executes the broadcaster
+func (b *QuerySnipBroadcaster) Run() {
+	for {
+		s := <-b.in
+		for _, recipient := range b.recipients {
+			recipient <- s
+		}
+	}
+}
+
+// Attach creates and attaches a QuerySnipChannel to the broadcaster
+func (b *QuerySnipBroadcaster) Attach() QuerySnipChannel {
+	channel := make(QuerySnipChannel)
+	b.recipients = append(b.recipients, channel)
+	return channel
+}
+
+// MergeSnip adds the values represented by the QuerySnip to the
+// Readings and updates the current time stamp
 func (r *Readings) MergeSnip(q QuerySnip) {
 	r.Timestamp = q.ReadTimestamp
 	r.Unix = r.Timestamp.Unix()
@@ -351,10 +393,7 @@ func (q QuerySnip) String() string {
 		q.DeviceId, q.FuncCode, q.OpCode, q.Value)
 }
 
-/***
- * A Controlsnip wraps control information such as query success or
- * failure.
- */
+// ControlSnip wraps control information like query success or failure.
 type ControlSnip struct {
 	Type     ControlSnipType
 	Message  string
