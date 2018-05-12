@@ -52,6 +52,7 @@ const (
 	OpCodeSDML2THDVoltageNeutral  = 0x00ec
 	OpCodeSDML3THDVoltageNeutral  = 0x00ee
 	OpCodeSDMAvgTHDVoltageNeutral = 0x00F8
+	OpCodeSDMFrequency   = 0x0046
 
 	/***
 	 * Opcodes for Janitza B23.

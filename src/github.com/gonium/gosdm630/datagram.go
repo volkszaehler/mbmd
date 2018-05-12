@@ -37,6 +37,7 @@ type Readings struct {
 	Export         ThreePhaseReadings
 	TotalExport    *float64
 	THD            THDInfo
+	Frequency      *float64
 }
 
 type THDInfo struct {
@@ -92,6 +93,7 @@ func (r *Readings) String() string {
 		Fp2f(r.Current.L3),
 		Fp2f(r.Power.L3),
 		Fp2f(r.Cosphi.L3),
+		Fp2f(r.Frequency),
 	)
 }
 
@@ -165,6 +167,8 @@ func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
 				AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) +
 					Fp2f(rhs.THD.AvgVoltageNeutral)),
 			},
+			Frequency: F2fp(Fp2f(lhs.Frequency) +
+				Fp2f(rhs.Frequency)),
 		}
 		if lhs.Timestamp.After(rhs.Timestamp) {
 			retval.Timestamp = lhs.Timestamp
@@ -224,6 +228,7 @@ func (lhs *Readings) divide(scalar float64) (retval Readings) {
 			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) /
 				scalar),
 		},
+		Frequency: F2fp(Fp2f(lhs.Frequency) / scalar),
 	}
 	retval.Timestamp = lhs.Timestamp
 	retval.Unix = lhs.Unix
@@ -333,6 +338,8 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 		r.THD.VoltageNeutral.L3 = &q.Value
 	case "ThdVol":
 		r.THD.AvgVoltageNeutral = &q.Value
+	case "Freq":
+		r.Frequency = &q.Value
 	default:
 		log.Fatalf("Cannot merge unknown snip type - snip is %+v", q)
 	}

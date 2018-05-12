@@ -166,6 +166,9 @@ func (s *SDMRoundRobinScheduler) Produce(devid uint8) (retval []QuerySnip) {
 	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMAvgTHDVoltageNeutral, Value: math.NaN(),
 		Description: "Average voltage to neutral THD (%)", IEC61850: "ThdVol"})
 
+	retval = append(retval, QuerySnip{DeviceId: devid, FuncCode: ReadInputReg, OpCode: OpCodeSDMFrequency, Value: math.NaN(),
+		Description: "Frequency of supply voltages", IEC61850: "Freq"})
+
 	return retval
 }
 

@@ -21,7 +21,7 @@ func _initEmbeddedContent() {
 	l.Add(&loader.Content{
 		Path:   "/css/app.css",
 		Hash:    "7nLzpOqE34oG40uL1rzJOQ",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1519399227, 0),
 		Compressed: `
 H4sIAAAAAAAA/2zKQQrCMBAF0Kt4gRZE3MTTTM03DkwmZfyKUnJ3NxFcdP3e0vJnWyVn9TKxrekcqH2u
 ov7Aldr8p+kUqIfjPAKIoCyGPb8Qb05iWjwZbhz/JfbE9meh5c7+DQAA//8uBWoXhAAAAA
@@ -31,7 +31,7 @@ ov7Aldr8p+kUqIfjPAKIoCyGPb8Qb05iWjwZbhz/JfbE9meh5c7+DQAA//8uBWoXhAAAAA
 	l.Add(&loader.Content{
 		Path:   "/css/bootstrap.min.css",
 		Hash:    "TtIasBr9iZKCsY9q9vnrKw",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1519399227, 0),
 		Compressed: `
 H4sIAAAAAAAA/+y9a3PjNtIo/P38Cj3ZSlWciAp1syypktrJzD6J89rOJDN5sjM584EiIYke3g5J2ZR1
 9P72UwRAEpcGQHl80WSzW7sjA43uRqMBdDeBxrdf/9fXnR/iOM/y1Ek6N6Oe3bMtJ0jWTu+089U6z5Ns
@@ -381,8 +381,8 @@ DgD5SzVM/y8AAP//Fzzuh8ZNAgA
 
 	l.Add(&loader.Content{
 		Path:   "/index.tmpl",
-		Hash:    "5Kv-7r1FSja5i-gRgG-RSQ",
-		Modified: time.Unix(1501248393, 0),
+		Hash:    "wTNxU6LQbSFI-9qe0egUmw",
+		Modified: time.Unix(1519401315, 0),
 		Raw: `
 PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9
 InV0Zi04Ij4KICAgIDx0aXRsZT5Hb1NETTYzMDwvdGl0bGU+CgkJPG1ldGEgbmFtZT0idmlld3BvcnQi
@@ -450,34 +450,36 @@ bHRhZ2UgKCUpPC90ZD4KCQkJCQkJPHRkIGNsYXNzPSJtZXRlcnZhbHVlIj4keyBtZXRlci5UaGRWb2xQ
 aHNBIH08L3RkPgoJCQkJCQk8dGQgY2xhc3M9Im1ldGVydmFsdWUiPiR7IG1ldGVyLlRoZFZvbFBoc0Ig
 fTwvdGQ+CgkJCQkJCTx0ZCBjbGFzcz0ibWV0ZXJ2YWx1ZSI+JHsgbWV0ZXIuVGhkVm9sUGhzQyB9PC90
 ZD4KCQkJCQkJPHRkIGNsYXNzPSJtZXRlcnZhbHVlIj4keyBtZXRlci5UaGRWb2wgfTwvdGQ+CgkJCQkJ
-CTwvdHI+CgkJCQkJPHRib2R5PgoJCQkJCTwvdGFibGU+CgkJCQk8L2Rpdj4KCQk8L2Rpdj4KCSAgPGRp
-diBpZD0ic3RhdHVzIiBjbGFzcz0ibWFpbnNlY3Rpb24iPgoJCQk8aDE+Q3VycmVudCBNZXRlciBTdGF0
-dXM8L2gxPgoJCQk8ZGl2IGlkPSJzdGF0dXMiPgoJCQk8dGFibGUgY2xhc3M9Im1ldGVydGFibGUgdGFi
-bGUgdGFibGUtc3RyaXBlZCI+CgkJCQk8dGhlYWQgY2xhc3M9InRoZWFkLWludmVyc2UiPgoJCQkJCTx0
-cj4KCQkJCQk8dGg+TWV0ZXIgSUQ8L3RoPgoJCQkJCTx0aD5UeXBlPC90aD4KCQkJCQk8dGg+U3RhdHVz
-PC90aD4KCQkJCQk8L3RyPgoJCQkJPC90aGVhZD4KCQkJCTx0Ym9keT4KCQkJCQk8dHIgdi1mb3I9Iiht
-ZXRlciwgaWR4KSBpbiBtZXRlcnN0YXR1cyI+CgkJCQkJPHRkPiR7IG1ldGVyLklkIH08L3RkPgoJCQkJ
-CTx0ZD4keyBtZXRlci5UeXBlIH08L3RkPgoJCQkJCTx0ZD4keyBtZXRlci5TdGF0dXMgfTwvdGQ+CgkJ
-CQkJPC90cj4KCQkJCTwvdGJvZHk+CgkJCTwvdGFibGU+CgkJCTwvZGl2PgoJCTwvZGl2PgoKCSAgPGRp
-diBpZD0iYWJvdXQiIGNsYXNzPSJtYWluc2VjdGlvbiI+CgkJPGgxPkFib3V0IEdvU0RNNjMwPC9oMT4K
-CQk8cD5Hb1NETTYzMCBpcyBhbiBpbnRlcmZhY2UgZm9yIHRoZSBFYXN0cm9uIFNETS9Nb2RidXMgU21h
-cnQgTWV0ZXIKCQlzZXJpZXMuIFBsZWFzZSA8YQoJCSAgaHJlZj0iaHR0cHM6Ly9naXRodWIuY29tL2dv
-bml1bS9nb3NkbTYzMCI+cmVmZXIgdG8gdGhlCgkJICBkb2N1bWVudGF0aW9uPC9hPiBmb3IgbW9yZSBp
-bmZvcm1hdGlvbi48L3A+CgkJPHA+VGhpcyBpbnN0YWxsYXRpb24gcnVucyBHb1NETTYzMCB2ZXJzaW9u
-IHt7LlNvZnR3YXJlVmVyc2lvbn19CgkJKGNvbXBpbGVkIHdpdGgge3suR29sYW5nVmVyc2lvbn19KTwv
-cD4KICAgICAgPC9kaXY+CiAgICA8L2Rpdj48IS0tIC8uY29udGFpbmVyIC0tPgoJPHNjcmlwdCBzcmM9
-Ii9zdGF0aWMvanMvanF1ZXJ5LTMuMi4xLm1pbi5qcyI+PC9zY3JpcHQ+CiAgPHNjcmlwdCBzcmM9Ii9z
-dGF0aWMvanMvdGV0aGVyLm1pbi5qcyIgPjwvc2NyaXB0PgogIDxzY3JpcHQgc3JjPSIvc3RhdGljL2pz
-L2Jvb3RzdHJhcC5taW4uanMiID48L3NjcmlwdD4KCTxzY3JpcHQgc3JjPSIvc3RhdGljL2pzL3Z1ZS5t
-aW4uanMiPjwvc2NyaXB0PgoJPHNjcmlwdCBzcmM9Ii9zdGF0aWMvanMvYXBwLmpzIj48L3NjcmlwdD4K
-ICA8L2JvZHk+CjwvaHRtbD4KCg
+CTwvdHI+CgkJCQkJCTx0cj4KCQkJCQkJPHRkPkZyZXF1ZW5jeSAoSHopPC90ZD4KCQkJCQkJPHRkPjwv
+dGQ+CgkJCQkJCTx0ZD48L3RkPgoJCQkJCQk8dGQ+PC90ZD4KCQkJCQkJPHRkIGNsYXNzPSJtZXRlcnZh
+bHVlIj4keyBtZXRlci5GcmVxIH08L3RkPgoJCQkJCQk8L3RyPgoJCQkJCTx0Ym9keT4KCQkJCQk8L3Rh
+YmxlPgoJCQkJPC9kaXY+CgkJPC9kaXY+CgkgIDxkaXYgaWQ9InN0YXR1cyIgY2xhc3M9Im1haW5zZWN0
+aW9uIj4KCQkJPGgxPkN1cnJlbnQgTWV0ZXIgU3RhdHVzPC9oMT4KCQkJPGRpdiBpZD0ic3RhdHVzIj4K
+CQkJPHRhYmxlIGNsYXNzPSJtZXRlcnRhYmxlIHRhYmxlIHRhYmxlLXN0cmlwZWQiPgoJCQkJPHRoZWFk
+IGNsYXNzPSJ0aGVhZC1pbnZlcnNlIj4KCQkJCQk8dHI+CgkJCQkJPHRoPk1ldGVyIElEPC90aD4KCQkJ
+CQk8dGg+VHlwZTwvdGg+CgkJCQkJPHRoPlN0YXR1czwvdGg+CgkJCQkJPC90cj4KCQkJCTwvdGhlYWQ+
+CgkJCQk8dGJvZHk+CgkJCQkJPHRyIHYtZm9yPSIobWV0ZXIsIGlkeCkgaW4gbWV0ZXJzdGF0dXMiPgoJ
+CQkJCTx0ZD4keyBtZXRlci5JZCB9PC90ZD4KCQkJCQk8dGQ+JHsgbWV0ZXIuVHlwZSB9PC90ZD4KCQkJ
+CQk8dGQ+JHsgbWV0ZXIuU3RhdHVzIH08L3RkPgoJCQkJCTwvdHI+CgkJCQk8L3Rib2R5PgoJCQk8L3Rh
+YmxlPgoJCQk8L2Rpdj4KCQk8L2Rpdj4KCgkgIDxkaXYgaWQ9ImFib3V0IiBjbGFzcz0ibWFpbnNlY3Rp
+b24iPgoJCTxoMT5BYm91dCBHb1NETTYzMDwvaDE+CgkJPHA+R29TRE02MzAgaXMgYW4gaW50ZXJmYWNl
+IGZvciB0aGUgRWFzdHJvbiBTRE0vTW9kYnVzIFNtYXJ0IE1ldGVyCgkJc2VyaWVzLiBQbGVhc2UgPGEK
+CQkgIGhyZWY9Imh0dHBzOi8vZ2l0aHViLmNvbS9nb25pdW0vZ29zZG02MzAiPnJlZmVyIHRvIHRoZQoJ
+CSAgZG9jdW1lbnRhdGlvbjwvYT4gZm9yIG1vcmUgaW5mb3JtYXRpb24uPC9wPgoJCTxwPlRoaXMgaW5z
+dGFsbGF0aW9uIHJ1bnMgR29TRE02MzAgdmVyc2lvbiB7ey5Tb2Z0d2FyZVZlcnNpb259fQoJCShjb21w
+aWxlZCB3aXRoIHt7LkdvbGFuZ1ZlcnNpb259fSk8L3A+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+PCEt
+LSAvLmNvbnRhaW5lciAtLT4KCTxzY3JpcHQgc3JjPSIvc3RhdGljL2pzL2pxdWVyeS0zLjIuMS5taW4u
+anMiPjwvc2NyaXB0PgogIDxzY3JpcHQgc3JjPSIvc3RhdGljL2pzL3RldGhlci5taW4uanMiID48L3Nj
+cmlwdD4KICA8c2NyaXB0IHNyYz0iL3N0YXRpYy9qcy9ib290c3RyYXAubWluLmpzIiA+PC9zY3JpcHQ+
+Cgk8c2NyaXB0IHNyYz0iL3N0YXRpYy9qcy92dWUubWluLmpzIj48L3NjcmlwdD4KCTxzY3JpcHQgc3Jj
+PSIvc3RhdGljL2pzL2FwcC5qcyI+PC9zY3JpcHQ+CiAgPC9ib2R5Pgo8L2h0bWw+Cgo
 `,
 	})
 
 	l.Add(&loader.Content{
 		Path:   "/js/app.js",
 		Hash:    "h4Uv27RKD1Ie9YdxP20trg",
-		Modified: time.Unix(1502961038, 0),
+		Modified: time.Unix(1519399227, 0),
 		Compressed: `
 H4sIAAAAAAAA/9RWW2/bNhR+96/QuKCSIEV2i3UYZAh9aJMtw5oBTRtsMIyCE48dDjIp8OLUEPTfB150
 i7ygG7CHvYnn+3gu5DkfdcQiOIACgeu6YPAY3GuIGqjy8FtrlmFKoKIHar7zTXjRhGnYhtuUYIXzxnHy
@@ -501,7 +503,7 @@ Xxdn0JXB8VRO/O9EZo9y8joNvduT7OM0eZVHpLEwPaNGlkfJIETv4EhL6EWFQvn9yx9erwbCzdVba/EE
 	l.Add(&loader.Content{
 		Path:   "/js/bootstrap.min.js",
 		Hash:    "Xymfz5cWxII85CkgMywy4g",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1519399227, 0),
 		Compressed: `
 H4sIAAAAAAAA/8y9fXvbNpYo/v/vU0jY35WJMUzL7ezMDhXGj2OrrW4dK2sr7cz6avTQImShoQgNCTnx
 WNrPfh+8kQAIynba7p1/EgsA8XJwcN4PcPyH7h867yhlJSuSdefhj2E/7B8l2XqZhH/qBEvG1mV0fHyP
@@ -711,7 +713,7 @@ AJdG/m8AAAD//5iIHbg1tgAA
 	l.Add(&loader.Content{
 		Path:   "/js/jquery-3.2.1.min.js",
 		Hash:    "55TByDVJ4QkSIAgU_5rRbw",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1519399227, 0),
 		Compressed: `
 H4sIAAAAAAAA/8z9C5ejNtIwjn+VNjsPQW2ZtifJvm9waziTTGaT3dw2M7nsg5kcAQLjxuAG3N0Tw372
 /1FJAoHxJPs8//ec35kzbUB3qVSqKtXl5nq2++eRle+vHj62n9urq+bKCtHV399cvS6OeUTrtMivaB5d
@@ -1225,7 +1227,7 @@ Ffp3SDAQl7AkHSG2bpX68i/Bs/nmn/JK9qv8/cwO/H3zqtlX2zo/8TF1e/5Mrhyg/D7jvwpkSVB1mTPq
 	l.Add(&loader.Content{
 		Path:   "/js/tether.min.js",
 		Hash:    "HEpZmaK0PN06qoigTyTJYQ",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1519399227, 0),
 		Compressed: `
 H4sIAAAAAAAA/+x8/XPbNrbovyJxdjlAdcRK7s3d+8jAniTNvnYmrTtN+pGn0cvQImQhpQiVhGwrEv/3
 N8ABSFCiHGf37Q937v5iE18HwMHB+YaGy22xUEIWRAGn+8AVA8bUbsPlcpDxpSh4GOL/KF1nV/hJOI0D
@@ -1356,7 +1358,7 @@ qpU+0fnhNJhONDf1qkpdhX4Igb9AbdKvDLrcsY+Y0IZ8ebQRLVLg+5om/y8AAP//R8Hs1zhgAAA
 	l.Add(&loader.Content{
 		Path:   "/js/vue.min.js",
 		Hash:    "oYoDP0XyXOtmKQWZr5TL9g",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1519399227, 0),
 		Compressed: `
 H4sIAAAAAAAA/7y963LbuNYo+P88hcXyMMAWrMjp/Z0zmwyiSpx0J925deKkL2p9KpqCbMQyoAYhX2Lq
 PPvUWgBIkFKy96mZmj8SiRuBBWBh3fHwH4N/HHzeiNGX6uD60eiH0fh//OOAlPTg0fj4n0ePxsf/6+DF
@@ -1843,7 +1845,7 @@ RsXhIBr4qtMSjri5KavvrvO0QeB1R/ZK+xFC0xQqI5b/dwAAAP//RD4sM4YyAQA
 	l.Add(&loader.Content{
 		Path:   "/simple.tmpl",
 		Hash:    "j0z_McCKu_3Dz4CEA2yXIw",
-		Modified: time.Unix(1498033922, 0),
+		Modified: time.Unix(1519399227, 0),
 		Raw: `
 PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9
 InV0Zi04Ij4KCTxtZXRhIGh0dHAtZXF1aXY9InJlZnJlc2giIGNvbnRlbnQ9Int7LlJlbG9hZEludGVy
