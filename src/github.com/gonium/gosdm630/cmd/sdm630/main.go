@@ -171,7 +171,7 @@ func main() {
 
 		// scheduler and meter data channel
 		scheduler, snips := sdm630.SetupScheduler(meters, qe)
-		scheduler.Run()
+		go scheduler.Run()
 
 		// tee that broadcasts meter messages to multiple recipients
 		tee := sdm630.NewQuerySnipBroadcaster(snips)
