@@ -41,84 +41,83 @@
 		<div id="realtime" class="mainsection">
 			<h1>Realtime measurements</h1>
 			<div id="meters">
-				<p>${ message }
-					<p>
-						<table class="metertable table table-striped" v-for="(meter, idx) in meters">
-							<thead class="thead-inverse">
-								<tr>
-									<th>Meter ${ idx }</th>
-									<th class="metervalue">L1</th>
-									<th class="metervalue">L2</th>
-									<th class="metervalue">L3</th>
-									<th class="metervalue">Total</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td>Voltage (Volt)</td>
-									<td class="metervalue">${ meter.VolLocPhsA }</td>
-									<td class="metervalue">${ meter.VolLocPhsB }</td>
-									<td class="metervalue">${ meter.VolLocPhsC }</td>
-									<td class="metervalue">-</td>
-								</tr>
-								<tr>
-									<td>Current (Ampere)</td>
-									<td class="metervalue">${ meter.AmpLocPhsA }</td>
-									<td class="metervalue">${ meter.AmpLocPhsB }</td>
-									<td class="metervalue">${ meter.AmpLocPhsC }</td>
-									<td class="metervalue">${ (parseFloat(meter.AmpLocPhsA) + parseFloat(meter.AmpLocPhsB) + parseFloat(meter.AmpLocPhsC)).toFixed(2) }</td>
-								</tr>
-								<tr>
-									<td>Power (Watt)</td>
-									<td class="metervalue">${ meter.WLocPhsA }</td>
-									<td class="metervalue">${ meter.WLocPhsB }</td>
-									<td class="metervalue">${ meter.WLocPhsC }</td>
-									<td class="metervalue">${ (parseFloat(meter.WLocPhsA) + parseFloat(meter.WLocPhsB) + parseFloat(meter.WLocPhsC)).toFixed(2) }</td>
-								</tr>
-								<tr>
-									<td>Power Factor</td>
-									<td class="metervalue">${ meter.AngLocPhsA }</td>
-									<td class="metervalue">${ meter.AngLocPhsB }</td>
-									<td class="metervalue">${ meter.AngLocPhsC }</td>
-									<td class="metervalue">-</td>
-								</tr>
-								<tr>
-									<td>Import (kWh)</td>
-									<td class="metervalue">${ meter.TotkWhImportPhsA }</td>
-									<td class="metervalue">${ meter.TotkWhImportPhsB }</td>
-									<td class="metervalue">${ meter.TotkWhImportPhsC }</td>
-									<td class="metervalue">${ meter.TotkWhImport }</td>
-								</tr>
-								<tr>
-									<td>Export (kWh)</td>
-									<td class="metervalue">${ meter.TotkWhExportPhsA }</td>
-									<td class="metervalue">${ meter.TotkWhExportPhsB }</td>
-									<td class="metervalue">${ meter.TotkWhExportPhsC }</td>
-									<td class="metervalue">${ meter.TotkWhExport }</td>
-								</tr>
-								<tr>
-									<td>THD voltage (%)</td>
-									<td class="metervalue">${ meter.ThdVolPhsA }</td>
-									<td class="metervalue">${ meter.ThdVolPhsB }</td>
-									<td class="metervalue">${ meter.ThdVolPhsC }</td>
-									<td class="metervalue">${ meter.ThdVol }</td>
-								</tr>
-								<tr>
-									<td>Frequency (Hz)</td>
-									<td></td>
-									<td></td>
-									<td></td>
-									<td class="metervalue">${ meter.Freq }</td>
-								</tr>
-							</tbody>
-						</table>
+				<p>${ message }</p>
+				<table class="metertable table table-striped" v-for="(meter, idx) in meters">
+					<thead class="thead-dark">
+						<tr>
+							<th>Meter ${ idx }</th>
+							<th>L1</th>
+							<th>L2</th>
+							<th>L3</th>
+							<th>Total</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-if="meter.VolLocPhsA != null || meter.VolLocPhsB != null || meter.VolLocPhsC != null">
+							<td>Voltage (Volt)</td>
+							<td>${ meter.VolLocPhsA }</td>
+							<td>${ meter.VolLocPhsB }</td>
+							<td>${ meter.VolLocPhsC }</td>
+							<td>-</td>
+						</tr>
+						<tr v-if="meter.AmpLocPhsA != null || meter.AmpLocPhsB != null || meter.AmpLocPhsC != null">
+							<td>Current (Ampere)</td>
+							<td>${ meter.AmpLocPhsA }</td>
+							<td>${ meter.AmpLocPhsB }</td>
+							<td>${ meter.AmpLocPhsC }</td>
+							<td>${ (parseFloat(meter.AmpLocPhsA) + parseFloat(meter.AmpLocPhsB) + parseFloat(meter.AmpLocPhsC)).toFixed(2) }</td>
+						</tr>
+						<tr v-if="meter.WLocPhsA != null || meter.WLocPhsB != null || meter.WLocPhsC != null">
+							<td>Power (Watt)</td>
+							<td>${ meter.WLocPhsA }</td>
+							<td>${ meter.WLocPhsB }</td>
+							<td>${ meter.WLocPhsC }</td>
+							<td>${ (parseFloat(meter.WLocPhsA) + parseFloat(meter.WLocPhsB) + parseFloat(meter.WLocPhsC)).toFixed(2) }</td>
+						</tr>
+						<tr v-if="meter.AngLocPhsA != null || meter.AngLocPhsB != null || meter.AngLocPhsC != null">
+							<td>Power Factor</td>
+							<td>${ meter.AngLocPhsA }</td>
+							<td>${ meter.AngLocPhsB }</td>
+							<td>${ meter.AngLocPhsC }</td>
+							<td>-</td>
+						</tr>
+						<tr>
+							<td>Import (kWh)</td>
+							<td>${ meter.TotkWhImportPhsA }</td>
+							<td>${ meter.TotkWhImportPhsB }</td>
+							<td>${ meter.TotkWhImportPhsC }</td>
+							<td>${ meter.TotkWhImport }</td>
+						</tr>
+						<tr v-if="meter.TotkWhExportPhsA != null || meter.TotkWhExportPhsB != null || meter.TotkWhExportPhsC != null || meter.TotkWhExport != null">
+							<td>Export (kWh)</td>
+							<td>${ meter.TotkWhExportPhsA }</td>
+							<td>${ meter.TotkWhExportPhsB }</td>
+							<td>${ meter.TotkWhExportPhsC }</td>
+							<td>${ meter.TotkWhExport }</td>
+						</tr>
+						<tr v-if="meter.ThdVolPhsA != null || meter.ThdVolPhsB != null || meter.ThdVolPhsC != null || meter.ThdVol != null">
+							<td>THD voltage (%)</td>
+							<td>${ meter.ThdVolPhsA }</td>
+							<td>${ meter.ThdVolPhsB }</td>
+							<td>${ meter.ThdVolPhsC }</td>
+							<td>${ meter.ThdVol }</td>
+						</tr>
+						<tr v-if="meter.Freq != null">
+							<td>Frequency (Hz)</td>
+							<td>-</td>
+							<td>-</td>
+							<td>-</td>
+							<td>${ meter.Freq }</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 		<div id="status" class="mainsection">
 			<h1>Current Meter Status</h1>
 			<div id="status">
 				<table class="metertable table table-striped">
-					<thead class="thead-inverse">
+					<thead class="thead-dark">
 						<tr>
 							<th>Meter ID</th>
 							<th>Type</th>
@@ -132,28 +131,7 @@
 							<td>${ meter.Status }</td>
 						</tr>
 					</tbody>
-					</table>
-				</div>
-		</div>
-	  <div id="status" class="mainsection">
-			<h1>Current Meter Status</h1>
-			<div id="status">
-			<table class="metertable table table-striped">
-				<thead class="thead-inverse">
-					<tr>
-					<th>Meter ID</th>
-					<th>Type</th>
-					<th>Status</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="(meter, idx) in meterstatus">
-					<td>${ meter.Id }</td>
-					<td>${ meter.Type }</td>
-					<td>${ meter.Status }</td>
-					</tr>
-				</tbody>
-			</table>
+				</table>
 			</div>
 		</div>
 

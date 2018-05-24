@@ -8,6 +8,7 @@ body {
   padding: 3rem 1.5rem;
   text-align: left;
 }
-.metervalue {
+/* omit first th/td per row */
+.metertable th + th, .metertable td + td {
   text-align: right;
 }

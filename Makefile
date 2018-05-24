@@ -24,7 +24,7 @@ release-build: test clean assets
 	@GOOS=darwin GOARCH=amd64 gb build
 	@echo "... for Windows/32bit"
 	@GOOS=windows GOARCH=386 gb build
-	@echo "... for Linux/64bit"
+	@echo "... for Windows/64bit"
 	@GOOS=windows GOARCH=amd64 gb build
 	@echo
 	@echo "Created binaries:"
