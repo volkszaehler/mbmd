@@ -32,4 +32,6 @@ _testmain.go
 *.test
 *.prof
 
+release/
+vendor/
 embeddedassets.go
