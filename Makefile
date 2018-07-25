@@ -14,7 +14,7 @@ binaries:
 
 assets:
 	@echo "Generating embedded assets"
-	@$(GOPATH)/bin/embed http.go
+	@embed http.go
 
 release: test clean assets
 	@./build.sh
