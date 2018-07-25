@@ -160,6 +160,7 @@ func (q *ModbusEngine) Transform(
 			// convert bytes to value
 			snip.Value = snip.Transform(reading)
 			snip.ReadTimestamp = time.Now()
+
 			outputStream <- snip
 
 			successSnip := ControlSnip{
