@@ -267,7 +267,7 @@ type QuerySnip struct {
 	Transform     RTUTransform `json:"-"`
 }
 
-// MarshalJSON converts QuerySnip to json, replaceing ReadTimestamp with unix tiem representation
+// MarshalJSON converts QuerySnip to json, replacing ReadTimestamp with unix time representation
 func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		DeviceId    uint8
@@ -385,7 +385,6 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 	default:
 		log.Fatalf("Cannot merge unknown snip type - snip is %+v", q)
 	}
-
 }
 
 func (q QuerySnip) String() string {
