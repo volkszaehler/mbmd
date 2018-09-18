@@ -96,8 +96,8 @@ func NewMqttClient(
 	}
 
 	// notify connection
-	token := mqttClient.Publish(topic, byte(mqttQos), true, message)
 	message = fmt.Sprintf("connected")
+	token := mqttClient.Publish(topic, byte(mqttQos), true, message)
 	if verbose {
 		log.Printf("MQTT: push %s, message: %s", topic, message)
 	}
