@@ -20,7 +20,7 @@ const (
 )
 
 // Generate the embedded assets using https://github.com/aprice/embed
-//go:generate embed -c "embed.json"
+//go:generate go run github.com/aprice/embed/cmd/embed -c "embed.json"
 
 func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	loader := GetEmbeddedContent()
