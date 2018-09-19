@@ -1,4 +1,4 @@
-# A HTTP interface to MODBUS smart meters
+# An HTTP interface to MODBUS smart meters
 
 This project provides a http interface to smart
 meters with a MODBUS interface. Beside the EASTRON SDM series, the
@@ -57,33 +57,20 @@ them!
 
 # Table of Contents:
 
+* [Installation](#installation)
+  * [Hardware installation](#hardware-installation)
+  * [Software installation](#software-installation)
+  * [Running](#running)
+  * [Installation on the Raspberry Pi](#installation-on-the-raspberry-pi)
+  * [Detecting connected meters](#detecting-connected-meters)
+* [API](#api)
+  * [Rest API](#rest-api)
+  * [Streaming API](#streaming-api)
+* [OpenHAB integration](#openhab-integration)
   * [How does it look like in OpenHAB?](#how-does-it-look-like-in-openhab)
-  * [Installation](#installation)
-    * [Hardware installation](#hardware-installation)
-    * [Installing the software from source](#installing-the-software-from-source)
-    * [Testing](#testing)
-    * [Installation on the Raspberry Pi](#installation-on-the-raspberry-pi)
-  * [The API](#the-api)
-  * [Monitoring](#monitoring)
-  * [OpenHAB integration](#openhab-integration)
 
 
-## How does it look like in OpenHAB?
-
-I use [OpenHAB 1.8](http://openhab.org) to record various measurements at
-home. In the classic ui, this is how one of the graphs looks like:
-
-![OpenHAB interface screenshot](img/openhab.png)
-
-Everything is in German, but the "Verlauf Strombezug" graph shows my
-power consumption for three phases. I have a SDM630 installed in my
-distribution cabinet. A serial connection links it to a Raspberry Pi
-(RPi).
-This is where this piece of software runs and exposes the measurements
-via a RESTful API. OpenHAB connects to it and stores the values, just as
-it does with other sensors in my home.
-
-## Installation
+# Installation
 
 The installation consists of a hardware and a software part.
 Make sure you buy/fetch the following things before starting:
@@ -95,7 +82,8 @@ USB-ISO-RS485 project](https://github.com/gonium/usb-iso-rs485)
 an old speaker cable I had sitting on my workbench, for the permanent
 installation, a shielded CAT5 cable seems adequate)
 
-### Hardware installation
+
+## Hardware installation
 
 ![SDM630 in my test setup](img/SDM630-MODBUS.jpg)
 
@@ -132,6 +120,9 @@ I started to develop [my own isolated
 adaptor](https://github.com/gonium/usb-iso-rs485). Please check this
 link for more information.
 
+
+## Software installation
+
 ### Using the precompiled binaries
 
 You can use the [precompiled releases](https://github.com/gonium/gosdm630/releases) if you like. Just
@@ -139,25 +130,19 @@ download the right binary for your platform and unzip.
 
 ### Installing the software from source
 
-You need a working [Golang installation](http://golang.org), the [GB
-build tool](http://getgb.io/) and
+You need a working [Golang installation](http://golang.org), the [dep
+package management tool](https://github.com/golang/dep) and
 [Embed](http://github.com/aprice/embed) in order to compile your binary.
 Please install the Go compiler first. Then clone this repository:
 
     git clone https://github.com/gonium/gosdm630.git
 
-If you have ``make`` installed you can
-use the ``Makefile`` to install the ``gb`` and ``embed`` tools:
+If you have ``make`` installed you can use the ``Makefile`` to install the tools:
 
     $ cd gosdm630
     $ make dep
-    Installing GB build tool
     Installing embed tool
-
-Or, if you prefer to install it manually, just run 
-
-    $ go get github.com/constabulary/gb/...
-    $ go get github.com/aprice/embed/cmd/embed
+    Installing dep tool
 
 You can then build the software using the ``Makefile``:
 
@@ -165,65 +150,77 @@ You can then build the software using the ``Makefile``:
     Generating embedded assets
     Generation complete in 109.907612ms
     Building for host platform
-    github.com/gonium/gosdm630
-    github.com/gonium/gosdm630/cmd/sdm_detect
-    github.com/gonium/gosdm630/cmd/sdm630_httpd
-    github.com/gonium/gosdm630/cmd/sdm630_monitor
-    github.com/gonium/gosdm630/cmd/sdm630_logger
-    Building binary for Raspberry Pi
-    github.com/gonium/gosdm630
-    github.com/gonium/gosdm630/cmd/sdm_detect
-    github.com/gonium/gosdm630/cmd/sdm630_monitor
-    github.com/gonium/gosdm630/cmd/sdm630_httpd
-    github.com/gonium/gosdm630/cmd/sdm630_logger
     Created binaries:
-    sdm630_httpd
-    sdm630_httpd-linux-arm
+    sdm630
+    sdm630
     sdm630_logger
-    sdm630_logger-linux-arm
     sdm630_monitor
-    sdm630_monitor-linux-arm
     sdm_detect
-    sdm_detect-linux-arm
 
 As you can see two sets of binaries are built:
 
  * ``bin/sdm630_{...}`` is the software built for the host platform
  * ``bin/sdm630_{...}-linux-arm`` is the same for the Raspberry Pi.
 
-If you prefer to build manually you can build the host software using
+If you want to build for all platforms you can use
 
-    gb build all
+    $ make release
 
-or, for the Raspberry Pi binary, use
+or, for a single platform like the Raspberry Pi binary, use
 
-    GOOS=linux GOARCH=arm GOARM=5 gb build all
+    $ GOOS=linux GOARCH=arm GOARM=5 make build
 
-### Testing
+
+## Running
 
 Now fire up the software:
 
-    $ ./bin/sdm630_httpd --help
-    NAME:
-       sdm630_httpd - SDM630 power measurements via HTTP.
-    
-    USAGE:
-       sdm630_httpd [global options] command [command options] [arguments...]
-    
-    COMMANDS:
-         help, h  Shows a list of commands or help for one command
-    
-    GLOBAL OPTIONS:
-       --serialadapter value, -s value  path to serial RTU device (default: "/dev/ttyUSB0")
-       --url value, -u value            the URL the server should respond on (default: ":8080")
-       --verbose, -v                    print verbose messages
-       --device_list value, -d value    MODBUS device ID to query (default: "SDM:1")
-       --help, -h                       show help
-    
+````
+$ ./bin/sdm630 --help
+NAME:
+   sdm - SDM modbus daemon
+
+USAGE:
+   sdm630 [global options] command [command options] [arguments...]
+
+COMMANDS:
+     help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --serialadapter value, -s value     path to serial RTU device (default: "/dev/ttyUSB0")
+   --comset value, -c value            which communication parameter set to use. Valid sets are
+                                         1:  2400 baud, 8N1
+                                         2:  9600 baud, 8N1
+                                         3: 19200 baud, 8N1
+                                         4:  2400 baud, 8E1
+                                         5:  9600 baud, 8E1
+                                         6: 19200 baud, 8E1
+                                            (default: 2)
+   --device_list value, -d value       MODBUS device type and ID to query, separated by comma.
+                                           Valid types are:
+                                           "SDM" for Eastron SDM meters
+                                           "JANITZA" for Janitza B-Series DIN-Rail meters
+                                           "DZG" for the DZG Metering GmbH DVH4013 DIN-Rail meter
+                                           Example: -d JANITZA:1,SDM:22,DZG:23 (default: "SDM:1")
+   --unique_id_format value, -f value  Unique ID format.
+                                           Example: -f Instrument%d
+                                           The %d is replaced by the device ID (default: "Instrument%d")
+   --verbose, -v                       print verbose messages
+   --url value, -u value               the URL the server should respond on (default: ":8080")
+   --broker value, -b value            MQTT: The broker URI. ex: tcp://10.10.1.1:1883
+   --topic value, -t value             MQTT: The topic name to/from which to publish/subscribe (optional) (default: "sdm630")
+   --user value                        MQTT: The User (optional)
+   --password value                    MQTT: The password (optional)
+   --clientid value, -i value          MQTT: The ClientID (optional) (default: "sdm630")
+   --rate value, -r value              MQTT: The maximum update rate (default 0, i.e. unlimited) (after a push we will ignore more data from same device andchannel for this time) (default: 0)
+   --clean, -l                         MQTT: Set Clean Session (default false)
+   --qos value, -q value               MQTT: The Quality of Service 0,1,2 (default 0) (default: 0)
+   --help, -h                          show help
+````
 
 A typical invocation looks like this:
 
-		$ ./bin/sdm630_httpd -s /dev/ttyUSB0 -d janitza:26,sdm:1
+    $ ./bin/sdm630 -s /dev/ttyUSB0 -d janitza:26,sdm:1
     2017/01/25 16:34:26 Connecting to RTU via /dev/ttyUSB0
     2017/01/25 16:34:26 Starting API httpd at :8080
 
@@ -236,18 +233,18 @@ web page that updates itself with the latest values:
 ![realtime view of incoming measurements](img/realtimeview.png)
 
 
-### Installation on the Raspberry Pi
+## Installation on the Raspberry Pi
 
 You simply copy the binary from the ``bin`` subdirectory to the RPi
 and start it. I usually put the binary into ``/usr/local/bin`` and
-rename it to ``sdm630_httpd``. The following sytemd unit can be used to
+rename it to ``sdm630``. The following sytemd unit can be used to
 start the service (put this into ``/etc/systemd/system``):
 
     [Unit]
     Description=SDM630 via HTTP API
     After=syslog.target
     [Service]
-    ExecStart=/usr/local/bin/sdm630_httpd -s /dev/ttyAMA0
+    ExecStart=/usr/local/bin/sdm630 -s /dev/ttyAMA0
     Restart=always
     [Install]
     WantedBy=multi-user.target
@@ -276,14 +273,47 @@ This switches the internal ``dwc`` USB hub of the Raspberry Pi to
 USB1.1. While this reduces the available USB speed, the device now works
 reliably.
 
-## The REST API
 
-As of version 0.2 the software supports more than one device. In order
-to query the API you need to provide the MODBUS ID of the device you
-want to query.
+## Detecting connected meters
 
-The API consists of calls that return a JSON datastructure. The "GET
-/last/{ID}"-call simply returns the last measurements of the device with
+MODBUS/RTU does not provide a mechanism to discover devices. There is no
+reliable way to detect all attached devices. The ``sdm_detect`` tool
+attempts to read the L1 voltage from all valid device IDs and reports
+which one replied correctly:
+
+````
+./bin/sdm_detect
+2017/06/21 10:22:34 Starting bus scan
+2017/06/21 10:22:35 Device 1: n/a
+...
+2017/07/27 16:16:39 Device 21: SDM type device found, L1 voltage: 234.86
+2017/07/27 16:16:40 Device 22: n/a
+2017/07/27 16:16:40 Device 23: n/a
+2017/07/27 16:16:40 Device 24: n/a
+2017/07/27 16:16:40 Device 25: n/a
+2017/07/27 16:16:40 Device 26: Janitza type device found, L1 voltage: 235.10
+...
+2017/07/27 16:17:25 Device 247: n/a
+2017/07/27 16:17:25 Found 2 active devices:
+2017/07/27 16:17:25 * slave address 21: type SDM
+2017/07/27 16:17:25 * slave address 26: type JANITZA
+2017/07/27 16:17:25 WARNING: This lists only the devices that responded to a known L1 voltage request. Devices with different function code definitions might not be detected.
+````
+
+
+# API
+
+## Rest API 
+
+GoSDM provides a convenient REST API. Supported endpoints are:
+
+* `/last/{ID}` current data for device
+* `/minuteavg/{ID}` averaged data for device
+* `/status` daemon status
+
+Both device APIs can also be called without the device id to return data for all connected devices.
+
+The "GET /last/{ID}"-call simply returns the last measurements of the device with
 the Modbus ID {ID}:
 
 ````
@@ -349,59 +379,13 @@ $ curl localhost:8080/minuteavg/11
     "L2": -45.333974165794174,
     "L3": 0
   },
-  "Voltage": {
-    "L1": 233.06608112041766,
-    "L2": 233.0702075958252,
-    "L3": 0
-  },
-  "Current": {
-    "L1": 0,
-    "L2": 0.19468470108814728,
-    "L3": 0
-  },
-  "Cosphi": {
-    "L1": 1,
-    "L2": -0.9989471855836037,
-    "L3": 1
-  },
-  "Import": {
-    "L1": 0,
-    "L2": 0,
-    "L3": 0
-  },
-  "TotalImport": 0,
-  "Export": {
-    "L1": 0,
-    "L2": 0,
-    "L3": 0
-  },
-  "TotalExport": 0,
-  "THD": {
-    "VoltageNeutral": {
-      "L1": 0,
-      "L2": 0,
-      "L3": 0
-    },
-    "AvgVoltageNeutral": 0
-  }
+  ...
 }
 ````
 
-If you want to receive all measurements of all devices, you can use these two calls
-without the device ID:
+### Monitoring
 
-````
-    $ curl localhost:8080/last
-    [{"Timestamp":"2017-01-25T16:39:56.211376135+01:00","Unix":1485358796,"ModbusDeviceId":11,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.50807,"L2":236.49356,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0.002,"L2":0.002,"L3":0.001},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:56.794948625+01:00","Unix":1485358796,"ModbusDeviceId":12,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.40024,"L2":236.46877,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0.001,"L2":0.002,"L3":0.001},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:57.37536849+01:00","Unix":1485358797,"ModbusDeviceId":13,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.50534,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":0,"L3":0},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:55.02659946+01:00","Unix":1485358795,"ModbusDeviceId":14,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.41461,"L2":236.50677,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":1,"L3":1},"Import":{"L1":0,"L2":0.001,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}},{"Timestamp":"2017-01-25T16:39:55.627042868+01:00","Unix":1485358795,"ModbusDeviceId":15,"Power":{"L1":0,"L2":0,"L3":0},"Voltage":{"L1":236.52869,"L2":0,"L3":0},"Current":{"L1":0,"L2":0,"L3":0},"Cosphi":{"L1":1,"L2":0,"L3":0},"Import":{"L1":0,"L2":0,"L3":0},"Export":{"L1":0,"L2":0,"L3":0}}]
-````
-
-and so on. I recommend the [JSON Incremental Digger
-(jid)](https://github.com/simeji/jid) for exploring json datasets.
-
-## Monitoring
-
-In order to monitor this long running process a status report is now
-available:
+The `/status` endpoint provides the following information:
 
     $ curl http://localhost:8080/status
     {
@@ -418,13 +402,13 @@ available:
         "TotalModbusErrors": 738,
         "ModbusErrorRatePerMinute": 0.6751319688261972
       },
-			"ConfiguredMeters": [
-				{
-					"Id": 26,
-					"Type": "JANITZA",
-					"Status": "available"
-				}
-			]
+      "ConfiguredMeters": [
+        {
+          "Id": 26,
+          "Type": "JANITZA",
+          "Status": "available"
+        }
+      ]
     }
 
 This is a snapshot of a process running over night, along with the error
@@ -432,32 +416,6 @@ statistics during that timeframe. The process queries continuously,
 the cabling is not a shielded, twisted wire but something that I had laying
 around. With proper cabling the error rate should be lower, though.
 
-## OpenHAB integration
-
-*Please note: The following integration guide was written for OpenHAB
-1.8. We currently do not have an OpenHAB 2.x instructions, but would
-appreciate any contributions.*
-
-It is very easy to translate this into OpenHAB items. I run the SDM630
-software on a Raspberry Pi with the IP ``192.168.1.44``. My items look
-like this:
-
-    Group Power_Chart
-    Number Power_L1 "Strombezug L1 [%.1f W]" <power> (Power, Power_Chart) { http="<[http://192.168.1.44:8080/last/1:60000:JS(SDM630GetL1Power.js)]" }
-
-I'm using the http plugin to call the ``/last/1`` endpoint every 60
-seconds. Then, I feed the result into a JSON transform stored in
-``SDM630GetL1Power.js``. The contents of
-``transform/SDM630GetL1Power.js`` looks like this:
-
-    JSON.parse(input).Power.L1;
-
-Just repeat these lines for each measurement you want to track. Finally,
-my sitemap contains the following lines:
-
-    Chart item=Power_Chart period=D refresh=1800
-
-This draws a chart of all items in the ``Power_Chart`` group.
 
 ## Streaming API
 
@@ -467,12 +425,14 @@ meter updates to connected clients.
 Data read from the smart meter can be observed by clients in realtime:
 as soon as a new value is available, you will be notified.
 
-### Streaming API
+### Websocket API
 
 Websocket API is available on `/ws`. All connected clients receive status and meter
 updates for all connected meters without further subscription.
 
 ### Long polling API
+
+**NOTE** Usage of the long polling API is discouraged for performance reasons. The long polling is only supported with `sdm630_http`, not with the newer `sdm630`.
 
 We're using [HTTP Long Polling as described in RFC6202](https://tools.ietf.org/html/rfc6202)
 for the data transfer. This essentially means that you can connect to an HTTP endpoint. The server
@@ -527,28 +487,28 @@ responds each second with the current status, e.g.
       "timestamp": 1501163437772,
       "category": "statusupdate",
       "data": {
-				"Starttime": "2017-07-27T10:21:04.790877012+02:00",
-				"UptimeSeconds": 10.000907389,
-				"Goroutines": 22,
-				"Memory": {
-					"Alloc": 3605376,
-					"HeapAlloc": 3605376
-				},
-				"Modbus": {
-					"TotalModbusRequests": 325,
-					"ModbusRequestRatePerMinute": 1943.823619582965,
-					"TotalModbusErrors": 0,
-					"ModbusErrorRatePerMinute": 0
-				},
-				"ConfiguredMeters": [
-					{
-						"Id": 26,
-						"Type": "JANITZA",
-						"Status": "available"
-					}
-				]
-			}
-		}
+        "Starttime": "2017-07-27T10:21:04.790877012+02:00",
+        "UptimeSeconds": 10.000907389,
+        "Goroutines": 22,
+        "Memory": {
+          "Alloc": 3605376,
+          "HeapAlloc": 3605376
+        },
+        "Modbus": {
+          "TotalModbusRequests": 325,
+          "ModbusRequestRatePerMinute": 1943.823619582965,
+          "TotalModbusErrors": 0,
+          "ModbusErrorRatePerMinute": 0
+        },
+        "ConfiguredMeters": [
+          {
+            "Id": 26,
+            "Type": "JANITZA",
+            "Status": "available"
+          }
+        ]
+      }
+    }
   ]
 }
 
@@ -572,7 +532,7 @@ the ``sdm630_logger`` command:
 $ sdm630_logger record -s 120 -f log.db
 ````
 
-This will connect to the ``sdm630_httpd`` process on localhost and
+This will connect to the ``sdm630`` process on localhost and
 serialize all measurements into ``log.db``. Received values will be
 cached for 120 seconds and then written in bulk. We use
 [BoltDB](https://github.com/boltdb/bolt) for data storage in order to
@@ -601,28 +561,45 @@ features:
 storage. 
 * The TSV export currently only exports the power readings.
 
-## Detecting connected meters
 
-MODBUS/RTU does not provide a mechanism to discover devices. There is no
-reliable way to detect all attached devices. The ``sdm_detect`` tool
-attempts to read the L1 voltage from all valid device IDs and reports
-which one replied correctly:
+# OpenHAB integration
 
-````
-./bin/sdm_detect
-2017/06/21 10:22:34 Starting bus scan
-2017/06/21 10:22:35 Device 1: n/a
-...
-2017/07/27 16:16:39 Device 21: SDM type device found, L1 voltage: 234.86
-2017/07/27 16:16:40 Device 22: n/a
-2017/07/27 16:16:40 Device 23: n/a
-2017/07/27 16:16:40 Device 24: n/a
-2017/07/27 16:16:40 Device 25: n/a
-2017/07/27 16:16:40 Device 26: Janitza type device found, L1 voltage: 235.10
-...
-2017/07/27 16:17:25 Device 247: n/a
-2017/07/27 16:17:25 Found 2 active devices:
-2017/07/27 16:17:25 * slave address 21: type SDM
-2017/07/27 16:17:25 * slave address 26: type JANITZA
-2017/07/27 16:17:25 WARNING: This lists only the devices that responded to a known L1 voltage request. Devices with different function code definitions might not be detected.
-````
+*Please note: The following integration guide was written for OpenHAB
+1.8. We currently do not have an OpenHAB 2.x instructions, but would
+appreciate any contributions.*
+
+It is very easy to translate this into OpenHAB items. I run the SDM630
+software on a Raspberry Pi with the IP ``192.168.1.44``. My items look
+like this:
+
+    Group Power_Chart
+    Number Power_L1 "Strombezug L1 [%.1f W]" <power> (Power, Power_Chart) { http="<[http://192.168.1.44:8080/last/1:60000:JS(SDM630GetL1Power.js)]" }
+
+I'm using the http plugin to call the ``/last/1`` endpoint every 60
+seconds. Then, I feed the result into a JSON transform stored in
+``SDM630GetL1Power.js``. The contents of
+``transform/SDM630GetL1Power.js`` looks like this:
+
+    JSON.parse(input).Power.L1;
+
+Just repeat these lines for each measurement you want to track. Finally,
+my sitemap contains the following lines:
+
+    Chart item=Power_Chart period=D refresh=1800
+
+This draws a chart of all items in the ``Power_Chart`` group.
+
+## How does it look like in OpenHAB?
+
+I use [OpenHAB 1.8](http://openhab.org) to record various measurements at
+home. In the classic ui, this is how one of the graphs looks like:
+
+![OpenHAB interface screenshot](img/openhab.png)
+
+Everything is in German, but the "Verlauf Strombezug" graph shows my
+power consumption for three phases. I have a SDM630 installed in my
+distribution cabinet. A serial connection links it to a Raspberry Pi
+(RPi).
+This is where this piece of software runs and exposes the measurements
+via a RESTful API. OpenHAB connects to it and stores the values, just as
+it does with other sensors in my home.
