@@ -24,20 +24,20 @@ var UniqueIdFormat string = "Instrument%d"
 type ReadingChannel chan Readings
 
 type Readings struct {
-	UniqueId       string
-	Timestamp      time.Time
-	Unix           int64
-	ModbusDeviceId uint8
-	Power          ThreePhaseReadings
-	Voltage        ThreePhaseReadings
-	Current        ThreePhaseReadings
-	Cosphi         ThreePhaseReadings
-	Import         ThreePhaseReadings
-	TotalImport    *float64
-	Export         ThreePhaseReadings
-	TotalExport    *float64
-	THD            THDInfo
-	Frequency      *float64
+	UniqueId    string
+	Timestamp   time.Time
+	Unix        int64
+	DeviceId    uint8 `json:"ModbusDeviceId"`
+	Power       ThreePhaseReadings
+	Voltage     ThreePhaseReadings
+	Current     ThreePhaseReadings
+	Cosphi      ThreePhaseReadings
+	Import      ThreePhaseReadings
+	TotalImport *float64
+	Export      ThreePhaseReadings
+	TotalExport *float64
+	THD         THDInfo
+	Frequency   *float64
 }
 
 type THDInfo struct {
@@ -97,13 +97,7 @@ func (r *Readings) String() string {
 	)
 }
 
-func (r *Readings) JSON(w io.Writer) error {
-	return json.NewEncoder(w).Encode(r)
-}
-
-/*
- * Returns true if the reading is older than the given timestamp.
- */
+// IsOlderThan returns true if the reading is older than the given timestamp.
 func (r *Readings) IsOlderThan(ts time.Time) (retval bool) {
 	return r.Timestamp.Before(ts)
 }
@@ -113,14 +107,14 @@ func (r *Readings) IsOlderThan(ts time.Time) (retval bool) {
 * the time: the latter of the two times is copied over to the result
  */
 func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
-	if lhs.ModbusDeviceId != rhs.ModbusDeviceId {
+	if lhs.DeviceId != rhs.DeviceId {
 		return Readings{}, fmt.Errorf(
 			"Cannot add readings of different devices - got IDs %d and %d",
-			lhs.ModbusDeviceId, rhs.ModbusDeviceId)
+			lhs.DeviceId, rhs.DeviceId)
 	} else {
 		retval = Readings{
-			UniqueId:       lhs.UniqueId,
-			ModbusDeviceId: lhs.ModbusDeviceId,
+			UniqueId: lhs.UniqueId,
+			DeviceId: lhs.DeviceId,
 			Voltage: ThreePhaseReadings{
 				L1: F2fp(Fp2f(lhs.Voltage.L1) + Fp2f(rhs.Voltage.L1)),
 				L2: F2fp(Fp2f(lhs.Voltage.L2) + Fp2f(rhs.Voltage.L2)),
@@ -232,13 +226,12 @@ func (lhs *Readings) divide(scalar float64) (retval Readings) {
 	}
 	retval.Timestamp = lhs.Timestamp
 	retval.Unix = lhs.Unix
-	retval.ModbusDeviceId = lhs.ModbusDeviceId
+	retval.DeviceId = lhs.DeviceId
 	retval.UniqueId = lhs.UniqueId
 	return retval
 }
 
-/* ReadingSlice is a type alias for a slice of readings.
- */
+// ReadingSlice is a type alias for a slice of readings.
 type ReadingSlice []Readings
 
 func (r ReadingSlice) JSON(w io.Writer) error {
@@ -276,11 +269,11 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 		Description string
 		Timestamp   int64
 	}{
-		DeviceId:    q.DeviceId,
-		Value:       q.Value,
+		DeviceId:  q.DeviceId,
+		Value:     q.Value,
 		IEC61850:    q.IEC61850,
 		Description: GetIecDescription(q.IEC61850),
-		Timestamp:   q.ReadTimestamp.UnixNano() / 1e6,
+		Timestamp: q.ReadTimestamp.UnixNano() / 1e6,
 	})
 }
 
@@ -402,7 +395,7 @@ type ControlSnip struct {
 type ControlSnipType uint8
 
 const (
-	CONTROLSNIP_OK = iota
+	CONTROLSNIP_OK ControlSnipType = iota
 	CONTROLSNIP_ERROR
 )
 

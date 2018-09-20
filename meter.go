@@ -115,7 +115,7 @@ type MeterReadings struct {
 func NewMeterReadings(devid uint8, secondsToStore time.Duration) (retval *MeterReadings) {
 	reading := Readings{
 		UniqueId:       fmt.Sprintf(UniqueIdFormat, devid),
-		ModbusDeviceId: devid,
+		DeviceId: devid,
 	}
 	retval = &MeterReadings{
 		Lastminutereadings: ReadingSlice{},
@@ -139,7 +139,7 @@ func (mr *MeterReadings) Purge(devid uint8) {
 	mr.Lastminutereadings = ReadingSlice{}
 	mr.Lastreading = Readings{
 		UniqueId:       fmt.Sprintf(UniqueIdFormat, devid),
-		ModbusDeviceId: devid,
+		DeviceId: devid,
 	}
 }
 

@@ -2,6 +2,7 @@ package sdm630
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -96,7 +97,7 @@ func MkLastSingleValuesHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		if err := last.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(last); err != nil {
 			log.Printf("Failed to create JSON representation of measurement %s", last.String())
 		}
 	})
@@ -119,7 +120,7 @@ func MkLastMinuteAvgSingleHandler(hc *MeasurementCache) func(http.ResponseWriter
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		if err := avg.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(avg); err != nil {
 			log.Printf("Failed to create JSON representation of measurement %s", avg.String())
 		}
 	})
