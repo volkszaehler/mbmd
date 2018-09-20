@@ -53,9 +53,9 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "unique_id_format, f",
-			Value: "Instrument%d",
+			Value: "Meter#%d",
 			Usage: `Unique ID format.
-			Example: -f Instrument%d
+			Example: -f Meter#%d
 			The %d is replaced by the device ID`,
 		},
 		cli.BoolFlag{

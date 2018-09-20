@@ -74,13 +74,13 @@ func Fp2f(x *float64) float64 {
 }
 
 func (r *Readings) String() string {
-	fmtString := "UniqueId: %s ID: %d T: %s - L1: %.2fV %.2fA %.2fW %.2fcos | " +
-		"L2: %.2fV %.2fA %.2fW %.2fcos | " +
-		"L3: %.2fV %.2fA %.2fW %.2fcos"
+	fmtString := "%s " +
+		"L1: %.1fV %.2fA %.0fW %.2fcos | " +
+		"L2: %.1fV %.2fA %.0fW %.2fcos | " +
+		"L3: %.1fV %.2fA %.0fW %.2fcos | " +
+		"%.1fHz"
 	return fmt.Sprintf(fmtString,
 		r.UniqueId,
-		r.ModbusDeviceId,
-		r.Timestamp.Format(time.RFC3339),
 		Fp2f(r.Voltage.L1),
 		Fp2f(r.Current.L1),
 		Fp2f(r.Power.L1),
