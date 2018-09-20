@@ -67,8 +67,8 @@ func main() {
 			The %d is replaced by the device ID`,
 		},
 	}
-	app.Action = func(c *cli.Context) {
 
+	app.Action = func(c *cli.Context) {
 		// Set unique ID format
 		sdm630.UniqueIdFormat = c.String("unique_id_format")
 
@@ -109,15 +109,6 @@ func main() {
 		tee := sdm630.NewQuerySnipBroadcaster(snips)
 		go tee.Run()
 
-		// MeasurementCache for REST API
-		mc := sdm630.NewMeasurementCache(
-			meters,
-			tee.Attach(),
-			DEFAULT_METER_STORE_SECONDS,
-			c.Bool("verbose"),
-		)
-		go mc.Consume()
-
 		// Longpoll firehose
 		firehose := sdm630.NewFirehose(
 			tee.Attach(),
@@ -128,6 +119,15 @@ func main() {
 		// websocket hub
 		hub := sdm630.NewSocketHub(tee.Attach(), status)
 		go hub.Run()
+
+		// MeasurementCache for REST API
+		mc := sdm630.NewMeasurementCache(
+			meters,
+			tee.Attach(),
+			DEFAULT_METER_STORE_SECONDS,
+			c.Bool("verbose"),
+		)
+		go mc.Consume()
 
 		log.Printf("Starting API httpd at %s", c.String("url"))
 		sdm630.Run_httpd(
