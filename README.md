@@ -8,7 +8,7 @@ the measurements and wraps them into a HTTP interface, making it very
 easy to integrate it into your home automation system. Both a REST-style
 API and a streaming API are available.
 
-## Suported Devices:
+## Supported Devices
 
 The meters have slightly different capabilities. The EASTRON SDM630 offers
 a lot of features, while the smaller devices only support basic
@@ -59,7 +59,7 @@ Some of my test devices have been provided by [B+G
 E-Tech](http://bg-etech.de/) - please consider to buy your meter from
 them!
 
-# Table of Contents:
+# Table of Contents
 
 * [Installation](#installation)
   * [Hardware installation](#hardware-installation)
