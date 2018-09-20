@@ -80,7 +80,7 @@ func (s *Status) Update() {
 		ms := MeterStatus{
 			Id:     id,
 			Type:   meter.Producer.GetMeterType(),
-			Status: meter.GetReadableState(),
+			Status: meter.GetState().String(),
 		}
 
 		confmeters = append(confmeters, ms)

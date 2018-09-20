@@ -90,19 +90,6 @@ func (m *Meter) GetState() MeterState {
 	return m.state
 }
 
-func (m *Meter) GetReadableState() string {
-	var retval string
-	switch m.GetState() {
-	case METERSTATE_AVAILABLE:
-		retval = "available"
-	case METERSTATE_UNAVAILABLE:
-		retval = "unavailable"
-	default:
-		log.Fatal("Unknown meter state, aborting.")
-	}
-	return retval
-}
-
 func (m *Meter) AddSnip(snip QuerySnip) {
 	m.MeterReadings.AddSnip(snip)
 }
