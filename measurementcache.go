@@ -8,15 +8,15 @@ import (
 )
 
 type MeasurementCache struct {
-	datastream     QuerySnipChannel
+	in             QuerySnipChannel
 	meters         map[uint8]*Meter
 	secondsToStore time.Duration
 	verbose        bool
 }
 
-func NewMeasurementCache(meters map[uint8]*Meter, ds QuerySnipChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
+func NewMeasurementCache(meters map[uint8]*Meter, inChannel QuerySnipChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
 	return &MeasurementCache{
-		datastream:     ds,
+		in:             inChannel,
 		meters:         meters,
 		secondsToStore: secondsToStore,
 		verbose:        isVerbose,
@@ -25,7 +25,7 @@ func NewMeasurementCache(meters map[uint8]*Meter, ds QuerySnipChannel, secondsTo
 
 func (mc *MeasurementCache) Consume() {
 	for {
-		snip := <-mc.datastream
+		snip := <-mc.in
 		devid := snip.DeviceId
 		// Search corresponding meter
 		if meter, ok := mc.meters[devid]; ok {
