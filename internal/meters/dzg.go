@@ -1,8 +1,4 @@
-package sdm630
-
-import (
-	"math"
-)
+package meters
 
 const (
 	METERTYPE_DZG = "DZG"
@@ -40,46 +36,44 @@ func (p *DZGProducer) GetMeterType() string {
 	return METERTYPE_DZG
 }
 
-func (p *DZGProducer) snip(devid uint8, opcode uint16, iec string, scaler ...float64) QuerySnip {
+func (p *DZGProducer) op(opcode uint16, iec string, scaler ...float64) Operation {
 	transform := RTU32ToFloat64 // default conversion
 	if len(scaler) > 0 {
 		transform = MakeRTU32ScaledIntToFloat64(scaler[0])
 	}
 
-	snip := QuerySnip{
-		DeviceId:  devid,
+	op := Operation{
 		FuncCode:  ReadHoldingReg,
 		OpCode:    opcode,
 		ReadLen:   2,
-		Value:     math.NaN(),
 		IEC61850:  iec,
 		Transform: transform,
 	}
-	return snip
+	return op
 }
 
-func (p *DZGProducer) Probe(devid uint8) QuerySnip {
-	return p.snip(devid, OpCodeDZGL1Voltage, "VolLocPhsA", 100)
+func (p *DZGProducer) Probe() Operation {
+	return p.op(OpCodeDZGL1Voltage, "VolLocPhsA", 100)
 }
 
-func (p *DZGProducer) Produce(devid uint8) (res []QuerySnip) {
-	res = append(res, p.snip(devid, OpCodeDZGL1Voltage, "VolLocPhsA", 100))
-	res = append(res, p.snip(devid, OpCodeDZGL2Voltage, "VolLocPhsB", 100))
-	res = append(res, p.snip(devid, OpCodeDZGL3Voltage, "VolLocPhsC", 100))
+func (p *DZGProducer) Produce() (res []Operation) {
+	res = append(res, p.op(OpCodeDZGL1Voltage, "VolLocPhsA", 100))
+	res = append(res, p.op(OpCodeDZGL2Voltage, "VolLocPhsB", 100))
+	res = append(res, p.op(OpCodeDZGL3Voltage, "VolLocPhsC", 100))
 
-	res = append(res, p.snip(devid, OpCodeDZGL1Current, "AmpLocPhsA", 1000))
-	res = append(res, p.snip(devid, OpCodeDZGL2Current, "AmpLocPhsB", 1000))
-	res = append(res, p.snip(devid, OpCodeDZGL3Current, "AmpLocPhsC", 1000))
+	res = append(res, p.op(OpCodeDZGL1Current, "AmpLocPhsA", 1000))
+	res = append(res, p.op(OpCodeDZGL2Current, "AmpLocPhsB", 1000))
+	res = append(res, p.op(OpCodeDZGL3Current, "AmpLocPhsC", 1000))
 
-	res = append(res, p.snip(devid, OpCodeDZGL1Import, "TotkWhImportPhsA"))
-	res = append(res, p.snip(devid, OpCodeDZGL2Import, "TotkWhImportPhsB"))
-	res = append(res, p.snip(devid, OpCodeDZGL3Import, "TotkWhImportPhsC"))
-	res = append(res, p.snip(devid, OpCodeDZGTotalImport, "TotkWhImport", 1000))
+	res = append(res, p.op(OpCodeDZGL1Import, "TotkWhImportPhsA"))
+	res = append(res, p.op(OpCodeDZGL2Import, "TotkWhImportPhsB"))
+	res = append(res, p.op(OpCodeDZGL3Import, "TotkWhImportPhsC"))
+	res = append(res, p.op(OpCodeDZGTotalImport, "TotkWhImport", 1000))
 
-	res = append(res, p.snip(devid, OpCodeDZGL1Export, "TotkWhExportPhsA"))
-	res = append(res, p.snip(devid, OpCodeDZGL2Export, "TotkWhExportPhsB"))
-	res = append(res, p.snip(devid, OpCodeDZGL3Export, "TotkWhExportPhsC"))
-	res = append(res, p.snip(devid, OpCodeDZGTotalExport, "TotkWhExport", 1000))
+	res = append(res, p.op(OpCodeDZGL1Export, "TotkWhExportPhsA"))
+	res = append(res, p.op(OpCodeDZGL2Export, "TotkWhExportPhsB"))
+	res = append(res, p.op(OpCodeDZGL3Export, "TotkWhExportPhsC"))
+	res = append(res, p.op(OpCodeDZGTotalExport, "TotkWhExport", 1000))
 
 	return res
 }

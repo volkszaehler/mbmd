@@ -1,8 +1,4 @@
-package sdm630
-
-import (
-	"math"
-)
+package meters
 
 const (
 	METERTYPE_SBC = "SBC"
@@ -49,66 +45,64 @@ func (p *SBCProducer) GetMeterType() string {
 	return METERTYPE_SBC
 }
 
-func (p *SBCProducer) snip(devid uint8, opcode uint16, iec string, readlen uint16) QuerySnip {
-	return QuerySnip{
-		DeviceId: devid,
+func (p *SBCProducer) op(opcode uint16, iec string, readlen uint16) Operation {
+	return Operation{
 		FuncCode: ReadHoldingReg,
 		OpCode:   opcode,
 		ReadLen:  readlen,
-		Value:    math.NaN(),
 		IEC61850: iec,
 	}
 }
 
-// snip16 creates modbus operation for single register
-func (p *SBCProducer) snip16(devid uint8, opcode uint16, iec string, scaler ...float64) QuerySnip {
-	snip := p.snip(devid, opcode, iec, 1)
+// op16 creates modbus operation for single register
+func (p *SBCProducer) op16(opcode uint16, iec string, scaler ...float64) Operation {
+	op := p.op(opcode, iec, 1)
 
-	snip.Transform = RTU16ToFloat64 // default conversion
+	op.Transform = RTU16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTU16ScaledIntToFloat64(scaler[0])
+		op.Transform = MakeRTU16ScaledIntToFloat64(scaler[0])
 	}
 
-	return snip
+	return op
 }
 
-// snip32 creates modbus operation for double register
-func (p *SBCProducer) snip32(devid uint8, opcode uint16, iec string, scaler ...float64) QuerySnip {
-	snip := p.snip(devid, opcode, iec, 2)
+// op32 creates modbus operation for double register
+func (p *SBCProducer) op32(opcode uint16, iec string, scaler ...float64) Operation {
+	op := p.op(opcode, iec, 2)
 
-	snip.Transform = RTU32ToFloat64 // default conversion
+	op.Transform = RTU32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTU32ScaledIntToFloat64(scaler[0])
+		op.Transform = MakeRTU32ScaledIntToFloat64(scaler[0])
 	}
 
-	return snip
+	return op
 }
 
-func (p *SBCProducer) Probe(devid uint8) QuerySnip {
-	return p.snip16(devid, OpCodeSaiaL1Voltage, "VolLocPhsA")
+func (p *SBCProducer) Probe() Operation {
+	return p.op16(OpCodeSaiaL1Voltage, "VolLocPhsA")
 }
 
-func (p *SBCProducer) Produce(devid uint8) (res []QuerySnip) {
-	res = append(res, p.snip16(devid, OpCodeSaiaL1Voltage, "VolLocPhsA"))
-	res = append(res, p.snip16(devid, OpCodeSaiaL2Voltage, "VolLocPhsB"))
-	res = append(res, p.snip16(devid, OpCodeSaiaL3Voltage, "VolLocPhsC"))
+func (p *SBCProducer) Produce() (res []Operation) {
+	res = append(res, p.op16(OpCodeSaiaL1Voltage, "VolLocPhsA"))
+	res = append(res, p.op16(OpCodeSaiaL2Voltage, "VolLocPhsB"))
+	res = append(res, p.op16(OpCodeSaiaL3Voltage, "VolLocPhsC"))
 
-	res = append(res, p.snip16(devid, OpCodeSaiaL1Current, "AmpLocPhsA", 10))
-	res = append(res, p.snip16(devid, OpCodeSaiaL2Current, "AmpLocPhsB", 10))
-	res = append(res, p.snip16(devid, OpCodeSaiaL3Current, "AmpLocPhsC", 10))
+	res = append(res, p.op16(OpCodeSaiaL1Current, "AmpLocPhsA", 10))
+	res = append(res, p.op16(OpCodeSaiaL2Current, "AmpLocPhsB", 10))
+	res = append(res, p.op16(OpCodeSaiaL3Current, "AmpLocPhsC", 10))
 
-	res = append(res, p.snip16(devid, OpCodeSaiaL1Power, "WLocPhsA", 100))
-	res = append(res, p.snip16(devid, OpCodeSaiaL2Power, "WLocPhsB", 100))
-	res = append(res, p.snip16(devid, OpCodeSaiaL3Power, "WLocPhsC", 100))
+	res = append(res, p.op16(OpCodeSaiaL1Power, "WLocPhsA", 100))
+	res = append(res, p.op16(OpCodeSaiaL2Power, "WLocPhsB", 100))
+	res = append(res, p.op16(OpCodeSaiaL3Power, "WLocPhsC", 100))
 
-	res = append(res, p.snip16(devid, OpCodeSaiaL1Cosphi, "AngLocPhsA", 100))
-	res = append(res, p.snip16(devid, OpCodeSaiaL2Cosphi, "AngLocPhsB", 100))
-	res = append(res, p.snip16(devid, OpCodeSaiaL3Cosphi, "AngLocPhsC", 100))
+	res = append(res, p.op16(OpCodeSaiaL1Cosphi, "AngLocPhsA", 100))
+	res = append(res, p.op16(OpCodeSaiaL2Cosphi, "AngLocPhsB", 100))
+	res = append(res, p.op16(OpCodeSaiaL3Cosphi, "AngLocPhsC", 100))
 
-	// res = append(res, p.snip16(devid, OpCodeSaiaTotalPower, "WLoc", 100))
+	// res = append(res, p.op16(OpCodeSaiaTotalPower, "WLoc", 100))
 
-	res = append(res, p.snip32(devid, OpCodeSaiaTotalImport, "TotkWhImport", 100))
-	res = append(res, p.snip32(devid, OpCodeSaiaTotalExport, "TotkWhExport", 100))
+	res = append(res, p.op32(OpCodeSaiaTotalImport, "TotkWhImport", 100))
+	res = append(res, p.op32(OpCodeSaiaTotalExport, "TotkWhExport", 100))
 
 	return res
 }

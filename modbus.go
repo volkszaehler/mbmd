@@ -1,20 +1,17 @@
 package sdm630
 
 import (
-	"encoding/binary"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"time"
 
 	"github.com/goburrow/modbus"
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 const (
-	MaxRetryCount  = 5
-	ReadInputReg   = 4
-	ReadHoldingReg = 3
+	MaxRetryCount = 5
 )
 
 const (
@@ -110,22 +107,23 @@ func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
 	// update the slave id in the handler
 	q.handler.SlaveId = snip.DeviceId
 
-	if snip.ReadLen <= 0 {
+	op := snip.Operation
+	if op.ReadLen <= 0 {
 		log.Fatalf("Invalid meter operation %v.", snip)
 	}
 
-	switch snip.FuncCode {
+	switch op.FuncCode {
 	case ReadInputReg:
-		retval, err = q.client.ReadInputRegisters(snip.OpCode, snip.ReadLen)
+		retval, err = q.client.ReadInputRegisters(op.OpCode, op.ReadLen)
 	case ReadHoldingReg:
-		retval, err = q.client.ReadHoldingRegisters(snip.OpCode, snip.ReadLen)
+		retval, err = q.client.ReadHoldingRegisters(op.OpCode, op.ReadLen)
 	default:
 		log.Fatalf("Unknown function code %d - cannot query device.",
-			snip.FuncCode)
+			op.FuncCode)
 	}
 
 	if err != nil && q.verbose {
-		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", snip.OpCode, err.Error())
+		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", op.OpCode, err.Error())
 	}
 
 	return retval, err
@@ -151,7 +149,7 @@ func (q *ModbusEngine) Transform(
 			reading, err := q.query(snip)
 			if err == nil {
 				// convert bytes to value
-				snip.Value = snip.Transform(reading)
+				snip.Value = snip.Operation.Transform(reading)
 				snip.ReadTimestamp = time.Now()
 				outputStream <- snip
 
@@ -207,7 +205,8 @@ SCAN:
 		time.Sleep(time.Duration(40) * time.Millisecond)
 
 		for _, producer := range producers {
-			snip := producer.Probe(deviceId)
+			operation := producer.Probe()
+			snip := NewQuerySnip(deviceId, operation)
 
 			value, err := q.query(snip)
 			if err == nil {
@@ -215,7 +214,7 @@ SCAN:
 					deviceId,
 					producer.GetMeterType(),
 					GetIecDescription(snip.IEC61850),
-					snip.Transform(value))
+					snip.Operation.Transform(value))
 				dev := DeviceInfo{
 					DeviceId:  deviceId,
 					MeterType: producer.GetMeterType(),
@@ -238,46 +237,4 @@ SCAN:
 	log.Println("WARNING: This lists only the devices that responded to " +
 		"a known probe request. Devices with different " +
 		"function code definitions might not be detected.")
-}
-
-// RTUTransform functions convert RTU bytes to meaningful data types.
-type RTUTransform func([]byte) float64
-
-// RTU32ToFloat64 converts 32 bit readings
-func RTU32ToFloat64(b []byte) float64 {
-	bits := binary.BigEndian.Uint32(b)
-	f := math.Float32frombits(bits)
-	return float64(f)
-}
-
-// RTU16ToFloat64 converts 16 bit readings
-func RTU16ToFloat64(b []byte) float64 {
-	u := binary.BigEndian.Uint16(b)
-	return float64(u)
-}
-
-func rtuScaledInt32ToFloat64(b []byte, scalar float64) float64 {
-	unscaled := float64(binary.BigEndian.Uint32(b))
-	f := unscaled / scalar
-	return float64(f)
-}
-
-// MakeRTU32ScaledIntToFloat64 creates a 32 bit scaled reading transform
-func MakeRTU32ScaledIntToFloat64(scalar float64) RTUTransform {
-	return RTUTransform(func(b []byte) float64 {
-		return rtuScaledInt32ToFloat64(b, scalar)
-	})
-}
-
-func rtuScaledInt16ToFloat64(b []byte, scalar float64) float64 {
-	unscaled := float64(binary.BigEndian.Uint16(b))
-	f := unscaled / scalar
-	return float64(f)
-}
-
-// MakeRTU16ScaledIntToFloat64 creates a 16 bit scaled reading transform
-func MakeRTU16ScaledIntToFloat64(scalar float64) RTUTransform {
-	return RTUTransform(func(b []byte) float64 {
-		return rtuScaledInt16ToFloat64(b, scalar)
-	})
 }

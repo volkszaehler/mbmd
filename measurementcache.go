@@ -5,21 +5,37 @@ import (
 	"log"
 	"sort"
 	"time"
+
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 type MeasurementCache struct {
-	in             QuerySnipChannel
-	meters         map[uint8]*Meter
-	secondsToStore time.Duration
-	verbose        bool
+	in      QuerySnipChannel
+	items   map[uint8]MeasurementCacheItem
+	maxAge  time.Duration
+	verbose bool
 }
 
-func NewMeasurementCache(meters map[uint8]*Meter, inChannel QuerySnipChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
+type MeasurementCacheItem struct {
+	meter    *Meter
+	readings *MeterReadings
+}
+
+func NewMeasurementCache(meters map[uint8]*Meter, inChannel QuerySnipChannel, maxAge time.Duration, isVerbose bool) *MeasurementCache {
+	items := make(map[uint8]MeasurementCacheItem)
+
+	for _, meter := range meters {
+		items[meter.DeviceId] = MeasurementCacheItem{
+			meter:    meter,
+			readings: NewMeterReadings(meter.DeviceId, maxAge),
+		}
+	}
+
 	return &MeasurementCache{
-		in:             inChannel,
-		meters:         meters,
-		secondsToStore: secondsToStore,
-		verbose:        isVerbose,
+		in:      inChannel,
+		items:   items,
+		maxAge:  maxAge,
+		verbose: isVerbose,
 	}
 }
 
@@ -28,11 +44,11 @@ func (mc *MeasurementCache) Consume() {
 		snip := <-mc.in
 		devid := snip.DeviceId
 		// Search corresponding meter
-		if meter, ok := mc.meters[devid]; ok {
-			// add the snip to the meter's cache
-			meter.AddSnip(snip)
+		if item, ok := mc.items[devid]; ok {
+			// add the snip to the cache
+			item.readings.AddSnip(snip)
 			if mc.verbose {
-				log.Printf("%s\r\n", meter.MeterReadings.Lastreading.String())
+				log.Printf("%s\r\n", item.readings.Current)
 			}
 		} else {
 			log.Fatal("Snip for unknown meter received - this should not happen.")
@@ -42,59 +58,68 @@ func (mc *MeasurementCache) Consume() {
 
 func (mc *MeasurementCache) GetSortedIDs() []byte {
 	var keys ByteSlice
-	for k, _ := range mc.meters {
+	for k, _ := range mc.items {
 		keys = append(keys, k)
 	}
 	sort.Sort(keys)
 	return keys
 }
 
-func (mc *MeasurementCache) GetLast(id byte) (*Readings, error) {
-	if meter, ok := mc.meters[id]; ok {
-		if meter.GetState() == METERSTATE_AVAILABLE {
-			return &meter.MeterReadings.Lastreading, nil
+func (mc *MeasurementCache) GetLast(deviceId byte) (*Readings, error) {
+	if item, ok := mc.items[deviceId]; ok {
+		if item.meter.GetState() == AVAILABLE {
+			return &item.readings.Current, nil
 		} else {
-			return nil, fmt.Errorf("Meter %d is not available.", id)
+			return nil, fmt.Errorf("Meter %d is not available.", deviceId)
 		}
 	} else {
-		return nil, fmt.Errorf("No device with id %d available.", id)
+		return nil, fmt.Errorf("No device with id %d available.", deviceId)
 	}
 }
 
-func (mc *MeasurementCache) GetMinuteAvg(id byte) (*Readings, error) {
-	if meter, ok := mc.meters[id]; !ok {
-		return nil, fmt.Errorf("No device with id %d available.", id)
-	} else {
-		if meter.GetState() == METERSTATE_AVAILABLE {
-			measurements := meter.MeterReadings.Lastminutereadings
-			lastminute := measurements.NotOlderThan(time.Now().Add(-1 *
-				time.Minute))
-			var err error
-			var avg Readings
-			for idx, r := range lastminute {
-				if idx == 0 {
-					// This is the first element - initialize our accumulator
-					avg = r
-				} else {
-					avg, err = r.add(&avg)
-					if err != nil {
-						return nil, err
-					}
-				}
+func average(readings ReadingSlice) (*Readings, error) {
+	var avg Readings
+	var err error
+
+	for idx, r := range readings {
+		if idx == 0 {
+			// This is the first element - initialize our accumulator
+			avg = r
+		} else {
+			avg, err = r.add(&avg)
+			if err != nil {
+				return nil, err
 			}
-			retval := avg.divide(float64(len(lastminute)))
+		}
+	}
+
+	res := avg.divide(float64(len(readings)))
+	return &res, nil
+}
+
+func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
+	if item, ok := mc.items[deviceId]; ok {
+		if item.meter.GetState() == AVAILABLE {
+			measurements := item.readings.Historic
+			lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
+
+			res, err := average(lastminute)
+			if err != nil {
+				return nil, err
+			}
+
 			if mc.verbose {
 				log.Printf("Averaging over %d measurements:\r\n%s\r\n",
-					len(measurements), retval.String())
+					len(measurements), res.String())
 			}
-			return &retval, nil
-		} else { // !METERSTATE_AVAILABLE
-			return nil, fmt.Errorf("Meter %d is not available.", id)
+			return res, nil
 		}
+		return nil, fmt.Errorf("Meter %d is not available.", deviceId)
+	} else {
+		return nil, fmt.Errorf("No device with id %d available.", deviceId)
 	}
 }
 
-// Helper for dealing with Modbus device ids (bytes).
 // ByteSlice attaches the methods of sort.Interface to []byte, sorting in increasing order.
 type ByteSlice []byte
 

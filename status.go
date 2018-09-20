@@ -3,6 +3,8 @@ package sdm630
 import (
 	"runtime"
 	"time"
+
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 type MemoryStatus struct {

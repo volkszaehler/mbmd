@@ -1,6 +1,4 @@
-package sdm630
-
-import "math"
+package meters
 
 const (
 	METERTYPE_JANITZA = "JANITZA"
@@ -42,48 +40,46 @@ func (p *JanitzaProducer) GetMeterType() string {
 	return METERTYPE_JANITZA
 }
 
-func (p *JanitzaProducer) snip(devid uint8, opcode uint16, iec string) QuerySnip {
-	snip := QuerySnip{
-		DeviceId:  devid,
+func (p *JanitzaProducer) op(opcode uint16, iec string) Operation {
+	op := Operation{
 		FuncCode:  ReadHoldingReg,
 		OpCode:    opcode,
 		ReadLen:   2,
-		Value:     math.NaN(),
 		IEC61850:  iec,
 		Transform: RTU32ToFloat64,
 	}
-	return snip
+	return op
 }
 
-func (p *JanitzaProducer) Probe(devid uint8) QuerySnip {
-	return p.snip(devid, OpCodeJanitzaL1Voltage, "VolLocPhsA")
+func (p *JanitzaProducer) Probe() Operation {
+	return p.op(OpCodeJanitzaL1Voltage, "VolLocPhsA")
 }
 
-func (p *JanitzaProducer) Produce(devid uint8) (res []QuerySnip) {
-	res = append(res, p.snip(devid, OpCodeJanitzaL1Voltage, "VolLocPhsA"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL2Voltage, "VolLocPhsB"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL3Voltage, "VolLocPhsC"))
+func (p *JanitzaProducer) Produce() (res []Operation) {
+	res = append(res, p.op(OpCodeJanitzaL1Voltage, "VolLocPhsA"))
+	res = append(res, p.op(OpCodeJanitzaL2Voltage, "VolLocPhsB"))
+	res = append(res, p.op(OpCodeJanitzaL3Voltage, "VolLocPhsC"))
 
-	res = append(res, p.snip(devid, OpCodeJanitzaL1Current, "AmpLocPhsA"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL2Current, "AmpLocPhsB"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL3Current, "AmpLocPhsC"))
+	res = append(res, p.op(OpCodeJanitzaL1Current, "AmpLocPhsA"))
+	res = append(res, p.op(OpCodeJanitzaL2Current, "AmpLocPhsB"))
+	res = append(res, p.op(OpCodeJanitzaL3Current, "AmpLocPhsC"))
 
-	res = append(res, p.snip(devid, OpCodeJanitzaL1Power, "WLocPhsA"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL2Power, "WLocPhsB"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL3Power, "WLocPhsC"))
+	res = append(res, p.op(OpCodeJanitzaL1Power, "WLocPhsA"))
+	res = append(res, p.op(OpCodeJanitzaL2Power, "WLocPhsB"))
+	res = append(res, p.op(OpCodeJanitzaL3Power, "WLocPhsC"))
 
-	res = append(res, p.snip(devid, OpCodeJanitzaL1Cosphi, "AngLocPhsA"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL2Cosphi, "AngLocPhsB"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL3Cosphi, "AngLocPhsC"))
+	res = append(res, p.op(OpCodeJanitzaL1Cosphi, "AngLocPhsA"))
+	res = append(res, p.op(OpCodeJanitzaL2Cosphi, "AngLocPhsB"))
+	res = append(res, p.op(OpCodeJanitzaL3Cosphi, "AngLocPhsC"))
 
-	res = append(res, p.snip(devid, OpCodeJanitzaL1Import, "TotkWhImportPhsA"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL2Import, "TotkWhImportPhsB"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL3Import, "TotkWhImportPhsC"))
-	res = append(res, p.snip(devid, OpCodeJanitzaTotalImport, "TotkWhImport"))
+	res = append(res, p.op(OpCodeJanitzaL1Import, "TotkWhImportPhsA"))
+	res = append(res, p.op(OpCodeJanitzaL2Import, "TotkWhImportPhsB"))
+	res = append(res, p.op(OpCodeJanitzaL3Import, "TotkWhImportPhsC"))
+	res = append(res, p.op(OpCodeJanitzaTotalImport, "TotkWhImport"))
 
-	res = append(res, p.snip(devid, OpCodeJanitzaL1Export, "TotkWhExportPhsA"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL2Export, "TotkWhExportPhsB"))
-	res = append(res, p.snip(devid, OpCodeJanitzaL3Export, "TotkWhExportPhsC"))
-	res = append(res, p.snip(devid, OpCodeJanitzaTotalExport, "TotkWhExport"))
+	res = append(res, p.op(OpCodeJanitzaL1Export, "TotkWhExportPhsA"))
+	res = append(res, p.op(OpCodeJanitzaL2Export, "TotkWhExportPhsB"))
+	res = append(res, p.op(OpCodeJanitzaL3Export, "TotkWhExportPhsC"))
+	res = append(res, p.op(OpCodeJanitzaTotalExport, "TotkWhExport"))
 	return res
 }

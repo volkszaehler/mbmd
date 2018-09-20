@@ -3,6 +3,8 @@ package sdm630
 import (
 	"log"
 	"time"
+
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 type MeterScheduler struct {
@@ -48,10 +50,11 @@ func SetupScheduler(meters map[uint8]*Meter, qe *ModbusEngine) (*MeterScheduler,
 func (q *MeterScheduler) produceSnips(out QuerySnipChannel) {
 	for {
 		for _, meter := range q.meters {
-			sniplist := meter.Producer.Produce(meter.DeviceId)
-			for _, snip := range sniplist {
+			operations := meter.Producer.Produce()
+			for _, operation := range operations {
 				// Check if meter is still valid
-				if meter.GetState() != METERSTATE_UNAVAILABLE {
+				if meter.GetState() != UNAVAILABLE {
+					snip := NewQuerySnip(meter.DeviceId, operation)
 					q.out <- snip
 				}
 			}
@@ -62,10 +65,12 @@ func (q *MeterScheduler) produceSnips(out QuerySnipChannel) {
 func (q *MeterScheduler) supervisor() {
 	for {
 		for _, meter := range q.meters {
-			if meter.GetState() == METERSTATE_UNAVAILABLE {
+			if meter.GetState() == UNAVAILABLE {
 				log.Printf("Attempting to ping unavailable meter %d", meter.DeviceId)
 				// inject probe snip - the re-enabling logic is in Run()
-				q.out <- meter.Producer.Probe(meter.DeviceId)
+				operation := meter.Producer.Probe()
+				snip := NewQuerySnip(meter.DeviceId, operation)
+				q.out <- snip
 			}
 		}
 		time.Sleep(15 * time.Minute)
@@ -74,8 +79,10 @@ func (q *MeterScheduler) supervisor() {
 
 func (q *MeterScheduler) Run() {
 	source := make(QuerySnipChannel)
+
 	go q.supervisor()
 	go q.produceSnips(source)
+
 	for {
 		select {
 		case snip := <-source:
@@ -86,22 +93,20 @@ func (q *MeterScheduler) Run() {
 				log.Printf("Failure - deactivating meter %d: %s",
 					controlSnip.DeviceId, controlSnip.Message)
 				// search meter and deactivate it...
-				meter, ok := q.meters[controlSnip.DeviceId]
-				if !ok {
-					log.Fatal("Internal device id mismatch - this should not happen!")
+				if meter, ok := q.meters[controlSnip.DeviceId]; ok {
+					meter.UpdateState(UNAVAILABLE)
 				} else {
-					meter.UpdateState(METERSTATE_UNAVAILABLE)
+					log.Fatal("Internal device id mismatch - this should not happen!")
 				}
 			case CONTROLSNIP_OK:
 				// search meter and reactivate it...
-				meter, ok := q.meters[controlSnip.DeviceId]
-				if !ok {
-					log.Fatal("Internal device id mismatch - this should not happen!")
-				} else {
-					if meter.GetState() != METERSTATE_AVAILABLE {
-						log.Printf("Re-activating meter %d", controlSnip.DeviceId)
-						meter.UpdateState(METERSTATE_AVAILABLE)
+				if meter, ok := q.meters[controlSnip.DeviceId]; ok {
+					if meter.GetState() != AVAILABLE {
+						log.Printf("Reactivating meter %d", controlSnip.DeviceId)
+						meter.UpdateState(AVAILABLE)
 					}
+				} else {
+					log.Fatal("Internal device id mismatch - this should not happen!")
 				}
 			default:
 				log.Fatal("Received unknown control snip - something weird happened.")
