@@ -75,7 +75,6 @@ func main() {
 		deviceslice := strings.Split(c.String("device_list"), ",")
 		meters := make(map[uint8]*sdm630.Meter)
 		for _, meterdef := range deviceslice {
-			var meter *sdm630.Meter
 			splitdef := strings.Split(meterdef, ":")
 			if len(splitdef) != 2 {
 				log.Fatalf("Cannot parse device definition %s. See -h for help.", meterdef)
@@ -85,24 +84,8 @@ func main() {
 			if err != nil {
 				log.Fatalf("Error parsing device id %s: %s. See -h for help.", meterdef, err.Error())
 			}
-			metertype = strings.ToUpper(metertype)
-			switch metertype {
-			case sdm630.METERTYPE_JANITZA:
-				meter = sdm630.NewMeter(sdm630.METERTYPE_JANITZA,
-					uint8(id), sdm630.NewJanitzaRoundRobinScheduler(),
-					DEFAULT_METER_STORE_SECONDS)
-			case sdm630.METERTYPE_SDM:
-				meter = sdm630.NewMeter(sdm630.METERTYPE_SDM,
-					uint8(id), sdm630.NewSDMRoundRobinScheduler(),
-					DEFAULT_METER_STORE_SECONDS)
-			case sdm630.METERTYPE_DZG:
-				log.Println(`WARNING: The DZG DVH 4013 does not report the same
-				measurements as the other meters. Only limited functionality is 
-				implemented.`)
-				meter = sdm630.NewMeter(sdm630.METERTYPE_DZG,
-					uint8(id), sdm630.NewDZGRoundRobinScheduler(),
-					DEFAULT_METER_STORE_SECONDS)
-			default:
+			meter, err := sdm630.NewMeterByType(metertype, uint8(id), DEFAULT_METER_STORE_SECONDS)
+			if err != nil {
 				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
 			}
 			meters[uint8(id)] = meter

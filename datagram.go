@@ -260,6 +260,7 @@ type QuerySnip struct {
 	DeviceId      uint8
 	FuncCode      uint8  `json:"-"`
 	OpCode        uint16 `json:"-"`
+	ReadLen       uint16 `json:"-"`
 	Value         float64
 	IEC61850      string
 	Description   string
