@@ -11,9 +11,17 @@ import (
 type MeterState uint8
 
 const (
-	METERSTATE_AVAILABLE   = iota // The device responds (initial state)
+	METERSTATE_AVAILABLE   MeterState = iota // The device responds (initial state)
 	METERSTATE_UNAVAILABLE        // The device does not respond
 )
+
+func (ms MeterState) String() string {
+	if ms == METERSTATE_AVAILABLE {
+		return "available"
+	} else {
+		return "unavailable"
+	}
+}
 
 type Meter struct {
 	DeviceId      uint8
