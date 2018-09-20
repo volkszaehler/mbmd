@@ -236,8 +236,8 @@ func Run_httpd(
 
 	// static
 	router.HandleFunc("/", MkIndexHandler(mc))
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
-		GetEmbeddedContent()))
+	router.PathPrefix("/js/").Handler(GetEmbeddedContent())
+	router.PathPrefix("/css/").Handler(GetEmbeddedContent())
 
 	// api
 	router.HandleFunc("/last", serveJson(MkLastAllValuesHandler(mc)))
