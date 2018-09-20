@@ -24,7 +24,7 @@ const (
 
 func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	loader := GetEmbeddedContent()
-	mainTemplate, err := loader.GetContents("/index.tmpl")
+	mainTemplate, err := loader.GetContents("/index.html")
 	if err != nil {
 		log.Fatal("Failed to load embedded template: " + err.Error())
 	}

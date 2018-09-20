@@ -1,8 +1,10 @@
 body {
   padding-top: 5rem;
 }
-.mainsection {
-  padding: 3rem 1.5rem;
+@media (min-width: 576px) {
+  .container > div {
+    padding: 3rem 1.5rem;
+  }
 }
 .metertable {
   padding: 3rem 1.5rem;
