@@ -161,15 +161,6 @@ func main() {
 		tee := sdm630.NewQuerySnipBroadcaster(snips)
 		go tee.Run()
 
-		// MeasurementCache for REST API
-		mc := sdm630.NewMeasurementCache(
-			meters,
-			tee.Attach(),
-			DEFAULT_METER_STORE_SECONDS,
-			c.Bool("verbose"),
-		)
-		go mc.Consume()
-
 		// longpoll firehose
 		var firehose *sdm630.Firehose
 		if false {
@@ -199,6 +190,15 @@ func main() {
 				c.Bool("verbose"))
 			go mqtt.Run()
 		}
+
+		// MeasurementCache for REST API
+		mc := sdm630.NewMeasurementCache(
+			meters,
+			tee.Attach(),
+			DEFAULT_METER_STORE_SECONDS,
+			c.Bool("verbose"),
+		)
+		go mc.Consume()
 
 		log.Printf("Starting API httpd at %s", c.String("url"))
 		sdm630.Run_httpd(

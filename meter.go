@@ -11,9 +11,17 @@ import (
 type MeterState uint8
 
 const (
-	METERSTATE_AVAILABLE   = iota // The device responds (initial state)
+	METERSTATE_AVAILABLE   MeterState = iota // The device responds (initial state)
 	METERSTATE_UNAVAILABLE        // The device does not respond
 )
+
+func (ms MeterState) String() string {
+	if ms == METERSTATE_AVAILABLE {
+		return "available"
+	} else {
+		return "unavailable"
+	}
+}
 
 type Meter struct {
 	DeviceId      uint8
@@ -90,19 +98,6 @@ func (m *Meter) GetState() MeterState {
 	return m.state
 }
 
-func (m *Meter) GetReadableState() string {
-	var retval string
-	switch m.GetState() {
-	case METERSTATE_AVAILABLE:
-		retval = "available"
-	case METERSTATE_UNAVAILABLE:
-		retval = "unavailable"
-	default:
-		log.Fatal("Unknown meter state, aborting.")
-	}
-	return retval
-}
-
 func (m *Meter) AddSnip(snip QuerySnip) {
 	m.MeterReadings.AddSnip(snip)
 }
@@ -115,7 +110,7 @@ type MeterReadings struct {
 func NewMeterReadings(devid uint8, secondsToStore time.Duration) (retval *MeterReadings) {
 	reading := Readings{
 		UniqueId:       fmt.Sprintf(UniqueIdFormat, devid),
-		ModbusDeviceId: devid,
+		DeviceId: devid,
 	}
 	retval = &MeterReadings{
 		Lastminutereadings: ReadingSlice{},
@@ -139,7 +134,7 @@ func (mr *MeterReadings) Purge(devid uint8) {
 	mr.Lastminutereadings = ReadingSlice{}
 	mr.Lastreading = Readings{
 		UniqueId:       fmt.Sprintf(UniqueIdFormat, devid),
-		ModbusDeviceId: devid,
+		DeviceId: devid,
 	}
 }
 

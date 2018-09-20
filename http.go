@@ -1,7 +1,7 @@
 package sdm630
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -22,7 +22,7 @@ const (
 // Generate the embedded assets using https://github.com/aprice/embed
 //go:generate go run github.com/aprice/embed/cmd/embed -c "embed.json"
 
-func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func MkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	loader := GetEmbeddedContent()
 	mainTemplate, err := loader.GetContents("/index.html")
 	if err != nil {
@@ -50,15 +50,13 @@ func MkIndexHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 	})
 }
 
-func MkLastAllValuesHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func MkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.WriteHeader(http.StatusOK)
-		ids := hc.GetSortedIDs()
+		ids := mc.GetSortedIDs()
 		lasts := ReadingSlice{}
 		for _, id := range ids {
-			reading, err := hc.GetLast(id)
+			reading, err := mc.GetLast(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
@@ -73,67 +71,61 @@ func MkLastAllValuesHandler(hc *MeasurementCache) func(http.ResponseWriter, *htt
 			fmt.Fprintf(w, "All meters are inactive.")
 			return
 		}
-		if err := lasts.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(lasts); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
 }
 
-func MkLastSingleValuesHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func MkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		last, err := hc.GetLast(byte(id))
+		last, err := mc.GetLast(byte(id))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		if err := last.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(last); err != nil {
 			log.Printf("Failed to create JSON representation of measurement %s", last.String())
 		}
 	})
 }
 
-func MkLastMinuteAvgSingleHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func MkLastMinuteAvgSingleHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		avg, err := hc.GetMinuteAvg(byte(id))
+		avg, err := mc.GetMinuteAvg(byte(id))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		if err := avg.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(avg); err != nil {
 			log.Printf("Failed to create JSON representation of measurement %s", avg.String())
 		}
 	})
 }
 
-func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func MkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.WriteHeader(http.StatusOK)
-		ids := hc.GetSortedIDs()
+		ids := mc.GetSortedIDs()
 		avgs := ReadingSlice{}
 		for _, id := range ids {
-			reading, err := hc.GetMinuteAvg(id)
+			reading, err := mc.GetMinuteAvg(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
@@ -145,7 +137,7 @@ func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 			fmt.Fprintf(w, "All meters are inactive.")
 			return
 		}
-		if err := avgs.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(avgs); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
@@ -153,10 +145,9 @@ func MkLastMinuteAvgAllHandler(hc *MeasurementCache) func(http.ResponseWriter, *
 
 func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.WriteHeader(http.StatusOK)
-		if err := s.UpdateAndJSON(w); err != nil {
+		s.Update()
+		if err := json.NewEncoder(w).Encode(s); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
@@ -197,10 +188,9 @@ func NewFirehose(inChannel QuerySnipChannel, status *Status, verbose bool) *Fire
 	go func() {
 		for {
 			time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
-			var buffer bytes.Buffer
-			if err := status.UpdateAndJSON(&buffer); err == nil {
-				statusstream <- buffer.String()
-				buffer.Reset()
+			status.Update()
+			if bytes, err := json.Marshal(status); err == nil {
+				statusstream <- string(bytes)
 			}
 		}
 	}()
@@ -226,6 +216,15 @@ func (f *Firehose) GetHandler() func(w http.ResponseWriter, r *http.Request) {
 	return f.lpManager.SubscriptionHandler
 }
 
+// serveJson decorates handler with required headers
+func serveJson(f http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		f(w, r)
+	}
+}
+
 func Run_httpd(
 	mc *MeasurementCache,
 	firehose *Firehose,
@@ -241,11 +240,11 @@ func Run_httpd(
 		GetEmbeddedContent()))
 
 	// api
-	router.HandleFunc("/last", MkLastAllValuesHandler(mc))
-	router.HandleFunc("/last/{id:[0-9]+}", MkLastSingleValuesHandler(mc))
-	router.HandleFunc("/minuteavg", MkLastMinuteAvgAllHandler(mc))
-	router.HandleFunc("/minuteavg/{id:[0-9]+}", MkLastMinuteAvgSingleHandler(mc))
-	router.HandleFunc("/status", MkStatusHandler(s))
+	router.HandleFunc("/last", serveJson(MkLastAllValuesHandler(mc)))
+	router.HandleFunc("/last/{id:[0-9]+}", serveJson(MkLastSingleValuesHandler(mc)))
+	router.HandleFunc("/minuteavg", serveJson(MkLastMinuteAvgAllHandler(mc)))
+	router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(MkLastMinuteAvgSingleHandler(mc)))
+	router.HandleFunc("/status", serveJson(MkStatusHandler(s)))
 
 	// longpoll
 	if firehose != nil {

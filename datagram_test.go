@@ -1,17 +1,18 @@
 package sdm630_test
 
 import (
-	"github.com/gonium/gosdm630"
 	"testing"
 	"time"
+
+	"github.com/gonium/gosdm630"
 )
 
 func TestQuerySnipMerge(t *testing.T) {
 	r := sdm630.Readings{
-		Timestamp:      time.Now(),
-		Unix:           time.Now().Unix(),
-		ModbusDeviceId: 1,
-		UniqueId:       "Instrument1",
+		Timestamp: time.Now(),
+		Unix:      time.Now().Unix(),
+		DeviceId:  1,
+		UniqueId:  "Instrument1",
 		Power: sdm630.ThreePhaseReadings{
 			L1: sdm630.F2fp(1.0), L2: sdm630.F2fp(2.0), L3: sdm630.F2fp(3.0),
 		},
