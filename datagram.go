@@ -263,7 +263,6 @@ type QuerySnip struct {
 	ReadLen       uint16 `json:"-"`
 	Value         float64
 	IEC61850      string
-	Description   string
 	ReadTimestamp time.Time
 	Transform     RTUTransform `json:"-"`
 }
@@ -280,7 +279,7 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 		DeviceId:    q.DeviceId,
 		Value:       q.Value,
 		IEC61850:    q.IEC61850,
-		Description: q.Description,
+		Description: GetIecDescription(q.IEC61850),
 		Timestamp:   q.ReadTimestamp.UnixNano() / 1e6,
 	})
 }

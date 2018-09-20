@@ -24,7 +24,11 @@ func (mqttClient *MqttClient) Run() {
 	for {
 		snip := <-mqttClient.in
 		if mqttClient.verbose {
-			log.Printf("MQTT: got meter data (device %d: data: %s, value: %.3f W, desc: %s)", snip.DeviceId, snip.IEC61850, snip.Value, snip.Description)
+			log.Printf("MQTT: got meter data (device %d: data: %s, value: %.3f W, desc: %s)",
+				snip.DeviceId,
+				snip.IEC61850,
+				snip.Value,
+				GetIecDescription(snip.IEC61850))
 		}
 
 		uniqueID := fmt.Sprintf(UniqueIdFormat, snip.DeviceId)

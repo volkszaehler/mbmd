@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-type MeterType string
 type MeterState uint8
 
 const (
@@ -17,7 +16,6 @@ const (
 )
 
 type Meter struct {
-	Type          MeterType
 	DeviceId      uint8
 	Producer      Producer
 	MeterReadings *MeterReadings
@@ -28,6 +26,7 @@ type Meter struct {
 // Producer is the interface that produces query snips which represent
 // modbus operations
 type Producer interface {
+	GetMeterType() string
 	Produce(devid uint8) []QuerySnip
 	Probe(devid uint8) QuerySnip
 }
@@ -59,18 +58,16 @@ func NewMeterByType(
 		return nil, fmt.Errorf("Unknown meter type %s", typeid)
 	}
 
-	return NewMeter(MeterType(typeid), devid, p, timeToCacheReadings), nil
+	return NewMeter(devid, p, timeToCacheReadings), nil
 }
 
 func NewMeter(
-	typeid MeterType,
 	devid uint8,
 	producer Producer,
 	timeToCacheReadings time.Duration,
 ) *Meter {
 	r := NewMeterReadings(devid, timeToCacheReadings)
 	return &Meter{
-		Type:          typeid,
 		Producer:      producer,
 		DeviceId:      devid,
 		MeterReadings: r,
@@ -104,10 +101,6 @@ func (m *Meter) GetReadableState() string {
 		log.Fatal("Unknown meter state, aborting.")
 	}
 	return retval
-}
-
-func (m *Meter) GetMeterType() MeterType {
-	return m.Type
 }
 
 func (m *Meter) AddSnip(snip QuerySnip) {

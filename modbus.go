@@ -101,8 +101,14 @@ func NewModbusEngine(
 
 func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
 	q.status.IncreaseModbusRequestCounter()
+
 	// update the slave id in the handler
 	q.handler.SlaveId = snip.DeviceId
+
+	if snip.ReadLen <= 0 {
+		log.Fatalf("Invalid meter operation %v.", snip)
+	}
+
 	switch snip.FuncCode {
 	case ReadInputReg:
 		retval, err = q.client.ReadInputRegisters(snip.OpCode, snip.ReadLen)
@@ -112,9 +118,11 @@ func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
 		log.Fatalf("Unknown function code %d - cannot query device.",
 			snip.FuncCode)
 	}
+
 	if err != nil && q.verbose {
 		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", snip.OpCode, err.Error())
 	}
+
 	return retval, err
 }
 
@@ -125,6 +133,7 @@ func (q *ModbusEngine) Transform(
 ) {
 	var previousDeviceId uint8
 	for {
+	PROCESS_READINGS:
 		snip := <-inputStream
 		// The SDM devices need to have a little pause between querying
 		// different devices.
@@ -133,99 +142,93 @@ func (q *ModbusEngine) Transform(
 		}
 		previousDeviceId = snip.DeviceId
 
-		var err error
-		var reading []byte
+		for retryCount := 0; retryCount < MaxRetryCount; retryCount++ {
+			reading, err := q.query(snip)
+			if err == nil {
+				// convert bytes to value
+				snip.Value = snip.Transform(reading)
+				snip.ReadTimestamp = time.Now()
+				outputStream <- snip
 
-		tryCnt := 0
-		for tryCnt = 0; tryCnt < MaxRetryCount; tryCnt++ {
-			reading, err = q.query(snip)
-			if err != nil {
+				// signal ok
+				successSnip := ControlSnip{
+					Type:     CONTROLSNIP_OK,
+					Message:  "OK",
+					DeviceId: snip.DeviceId,
+				}
+				controlStream <- successSnip
+
+				goto PROCESS_READINGS
+			} else {
 				q.status.IncreaseModbusReconnectCounter()
 				log.Printf("Device %d failed to respond - retry attempt %d of %d",
-					snip.DeviceId, tryCnt+1, MaxRetryCount)
+					snip.DeviceId, retryCount+1, MaxRetryCount)
 				time.Sleep(time.Duration(100) * time.Millisecond)
-			} else {
-				break
 			}
 		}
 
-		if tryCnt == MaxRetryCount {
+		// signal error
 			errorSnip := ControlSnip{
 				Type:     CONTROLSNIP_ERROR,
 				Message:  fmt.Sprintf("Device %d did not respond.", snip.DeviceId),
 				DeviceId: snip.DeviceId,
 			}
 			controlStream <- errorSnip
-		} else {
-			// convert bytes to value
-			snip.Value = snip.Transform(reading)
-			snip.ReadTimestamp = time.Now()
-			outputStream <- snip
-
-			successSnip := ControlSnip{
-				Type:     CONTROLSNIP_OK,
-				Message:  "OK",
-				DeviceId: snip.DeviceId,
-			}
-			controlStream <- successSnip
-		}
 	}
 }
 
 func (q *ModbusEngine) Scan() {
-	type Device struct {
+	type DeviceInfo struct {
 		DeviceId   uint8
-		DeviceType MeterType
+		MeterType string
 	}
 
-	devicelist := make([]Device, 0)
+	var deviceId uint8
+	deviceList := make([]DeviceInfo, 0)
 	oldtimeout := q.handler.Timeout
 	q.handler.Timeout = 50 * time.Millisecond
 	log.Printf("Starting bus scan")
 
-	probe := func(meterType MeterType, snip QuerySnip) bool {
+	producers := []Producer{
+		NewSDMProducer(),
+		NewJanitzaProducer(),
+		NewDZGProducer(),
+	}
+
+SCAN:
+	// loop over all valid slave adresses
+	for deviceId = 1; deviceId <= 247; deviceId++ {
+		// give the bus some time to recover before querying the next device
+		time.Sleep(time.Duration(40) * time.Millisecond)
+
+		for _, producer := range producers {
+			snip := producer.Probe(deviceId)
+
 		value, err := q.query(snip)
 		if err == nil {
 			log.Printf("Device %d: %s type device found, %s: %.2f\r\n",
-				snip.DeviceId,
-				meterType,
+					deviceId,
+					producer.GetMeterType(),
 				GetIecDescription(snip.IEC61850),
 				snip.Transform(value))
-			dev := Device{
-				DeviceId:   snip.DeviceId,
-				DeviceType: meterType,
+				dev := DeviceInfo{
+					DeviceId:  deviceId,
+					MeterType: producer.GetMeterType(),
 			}
-			devicelist = append(devicelist, dev)
-			return true
+				deviceList = append(deviceList, dev)
+				continue SCAN
 		}
-		return false
 	}
 
-	// loop over all valid slave adresses
-	var devid uint8
-	for devid = 1; devid <= 247; devid++ {
-		if probe(METERTYPE_SDM, NewSDMProducer().Probe(devid)) {
-			continue
-		}
-		if probe(METERTYPE_JANITZA, NewJanitzaProducer().Probe(devid)) {
-			continue
-		}
-		if probe(METERTYPE_DZG, NewDZGProducer().Probe(devid)) {
-			continue
-		}
-
-		log.Printf("Device %d: n/a\r\n", devid)
-
-		// give the bus some time to recover before querying the next device
-		time.Sleep(time.Duration(40) * time.Millisecond)
+		log.Printf("Device %d: n/a\r\n", deviceId)
 	}
 
 	// restore timeout to old value
 	q.handler.Timeout = oldtimeout
-	log.Printf("Found %d active devices:\r\n", len(devicelist))
-	for _, device := range devicelist {
+	log.Printf("Found %d active devices:\r\n", len(deviceList))
+	for _, device := range deviceList {
 		log.Printf("* slave address %d: type %s\r\n", device.DeviceId,
-			device.DeviceType)
+			device.MeterType)
 	}
 	log.Println("WARNING: This lists only the devices that responded to " +
 		"a known probe request. Devices with different " +

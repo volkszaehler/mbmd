@@ -38,16 +38,19 @@ func NewJanitzaProducer() *JanitzaProducer {
 	return &JanitzaProducer{}
 }
 
+func (p *JanitzaProducer) GetMeterType() string {
+	return METERTYPE_JANITZA
+}
+
 func (p *JanitzaProducer) snip(devid uint8, opcode uint16, iec string) QuerySnip {
 	snip := QuerySnip{
-		DeviceId:    devid,
-		FuncCode:    ReadHoldingReg,
-		OpCode:      opcode,
-		ReadLen:     2,
-		Value:       math.NaN(),
-		IEC61850:    iec,
-		Description: GetIecDescription(iec),
-		Transform:   RTU32ToFloat64,
+		DeviceId:  devid,
+		FuncCode:  ReadHoldingReg,
+		OpCode:    opcode,
+		ReadLen:   2,
+		Value:     math.NaN(),
+		IEC61850:  iec,
+		Transform: RTU32ToFloat64,
 	}
 	return snip
 }
