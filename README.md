@@ -25,6 +25,7 @@ manuals for yourself, I could be wrong):
 | SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
 | Janitza B23-312 | 3 | + | + | + | + | + | + | - | - |
 | DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
+| SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
 
 Please note that voltage, current, power and power factor are always
 reported for each connected phase.
@@ -50,6 +51,9 @@ reported for each connected phase.
  serial number (top right of the device), e.g. 23, and add one (24).
  Assume this is a hexadecimal number and convert it to decimal (36). Use
  this as the meter ID.
+ * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
+ two tariffs, both import and export depending on meter version and compact (4TE). 
+ It's often used with Viessmann heat pumps.
 
 Some of my test devices have been provided by [B+G
 E-Tech](http://bg-etech.de/) - please consider to buy your meter from

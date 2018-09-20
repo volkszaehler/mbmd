@@ -50,6 +50,11 @@ func NewMeterByType(
 		measurements as the other meters. Only limited functionality is 
 		implemented.`)
 		p = NewDZGProducer()
+	case METERTYPE_SBC:
+		log.Println(`WARNING: The SBC ALE3 does not report the same
+		measurements as the other meters. Only limited functionality is 
+		implemented.`)
+		p = NewSBCProducer()
 	default:
 		return nil, fmt.Errorf("Unknown meter type %s", typeid)
 	}
