@@ -40,7 +40,7 @@ type Status struct {
 
 type MeterStatus struct {
 	Id     uint8
-	Type   MeterType
+	Type   string
 	Status string
 }
 
@@ -81,7 +81,7 @@ func (s *Status) Update() {
 	for id, meter := range s.metermap {
 		ms := MeterStatus{
 			Id:     id,
-			Type:   meter.GetMeterType(),
+			Type:   meter.Producer.GetMeterType(),
 			Status: meter.GetReadableState(),
 		}
 

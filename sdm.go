@@ -49,16 +49,19 @@ func NewSDMProducer() *SDMProducer {
 	return &SDMProducer{}
 }
 
+func (p *SDMProducer) GetMeterType() string {
+	return METERTYPE_SDM
+}
+
 func (p *SDMProducer) snip(devid uint8, opcode uint16, iec string) QuerySnip {
 	snip := QuerySnip{
-		DeviceId:    devid,
-		FuncCode:    ReadInputReg,
-		OpCode:      opcode,
-		ReadLen:     2,
-		Value:       math.NaN(),
-		IEC61850:    iec,
-		Description: GetIecDescription(iec),
-		Transform:   RTU32ToFloat64,
+		DeviceId:  devid,
+		FuncCode:  ReadInputReg,
+		OpCode:    opcode,
+		ReadLen:   2,
+		Value:     math.NaN(),
+		IEC61850:  iec,
+		Transform: RTU32ToFloat64,
 	}
 	return snip
 }

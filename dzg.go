@@ -36,6 +36,10 @@ func NewDZGProducer() *DZGProducer {
 	return &DZGProducer{}
 }
 
+func (p *DZGProducer) GetMeterType() string {
+	return METERTYPE_DZG
+}
+
 func (p *DZGProducer) snip(devid uint8, opcode uint16, iec string, scaler ...float64) QuerySnip {
 	transform := RTU32ToFloat64 // default conversion
 	if len(scaler) > 0 {
@@ -43,14 +47,13 @@ func (p *DZGProducer) snip(devid uint8, opcode uint16, iec string, scaler ...flo
 	}
 
 	snip := QuerySnip{
-		DeviceId:    devid,
-		FuncCode:    ReadHoldingReg,
-		OpCode:      opcode,
-		ReadLen:     2,
-		Value:       math.NaN(),
-		IEC61850:    iec,
-		Description: GetIecDescription(iec),
-		Transform:   transform,
+		DeviceId:  devid,
+		FuncCode:  ReadHoldingReg,
+		OpCode:    opcode,
+		ReadLen:   2,
+		Value:     math.NaN(),
+		IEC61850:  iec,
+		Transform: transform,
 	}
 	return snip
 }
