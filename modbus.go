@@ -18,12 +18,13 @@ const (
 )
 
 const (
-	ModbusComset2400_8N1  = 1
-	ModbusComset9600_8N1  = 2
-	ModbusComset19200_8N1 = 3
-	ModbusComset2400_8E1  = 4
-	ModbusComset9600_8E1  = 5
-	ModbusComset19200_8E1 = 6
+	_ = iota
+	ModbusComset2400_8N1
+	ModbusComset9600_8N1
+	ModbusComset19200_8N1
+	ModbusComset2400_8E1
+	ModbusComset9600_8E1
+	ModbusComset19200_8E1
 )
 
 type ModbusEngine struct {
@@ -33,48 +34,34 @@ type ModbusEngine struct {
 	status  *Status
 }
 
-func NewModbusEngine(
-	rtuDevice string,
-	comset int,
-	verbose bool,
-	status *Status,
-) *ModbusEngine {
+func NewRTUClient(rtuDevice string, comset int, verbose bool) *modbus.RTUClientHandler {
 	// Modbus RTU/ASCII
 	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
+
+	rtuclient.Parity = "N"
+	rtuclient.DataBits = 8
+	rtuclient.StopBits = 1
+
 	switch comset {
 	case ModbusComset2400_8N1:
 		rtuclient.BaudRate = 2400
-		rtuclient.DataBits = 8
-		rtuclient.Parity = "N"
-		rtuclient.StopBits = 1
 	case ModbusComset9600_8N1:
 		rtuclient.BaudRate = 9600
-		rtuclient.DataBits = 8
-		rtuclient.Parity = "N"
-		rtuclient.StopBits = 1
 	case ModbusComset19200_8N1:
 		rtuclient.BaudRate = 19200
-		rtuclient.DataBits = 8
-		rtuclient.Parity = "N"
-		rtuclient.StopBits = 1
 	case ModbusComset2400_8E1:
 		rtuclient.BaudRate = 2400
-		rtuclient.DataBits = 8
 		rtuclient.Parity = "E"
-		rtuclient.StopBits = 1
 	case ModbusComset9600_8E1:
 		rtuclient.BaudRate = 9600
-		rtuclient.DataBits = 8
 		rtuclient.Parity = "E"
-		rtuclient.StopBits = 1
 	case ModbusComset19200_8E1:
 		rtuclient.BaudRate = 19200
-		rtuclient.DataBits = 8
 		rtuclient.Parity = "E"
-		rtuclient.StopBits = 1
 	default:
 		log.Fatal("Invalid communication set specified. See -h for help.")
 	}
+
 	rtuclient.Timeout = 300 * time.Millisecond
 	if verbose {
 		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
@@ -89,7 +76,25 @@ func NewModbusEngine(
 	}
 	defer rtuclient.Close()
 
-	mbclient := modbus.NewClient(rtuclient)
+	return rtuclient
+}
+
+func NewModbusEngine(
+	rtuDevice string,
+	comset int,
+	verbose bool,
+	status *Status,
+) *ModbusEngine {
+	var rtuclient *modbus.RTUClientHandler
+	var mbclient modbus.Client
+
+	if rtuDevice == "simulation" {
+		rtuclient = &modbus.RTUClientHandler{}
+		mbclient = NewMockClient(0)
+	} else {
+		rtuclient = NewRTUClient(rtuDevice, comset, verbose)
+		mbclient = modbus.NewClient(rtuclient)
+	}
 
 	return &ModbusEngine{
 		client:  mbclient,
@@ -168,18 +173,18 @@ func (q *ModbusEngine) Transform(
 		}
 
 		// signal error
-			errorSnip := ControlSnip{
-				Type:     CONTROLSNIP_ERROR,
-				Message:  fmt.Sprintf("Device %d did not respond.", snip.DeviceId),
-				DeviceId: snip.DeviceId,
-			}
-			controlStream <- errorSnip
+		errorSnip := ControlSnip{
+			Type:     CONTROLSNIP_ERROR,
+			Message:  fmt.Sprintf("Device %d did not respond.", snip.DeviceId),
+			DeviceId: snip.DeviceId,
+		}
+		controlStream <- errorSnip
 	}
 }
 
 func (q *ModbusEngine) Scan() {
 	type DeviceInfo struct {
-		DeviceId   uint8
+		DeviceId  uint8
 		MeterType string
 	}
 
@@ -204,21 +209,21 @@ SCAN:
 		for _, producer := range producers {
 			snip := producer.Probe(deviceId)
 
-		value, err := q.query(snip)
-		if err == nil {
-			log.Printf("Device %d: %s type device found, %s: %.2f\r\n",
+			value, err := q.query(snip)
+			if err == nil {
+				log.Printf("Device %d: %s type device found, %s: %.2f\r\n",
 					deviceId,
 					producer.GetMeterType(),
-				GetIecDescription(snip.IEC61850),
-				snip.Transform(value))
+					GetIecDescription(snip.IEC61850),
+					snip.Transform(value))
 				dev := DeviceInfo{
 					DeviceId:  deviceId,
 					MeterType: producer.GetMeterType(),
-			}
+				}
 				deviceList = append(deviceList, dev)
 				continue SCAN
+			}
 		}
-	}
 
 		log.Printf("Device %d: n/a\r\n", deviceId)
 	}
