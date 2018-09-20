@@ -1,8 +1,6 @@
 package sdm630
 
 import (
-	"encoding/json"
-	"io"
 	"runtime"
 	"time"
 )
@@ -88,9 +86,4 @@ func (s *Status) Update() {
 		confmeters = append(confmeters, ms)
 	}
 	s.ConfiguredMeters = confmeters
-}
-
-func (s *Status) UpdateAndJSON(w io.Writer) error {
-	s.Update()
-	return json.NewEncoder(w).Encode(s)
 }

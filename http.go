@@ -1,7 +1,6 @@
 package sdm630
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -72,7 +71,7 @@ func MkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *htt
 			fmt.Fprintf(w, "All meters are inactive.")
 			return
 		}
-		if err := lasts.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(lasts); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
@@ -138,7 +137,7 @@ func MkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *
 			fmt.Fprintf(w, "All meters are inactive.")
 			return
 		}
-		if err := avgs.JSON(w); err != nil {
+		if err := json.NewEncoder(w).Encode(avgs); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
@@ -147,7 +146,8 @@ func MkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *
 func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		if err := s.UpdateAndJSON(w); err != nil {
+		s.Update()
+		if err := json.NewEncoder(w).Encode(s); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
@@ -188,10 +188,9 @@ func NewFirehose(inChannel QuerySnipChannel, status *Status, verbose bool) *Fire
 	go func() {
 		for {
 			time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
-			var buffer bytes.Buffer
-			if err := status.UpdateAndJSON(&buffer); err == nil {
-				statusstream <- buffer.String()
-				buffer.Reset()
+			status.Update()
+			if bytes, err := json.Marshal(status); err == nil {
+				statusstream <- string(bytes)
 			}
 		}
 	}()
