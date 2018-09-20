@@ -35,3 +35,5 @@ _testmain.go
 release/
 vendor/
 embeddedassets.go
+
+go.sum
