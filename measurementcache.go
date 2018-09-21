@@ -4,23 +4,49 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"sync"
 	"time"
+
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 type MeasurementCache struct {
-	in             QuerySnipChannel
-	meters         map[uint8]*Meter
-	secondsToStore time.Duration
-	verbose        bool
+	in      QuerySnipChannel
+	meters  map[uint8]MeasurementCacheItem
+	maxAge  time.Duration
+	verbose bool
 }
 
-func NewMeasurementCache(meters map[uint8]*Meter, inChannel QuerySnipChannel, secondsToStore time.Duration, isVerbose bool) *MeasurementCache {
-	return &MeasurementCache{
-		in:             inChannel,
-		meters:         meters,
-		secondsToStore: secondsToStore,
-		verbose:        isVerbose,
+type MeasurementCacheItem struct {
+	*Meter
+	*MeterReadings
+}
+
+func NewMeasurementCache(
+	meters map[uint8]*Meter,
+	inChannel QuerySnipChannel,
+	scheduler *MeterScheduler,
+	maxAge time.Duration,
+	isVerbose bool,
+) *MeasurementCache {
+	items := make(map[uint8]MeasurementCacheItem)
+
+	for _, meter := range meters {
+		items[meter.DeviceId] = MeasurementCacheItem{
+			meter,
+			NewMeterReadings(meter.DeviceId, maxAge),
+		}
 	}
+
+	cache := &MeasurementCache{
+		in:      inChannel,
+		meters:  items,
+		maxAge:  maxAge,
+		verbose: isVerbose,
+	}
+
+	scheduler.SetCache(cache)
+	return cache
 }
 
 func (mc *MeasurementCache) Consume() {
@@ -29,15 +55,25 @@ func (mc *MeasurementCache) Consume() {
 		devid := snip.DeviceId
 		// Search corresponding meter
 		if meter, ok := mc.meters[devid]; ok {
-			// add the snip to the meter's cache
+			// add the snip to the cache
 			meter.AddSnip(snip)
 			if mc.verbose {
-				log.Printf("%s\r\n", meter.MeterReadings.Lastreading.String())
+				log.Printf("%s\r\n", meter.Current)
 			}
 		} else {
 			log.Fatal("Snip for unknown meter received - this should not happen.")
 		}
 	}
+}
+
+// Purge removes accumulated data for specified device
+func (mc *MeasurementCache) Purge(deviceId byte) error {
+	if meter, ok := mc.meters[deviceId]; ok {
+		meter.Purge(deviceId)
+		return nil
+	}
+
+	return fmt.Errorf("No device with id %d available.", deviceId)
 }
 
 func (mc *MeasurementCache) GetSortedIDs() []byte {
@@ -49,55 +85,113 @@ func (mc *MeasurementCache) GetSortedIDs() []byte {
 	return keys
 }
 
-func (mc *MeasurementCache) GetLast(id byte) (*Readings, error) {
-	if meter, ok := mc.meters[id]; ok {
-		if meter.GetState() == METERSTATE_AVAILABLE {
-			return &meter.MeterReadings.Lastreading, nil
+func (mc *MeasurementCache) GetCurrent(deviceId byte) (*Readings, error) {
+	if meter, ok := mc.meters[deviceId]; ok {
+		if meter.GetState() == AVAILABLE {
+			return &meter.Current, nil
 		} else {
-			return nil, fmt.Errorf("Meter %d is not available.", id)
+			return nil, fmt.Errorf("Meter %d is not available.", deviceId)
 		}
 	} else {
-		return nil, fmt.Errorf("No device with id %d available.", id)
+		return nil, fmt.Errorf("No device with id %d available.", deviceId)
 	}
 }
 
-func (mc *MeasurementCache) GetMinuteAvg(id byte) (*Readings, error) {
-	if meter, ok := mc.meters[id]; !ok {
-		return nil, fmt.Errorf("No device with id %d available.", id)
-	} else {
-		if meter.GetState() == METERSTATE_AVAILABLE {
-			measurements := meter.MeterReadings.Lastminutereadings
-			lastminute := measurements.NotOlderThan(time.Now().Add(-1 *
-				time.Minute))
-			var err error
-			var avg Readings
-			for idx, r := range lastminute {
-				if idx == 0 {
-					// This is the first element - initialize our accumulator
-					avg = r
-				} else {
-					avg, err = r.add(&avg)
-					if err != nil {
-						return nil, err
-					}
-				}
+func average(readings ReadingSlice) (*Readings, error) {
+	var avg *Readings
+	var err error
+
+	for idx, r := range readings {
+		if idx == 0 {
+			// This is the first element - initialize our accumulator
+			avg = &r
+		} else {
+			avg, err = r.add(avg)
+			if err != nil {
+				return nil, err
 			}
-			retval := avg.divide(float64(len(lastminute)))
+		}
+	}
+
+	res := avg.divide(float64(len(readings)))
+	return res, nil
+}
+
+func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
+	if meter, ok := mc.meters[deviceId]; ok {
+		if meter.GetState() == AVAILABLE {
+			measurements := meter.Historic
+			lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
+
+			res, err := average(lastminute)
+			if err != nil {
+				return nil, err
+			}
+
 			if mc.verbose {
 				log.Printf("Averaging over %d measurements:\r\n%s\r\n",
-					len(measurements), retval.String())
+					len(measurements), res.String())
 			}
-			return &retval, nil
-		} else { // !METERSTATE_AVAILABLE
-			return nil, fmt.Errorf("Meter %d is not available.", id)
+			return res, nil
 		}
+		return nil, fmt.Errorf("Meter %d is not available.", deviceId)
+	} else {
+		return nil, fmt.Errorf("No device with id %d available.", deviceId)
 	}
 }
 
-// Helper for dealing with Modbus device ids (bytes).
 // ByteSlice attaches the methods of sort.Interface to []byte, sorting in increasing order.
 type ByteSlice []byte
 
 func (s ByteSlice) Len() int           { return len(s) }
 func (s ByteSlice) Less(i, j int) bool { return s[i] < s[j] }
 func (s ByteSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+type MeterReadings struct {
+	Historic ReadingSlice
+	Current  Readings
+	mux      sync.Mutex
+}
+
+func NewMeterReadings(devid uint8, maxAge time.Duration) *MeterReadings {
+	res := &MeterReadings{
+		Historic: ReadingSlice{},
+		Current: Readings{
+			UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
+			DeviceId: devid,
+		},
+	}
+	go func(mr *MeterReadings) {
+		for {
+			time.Sleep(maxAge)
+			mr.mux.Lock()
+			mr.Historic = mr.Historic.NotOlderThan(time.Now().Add(-1 * maxAge))
+			mr.mux.Unlock()
+		}
+	}(res)
+	return res
+}
+
+func (mr *MeterReadings) Purge(devid uint8) {
+	mr.mux.Lock()
+	defer mr.mux.Unlock()
+
+	mr.Historic = ReadingSlice{}
+	mr.Current = Readings{
+		UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
+		DeviceId: devid,
+	}
+}
+
+func (mr *MeterReadings) AddSnip(snip QuerySnip) {
+	mr.mux.Lock()
+	defer mr.mux.Unlock()
+
+	// 1. Merge the snip to the last values.
+	reading := mr.Current
+	reading.MergeSnip(snip)
+
+	// 2. store it
+	mr.Current = reading
+	mr.Historic = append(mr.Historic, reading)
+}

@@ -1,6 +1,8 @@
 package sdm630
 
-import "log"
+import (
+	"log"
+)
 
 var iec = map[string]string{
 	"AmpLocPhsA":       "L1 Current (A)",

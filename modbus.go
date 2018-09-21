@@ -1,20 +1,17 @@
 package sdm630
 
 import (
-	"encoding/binary"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"time"
 
 	"github.com/goburrow/modbus"
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 const (
-	MaxRetryCount  = 5
-	ReadInputReg   = 4
-	ReadHoldingReg = 3
+	MaxRetryCount = 5
 )
 
 const (
@@ -90,7 +87,7 @@ func NewModbusEngine(
 
 	if rtuDevice == "simulation" {
 		rtuclient = &modbus.RTUClientHandler{}
-		mbclient = NewMockClient(0)
+		mbclient = NewMockClient(50) // 50% error rate for testing
 	} else {
 		rtuclient = NewRTUClient(rtuDevice, comset, verbose)
 		mbclient = modbus.NewClient(rtuclient)
@@ -105,7 +102,7 @@ func NewModbusEngine(
 }
 
 func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
-	q.status.IncreaseModbusRequestCounter()
+	q.status.IncreaseRequestCounter()
 
 	// update the slave id in the handler
 	q.handler.SlaveId = snip.DeviceId
@@ -165,7 +162,7 @@ func (q *ModbusEngine) Transform(
 
 				goto PROCESS_READINGS
 			} else {
-				q.status.IncreaseModbusReconnectCounter()
+				q.status.IncreaseReconnectCounter()
 				log.Printf("Device %d failed to respond - retry attempt %d of %d",
 					snip.DeviceId, retryCount+1, MaxRetryCount)
 				time.Sleep(time.Duration(100) * time.Millisecond)
@@ -207,7 +204,8 @@ SCAN:
 		time.Sleep(time.Duration(40) * time.Millisecond)
 
 		for _, producer := range producers {
-			snip := producer.Probe(deviceId)
+			operation := producer.Probe()
+			snip := NewQuerySnip(deviceId, operation)
 
 			value, err := q.query(snip)
 			if err == nil {
@@ -238,46 +236,4 @@ SCAN:
 	log.Println("WARNING: This lists only the devices that responded to " +
 		"a known probe request. Devices with different " +
 		"function code definitions might not be detected.")
-}
-
-// RTUTransform functions convert RTU bytes to meaningful data types.
-type RTUTransform func([]byte) float64
-
-// RTU32ToFloat64 converts 32 bit readings
-func RTU32ToFloat64(b []byte) float64 {
-	bits := binary.BigEndian.Uint32(b)
-	f := math.Float32frombits(bits)
-	return float64(f)
-}
-
-// RTU16ToFloat64 converts 16 bit readings
-func RTU16ToFloat64(b []byte) float64 {
-	u := binary.BigEndian.Uint16(b)
-	return float64(u)
-}
-
-func rtuScaledInt32ToFloat64(b []byte, scalar float64) float64 {
-	unscaled := float64(binary.BigEndian.Uint32(b))
-	f := unscaled / scalar
-	return float64(f)
-}
-
-// MakeRTU32ScaledIntToFloat64 creates a 32 bit scaled reading transform
-func MakeRTU32ScaledIntToFloat64(scalar float64) RTUTransform {
-	return RTUTransform(func(b []byte) float64 {
-		return rtuScaledInt32ToFloat64(b, scalar)
-	})
-}
-
-func rtuScaledInt16ToFloat64(b []byte, scalar float64) float64 {
-	unscaled := float64(binary.BigEndian.Uint16(b))
-	f := unscaled / scalar
-	return float64(f)
-}
-
-// MakeRTU16ScaledIntToFloat64 creates a 16 bit scaled reading transform
-func MakeRTU16ScaledIntToFloat64(scalar float64) RTUTransform {
-	return RTUTransform(func(b []byte) float64 {
-		return rtuScaledInt16ToFloat64(b, scalar)
-	})
 }
