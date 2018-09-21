@@ -12,14 +12,14 @@ import (
 
 type MeasurementCache struct {
 	in      QuerySnipChannel
-	items   map[uint8]MeasurementCacheItem
+	meters  map[uint8]MeasurementCacheItem
 	maxAge  time.Duration
 	verbose bool
 }
 
 type MeasurementCacheItem struct {
-	meter    *Meter
-	readings *MeterReadings
+	*Meter
+	*MeterReadings
 }
 
 func NewMeasurementCache(
@@ -33,14 +33,14 @@ func NewMeasurementCache(
 
 	for _, meter := range meters {
 		items[meter.DeviceId] = MeasurementCacheItem{
-			meter:    meter,
-			readings: NewMeterReadings(meter.DeviceId, maxAge),
+			meter,
+			NewMeterReadings(meter.DeviceId, maxAge),
 		}
 	}
 
 	cache := &MeasurementCache{
 		in:      inChannel,
-		items:   items,
+		meters:  items,
 		maxAge:  maxAge,
 		verbose: isVerbose,
 	}
@@ -54,11 +54,11 @@ func (mc *MeasurementCache) Consume() {
 		snip := <-mc.in
 		devid := snip.DeviceId
 		// Search corresponding meter
-		if item, ok := mc.items[devid]; ok {
+		if meter, ok := mc.meters[devid]; ok {
 			// add the snip to the cache
-			item.readings.AddSnip(snip)
+			meter.AddSnip(snip)
 			if mc.verbose {
-				log.Printf("%s\r\n", item.readings.Current)
+				log.Printf("%s\r\n", meter.Current)
 			}
 		} else {
 			log.Fatal("Snip for unknown meter received - this should not happen.")
@@ -66,9 +66,10 @@ func (mc *MeasurementCache) Consume() {
 	}
 }
 
+// Purge removes accumulated data for specified device
 func (mc *MeasurementCache) Purge(deviceId byte) error {
-	if item, ok := mc.items[deviceId]; ok {
-		item.readings.Purge(deviceId)
+	if meter, ok := mc.meters[deviceId]; ok {
+		meter.Purge(deviceId)
 		return nil
 	}
 
@@ -77,7 +78,7 @@ func (mc *MeasurementCache) Purge(deviceId byte) error {
 
 func (mc *MeasurementCache) GetSortedIDs() []byte {
 	var keys ByteSlice
-	for k, _ := range mc.items {
+	for k, _ := range mc.meters {
 		keys = append(keys, k)
 	}
 	sort.Sort(keys)
@@ -85,9 +86,9 @@ func (mc *MeasurementCache) GetSortedIDs() []byte {
 }
 
 func (mc *MeasurementCache) GetCurrent(deviceId byte) (*Readings, error) {
-	if item, ok := mc.items[deviceId]; ok {
-		if item.meter.GetState() == AVAILABLE {
-			return &item.readings.Current, nil
+	if meter, ok := mc.meters[deviceId]; ok {
+		if meter.GetState() == AVAILABLE {
+			return &meter.Current, nil
 		} else {
 			return nil, fmt.Errorf("Meter %d is not available.", deviceId)
 		}
@@ -117,9 +118,9 @@ func average(readings ReadingSlice) (*Readings, error) {
 }
 
 func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
-	if item, ok := mc.items[deviceId]; ok {
-		if item.meter.GetState() == AVAILABLE {
-			measurements := item.readings.Historic
+	if meter, ok := mc.meters[deviceId]; ok {
+		if meter.GetState() == AVAILABLE {
+			measurements := meter.Historic
 			lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
 
 			res, err := average(lastminute)
