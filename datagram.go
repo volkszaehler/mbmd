@@ -3,10 +3,12 @@ package sdm630
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"math"
+	"sync"
 	"time"
+
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 // UniqueIdFormat is a format string for unique ID generation.
@@ -16,13 +18,7 @@ import (
 // before any additional goroutines are started.
 var UniqueIdFormat string = "Instrument%d"
 
-/***
- * This is the definition of the Reading datatype. It combines readings
- * of all measurements into one data structure
- */
-
-type ReadingChannel chan Readings
-
+// Readings combines readings of all measurements into one data structure
 type Readings struct {
 	UniqueId    string
 	Timestamp   time.Time
@@ -53,24 +49,22 @@ type ThreePhaseReadings struct {
 	L3 *float64
 }
 
-// Helper: Converts float64 to *float64
+// F2fp helper converts float64 to *float64
 func F2fp(x float64) *float64 {
 	if math.IsNaN(x) {
 		return nil
-	} else {
-		return &x
 	}
+	return &x
 }
 
-// Helper: Converts *float64 to float64, correctly handles uninitialized
+// Fp2f helper converts *float64 to float64, correctly handles uninitialized
 // variables
 func Fp2f(x *float64) float64 {
 	if x == nil {
 		// this is not initialized yet - return NaN
-		return math.Log(-1.0)
-	} else {
-		return *x
+		return math.NaN()
 	}
+	return *x
 }
 
 func (r *Readings) String() string {
@@ -102,213 +96,94 @@ func (r *Readings) IsOlderThan(ts time.Time) (retval bool) {
 	return r.Timestamp.Before(ts)
 }
 
+func tpAdd(lhs ThreePhaseReadings, rhs ThreePhaseReadings) ThreePhaseReadings {
+	res := ThreePhaseReadings{
+		L1: F2fp(Fp2f(lhs.L1) + Fp2f(rhs.L1)),
+		L2: F2fp(Fp2f(lhs.L2) + Fp2f(rhs.L2)),
+		L3: F2fp(Fp2f(lhs.L3) + Fp2f(rhs.L3)),
+	}
+	return res
+}
+
 /*
 * Adds two readings. The individual values are added except for
 * the time: the latter of the two times is copied over to the result
  */
-func (lhs *Readings) add(rhs *Readings) (retval Readings, err error) {
+func (lhs *Readings) add(rhs *Readings) (*Readings, error) {
 	if lhs.DeviceId != rhs.DeviceId {
-		return Readings{}, fmt.Errorf(
+		return &Readings{}, fmt.Errorf(
 			"Cannot add readings of different devices - got IDs %d and %d",
 			lhs.DeviceId, rhs.DeviceId)
-	} else {
-		retval = Readings{
-			UniqueId: lhs.UniqueId,
-			DeviceId: lhs.DeviceId,
-			Voltage: ThreePhaseReadings{
-				L1: F2fp(Fp2f(lhs.Voltage.L1) + Fp2f(rhs.Voltage.L1)),
-				L2: F2fp(Fp2f(lhs.Voltage.L2) + Fp2f(rhs.Voltage.L2)),
-				L3: F2fp(Fp2f(lhs.Voltage.L3) + Fp2f(rhs.Voltage.L3)),
-			},
-			Current: ThreePhaseReadings{
-				L1: F2fp(Fp2f(lhs.Current.L1) + Fp2f(rhs.Current.L1)),
-				L2: F2fp(Fp2f(lhs.Current.L2) + Fp2f(rhs.Current.L2)),
-				L3: F2fp(Fp2f(lhs.Current.L3) + Fp2f(rhs.Current.L3)),
-			},
-			Power: ThreePhaseReadings{
-				L1: F2fp(Fp2f(lhs.Power.L1) + Fp2f(rhs.Power.L1)),
-				L2: F2fp(Fp2f(lhs.Power.L2) + Fp2f(rhs.Power.L2)),
-				L3: F2fp(Fp2f(lhs.Power.L3) + Fp2f(rhs.Power.L3)),
-			},
-			Cosphi: ThreePhaseReadings{
-				L1: F2fp(Fp2f(lhs.Cosphi.L1) + Fp2f(rhs.Cosphi.L1)),
-				L2: F2fp(Fp2f(lhs.Cosphi.L2) + Fp2f(rhs.Cosphi.L2)),
-				L3: F2fp(Fp2f(lhs.Cosphi.L3) + Fp2f(rhs.Cosphi.L3)),
-			},
-			Import: ThreePhaseReadings{
-				L1: F2fp(Fp2f(lhs.Import.L1) + Fp2f(rhs.Import.L1)),
-				L2: F2fp(Fp2f(lhs.Import.L2) + Fp2f(rhs.Import.L2)),
-				L3: F2fp(Fp2f(lhs.Import.L3) + Fp2f(rhs.Import.L3)),
-			},
-			TotalImport: F2fp(Fp2f(lhs.TotalImport) +
-				Fp2f(rhs.TotalImport)),
-			Export: ThreePhaseReadings{
-				L1: F2fp(Fp2f(lhs.Export.L1) + Fp2f(rhs.Export.L1)),
-				L2: F2fp(Fp2f(lhs.Export.L2) + Fp2f(rhs.Export.L2)),
-				L3: F2fp(Fp2f(lhs.Export.L3) + Fp2f(rhs.Export.L3)),
-			},
-			TotalExport: F2fp(Fp2f(lhs.TotalExport) +
-				Fp2f(rhs.TotalExport)),
-			THD: THDInfo{
-				VoltageNeutral: ThreePhaseReadings{
-					L1: F2fp(Fp2f(lhs.THD.VoltageNeutral.L1) +
-						Fp2f(rhs.THD.VoltageNeutral.L1)),
-					L2: F2fp(Fp2f(lhs.THD.VoltageNeutral.L2) +
-						Fp2f(rhs.THD.VoltageNeutral.L2)),
-					L3: F2fp(Fp2f(lhs.THD.VoltageNeutral.L3) +
-						Fp2f(rhs.THD.VoltageNeutral.L3)),
-				},
-				AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) +
-					Fp2f(rhs.THD.AvgVoltageNeutral)),
-			},
-			Frequency: F2fp(Fp2f(lhs.Frequency) +
-				Fp2f(rhs.Frequency)),
-		}
-		if lhs.Timestamp.After(rhs.Timestamp) {
-			retval.Timestamp = lhs.Timestamp
-			retval.Unix = lhs.Unix
-		} else {
-			retval.Timestamp = rhs.Timestamp
-			retval.Unix = rhs.Unix
-		}
-		return retval, nil
 	}
+
+	res := &Readings{
+		UniqueId: lhs.UniqueId,
+		DeviceId: lhs.DeviceId,
+		Voltage:  tpAdd(lhs.Voltage, rhs.Voltage),
+		Current:  tpAdd(lhs.Current, rhs.Current),
+		Power:    tpAdd(lhs.Power, rhs.Power),
+		Cosphi:   tpAdd(lhs.Cosphi, rhs.Cosphi),
+		Import:   tpAdd(lhs.Import, rhs.Import),
+		TotalImport: F2fp(Fp2f(lhs.TotalImport) +
+			Fp2f(rhs.TotalImport)),
+		Export: tpAdd(lhs.Export, rhs.Export),
+		TotalExport: F2fp(Fp2f(lhs.TotalExport) +
+			Fp2f(rhs.TotalExport)),
+		THD: THDInfo{
+			VoltageNeutral: tpAdd(lhs.THD.VoltageNeutral, rhs.THD.VoltageNeutral),
+			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) +
+				Fp2f(rhs.THD.AvgVoltageNeutral)),
+		},
+		Frequency: F2fp(Fp2f(lhs.Frequency) +
+			Fp2f(rhs.Frequency)),
+	}
+
+	if lhs.Timestamp.After(rhs.Timestamp) {
+		res.Timestamp = lhs.Timestamp
+		res.Unix = lhs.Unix
+	} else {
+		res.Timestamp = rhs.Timestamp
+		res.Unix = rhs.Unix
+	}
+
+	return res, nil
+}
+
+func tpDivide(lhs ThreePhaseReadings, scaler float64) ThreePhaseReadings {
+	res := ThreePhaseReadings{
+		L1: F2fp(Fp2f(lhs.L1) / scaler),
+		L2: F2fp(Fp2f(lhs.L2) / scaler),
+		L3: F2fp(Fp2f(lhs.L3) / scaler),
+	}
+	return res
 }
 
 /*
-* Divide a reading by an integer. The individual values are divided except
-* for the time: it is simply copied over to the result
+ * Divide a reading by an integer. The individual values are divided except
+ * for the time: it is simply copied over to the result
  */
-func (lhs *Readings) divide(scalar float64) (retval Readings) {
-	retval = Readings{
-		Voltage: ThreePhaseReadings{
-			L1: F2fp(Fp2f(lhs.Voltage.L1) / scalar),
-			L2: F2fp(Fp2f(lhs.Voltage.L2) / scalar),
-			L3: F2fp(Fp2f(lhs.Voltage.L3) / scalar),
-		},
-		Current: ThreePhaseReadings{
-			L1: F2fp(Fp2f(lhs.Current.L1) / scalar),
-			L2: F2fp(Fp2f(lhs.Current.L2) / scalar),
-			L3: F2fp(Fp2f(lhs.Current.L3) / scalar),
-		},
-		Power: ThreePhaseReadings{
-			L1: F2fp(Fp2f(lhs.Power.L1) / scalar),
-			L2: F2fp(Fp2f(lhs.Power.L2) / scalar),
-			L3: F2fp(Fp2f(lhs.Power.L3) / scalar),
-		},
-		Cosphi: ThreePhaseReadings{
-			L1: F2fp(Fp2f(lhs.Cosphi.L1) / scalar),
-			L2: F2fp(Fp2f(lhs.Cosphi.L2) / scalar),
-			L3: F2fp(Fp2f(lhs.Cosphi.L3) / scalar),
-		},
-		Import: ThreePhaseReadings{
-			L1: F2fp(Fp2f(lhs.Import.L1) / scalar),
-			L2: F2fp(Fp2f(lhs.Import.L2) / scalar),
-			L3: F2fp(Fp2f(lhs.Import.L3) / scalar),
-		},
-		TotalImport: F2fp(Fp2f(lhs.TotalImport) / scalar),
-		Export: ThreePhaseReadings{
-			L1: F2fp(Fp2f(lhs.Export.L1) / scalar),
-			L2: F2fp(Fp2f(lhs.Export.L2) / scalar),
-			L3: F2fp(Fp2f(lhs.Export.L3) / scalar),
-		},
-		TotalExport: F2fp(Fp2f(lhs.TotalExport) / scalar),
+func (lhs *Readings) divide(scaler float64) *Readings {
+	res := &Readings{
+		Timestamp: lhs.Timestamp,
+		Unix:      lhs.Unix,
+		DeviceId:  lhs.DeviceId,
+		UniqueId:  lhs.UniqueId,
+
+		Voltage:     tpDivide(lhs.Voltage, scaler),
+		Current:     tpDivide(lhs.Current, scaler),
+		Power:       tpDivide(lhs.Power, scaler),
+		Cosphi:      tpDivide(lhs.Cosphi, scaler),
+		Import:      tpDivide(lhs.Import, scaler),
+		TotalImport: F2fp(Fp2f(lhs.TotalImport) / scaler),
+		Export:      tpDivide(lhs.Export, scaler),
+		TotalExport: F2fp(Fp2f(lhs.TotalExport) / scaler),
 		THD: THDInfo{
-			VoltageNeutral: ThreePhaseReadings{
-				L1: F2fp(Fp2f(lhs.THD.VoltageNeutral.L1) / scalar),
-				L2: F2fp(Fp2f(lhs.THD.VoltageNeutral.L2) / scalar),
-				L3: F2fp(Fp2f(lhs.THD.VoltageNeutral.L3) / scalar),
-			},
-			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) /
-				scalar),
+			VoltageNeutral:    tpDivide(lhs.THD.VoltageNeutral, scaler),
+			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) / scaler),
 		},
-		Frequency: F2fp(Fp2f(lhs.Frequency) / scalar),
+		Frequency: F2fp(Fp2f(lhs.Frequency) / scaler),
 	}
-	retval.Timestamp = lhs.Timestamp
-	retval.Unix = lhs.Unix
-	retval.DeviceId = lhs.DeviceId
-	retval.UniqueId = lhs.UniqueId
-	return retval
-}
-
-// ReadingSlice is a type alias for a slice of readings.
-type ReadingSlice []Readings
-
-func (r ReadingSlice) JSON(w io.Writer) error {
-	return json.NewEncoder(w).Encode(r)
-}
-
-func (r ReadingSlice) NotOlderThan(ts time.Time) (retval ReadingSlice) {
-	retval = ReadingSlice{}
-	for _, reading := range r {
-		if !reading.IsOlderThan(ts) {
-			retval = append(retval, reading)
-		}
-	}
-	return retval
-}
-
-// QuerySnip encapsulates modbus query targets.
-type QuerySnip struct {
-	DeviceId      uint8
-	FuncCode      uint8  `json:"-"`
-	OpCode        uint16 `json:"-"`
-	ReadLen       uint16 `json:"-"`
-	Value         float64
-	IEC61850      string
-	ReadTimestamp time.Time
-	Transform     RTUTransform `json:"-"`
-}
-
-// MarshalJSON converts QuerySnip to json, replacing ReadTimestamp with unix time representation
-func (q *QuerySnip) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		DeviceId    uint8
-		Value       float64
-		IEC61850    string
-		Description string
-		Timestamp   int64
-	}{
-		DeviceId:  q.DeviceId,
-		Value:     q.Value,
-		IEC61850:    q.IEC61850,
-		Description: GetIecDescription(q.IEC61850),
-		Timestamp: q.ReadTimestamp.UnixNano() / 1e6,
-	})
-}
-
-type QuerySnipChannel chan QuerySnip
-
-// QuerySnipBroadcaster acts as hub for broadcating QuerySnips
-// to multiple recipients
-type QuerySnipBroadcaster struct {
-	in         QuerySnipChannel
-	recipients []QuerySnipChannel
-}
-
-// NewQuerySnipBroadcaster creates QuerySnipBroadcaster
-func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
-	return &QuerySnipBroadcaster{
-		in:         in,
-		recipients: make([]QuerySnipChannel, 0),
-	}
-}
-
-// Run executes the broadcaster
-func (b *QuerySnipBroadcaster) Run() {
-	for {
-		s := <-b.in
-		for _, recipient := range b.recipients {
-			recipient <- s
-		}
-	}
-}
-
-// Attach creates and attaches a QuerySnipChannel to the broadcaster
-func (b *QuerySnipBroadcaster) Attach() QuerySnipChannel {
-	channel := make(QuerySnipChannel)
-	b.recipients = append(b.recipients, channel)
-	return channel
+	return res
 }
 
 // MergeSnip adds the values represented by the QuerySnip to the
@@ -376,13 +251,102 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 	case "Freq":
 		r.Frequency = &q.Value
 	default:
-		log.Fatalf("Cannot merge unknown snip type - snip is %+v", q)
+		log.Fatalf("Cannot merge unknown IEC: %+v", q)
 	}
 }
 
+// ReadingSlice is a type alias for a slice of readings.
+type ReadingSlice []Readings
+
+func (r ReadingSlice) NotOlderThan(ts time.Time) (res ReadingSlice) {
+	res = ReadingSlice{}
+	for _, reading := range r {
+		if !reading.IsOlderThan(ts) {
+			res = append(res, reading)
+		}
+	}
+	return res
+}
+
+// QuerySnip encapsulates modbus query targets.
+type QuerySnip struct {
+	DeviceId      uint8
+	Operation     `json:"-"`
+	Value         float64
+	ReadTimestamp time.Time
+}
+
+func NewQuerySnip(deviceId uint8, operation Operation) QuerySnip {
+	snip := QuerySnip{
+		DeviceId:  deviceId,
+		Operation: operation,
+		Value:     math.NaN(),
+	}
+	return snip
+}
+
+// String representation
 func (q QuerySnip) String() string {
-	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode %x: Value: %.3f",
-		q.DeviceId, q.FuncCode, q.OpCode, q.Value)
+	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode: %x, IEC: %s, Value: %.3f",
+		q.DeviceId, q.FuncCode, q.OpCode, q.IEC61850, q.Value)
+}
+
+// MarshalJSON converts QuerySnip to json, replacing ReadTimestamp with unix time representation
+func (q *QuerySnip) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		DeviceId    uint8
+		Value       float64
+		IEC61850    string
+		Description string
+		Timestamp   int64
+	}{
+		DeviceId:    q.DeviceId,
+		Value:       q.Value,
+		IEC61850:    q.IEC61850,
+		Description: GetIecDescription(q.IEC61850),
+		Timestamp:   q.ReadTimestamp.UnixNano() / 1e6,
+	})
+}
+
+type QuerySnipChannel chan QuerySnip
+
+// QuerySnipBroadcaster acts as hub for broadcating QuerySnips
+// to multiple recipients
+type QuerySnipBroadcaster struct {
+	in         QuerySnipChannel
+	recipients []QuerySnipChannel
+	mux        sync.Mutex // guard recipients
+}
+
+// NewQuerySnipBroadcaster creates QuerySnipBroadcaster
+func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
+	return &QuerySnipBroadcaster{
+		in:         in,
+		recipients: make([]QuerySnipChannel, 0),
+	}
+}
+
+// Run executes the broadcaster
+func (b *QuerySnipBroadcaster) Run() {
+	for {
+		s := <-b.in
+		b.mux.Lock()
+		for _, recipient := range b.recipients {
+			recipient <- s
+		}
+		b.mux.Unlock()
+	}
+}
+
+// Attach creates and attaches a QuerySnipChannel to the broadcaster
+func (b *QuerySnipBroadcaster) Attach() QuerySnipChannel {
+	channel := make(QuerySnipChannel)
+
+	b.mux.Lock()
+	b.recipients = append(b.recipients, channel)
+	b.mux.Unlock()
+
+	return channel
 }
 
 // ControlSnip wraps control information like query success or failure.

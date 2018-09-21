@@ -126,11 +126,15 @@ func (h *SocketHub) Run() {
 				close(client.send)
 			}
 		case obj := <-h.in:
-			b, _ := json.Marshal(&obj) // use pointer to invoke QuerySnip.MarshalJSON
-			h.Broadcast(b)
+			if len(h.clients) > 0 {
+				b, _ := json.Marshal(&obj) // use pointer to invoke QuerySnip.MarshalJSON
+				h.Broadcast(b)
+			}
 		case obj := <-h.statusStream:
-			b, _ := json.Marshal(obj)
-			h.Broadcast(b)
+			if len(h.clients) > 0 {
+				b, _ := json.Marshal(obj)
+				h.Broadcast(b)
+			}
 		}
 	}
 }
