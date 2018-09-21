@@ -15,10 +15,10 @@ type MemoryStatus struct {
 }
 
 type ModbusStatus struct {
-	TotalRequests        uint64
-	RequestRatePerMinute float64
-	TotalErrors          uint64
-	ErrorRatePerMinute   float64
+	Requests          uint64
+	RequestsPerMinute float64
+	Errors            uint64
+	ErrorsPerMinute   float64
 }
 
 func CurrentMemoryStatus() MemoryStatus {
@@ -54,10 +54,10 @@ func NewStatus(metermap map[uint8]*Meter) *Status {
 		Goroutines:    runtime.NumGoroutine(),
 		UptimeSeconds: 1,
 		Modbus: ModbusStatus{
-			TotalRequests:        0,
-			RequestRatePerMinute: 0,
-			TotalErrors:          0,
-			ErrorRatePerMinute:   0,
+			Requests:          0,
+			RequestsPerMinute: 0,
+			Errors:            0,
+			ErrorsPerMinute:   0,
 		},
 		ConfiguredMeters: nil,
 		metermap:         metermap,
@@ -67,13 +67,13 @@ func NewStatus(metermap map[uint8]*Meter) *Status {
 func (s *Status) IncreaseRequestCounter() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
-	s.Modbus.TotalRequests++
+	s.Modbus.Requests++
 }
 
 func (s *Status) IncreaseReconnectCounter() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
-	s.Modbus.TotalErrors++
+	s.Modbus.Errors++
 }
 
 func (s *Status) Update() {
@@ -83,10 +83,8 @@ func (s *Status) Update() {
 	s.Memory = CurrentMemoryStatus()
 	s.Goroutines = runtime.NumGoroutine()
 	s.UptimeSeconds = time.Since(s.Starttime).Seconds()
-	s.Modbus.ErrorRatePerMinute =
-		float64(s.Modbus.TotalErrors) / (s.UptimeSeconds / 60)
-	s.Modbus.RequestRatePerMinute =
-		float64(s.Modbus.TotalRequests) / (s.UptimeSeconds / 60)
+	s.Modbus.ErrorsPerMinute = float64(s.Modbus.Errors) / (s.UptimeSeconds / 60)
+	s.Modbus.RequestsPerMinute = float64(s.Modbus.Requests) / (s.UptimeSeconds / 60)
 
 	var confmeters []MeterStatus
 	for id, meter := range s.metermap {
