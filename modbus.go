@@ -102,7 +102,7 @@ func NewModbusEngine(
 }
 
 func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
-	q.status.IncreaseModbusRequestCounter()
+	q.status.IncreaseRequestCounter()
 
 	// update the slave id in the handler
 	q.handler.SlaveId = snip.DeviceId
@@ -162,7 +162,7 @@ func (q *ModbusEngine) Transform(
 
 				goto PROCESS_READINGS
 			} else {
-				q.status.IncreaseModbusReconnectCounter()
+				q.status.IncreaseReconnectCounter()
 				log.Printf("Device %d failed to respond - retry attempt %d of %d",
 					snip.DeviceId, retryCount+1, MaxRetryCount)
 				time.Sleep(time.Duration(100) * time.Millisecond)
