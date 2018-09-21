@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"sync"
 	"time"
 
 	. "github.com/gonium/gosdm630/internal/meters"
@@ -314,6 +315,7 @@ type QuerySnipChannel chan QuerySnip
 type QuerySnipBroadcaster struct {
 	in         QuerySnipChannel
 	recipients []QuerySnipChannel
+	mux        sync.Mutex // guard recipients
 }
 
 // NewQuerySnipBroadcaster creates QuerySnipBroadcaster
@@ -328,16 +330,22 @@ func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
 func (b *QuerySnipBroadcaster) Run() {
 	for {
 		s := <-b.in
+		b.mux.Lock()
 		for _, recipient := range b.recipients {
 			recipient <- s
 		}
+		b.mux.Unlock()
 	}
 }
 
 // Attach creates and attaches a QuerySnipChannel to the broadcaster
 func (b *QuerySnipBroadcaster) Attach() QuerySnipChannel {
 	channel := make(QuerySnipChannel)
+
+	b.mux.Lock()
 	b.recipients = append(b.recipients, channel)
+	b.mux.Unlock()
+
 	return channel
 }
 

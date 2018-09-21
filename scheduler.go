@@ -71,14 +71,14 @@ func (q *MeterScheduler) supervisor() {
 	for {
 		for _, meter := range q.meters {
 			if meter.GetState() == UNAVAILABLE {
-				log.Printf("Attempting to ping unavailable meter %d", meter.DeviceId)
+				log.Printf("Attempting to ping unavailable device %d", meter.DeviceId)
 				// inject probe snip - the re-enabling logic is in Run()
 				operation := meter.Producer.Probe()
 				snip := NewQuerySnip(meter.DeviceId, operation)
 				q.out <- snip
 			}
 		}
-		time.Sleep(15 * time.Minute)
+		time.Sleep(1 * time.Minute)
 	}
 }
 
@@ -96,7 +96,7 @@ func (q *MeterScheduler) Run() {
 			switch controlSnip.Type {
 			case CONTROLSNIP_ERROR:
 				// search meter and deactivate it...
-				log.Printf("Failure - deactivating meter %d: %s",
+				log.Printf("Device %d failed terminally due to: %s",
 					controlSnip.DeviceId, controlSnip.Message)
 				if meter, ok := q.meters[controlSnip.DeviceId]; ok {
 					state := meter.GetState()
@@ -112,7 +112,7 @@ func (q *MeterScheduler) Run() {
 				// search meter and reactivate it...
 				if meter, ok := q.meters[controlSnip.DeviceId]; ok {
 					if meter.GetState() != AVAILABLE {
-						log.Printf("Reactivating meter %d", controlSnip.DeviceId)
+						log.Printf("Reactivating device %d", controlSnip.DeviceId)
 						meter.UpdateState(AVAILABLE)
 					}
 				} else {

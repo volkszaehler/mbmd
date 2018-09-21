@@ -1,7 +1,9 @@
 package sdm630
 
 import (
+	"encoding/json"
 	"runtime"
+	"sync"
 	"time"
 
 	. "github.com/gonium/gosdm630/internal/meters"
@@ -36,6 +38,7 @@ type Status struct {
 	Modbus           ModbusStatus
 	ConfiguredMeters []MeterStatus
 	metermap         map[uint8]*Meter
+	mux              sync.RWMutex `json:"-"`
 }
 
 type MeterStatus struct {
@@ -62,14 +65,21 @@ func NewStatus(metermap map[uint8]*Meter) *Status {
 }
 
 func (s *Status) IncreaseRequestCounter() {
-	s.Modbus.TotalRequests = s.Modbus.TotalRequests + 1
+	s.mux.Lock()
+	defer s.mux.Unlock()
+	s.Modbus.TotalRequests++
 }
 
 func (s *Status) IncreaseReconnectCounter() {
-	s.Modbus.TotalErrors = s.Modbus.TotalErrors + 1
+	s.mux.Lock()
+	defer s.mux.Unlock()
+	s.Modbus.TotalErrors++
 }
 
 func (s *Status) Update() {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
 	s.Memory = CurrentMemoryStatus()
 	s.Goroutines = runtime.NumGoroutine()
 	s.UptimeSeconds = time.Since(s.Starttime).Seconds()
@@ -77,6 +87,7 @@ func (s *Status) Update() {
 		float64(s.Modbus.TotalErrors) / (s.UptimeSeconds / 60)
 	s.Modbus.RequestRatePerMinute =
 		float64(s.Modbus.TotalRequests) / (s.UptimeSeconds / 60)
+
 	var confmeters []MeterStatus
 	for id, meter := range s.metermap {
 		ms := MeterStatus{
@@ -88,4 +99,14 @@ func (s *Status) Update() {
 		confmeters = append(confmeters, ms)
 	}
 	s.ConfiguredMeters = confmeters
+}
+
+// MarshalJSON will syncronize access to the status object
+// see http://choly.ca/post/go-json-marshalling/ for avoiding infinite loop
+func (s *Status) MarshalJSON() ([]byte, error) {
+	s.mux.RLock()
+	defer s.mux.RUnlock()
+
+	type Alias Status
+	return json.Marshal(&struct{ *Alias }{Alias: (*Alias)(s)})
 }

@@ -87,7 +87,7 @@ func NewModbusEngine(
 
 	if rtuDevice == "simulation" {
 		rtuclient = &modbus.RTUClientHandler{}
-		mbclient = NewMockClient(0)
+		mbclient = NewMockClient(50) // 50% error rate for testing
 	} else {
 		rtuclient = NewRTUClient(rtuDevice, comset, verbose)
 		mbclient = modbus.NewClient(rtuclient)
