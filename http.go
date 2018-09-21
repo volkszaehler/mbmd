@@ -56,7 +56,7 @@ func MkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *htt
 		ids := mc.GetSortedIDs()
 		lasts := ReadingSlice{}
 		for _, id := range ids {
-			reading, err := mc.GetLast(id)
+			reading, err := mc.GetCurrent(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
@@ -85,7 +85,7 @@ func MkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		last, err := mc.GetLast(byte(id))
+		last, err := mc.GetCurrent(byte(id))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
