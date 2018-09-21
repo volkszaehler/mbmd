@@ -95,8 +95,8 @@ func (r *Readings) IsOlderThan(ts time.Time) (retval bool) {
 	return r.Timestamp.Before(ts)
 }
 
-func tpAdd(lhs *ThreePhaseReadings, rhs *ThreePhaseReadings) *ThreePhaseReadings {
-	res := &ThreePhaseReadings{
+func tpAdd(lhs ThreePhaseReadings, rhs ThreePhaseReadings) ThreePhaseReadings {
+	res := ThreePhaseReadings{
 		L1: F2fp(Fp2f(lhs.L1) + Fp2f(rhs.L1)),
 		L2: F2fp(Fp2f(lhs.L2) + Fp2f(rhs.L2)),
 		L3: F2fp(Fp2f(lhs.L3) + Fp2f(rhs.L3)),
@@ -108,9 +108,9 @@ func tpAdd(lhs *ThreePhaseReadings, rhs *ThreePhaseReadings) *ThreePhaseReadings
 * Adds two readings. The individual values are added except for
 * the time: the latter of the two times is copied over to the result
  */
-func (lhs *Readings) add(rhs *Readings) (res *Readings, err error) {
+func (lhs *Readings) add(rhs *Readings) (*Readings, error) {
 	if lhs.DeviceId != rhs.DeviceId {
-		return Readings{}, fmt.Errorf(
+		return &Readings{}, fmt.Errorf(
 			"Cannot add readings of different devices - got IDs %d and %d",
 			lhs.DeviceId, rhs.DeviceId)
 	}
@@ -148,8 +148,8 @@ func (lhs *Readings) add(rhs *Readings) (res *Readings, err error) {
 	return res, nil
 }
 
-func tpDivide(lhs *ThreePhaseReadings, scaler float64) *ThreePhaseReadings {
-	res := &ThreePhaseReadings{
+func tpDivide(lhs ThreePhaseReadings, scaler float64) ThreePhaseReadings {
+	res := ThreePhaseReadings{
 		L1: F2fp(Fp2f(lhs.L1) / scaler),
 		L2: F2fp(Fp2f(lhs.L2) / scaler),
 		L3: F2fp(Fp2f(lhs.L3) / scaler),
@@ -250,7 +250,7 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 	case "Freq":
 		r.Frequency = &q.Value
 	default:
-		log.Fatalf("Cannot merge unknown snip type - snip is %+v", q)
+		log.Fatalf("Cannot merge unknown IEC: %+v", q)
 	}
 }
 
@@ -270,9 +270,8 @@ func (r ReadingSlice) NotOlderThan(ts time.Time) (res ReadingSlice) {
 // QuerySnip encapsulates modbus query targets.
 type QuerySnip struct {
 	DeviceId      uint8
-	Operation     Operation `json:"-"`
+	Operation     `json:"-"`
 	Value         float64
-	IEC61850      string
 	ReadTimestamp time.Time
 }
 
@@ -287,8 +286,8 @@ func NewQuerySnip(deviceId uint8, operation Operation) QuerySnip {
 
 // String representation
 func (q QuerySnip) String() string {
-	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode %x: Value: %.3f",
-		q.DeviceId, q.Operation.FuncCode, q.Operation.OpCode, q.Value)
+	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode: %x, IEC: %s, Value: %.3f",
+		q.DeviceId, q.FuncCode, q.OpCode, q.IEC61850, q.Value)
 }
 
 // MarshalJSON converts QuerySnip to json, replacing ReadTimestamp with unix time representation

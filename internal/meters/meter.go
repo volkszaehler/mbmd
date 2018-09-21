@@ -93,10 +93,6 @@ func (m *Meter) UpdateState(newstate MeterState) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 	m.state = newstate
-	// @TODO
-	if newstate == UNAVAILABLE {
-		m.MeterReadings.Purge(m.DeviceId)
-	}
 }
 
 func (m *Meter) GetState() MeterState {

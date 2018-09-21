@@ -11,13 +11,12 @@ type MeterReadings struct {
 }
 
 func NewMeterReadings(devid uint8, maxAge time.Duration) *MeterReadings {
-	reading := Readings{
-		UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
-		DeviceId: devid,
-	}
-	res = &MeterReadings{
+	res := &MeterReadings{
 		Historic: ReadingSlice{},
-		Current:  reading,
+		Current: Readings{
+			UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
+			DeviceId: devid,
+		},
 	}
 	go func() {
 		for {

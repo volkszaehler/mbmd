@@ -107,23 +107,22 @@ func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
 	// update the slave id in the handler
 	q.handler.SlaveId = snip.DeviceId
 
-	op := snip.Operation
-	if op.ReadLen <= 0 {
+	if snip.ReadLen <= 0 {
 		log.Fatalf("Invalid meter operation %v.", snip)
 	}
 
-	switch op.FuncCode {
+	switch snip.FuncCode {
 	case ReadInputReg:
-		retval, err = q.client.ReadInputRegisters(op.OpCode, op.ReadLen)
+		retval, err = q.client.ReadInputRegisters(snip.OpCode, snip.ReadLen)
 	case ReadHoldingReg:
-		retval, err = q.client.ReadHoldingRegisters(op.OpCode, op.ReadLen)
+		retval, err = q.client.ReadHoldingRegisters(snip.OpCode, snip.ReadLen)
 	default:
 		log.Fatalf("Unknown function code %d - cannot query device.",
-			op.FuncCode)
+			snip.FuncCode)
 	}
 
 	if err != nil && q.verbose {
-		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", op.OpCode, err.Error())
+		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", snip.OpCode, err.Error())
 	}
 
 	return retval, err
@@ -149,7 +148,7 @@ func (q *ModbusEngine) Transform(
 			reading, err := q.query(snip)
 			if err == nil {
 				// convert bytes to value
-				snip.Value = snip.Operation.Transform(reading)
+				snip.Value = snip.Transform(reading)
 				snip.ReadTimestamp = time.Now()
 				outputStream <- snip
 
@@ -214,7 +213,7 @@ SCAN:
 					deviceId,
 					producer.GetMeterType(),
 					GetIecDescription(snip.IEC61850),
-					snip.Operation.Transform(value))
+					snip.Transform(value))
 				dev := DeviceInfo{
 					DeviceId:  deviceId,
 					MeterType: producer.GetMeterType(),

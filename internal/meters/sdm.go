@@ -51,53 +51,52 @@ func (p *SDMProducer) GetMeterType() string {
 	return METERTYPE_SDM
 }
 
-func (p *SDMProducer) op(opcode uint16, iec string) Operation {
-	op := Operation{
+func (p *SDMProducer) snip(opcode uint16, iec string) Operation {
+	return Operation{
 		FuncCode:  ReadInputReg,
 		OpCode:    opcode,
 		ReadLen:   2,
 		IEC61850:  iec,
 		Transform: RTU32ToFloat64,
 	}
-	return op
 }
 
 func (p *SDMProducer) Probe() Operation {
-	return p.op(OpCodeSDML1Voltage, "VolLocPhsA")
+	return p.snip(OpCodeSDML1Voltage, "VolLocPhsA")
 }
 
 func (p *SDMProducer) Produce() (res []Operation) {
-	res = append(res, p.op(OpCodeSDML1Voltage, "VolLocPhsA"))
-	res = append(res, p.op(OpCodeSDML2Voltage, "VolLocPhsB"))
-	res = append(res, p.op(OpCodeSDML3Voltage, "VolLocPhsC"))
-	res = append(res, p.op(OpCodeSDML1Current, "AmpLocPhsA"))
-	res = append(res, p.op(OpCodeSDML2Current, "AmpLocPhsB"))
-	res = append(res, p.op(OpCodeSDML3Current, "AmpLocPhsC"))
+	res = append(res, p.snip(OpCodeSDML1Voltage, "VolLocPhsA"))
+	res = append(res, p.snip(OpCodeSDML2Voltage, "VolLocPhsB"))
+	res = append(res, p.snip(OpCodeSDML3Voltage, "VolLocPhsC"))
+	res = append(res, p.snip(OpCodeSDML1Current, "AmpLocPhsA"))
+	res = append(res, p.snip(OpCodeSDML2Current, "AmpLocPhsB"))
+	res = append(res, p.snip(OpCodeSDML3Current, "AmpLocPhsC"))
 
-	res = append(res, p.op(OpCodeSDML1Power, "WLocPhsA"))
-	res = append(res, p.op(OpCodeSDML2Power, "WLocPhsB"))
-	res = append(res, p.op(OpCodeSDML3Power, "WLocPhsC"))
+	res = append(res, p.snip(OpCodeSDML1Power, "WLocPhsA"))
+	res = append(res, p.snip(OpCodeSDML2Power, "WLocPhsB"))
+	res = append(res, p.snip(OpCodeSDML3Power, "WLocPhsC"))
 
-	res = append(res, p.op(OpCodeSDML1Cosphi, "AngLocPhsA"))
-	res = append(res, p.op(OpCodeSDML2Cosphi, "AngLocPhsB"))
-	res = append(res, p.op(OpCodeSDML3Cosphi, "AngLocPhsC"))
+	res = append(res, p.snip(OpCodeSDML1Cosphi, "AngLocPhsA"))
+	res = append(res, p.snip(OpCodeSDML2Cosphi, "AngLocPhsB"))
+	res = append(res, p.snip(OpCodeSDML3Cosphi, "AngLocPhsC"))
 
-	res = append(res, p.op(OpCodeSDML1Import, "TotkWhImportPhsA"))
-	res = append(res, p.op(OpCodeSDML2Import, "TotkWhImportPhsB"))
-	res = append(res, p.op(OpCodeSDML3Import, "TotkWhImportPhsC"))
-	res = append(res, p.op(OpCodeSDMTotalImport, "TotkWhImport"))
+	res = append(res, p.snip(OpCodeSDML1Import, "TotkWhImportPhsA"))
+	res = append(res, p.snip(OpCodeSDML2Import, "TotkWhImportPhsB"))
+	res = append(res, p.snip(OpCodeSDML3Import, "TotkWhImportPhsC"))
+	res = append(res, p.snip(OpCodeSDMTotalImport, "TotkWhImport"))
 
-	res = append(res, p.op(OpCodeSDML1Export, "TotkWhExportPhsA"))
-	res = append(res, p.op(OpCodeSDML2Export, "TotkWhExportPhsB"))
-	res = append(res, p.op(OpCodeSDML3Export, "TotkWhExportPhsC"))
-	res = append(res, p.op(OpCodeSDMTotalExport, "TotkWhExport"))
+	res = append(res, p.snip(OpCodeSDML1Export, "TotkWhExportPhsA"))
+	res = append(res, p.snip(OpCodeSDML2Export, "TotkWhExportPhsB"))
+	res = append(res, p.snip(OpCodeSDML3Export, "TotkWhExportPhsC"))
+	res = append(res, p.snip(OpCodeSDMTotalExport, "TotkWhExport"))
 
-	res = append(res, p.op(OpCodeSDML1THDVoltageNeutral, "ThdVolPhsA"))
-	res = append(res, p.op(OpCodeSDML2THDVoltageNeutral, "ThdVolPhsB"))
-	res = append(res, p.op(OpCodeSDML3THDVoltageNeutral, "ThdVolPhsC"))
-	res = append(res, p.op(OpCodeSDMAvgTHDVoltageNeutral, "ThdVol"))
+	res = append(res, p.snip(OpCodeSDML1THDVoltageNeutral, "ThdVolPhsA"))
+	res = append(res, p.snip(OpCodeSDML2THDVoltageNeutral, "ThdVolPhsB"))
+	res = append(res, p.snip(OpCodeSDML3THDVoltageNeutral, "ThdVolPhsC"))
+	res = append(res, p.snip(OpCodeSDMAvgTHDVoltageNeutral, "ThdVol"))
 
-	res = append(res, p.op(OpCodeSDMFrequency, "Freq"))
+	res = append(res, p.snip(OpCodeSDMFrequency, "Freq"))
 
 	return res
 }

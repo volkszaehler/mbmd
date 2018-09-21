@@ -45,7 +45,7 @@ func (p *SBCProducer) GetMeterType() string {
 	return METERTYPE_SBC
 }
 
-func (p *SBCProducer) op(opcode uint16, iec string, readlen uint16) Operation {
+func (p *SBCProducer) snip(opcode uint16, iec string, readlen uint16) Operation {
 	return Operation{
 		FuncCode: ReadHoldingReg,
 		OpCode:   opcode,
@@ -55,54 +55,54 @@ func (p *SBCProducer) op(opcode uint16, iec string, readlen uint16) Operation {
 }
 
 // op16 creates modbus operation for single register
-func (p *SBCProducer) op16(opcode uint16, iec string, scaler ...float64) Operation {
-	op := p.op(opcode, iec, 1)
+func (p *SBCProducer) snip16(opcode uint16, iec string, scaler ...float64) Operation {
+	snip := p.snip(opcode, iec, 1)
 
-	op.Transform = RTU16ToFloat64 // default conversion
+	snip.Transform = RTU16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		op.Transform = MakeRTU16ScaledIntToFloat64(scaler[0])
+		snip.Transform = MakeRTU16ScaledIntToFloat64(scaler[0])
 	}
 
-	return op
+	return snip
 }
 
 // op32 creates modbus operation for double register
-func (p *SBCProducer) op32(opcode uint16, iec string, scaler ...float64) Operation {
-	op := p.op(opcode, iec, 2)
+func (p *SBCProducer) snip32(opcode uint16, iec string, scaler ...float64) Operation {
+	snip := p.snip(opcode, iec, 2)
 
-	op.Transform = RTU32ToFloat64 // default conversion
+	snip.Transform = RTU32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		op.Transform = MakeRTU32ScaledIntToFloat64(scaler[0])
+		snip.Transform = MakeRTU32ScaledIntToFloat64(scaler[0])
 	}
 
-	return op
+	return snip
 }
 
 func (p *SBCProducer) Probe() Operation {
-	return p.op16(OpCodeSaiaL1Voltage, "VolLocPhsA")
+	return p.snip16(OpCodeSaiaL1Voltage, "VolLocPhsA")
 }
 
 func (p *SBCProducer) Produce() (res []Operation) {
-	res = append(res, p.op16(OpCodeSaiaL1Voltage, "VolLocPhsA"))
-	res = append(res, p.op16(OpCodeSaiaL2Voltage, "VolLocPhsB"))
-	res = append(res, p.op16(OpCodeSaiaL3Voltage, "VolLocPhsC"))
+	res = append(res, p.snip16(OpCodeSaiaL1Voltage, "VolLocPhsA"))
+	res = append(res, p.snip16(OpCodeSaiaL2Voltage, "VolLocPhsB"))
+	res = append(res, p.snip16(OpCodeSaiaL3Voltage, "VolLocPhsC"))
 
-	res = append(res, p.op16(OpCodeSaiaL1Current, "AmpLocPhsA", 10))
-	res = append(res, p.op16(OpCodeSaiaL2Current, "AmpLocPhsB", 10))
-	res = append(res, p.op16(OpCodeSaiaL3Current, "AmpLocPhsC", 10))
+	res = append(res, p.snip16(OpCodeSaiaL1Current, "AmpLocPhsA", 10))
+	res = append(res, p.snip16(OpCodeSaiaL2Current, "AmpLocPhsB", 10))
+	res = append(res, p.snip16(OpCodeSaiaL3Current, "AmpLocPhsC", 10))
 
-	res = append(res, p.op16(OpCodeSaiaL1Power, "WLocPhsA", 100))
-	res = append(res, p.op16(OpCodeSaiaL2Power, "WLocPhsB", 100))
-	res = append(res, p.op16(OpCodeSaiaL3Power, "WLocPhsC", 100))
+	res = append(res, p.snip16(OpCodeSaiaL1Power, "WLocPhsA", 100))
+	res = append(res, p.snip16(OpCodeSaiaL2Power, "WLocPhsB", 100))
+	res = append(res, p.snip16(OpCodeSaiaL3Power, "WLocPhsC", 100))
 
-	res = append(res, p.op16(OpCodeSaiaL1Cosphi, "AngLocPhsA", 100))
-	res = append(res, p.op16(OpCodeSaiaL2Cosphi, "AngLocPhsB", 100))
-	res = append(res, p.op16(OpCodeSaiaL3Cosphi, "AngLocPhsC", 100))
+	res = append(res, p.snip16(OpCodeSaiaL1Cosphi, "AngLocPhsA", 100))
+	res = append(res, p.snip16(OpCodeSaiaL2Cosphi, "AngLocPhsB", 100))
+	res = append(res, p.snip16(OpCodeSaiaL3Cosphi, "AngLocPhsC", 100))
 
-	// res = append(res, p.op16(OpCodeSaiaTotalPower, "WLoc", 100))
+	// res = append(res, p.snip16(OpCodeSaiaTotalPower, "WLoc", 100))
 
-	res = append(res, p.op32(OpCodeSaiaTotalImport, "TotkWhImport", 100))
-	res = append(res, p.op32(OpCodeSaiaTotalExport, "TotkWhExport", 100))
+	res = append(res, p.snip32(OpCodeSaiaTotalImport, "TotkWhImport", 100))
+	res = append(res, p.snip32(OpCodeSaiaTotalExport, "TotkWhExport", 100))
 
 	return res
 }

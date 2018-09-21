@@ -11,6 +11,7 @@ type MeterScheduler struct {
 	out     QuerySnipChannel
 	control ControlSnipChannel
 	meters  map[uint8]*Meter
+	mc      *MeasurementCache
 }
 
 func NewMeterScheduler(
@@ -45,6 +46,10 @@ func SetupScheduler(meters map[uint8]*Meter, qe *ModbusEngine) (*MeterScheduler,
 	)
 
 	return scheduler, queryengine2tee
+}
+
+func (q *MeterScheduler) SetCache(mc *MeasurementCache) {
+	q.mc = mc
 }
 
 func (q *MeterScheduler) produceSnips(out QuerySnipChannel) {
@@ -90,11 +95,16 @@ func (q *MeterScheduler) Run() {
 		case controlSnip := <-q.control:
 			switch controlSnip.Type {
 			case CONTROLSNIP_ERROR:
+				// search meter and deactivate it...
 				log.Printf("Failure - deactivating meter %d: %s",
 					controlSnip.DeviceId, controlSnip.Message)
-				// search meter and deactivate it...
 				if meter, ok := q.meters[controlSnip.DeviceId]; ok {
+					state := meter.GetState()
 					meter.UpdateState(UNAVAILABLE)
+					if state == AVAILABLE && q.mc != nil {
+						// purge cache if present
+						q.mc.Purge(meter.DeviceId)
+					}
 				} else {
 					log.Fatal("Internal device id mismatch - this should not happen!")
 				}

@@ -21,7 +21,13 @@ type MeasurementCacheItem struct {
 	readings *MeterReadings
 }
 
-func NewMeasurementCache(meters map[uint8]*Meter, inChannel QuerySnipChannel, maxAge time.Duration, isVerbose bool) *MeasurementCache {
+func NewMeasurementCache(
+	meters map[uint8]*Meter,
+	inChannel QuerySnipChannel,
+	scheduler *MeterScheduler,
+	maxAge time.Duration,
+	isVerbose bool,
+) *MeasurementCache {
 	items := make(map[uint8]MeasurementCacheItem)
 
 	for _, meter := range meters {
@@ -31,12 +37,15 @@ func NewMeasurementCache(meters map[uint8]*Meter, inChannel QuerySnipChannel, ma
 		}
 	}
 
-	return &MeasurementCache{
+	cache := &MeasurementCache{
 		in:      inChannel,
 		items:   items,
 		maxAge:  maxAge,
 		verbose: isVerbose,
 	}
+
+	scheduler.SetCache(cache)
+	return cache
 }
 
 func (mc *MeasurementCache) Consume() {
@@ -53,6 +62,15 @@ func (mc *MeasurementCache) Consume() {
 		} else {
 			log.Fatal("Snip for unknown meter received - this should not happen.")
 		}
+	}
+}
+
+func (mc *MeasurementCache) Purge(deviceId byte) error {
+	if item, ok := mc.items[deviceId]; ok {
+		item.readings.Purge(deviceId)
+		return nil
+	} else {
+		return fmt.Errorf("No device with id %d available.", deviceId)
 	}
 }
 
@@ -78,15 +96,15 @@ func (mc *MeasurementCache) GetLast(deviceId byte) (*Readings, error) {
 }
 
 func average(readings ReadingSlice) (*Readings, error) {
-	var avg Readings
+	var avg *Readings
 	var err error
 
 	for idx, r := range readings {
 		if idx == 0 {
 			// This is the first element - initialize our accumulator
-			avg = r
+			avg = &r
 		} else {
-			avg, err = r.add(&avg)
+			avg, err = r.add(avg)
 			if err != nil {
 				return nil, err
 			}
@@ -94,7 +112,7 @@ func average(readings ReadingSlice) (*Readings, error) {
 	}
 
 	res := avg.divide(float64(len(readings)))
-	return &res, nil
+	return res, nil
 }
 
 func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
