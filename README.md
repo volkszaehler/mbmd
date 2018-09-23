@@ -52,7 +52,7 @@ reported for each connected phase.
  Assume this is a hexadecimal number and convert it to decimal (36). Use
  this as the meter ID.
  * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
- two tariffs, both import and export depending on meter version and compact (4TE). 
+ two tariffs, both import and export depending on meter version and compact (4TE).
  It's often used with Viessmann heat pumps.
 
 Some of my test devices have been provided by [B+G
@@ -94,7 +94,7 @@ installation, a shielded CAT5 cable seems adequate)
 First, you should integrate the meter into your fuse box. Please ask a
 professional to do this for you - I don't want you to hurt yourself!
 Refer to the meter installation manual on how to do this. You need to
-set the MODBUS communication parameters to ``9600 8N1``. 
+set the MODBUS communication parameters to ``9600 8N1``.
 After this you need to connect a RS485 adaptor to the meter. This is
 how I did the wiring:
 
@@ -226,7 +226,7 @@ A typical invocation looks like this:
 
     $ ./bin/sdm630 -s /dev/ttyUSB0 -d janitza:26,sdm:1
     2017/01/25 16:34:26 Connecting to RTU via /dev/ttyUSB0
-    2017/01/25 16:34:26 Starting API httpd at :8080
+    2017/01/25 16:34:26 Starting API at :8080
 
 This call queries a Janitza B23 meter with ID 26 and an Eastron SDM
 meter at ID 1. It . If you use the ``-v`` commandline switch you can see
@@ -307,7 +307,7 @@ which one replied correctly:
 
 # API
 
-## Rest API 
+## Rest API
 
 GoSDM provides a convenient REST API. Supported endpoints are:
 
@@ -559,10 +559,10 @@ subcommand:
 ````
 
 The ``sdm630_logger`` tool is still under development and lacks certain
-features: 
+features:
 
 * The storage functions are rather inefficient and require a lot of
-storage. 
+storage.
 * The TSV export currently only exports the power readings.
 
 
