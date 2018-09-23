@@ -131,7 +131,7 @@ func main() {
 		)
 		go mc.Consume()
 
-		sdm630.Run_httpd(
+		Run_httpd(
 			mc,
 			firehose,
 			hub,
