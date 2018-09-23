@@ -1,16 +1,25 @@
 body {
   padding-top: 5rem;
 }
-@media (min-width: 576px) {
-  .container > div {
-    padding: 3rem 1.5rem;
-  }
+.container > div {
+	padding-top: 3rem;
+	padding-bottom: 3rem;
 }
-.metertable {
-  padding: 3rem 1.5rem;
+/* bigger container for smaller viewports */
+@media (max-width: 768px) {
+	.container {
+		width: 100%!important;
+		max-width: 9999px!important;
+	}
+	.container > div {
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
+}
+table {
   text-align: left;
 }
 /* omit first th/td per row */
-.metertable th + th, .metertable td + td {
+table th + th, table td + td {
   text-align: right;
 }

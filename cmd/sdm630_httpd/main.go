@@ -131,8 +131,7 @@ func main() {
 		)
 		go mc.Consume()
 
-		log.Printf("Starting API httpd at %s", c.String("url"))
-		Run_httpd(
+		sdm630.Run_httpd(
 			mc,
 			firehose,
 			hub,

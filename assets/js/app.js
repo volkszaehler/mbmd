@@ -75,7 +75,7 @@ function meterUpdate(data) {
 	var iec61850 = data["IEC61850"]
 	var reading = data["Value"].toFixed(2)
 	// put into statusline
-	meterapp.message = "Received " + id + " / " + reading + " - " + iec61850
+	meterapp.message = "Received #" + id + " / " + iec61850 + ": " + reading
 	// update data table
 	var datadict = meterapp.meters[id]
 	if (!datadict) {

@@ -232,6 +232,8 @@ func Run_httpd(
 	s *Status,
 	url string,
 ) {
+	log.Printf("Starting API at %s", url)
+
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static

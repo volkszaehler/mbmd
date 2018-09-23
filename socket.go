@@ -104,13 +104,17 @@ func NewSocketHub(inChannel QuerySnipChannel, status *Status) *SocketHub {
 	}
 }
 
-func (h *SocketHub) Broadcast(message []byte) {
-	for client := range h.clients {
-		select {
-		case client.send <- message:
-		default:
-			close(client.send)
-			delete(h.clients, client)
+func (h *SocketHub) Broadcast(i interface{}) {
+	if len(h.clients) > 0 {
+		message, _ := json.Marshal(i)
+
+		for client := range h.clients {
+			select {
+			case client.send <- message:
+			default:
+				close(client.send)
+				delete(h.clients, client)
+			}
 		}
 	}
 }
@@ -126,15 +130,9 @@ func (h *SocketHub) Run() {
 				close(client.send)
 			}
 		case obj := <-h.in:
-			if len(h.clients) > 0 {
-				b, _ := json.Marshal(&obj) // use pointer to invoke QuerySnip.MarshalJSON
-				h.Broadcast(b)
-			}
+			h.Broadcast(obj)
 		case obj := <-h.statusStream:
-			if len(h.clients) > 0 {
-				b, _ := json.Marshal(obj)
-				h.Broadcast(b)
-			}
+			h.Broadcast(obj)
 		}
 	}
 }
