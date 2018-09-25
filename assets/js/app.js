@@ -24,6 +24,9 @@ var statusapp = new Vue({
 	}
 })
 
+var fixed = d3.format("~.2f")
+var si = d3.format("~s")
+
 $().ready(function () {
 	connectSocket();
 });
@@ -73,9 +76,9 @@ function meterUpdate(data) {
 	// extract the last update
 	var id = data["DeviceId"]
 	var iec61850 = data["IEC61850"]
-	var reading = data["Value"].toFixed(2)
+	var reading = fixed(data["Value"])
 	// put into statusline
-	meterapp.message = "Received #" + id + " / " + iec61850 + ": " + reading
+	meterapp.message = "Received #" + id + " / " + iec61850 + ": " + si(reading)
 	// update data table
 	var datadict = meterapp.meters[id]
 	if (!datadict) {
