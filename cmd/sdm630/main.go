@@ -202,7 +202,6 @@ func main() {
 		)
 		go mc.Consume()
 
-		log.Printf("Starting API httpd at %s", c.String("url"))
 		Run_httpd(
 			mc,
 			firehose,
