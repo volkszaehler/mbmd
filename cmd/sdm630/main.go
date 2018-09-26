@@ -138,7 +138,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("Error parsing device id %s: %s. See -h for help.", meterdef, err.Error())
 			}
-			meter, err := NewMeterByType(metertype, uint8(id), DEFAULT_METER_STORE_SECONDS)
+			meter, err := NewMeterByType(metertype, uint8(id))
 			if err != nil {
 				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
 			}

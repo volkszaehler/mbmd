@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 	"sync"
-	"time"
 )
 
 const (
@@ -51,11 +50,8 @@ type Producer interface {
 	Probe() Operation
 }
 
-func NewMeterByType(
-	typeid string,
-	devid uint8,
-	timeToCacheReadings time.Duration,
-) (*Meter, error) {
+// NewMeterByType meter factory
+func NewMeterByType(typeid string, devid uint8) (*Meter, error) {
 	var p Producer
 	typeid = strings.ToUpper(typeid)
 
