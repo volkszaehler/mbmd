@@ -73,7 +73,7 @@ func (mc *MeasurementCache) Purge(deviceId byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("No device with id %d available.", deviceId)
+	return fmt.Errorf("Device with id %d does not exist.", deviceId)
 }
 
 func (mc *MeasurementCache) GetSortedIDs() []byte {
@@ -89,32 +89,10 @@ func (mc *MeasurementCache) GetCurrent(deviceId byte) (*Readings, error) {
 	if meter, ok := mc.meters[deviceId]; ok {
 		if meter.GetState() == AVAILABLE {
 			return &meter.Current, nil
-		} else {
-			return nil, fmt.Errorf("Meter %d is not available.", deviceId)
 		}
-	} else {
-		return nil, fmt.Errorf("No device with id %d available.", deviceId)
+		return nil, fmt.Errorf("Device %d is not available.", deviceId)
 	}
-}
-
-func average(readings ReadingSlice) (*Readings, error) {
-	var avg *Readings
-	var err error
-
-	for idx, r := range readings {
-		if idx == 0 {
-			// This is the first element - initialize our accumulator
-			avg = &r
-		} else {
-			avg, err = r.add(avg)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	res := avg.divide(float64(len(readings)))
-	return res, nil
+	return nil, fmt.Errorf("Device %d does not exist.", deviceId)
 }
 
 func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
@@ -123,7 +101,7 @@ func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
 			measurements := meter.Historic
 			lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
 
-			res, err := average(lastminute)
+			res, err := lastminute.Average()
 			if err != nil {
 				return nil, err
 			}
@@ -134,10 +112,9 @@ func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
 			}
 			return res, nil
 		}
-		return nil, fmt.Errorf("Meter %d is not available.", deviceId)
-	} else {
-		return nil, fmt.Errorf("No device with id %d available.", deviceId)
+		return nil, fmt.Errorf("Device %d is not available.", deviceId)
 	}
+	return nil, fmt.Errorf("Device %d does not exist.", deviceId)
 }
 
 // ByteSlice attaches the methods of sort.Interface to []byte, sorting in increasing order.
