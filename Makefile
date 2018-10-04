@@ -1,6 +1,7 @@
 PWD := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BIN := $(PWD)/bin
 BUILD := GOBIN=$(BIN) go install ./...
+GOPATH := $(shell go env GOPATH)
 
 all: build
 
@@ -14,7 +15,7 @@ binaries:
 
 assets:
 	@echo "Generating embedded assets"
-	@embed http.go
+	@$(GOPATH)/bin/embed http.go
 
 release: test clean assets
 	@./build.sh
