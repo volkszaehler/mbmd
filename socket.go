@@ -106,7 +106,10 @@ func NewSocketHub(inChannel QuerySnipChannel, status *Status) *SocketHub {
 
 func (h *SocketHub) Broadcast(i interface{}) {
 	if len(h.clients) > 0 {
-		message, _ := json.Marshal(i)
+		message, err := json.Marshal(i)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		for client := range h.clients {
 			select {
@@ -130,7 +133,8 @@ func (h *SocketHub) Run() {
 				close(client.send)
 			}
 		case obj := <-h.in:
-			h.Broadcast(obj)
+			// make sure to pass a pointer or MarshalJSON won't work
+			h.Broadcast(&obj)
 		case obj := <-h.statusStream:
 			h.Broadcast(obj)
 		}

@@ -10,7 +10,7 @@ import (
 	. "github.com/gonium/gosdm630/internal/meters"
 )
 
-// QuerySnip encapsulates modbus query targets.
+// QuerySnip represents modbus query operations
 type QuerySnip struct {
 	DeviceId      uint8
 	Operation     `json:"-"`
@@ -28,7 +28,7 @@ func NewQuerySnip(deviceId uint8, operation Operation) QuerySnip {
 }
 
 // String representation
-func (q QuerySnip) String() string {
+func (q *QuerySnip) String() string {
 	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode: %x, IEC: %s, Value: %.3f",
 		q.DeviceId, q.FuncCode, q.OpCode, q.IEC61850, q.Value)
 }

@@ -17,7 +17,7 @@ type Operation struct {
 	OpCode    uint16
 	ReadLen   uint16
 	IEC61850  string
-	Transform RTUTransform
+	Transform RTUTransform `json:"-"`
 }
 
 type MeterState uint8
