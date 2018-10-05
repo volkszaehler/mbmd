@@ -30,8 +30,8 @@
   version = "1.1.1"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/goburrow/modbus"
+  version = "0.1"
 
 [[constraint]]
   name = "github.com/gorilla/websocket"

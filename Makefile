@@ -9,28 +9,30 @@ build: assets binaries
 
 binaries:
 	@echo "Building for host platform"
-	@$(BUILD)
+	$(BUILD)
 	@echo "Created binaries:"
 	@ls -1 bin
 
 assets:
 	@echo "Generating embedded assets"
-	@$(GOPATH)/bin/embed http.go
+	$(GOPATH)/bin/embed http.go
 
 release: test clean assets
-	@./build.sh
+	./build.sh
 
 test:
 	@echo "Running testsuite"
-	@go test
+	env GO111MODULE=on go test
 
 clean:
-	@rm -rf bin/ pkg/ *.zip
+	rm -rf bin/ pkg/ *.zip
 
 dep:
-	@echo "Installing embed tool"
-	@go get -u github.com/aprice/embed/cmd/embed
 	@echo "Installing vendor dependencies"
-	@dep ensure
+	dep ensure
+
+	@echo "Installing embed tool"
+	env GO111MODULE=on go get github.com/aprice/embed/cmd/embed
+	env GO111MODULE=on go install github.com/aprice/embed/cmd/embed
 
 .PHONY: all build binaries assets release test clean dep

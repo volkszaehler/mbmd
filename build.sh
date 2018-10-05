@@ -17,7 +17,7 @@ function build {
 	if [ ! -z "$(ls -A .)" ]; then rm *; fi
 	for i in $CMDS; do
 		# echo GOOS=$GOOS GOARCH=$GOARCH GOARM=$GOARM go build $i
-		GOOS=$GOOS GOARCH=$GOARCH GOARM=$GOARM go build $i
+		GOOS=$GOOS GOARCH=$GOARCH GOARM=$GOARM GO111MODULE=on go build $i
 	done
 	cd ..
 
