@@ -75,37 +75,37 @@ func main() {
 		cli.StringFlag{
 			Name:  "broker, b",
 			Value: "",
-			Usage: "MQTT: The broker URI. ex: tcp://10.10.1.1:1883",
+			Usage: "MQTT: Broker URI. ex: tcp://10.10.1.1:1883",
 			// Destination: &mqttBroker,
 		},
 		cli.StringFlag{
 			Name:  "topic, t",
 			Value: "sdm630",
-			Usage: "MQTT: The topic name to/from which to publish/subscribe (optional)",
+			Usage: "MQTT: Topic name to/from which to publish/subscribe (optional)",
 			// Destination: &mqttTopic,
 		},
 		cli.StringFlag{
 			Name:  "user",
 			Value: "",
-			Usage: "MQTT: The User (optional)",
+			Usage: "MQTT: User (optional)",
 			// Destination: &mqttUser,
 		},
 		cli.StringFlag{
 			Name:  "password",
 			Value: "",
-			Usage: "MQTT: The password (optional)",
+			Usage: "MQTT: Password (optional)",
 			// Destination: &mqttPassword,
 		},
 		cli.StringFlag{
 			Name:  "clientid, i",
 			Value: "sdm630",
-			Usage: "MQTT: The ClientID (optional)",
+			Usage: "MQTT: ClientID (optional)",
 			// Destination: &mqttClientID,
 		},
 		cli.IntFlag{
 			Name:  "rate, r",
 			Value: 0,
-			Usage: "MQTT: The maximum update rate (default 0, i.e. unlimited) (after a push we will ignore more data from same device and channel for this time)",
+			Usage: "MQTT: Maximum update rate (default 0, i.e. unlimited) (after a push we will ignore more data from same device and channel for this time)",
 			// Destination: &mqttRate,
 		},
 		cli.BoolFlag{
@@ -116,7 +116,7 @@ func main() {
 		cli.IntFlag{
 			Name:  "qos, q",
 			Value: 0,
-			Usage: "MQTT: The Quality of Service 0,1,2 (default 0)",
+			Usage: "MQTT: Quality of Service 0,1,2 (default 0)",
 			// Destination: &mqttQos,
 		},
 	}
