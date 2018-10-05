@@ -24,7 +24,7 @@ var statusapp = new Vue({
 	}
 })
 
-var fixed = d3.format("~.2f")
+var fixed = d3.format(".2f")
 var si = d3.format("~s")
 
 $().ready(function () {
