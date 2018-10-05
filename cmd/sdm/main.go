@@ -25,7 +25,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		// general
 		cli.StringFlag{
-			Name:  "serialadapter, s",
+			Name:  "serial, s",
 			Value: "/dev/ttyUSB0",
 			Usage: "Serial RTU device",
 		},
@@ -42,7 +42,16 @@ func main() {
 			`,
 		},
 		cli.StringFlag{
-			Name:  "device_list, d",
+			Name:  "tcp, t",
+			Value: "localhost:502",
+			Usage: "TCP MODBUS device",
+		},
+		cli.BoolFlag{
+			Name:  "simulate",
+			Usage: "Simulate MODBUS device for testing purposes",
+		},
+		cli.StringFlag{
+			Name:  "devices, d",
 			Value: "SDM:1",
 			Usage: `MODBUS device type and ID to query, separated by comma.
 			Valid types are:
@@ -54,7 +63,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:  "detect",
-			Usage: "Detect MODBUS devices.",
+			Usage: "Detect MODBUS devices",
 		},
 		cli.StringFlag{
 			Name:  "unique_id_format, f",
@@ -70,9 +79,9 @@ func main() {
 
 		// http api
 		cli.StringFlag{
-			Name:  "url, u",
-			Value: ":8080",
-			Usage: "Server listening socket",
+			Name:  "api, a",
+			Value: "localhost:8080",
+			Usage: "REST API socket. Use 0.0.0.0:8080 to accept incoming connections.",
 		},
 
 		// mqtt api
@@ -129,8 +138,8 @@ func main() {
 		// Set unique ID format
 		UniqueIdFormat = c.String("unique_id_format")
 
-		// Parse the device_list parameter
-		deviceslice := strings.Split(c.String("device_list"), ",")
+		// Parse the devices parameter
+		deviceslice := strings.Split(c.String("devices"), ",")
 		meters := make(map[uint8]*Meter)
 		for _, meterdef := range deviceslice {
 			splitdef := strings.Split(meterdef, ":")
@@ -147,6 +156,19 @@ func main() {
 				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
 			}
 			meters[uint8(id)] = meter
+		}
+
+		var client modbus.Client
+		if c.String("serialadapter") != "" {
+			if c.String("tcp") != "" {
+				log.Fatalf("Cannot use serial and TCP mode together- specify either -serialadapter or -tcp.")
+			}
+			client = NewRTUClient(c.String("serialadapter"), c.Int("comset"), c.Bool("verbose"))
+		} else {
+			if c.String("tcp") == "" {
+				log.Fatalf("Missing serial device or tcp socket parameters")
+			}
+			client = NewTCPClient(c.String("serialadapter"), c.Int("comset"), c.Bool("verbose"))
 		}
 
 		// create ModbusEngine with status
@@ -206,7 +228,7 @@ func main() {
 			mc,
 			hub,
 			status,
-			c.String("url"),
+			c.String("api"),
 		)
 	}
 

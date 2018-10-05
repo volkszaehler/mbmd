@@ -76,6 +76,14 @@ func NewRTUClient(rtuDevice string, comset int, verbose bool) *modbus.RTUClientH
 	return rtuclient
 }
 
+func NewModbusClient(
+	rtuDevice string,
+	comset int,
+	tcpDevice string,
+	verbose bool
+) *modbus.Client {
+}
+
 func NewModbusEngine(
 	rtuDevice string,
 	comset int,
@@ -101,11 +109,14 @@ func NewModbusEngine(
 	}
 }
 
-func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
-	q.status.IncreaseRequestCounter()
-
+func (q *ModbusEngine) requestDevice(deviceId uint8) {
 	// update the slave id in the handler
-	q.handler.SlaveId = snip.DeviceId
+	q.handler.SlaveId = deviceId
+	q.status.IncreaseRequestCounter()
+}
+
+func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
+	q.requestDevice(snip.DeviceId)
 
 	if snip.ReadLen <= 0 {
 		log.Fatalf("Invalid meter operation %v.", snip)
