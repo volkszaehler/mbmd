@@ -25,9 +25,9 @@ func main() {
 	app.Flags = []cli.Flag{
 		// general
 		cli.StringFlag{
-			Name:  "serial, s",
+			Name:  "adapter, a",
 			Value: "/dev/ttyUSB0",
-			Usage: "Serial RTU device",
+			Usage: "MODBUS adapter - can be either serial RTU device (/dev/ttyUSB0) or TCP socket (localhost:502)",
 		},
 		cli.IntFlag{
 			Name:  "comset, c",
@@ -41,13 +41,8 @@ func main() {
 		` + strconv.Itoa(ModbusComset19200_8E1) + `: 19200 baud, 8E1
 			`,
 		},
-		cli.StringFlag{
-			Name:  "tcp, t",
-			Value: "localhost:502",
-			Usage: "TCP MODBUS device",
-		},
 		cli.BoolFlag{
-			Name:  "simulate",
+			Name:  "simulate, s",
 			Usage: "Simulate MODBUS device for testing purposes",
 		},
 		cli.StringFlag{
@@ -79,9 +74,9 @@ func main() {
 
 		// http api
 		cli.StringFlag{
-			Name:  "api, a",
+			Name:  "url, u",
 			Value: "localhost:8080",
-			Usage: "REST API socket. Use 0.0.0.0:8080 to accept incoming connections.",
+			Usage: "REST API url. Use 0.0.0.0:8080 to accept incoming connections.",
 		},
 
 		// mqtt api
@@ -135,6 +130,10 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) {
+		if c.NArg() > 0 {
+			log.Fatalf("Unexpected arguments: %v", c.Args())
+		}
+
 		// Set unique ID format
 		UniqueIdFormat = c.String("unique_id_format")
 
@@ -158,24 +157,12 @@ func main() {
 			meters[uint8(id)] = meter
 		}
 
-		var client modbus.Client
-		if c.String("serialadapter") != "" {
-			if c.String("tcp") != "" {
-				log.Fatalf("Cannot use serial and TCP mode together- specify either -serialadapter or -tcp.")
-			}
-			client = NewRTUClient(c.String("serialadapter"), c.Int("comset"), c.Bool("verbose"))
-		} else {
-			if c.String("tcp") == "" {
-				log.Fatalf("Missing serial device or tcp socket parameters")
-			}
-			client = NewTCPClient(c.String("serialadapter"), c.Int("comset"), c.Bool("verbose"))
-		}
-
 		// create ModbusEngine with status
 		status := NewStatus(meters)
 		qe := NewModbusEngine(
-			c.String("serialadapter"),
+			c.String("adapter"),
 			c.Int("comset"),
+			c.Bool("simulate"),
 			c.Bool("verbose"),
 			status,
 		)
@@ -228,7 +215,7 @@ func main() {
 			mc,
 			hub,
 			status,
-			c.String("api"),
+			c.String("url"),
 		)
 	}
 

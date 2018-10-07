@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/goburrow/modbus"
@@ -26,12 +27,12 @@ const (
 
 type ModbusEngine struct {
 	client  modbus.Client
-	handler *modbus.RTUClientHandler
+	handler modbus.ClientHandler
 	verbose bool
 	status  *Status
 }
 
-func NewRTUClient(rtuDevice string, comset int, verbose bool) *modbus.RTUClientHandler {
+func NewRTUClientHandler(rtuDevice string, comset int, verbose bool) *modbus.RTUClientHandler {
 	// Modbus RTU/ASCII
 	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
 
@@ -67,56 +68,82 @@ func NewRTUClient(rtuDevice string, comset int, verbose bool) *modbus.RTUClientH
 			rtuclient.StopBits)
 	}
 
-	err := rtuclient.Connect()
-	if err != nil {
-		log.Fatal("Failed to connect: ", err)
-	}
-	defer rtuclient.Close()
-
 	return rtuclient
-}
-
-func NewModbusClient(
-	rtuDevice string,
-	comset int,
-	tcpDevice string,
-	verbose bool
-) *modbus.Client {
 }
 
 func NewModbusEngine(
 	rtuDevice string,
 	comset int,
+	simulate bool,
 	verbose bool,
 	status *Status,
 ) *ModbusEngine {
-	var rtuclient *modbus.RTUClientHandler
+	var handler modbus.ClientHandler
 	var mbclient modbus.Client
 
-	if rtuDevice == "simulation" {
-		rtuclient = &modbus.RTUClientHandler{}
+	if simulate {
+		log.Println("*** Simulation mode ***")
 		mbclient = NewMockClient(50) // 50% error rate for testing
 	} else {
-		rtuclient = NewRTUClient(rtuDevice, comset, verbose)
-		mbclient = modbus.NewClient(rtuclient)
+		// parse adapter string
+		re := regexp.MustCompile(":[0-9]+$")
+		if re.MatchString(rtuDevice) {
+			// tcp connection
+			handler = modbus.NewTCPClientHandler(rtuDevice)
+			mbclient = modbus.NewClient(handler)
+
+			if err := handler.(*modbus.TCPClientHandler).Connect(); err != nil {
+				log.Fatal("Failed to connect: ", err)
+			}
+		} else {
+			// serial connection
+			handler = NewRTUClientHandler(rtuDevice, comset, verbose)
+			mbclient = modbus.NewClient(handler)
+
+			if err := handler.(*modbus.RTUClientHandler).Connect(); err != nil {
+				log.Fatal("Failed to connect: ", err)
+			}
+		}
 	}
 
 	return &ModbusEngine{
 		client:  mbclient,
-		handler: rtuclient,
+		handler: handler,
 		verbose: verbose,
 		status:  status,
 	}
 }
 
-func (q *ModbusEngine) requestDevice(deviceId uint8) {
+func (q *ModbusEngine) setDevice(deviceId uint8) {
 	// update the slave id in the handler
-	q.handler.SlaveId = deviceId
+	if handler, ok := q.handler.(*modbus.RTUClientHandler); ok {
+		handler.SlaveId = deviceId
+	} else if handler, ok := q.handler.(*modbus.TCPClientHandler); ok {
+		handler.SlaveId = deviceId
+	} else if handler != nil {
+		log.Fatal("Unsupported modbus handler")
+	}
 	q.status.IncreaseRequestCounter()
 }
 
+func (q *ModbusEngine) setTimeout(timeout time.Duration) time.Duration {
+	// update the slave id in the handler
+	if handler, ok := q.handler.(*modbus.RTUClientHandler); ok {
+		t := handler.Timeout
+		handler.Timeout = timeout
+		return t
+	} else if handler, ok := q.handler.(*modbus.TCPClientHandler); ok {
+		t := handler.Timeout
+		handler.Timeout = timeout
+		return t
+	} else if handler != nil {
+		log.Fatal("Unsupported modbus handler")
+	}
+	return 0
+}
+
 func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
-	q.requestDevice(snip.DeviceId)
+	q.setDevice(snip.DeviceId)
 
 	if snip.ReadLen <= 0 {
 		log.Fatalf("Invalid meter operation %v.", snip)
@@ -133,7 +160,7 @@ func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
 	}
 
 	if err != nil && q.verbose {
-		log.Printf("Failed to retrieve opcode 0x%x, error was: %s\r\n", snip.OpCode, err.Error())
+		log.Printf("Device %d failed to retrieve opcode 0x%x, error was: %s\r\n", snip.DeviceId, snip.OpCode, err.Error())
 	}
 
 	return retval, err
@@ -158,6 +185,10 @@ func (q *ModbusEngine) Transform(
 		for retryCount := 0; retryCount < MaxRetryCount; retryCount++ {
 			reading, err := q.query(snip)
 			if err == nil {
+				if snip.Transform == nil {
+					log.Fatalf("Snip transformation not defined: %v", snip)
+				}
+
 				// convert bytes to value
 				snip.Value = snip.Transform(reading)
 				snip.ReadTimestamp = time.Now()
@@ -198,8 +229,7 @@ func (q *ModbusEngine) Scan() {
 
 	var deviceId uint8
 	deviceList := make([]DeviceInfo, 0)
-	oldtimeout := q.handler.Timeout
-	q.handler.Timeout = 50 * time.Millisecond
+	oldtimeout := q.setTimeout(50 * time.Millisecond)
 	log.Printf("Starting bus scan")
 
 	producers := []Producer{
@@ -238,7 +268,8 @@ SCAN:
 	}
 
 	// restore timeout to old value
-	q.handler.Timeout = oldtimeout
+	q.setTimeout(oldtimeout)
+
 	log.Printf("Found %d active devices:\r\n", len(deviceList))
 	for _, device := range deviceList {
 		log.Printf("* slave address %d: type %s\r\n", device.DeviceId,
