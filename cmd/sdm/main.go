@@ -18,20 +18,21 @@ const (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "sdm630_httpd"
-	app.Usage = "SDM630 power measurements via HTTP."
+	app.Name = "sdm"
+	app.Usage = "SDM MODBUS daemon"
 	app.Version = RELEASEVERSION
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
+		// general
 		cli.StringFlag{
 			Name:  "serialadapter, s",
 			Value: "/dev/ttyUSB0",
-			Usage: "path to serial RTU device",
+			Usage: "Serial RTU device",
 		},
 		cli.IntFlag{
 			Name:  "comset, c",
 			Value: ModbusComset9600_8N1,
-			Usage: `which communication parameter set to use. Valid sets are
+			Usage: `Communication parameters:
 		` + strconv.Itoa(ModbusComset2400_8N1) + `:  2400 baud, 8N1
 		` + strconv.Itoa(ModbusComset9600_8N1) + `:  9600 baud, 8N1
 		` + strconv.Itoa(ModbusComset19200_8N1) + `: 19200 baud, 8N1
@@ -39,15 +40,6 @@ func main() {
 		` + strconv.Itoa(ModbusComset9600_8E1) + `:  9600 baud, 8E1
 		` + strconv.Itoa(ModbusComset19200_8E1) + `: 19200 baud, 8E1
 			`,
-		},
-		cli.StringFlag{
-			Name:  "url, u",
-			Value: ":8080",
-			Usage: "the URL the server should respond on",
-		},
-		cli.BoolFlag{
-			Name:  "verbose, v",
-			Usage: "print verbose messages",
 		},
 		cli.StringFlag{
 			Name:  "device_list, d",
@@ -60,12 +52,76 @@ func main() {
 			"SBC" for the Saia Burgess Controls ALE3 meters
 			Example: -d JANITZA:1,SDM:22,DZG:23`,
 		},
+		cli.BoolFlag{
+			Name:  "detect",
+			Usage: "Detect MODBUS devices.",
+		},
 		cli.StringFlag{
 			Name:  "unique_id_format, f",
-			Value: "Instrument%d",
+			Value: "Meter#%d",
 			Usage: `Unique ID format.
-			Example: -f Instrument%d
+			Example: -f Meter#%d
 			The %d is replaced by the device ID`,
+		},
+		cli.BoolFlag{
+			Name:  "verbose, v",
+			Usage: "print verbose messages",
+		},
+
+		// http api
+		cli.StringFlag{
+			Name:  "url, u",
+			Value: ":8080",
+			Usage: "Server listening socket",
+		},
+
+		// mqtt api
+		cli.StringFlag{
+			Name:  "broker, b",
+			Value: "",
+			Usage: "MQTT: Broker URI. ex: tcp://10.10.1.1:1883",
+			// Destination: &mqttBroker,
+		},
+		cli.StringFlag{
+			Name:  "topic, t",
+			Value: "sdm",
+			Usage: "MQTT: Topic name to/from which to publish/subscribe (optional)",
+			// Destination: &mqttTopic,
+		},
+		cli.StringFlag{
+			Name:  "user",
+			Value: "",
+			Usage: "MQTT: User (optional)",
+			// Destination: &mqttUser,
+		},
+		cli.StringFlag{
+			Name:  "password",
+			Value: "",
+			Usage: "MQTT: Password (optional)",
+			// Destination: &mqttPassword,
+		},
+		cli.StringFlag{
+			Name:  "clientid, i",
+			Value: "sdm630",
+			Usage: "MQTT: ClientID (optional)",
+			// Destination: &mqttClientID,
+		},
+		cli.IntFlag{
+			Name:  "rate, r",
+			Value: 0,
+			Usage: "MQTT: Maximum update rate (default 0, i.e. unlimited) (after a push we will ignore more data from same device and channel for this time)",
+			// Destination: &mqttRate,
+		},
+		cli.BoolFlag{
+			Name:  "clean, l",
+			Usage: "MQTT: Set Clean Session (default false)",
+			// Destination: &mqttCleanSession,
+		},
+		cli.IntFlag{
+			Name:  "qos, q",
+			Value: 0,
+			Usage: "MQTT: Quality of Service 0,1,2 (default 0)",
+			// Destination: &mqttQos,
 		},
 	}
 
@@ -102,6 +158,12 @@ func main() {
 			status,
 		)
 
+		// detect command
+		if c.Bool("detect") {
+			qe.Scan()
+			return
+		}
+
 		// scheduler and meter data channel
 		scheduler, snips := SetupScheduler(meters, qe)
 		go scheduler.Run()
@@ -110,16 +172,25 @@ func main() {
 		tee := NewQuerySnipBroadcaster(snips)
 		go tee.Run()
 
-		// Longpoll firehose
-		firehose := NewFirehose(
-			tee.Attach(),
-			status,
-			c.Bool("verbose"))
-		go firehose.Run()
-
 		// websocket hub
 		hub := NewSocketHub(tee.Attach(), status)
 		go hub.Run()
+
+		// MQTT client
+		if c.String("broker") != "" {
+			mqtt := NewMqttClient(
+				tee.Attach(),
+				c.String("broker"),
+				c.String("topic"),
+				c.String("user"),
+				c.String("password"),
+				c.String("clientid"),
+				c.Int("qos"),
+				c.Int("rate"),
+				c.Bool("clean"),
+				c.Bool("verbose"))
+			go mqtt.Run()
+		}
 
 		// MeasurementCache for REST API
 		mc := NewMeasurementCache(
@@ -133,7 +204,6 @@ func main() {
 
 		Run_httpd(
 			mc,
-			firehose,
 			hub,
 			status,
 			c.String("url"),

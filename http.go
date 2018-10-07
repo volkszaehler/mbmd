@@ -12,7 +12,6 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/jcuga/golongpoll"
 )
 
 const (
@@ -159,63 +158,6 @@ func MkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-type Firehose struct {
-	lpManager  *golongpoll.LongpollManager
-	in         QuerySnipChannel
-	statstream chan string
-}
-
-func NewFirehose(inChannel QuerySnipChannel, status *Status, verbose bool) *Firehose {
-	options := golongpoll.Options{}
-	// see https://github.com/jcuga/golongpoll/blob/master/longpoll.go#L81
-	//options := golongpoll.Options{
-	//	LoggingEnabled:                 false,
-	//	MaxLongpollTimeoutSeconds:      60,
-	//	MaxEventBufferSize:             250,
-	//	EventTimeToLiveSeconds:         60,
-	//	DeleteEventAfterFirstRetrieval: false,
-	//}
-	if verbose {
-		options.LoggingEnabled = true
-	}
-	manager, err := golongpoll.StartLongpoll(options)
-	if err != nil {
-		log.Fatalf("Failed to create firehose longpoll manager: %q", err)
-	}
-	// Attach a goroutine that will push meter status information
-	// periodically
-	var statusstream = make(chan string)
-	go func() {
-		for {
-			time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
-			status.Update()
-			if bytes, err := json.Marshal(status); err == nil {
-				statusstream <- string(bytes)
-			}
-		}
-	}()
-	return &Firehose{
-		lpManager:  manager,
-		in:         inChannel,
-		statstream: statusstream,
-	}
-}
-
-func (f *Firehose) Run() {
-	for {
-		select {
-		case snip := <-f.in:
-			f.lpManager.Publish("meterupdate", snip)
-		case statupdate := <-f.statstream:
-			f.lpManager.Publish("statusupdate", statupdate)
-		}
-	}
-}
-
-func (f *Firehose) GetHandler() func(w http.ResponseWriter, r *http.Request) {
-	return f.lpManager.SubscriptionHandler
-}
-
 // serveJson decorates handler with required headers
 func serveJson(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -227,7 +169,6 @@ func serveJson(f http.HandlerFunc) http.HandlerFunc {
 
 func Run_httpd(
 	mc *MeasurementCache,
-	firehose *Firehose,
 	hub *SocketHub,
 	s *Status,
 	url string,
@@ -247,11 +188,6 @@ func Run_httpd(
 	router.HandleFunc("/minuteavg", serveJson(MkLastMinuteAvgAllHandler(mc)))
 	router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(MkLastMinuteAvgSingleHandler(mc)))
 	router.HandleFunc("/status", serveJson(MkStatusHandler(s)))
-
-	// longpoll
-	if firehose != nil {
-		router.HandleFunc("/firehose", firehose.GetHandler())
-	}
 
 	// websocket
 	router.HandleFunc("/ws", MkSocketHandler(hub))

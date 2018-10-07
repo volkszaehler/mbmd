@@ -13,13 +13,6 @@
   revision = "e0f543275bf966271e2c3b3ab70265f635f0394a"
 
 [[projects]]
-  digest = "1:cbc96f2553a9e55f2c2644fe5a3b5471fabc2f4223d714da5084391c19db5058"
-  name = "github.com/boltdb/bolt"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd"
-
-[[projects]]
   digest = "1:184008c955d6a3226b700c13ed0e875a7a051a759618f9bccba9b5c99f17faa5"
   name = "github.com/eclipse/paho.mqtt.golang"
   packages = [
@@ -76,22 +69,6 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:7e3e7c9bd13732904b328975e4002d00423a1e6c17f743f284e10f8c88ad246d"
-  name = "github.com/jcuga/golongpoll"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6f70b008d155ed04693bcb8ebe0b693820bebee5"
-
-[[projects]]
-  branch = "master"
-  digest = "1:0e1e5f960c58fdc677212fcc70e55042a0084d367623e51afbdb568963832f5d"
-  name = "github.com/nu7hatch/gouuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
-
-[[projects]]
   digest = "1:c1b1102241e7f645bc8e0c22ae352e8f0dc6484b6cb4d132fa9f24174e0119e2"
   name = "github.com/spf13/pflag"
   packages = ["."]
@@ -143,14 +120,6 @@
   revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
-  branch = "master"
-  digest = "1:fcf2b18db0af0f60d58e71ae8ed15555d46fdca3fc2529f65a14cef30ced981f"
-  name = "golang.org/x/sys"
-  packages = ["unix"]
-  pruneopts = "UT"
-  revision = "9527bec2660bd847c050fda93a0f0c6dee0800bb"
-
-[[projects]]
   digest = "1:01d3c3dfb7ef9da24cd00cbd5b9e2c147fa7a3f44a83028bc737da9cac7ed60b"
   name = "gopkg.in/urfave/cli.v1"
   packages = ["."]
@@ -164,13 +133,11 @@
   input-imports = [
     "github.com/aprice/embed/cmd/embed",
     "github.com/aprice/embed/loader",
-    "github.com/boltdb/bolt",
     "github.com/eclipse/paho.mqtt.golang",
     "github.com/goburrow/modbus",
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/gorilla/websocket",
-    "github.com/jcuga/golongpoll",
     "gopkg.in/urfave/cli.v1",
   ]
   solver-name = "gps-cdcl"
