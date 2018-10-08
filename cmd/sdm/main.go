@@ -25,9 +25,9 @@ func main() {
 	app.Flags = []cli.Flag{
 		// general
 		cli.StringFlag{
-			Name:  "serialadapter, s",
+			Name:  "adapter, a",
 			Value: "/dev/ttyUSB0",
-			Usage: "Serial RTU device",
+			Usage: "MODBUS adapter - can be either serial RTU device (/dev/ttyUSB0) or TCP socket (localhost:502)",
 		},
 		cli.IntFlag{
 			Name:  "comset, c",
@@ -41,8 +41,12 @@ func main() {
 		` + strconv.Itoa(ModbusComset19200_8E1) + `: 19200 baud, 8E1
 			`,
 		},
+		cli.BoolFlag{
+			Name:  "simulate, s",
+			Usage: "Simulate MODBUS device for testing purposes",
+		},
 		cli.StringFlag{
-			Name:  "device_list, d",
+			Name:  "devices, d",
 			Value: "SDM:1",
 			Usage: `MODBUS device type and ID to query, separated by comma.
 			Valid types are:
@@ -54,7 +58,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:  "detect",
-			Usage: "Detect MODBUS devices.",
+			Usage: "Detect MODBUS devices",
 		},
 		cli.StringFlag{
 			Name:  "unique_id_format, f",
@@ -71,8 +75,8 @@ func main() {
 		// http api
 		cli.StringFlag{
 			Name:  "url, u",
-			Value: ":8080",
-			Usage: "Server listening socket",
+			Value: "localhost:8080",
+			Usage: "REST API url. Use 0.0.0.0:8080 to accept incoming connections.",
 		},
 
 		// mqtt api
@@ -126,11 +130,15 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) {
+		if c.NArg() > 0 {
+			log.Fatalf("Unexpected arguments: %v", c.Args())
+		}
+
 		// Set unique ID format
 		UniqueIdFormat = c.String("unique_id_format")
 
-		// Parse the device_list parameter
-		deviceslice := strings.Split(c.String("device_list"), ",")
+		// Parse the devices parameter
+		deviceslice := strings.Split(c.String("devices"), ",")
 		meters := make(map[uint8]*Meter)
 		for _, meterdef := range deviceslice {
 			splitdef := strings.Split(meterdef, ":")
@@ -152,8 +160,9 @@ func main() {
 		// create ModbusEngine with status
 		status := NewStatus(meters)
 		qe := NewModbusEngine(
-			c.String("serialadapter"),
+			c.String("adapter"),
 			c.Int("comset"),
+			c.Bool("simulate"),
 			c.Bool("verbose"),
 			status,
 		)

@@ -438,6 +438,9 @@ By default, readings are published at `/sdm/<unique id>/<reading>`. Rate limitin
 
   - Renamed `sdm630` command to `sdm` which also includes `sdm_detect` now
   - Remove legacy commands. `sdm630_logger`, `sdm630_monitor` and `sdm630_http` are no longer supported. `sdm` is now the single command provided. The legacy commands are still available in the [0.7 version](https://github.com/gonium/gosdm630/releases).
+  - Parameters updated:
+    - renamed `serialadapter` to `adapter` and allow TCP sockets as well
+    - renamed `device_list` to `devices`
   - Add MODBUS over TCP support
   - Support SunSpec-compatible grid inverters
 

@@ -62,9 +62,9 @@ func (p *SBCProducer) snip(iec Measurement, readlen uint16) Operation {
 func (p *SBCProducer) snip16(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
-	snip.Transform = RTU16ToFloat64 // default conversion
+	snip.Transform = RTUUint16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTU16ScaledIntToFloat64(scaler[0])
+		snip.Transform = MakeRTUScaledUint16ToFloat64(scaler[0])
 	}
 
 	return snip
@@ -74,9 +74,9 @@ func (p *SBCProducer) snip16(iec Measurement, scaler ...float64) Operation {
 func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 2)
 
-	snip.Transform = RTU32ToFloat64 // default conversion
+	snip.Transform = RTUUint32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTU32ScaledIntToFloat64(scaler[0])
+		snip.Transform = MakeRTUScaledUint32ToFloat64(scaler[0])
 	}
 
 	return snip
@@ -87,17 +87,21 @@ func (p *SBCProducer) Probe() Operation {
 }
 
 func (p *SBCProducer) Produce() (res []Operation) {
-	for _, op := range []Measurement{VoltageL1, VoltageL2, VoltageL1} {
+	for _, op := range []Measurement{
+		VoltageL1, VoltageL2, VoltageL3,
+	} {
 		res = append(res, p.snip16(op))
 	}
 
-	for _, op := range []Measurement{CurrentL1, CurrentL2, CurrentL1} {
+	for _, op := range []Measurement{
+		CurrentL1, CurrentL2, CurrentL3,
+	} {
 		res = append(res, p.snip16(op, 10))
 	}
 
 	for _, op := range []Measurement{
-		PowerL1, PowerL2, PowerL1,
-		CosphiL1, CosphiL2, CosphiL1,
+		PowerL1, PowerL2, PowerL3,
+		CosphiL1, CosphiL2, CosphiL3,
 	} {
 		res = append(res, p.snip16(op, 100))
 	}

@@ -76,15 +76,11 @@ func NewMeterByType(typeid string, devid uint8) (*Meter, error) {
 	case METERTYPE_JANITZA:
 		p = NewJanitzaProducer()
 	case METERTYPE_DZG:
-		log.Println(`WARNING: The DZG DVH 4013 does not report the same
-		measurements as the other meters. Only limited functionality is
-		implemented.`)
 		p = NewDZGProducer()
 	case METERTYPE_SBC:
-		log.Println(`WARNING: The SBC ALE3 does not report the same
-		measurements as the other meters. Only limited functionality is
-		implemented.`)
 		p = NewSBCProducer()
+	case METERTYPE_SUN:
+		p = NewSUNProducer()
 	default:
 		return nil, fmt.Errorf("Unknown meter type %s", typeid)
 	}

@@ -4,6 +4,7 @@ type Measurement int
 
 type Measurements map[Measurement]uint16
 
+//go:generate stringer -type=Measurement
 const (
 	// phases
 	VoltageL1 Measurement = iota
@@ -71,34 +72,44 @@ const (
 	ActiveExportT2
 	ReactiveExportT1
 	ReactiveExportT2
+
+	// DC
+	DCCurrent
+	DCVoltage
+	DCPower
+	HeatSinkTemp
 )
 
 var iec = map[Measurement]string{
-	CurrentL1: "L1 Current (A)",
-	CurrentL2: "L2 Current (A)",
-	CurrentL3: "L3 Current (A)",
-	CosphiL1:  "L1 Cosphi",
-	CosphiL2:  "L2 Cosphi",
-	CosphiL3:  "L3 Cosphi",
-	Frequency: "Frequency (Hz)",
-	THD:       "Average voltage to neutral THD (%)",
-	THDL1:     "L1 Voltage to neutral THD (%)",
-	THDL2:     "L2 Voltage to neutral THD (%)",
-	THDL3:     "L3 Voltage to neutral THD (%)",
-	Export:    "Total Export (kWh)",
-	ExportL1:  "L1 Export (kWh)",
-	ExportL2:  "L2 Export (kWh)",
-	ExportL3:  "L3 Export (kWh)",
-	Import:    "Total Import (kWh)",
-	ImportL1:  "L1 Import (kWh)",
-	ImportL2:  "L2 Import (kWh)",
-	ImportL3:  "L3 Import (kWh)",
-	VoltageL1: "L1 Voltage (V)",
-	VoltageL2: "L2 Voltage (V)",
-	VoltageL3: "L3 Voltage (V)",
-	PowerL1:   "L1 Power (W)",
-	PowerL2:   "L2 Power (W)",
-	PowerL3:   "L3 Power (W)",
+	CurrentL1:    "L1 Current (A)",
+	CurrentL2:    "L2 Current (A)",
+	CurrentL3:    "L3 Current (A)",
+	CosphiL1:     "L1 Cosphi",
+	CosphiL2:     "L2 Cosphi",
+	CosphiL3:     "L3 Cosphi",
+	Frequency:    "Frequency (Hz)",
+	THD:          "Average voltage to neutral THD (%)",
+	THDL1:        "L1 Voltage to neutral THD (%)",
+	THDL2:        "L2 Voltage to neutral THD (%)",
+	THDL3:        "L3 Voltage to neutral THD (%)",
+	Export:       "Total Export (kWh)",
+	ExportL1:     "L1 Export (kWh)",
+	ExportL2:     "L2 Export (kWh)",
+	ExportL3:     "L3 Export (kWh)",
+	Import:       "Total Import (kWh)",
+	ImportL1:     "L1 Import (kWh)",
+	ImportL2:     "L2 Import (kWh)",
+	ImportL3:     "L3 Import (kWh)",
+	VoltageL1:    "L1 Voltage (V)",
+	VoltageL2:    "L2 Voltage (V)",
+	VoltageL3:    "L3 Voltage (V)",
+	PowerL1:      "L1 Power (W)",
+	PowerL2:      "L2 Power (W)",
+	PowerL3:      "L3 Power (W)",
+	DCCurrent:    "DC Current (A)",
+	DCVoltage:    "DC Voltage (V)",
+	DCPower:      "DC Power (W)",
+	HeatSinkTemp: "Heat Sink Temperature (°C)",
 }
 
 func (m *Measurement) Description() string {

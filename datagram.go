@@ -2,7 +2,6 @@ package sdm630
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"time"
 
@@ -249,7 +248,7 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 	case Frequency:
 		r.Frequency = &q.Value
 	default:
-		log.Fatalf("Cannot merge unknown IEC: %+v", q)
+		// log.Fatalf("Cannot merge unknown IEC: %+v", q)
 	}
 }
 
