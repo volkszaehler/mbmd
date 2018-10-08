@@ -4,6 +4,7 @@ type Measurement int
 
 type Measurements map[Measurement]uint16
 
+//go:generate stringer -type=Measurement
 const (
 	// phases
 	VoltageL1 Measurement = iota

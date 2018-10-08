@@ -13,10 +13,11 @@ type SUNProducer struct {
 
 func NewSUNProducer() *SUNProducer {
 	/***
-	 * Opcodes for SunSpec- compatible Inverters like SolarEdge
+	 * Opcodes for SunSpec-compatible Inverters like SolarEdge
 	 * https://www.solaredge.com/sites/default/files/sunspec-implementation-technical-note.pdf
 	 */
 	ops := Measurements{
+		Current:   72,
 		CurrentL1: 73,
 		CurrentL2: 74,
 		CurrentL3: 75, // + scaler
@@ -95,31 +96,47 @@ func (p *SUNProducer) Probe() Operation {
 }
 
 func (p *SUNProducer) Produce() (res []Operation) {
+	// uint16
 	for _, op := range []Measurement{
-		VoltageL1, VoltageL2, VoltageL1,
+		VoltageL1, VoltageL2, VoltageL3,
+		DCVoltage,
 	} {
 		res = append(res, p.snip16uint(op, 10))
 	}
 
 	for _, op := range []Measurement{
-		CurrentL1, CurrentL2, CurrentL1,
-		Frequency,
+		CurrentL1, CurrentL2, CurrentL3,
+		Current, Frequency,
 	} {
 		res = append(res, p.snip16uint(op, 100))
 	}
 
 	for _, op := range []Measurement{
-		Power, Cosphi, DCPower, HeatSinkTemp,
+		DCCurrent,
+	} {
+		res = append(res, p.snip16uint(op, 1000))
+	}
+
+	// int16
+	for _, op := range []Measurement{
+		Cosphi,
+	} {
+		res = append(res, p.snip16int(op, 100000))
+	}
+
+	for _, op := range []Measurement{
+		HeatSinkTemp,
 	} {
 		res = append(res, p.snip16int(op, 100))
 	}
 
 	for _, op := range []Measurement{
-		DCCurrent, DCVoltage,
+		Power, DCPower,
 	} {
-		res = append(res, p.snip16uint(op, 10))
+		res = append(res, p.snip16int(op, 10))
 	}
 
+	// uint32
 	for _, op := range []Measurement{
 		Export,
 	} {

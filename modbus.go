@@ -179,8 +179,8 @@ func (q *ModbusEngine) Transform(
 		// different devices.
 		if previousDeviceId != snip.DeviceId {
 			time.Sleep(time.Duration(100) * time.Millisecond)
+			previousDeviceId = snip.DeviceId
 		}
-		previousDeviceId = snip.DeviceId
 
 		for retryCount := 0; retryCount < MaxRetryCount; retryCount++ {
 			reading, err := q.query(snip)

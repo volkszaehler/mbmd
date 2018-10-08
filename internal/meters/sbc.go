@@ -87,17 +87,21 @@ func (p *SBCProducer) Probe() Operation {
 }
 
 func (p *SBCProducer) Produce() (res []Operation) {
-	for _, op := range []Measurement{VoltageL1, VoltageL2, VoltageL1} {
+	for _, op := range []Measurement{
+		VoltageL1, VoltageL2, VoltageL3,
+	} {
 		res = append(res, p.snip16(op))
 	}
 
-	for _, op := range []Measurement{CurrentL1, CurrentL2, CurrentL1} {
+	for _, op := range []Measurement{
+		CurrentL1, CurrentL2, CurrentL3,
+	} {
 		res = append(res, p.snip16(op, 10))
 	}
 
 	for _, op := range []Measurement{
-		PowerL1, PowerL2, PowerL1,
-		CosphiL1, CosphiL2, CosphiL1,
+		PowerL1, PowerL2, PowerL3,
+		CosphiL1, CosphiL2, CosphiL3,
 	} {
 		res = append(res, p.snip16(op, 100))
 	}

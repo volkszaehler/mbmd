@@ -14,5 +14,6 @@ require (
 	github.com/tdewolff/parse v2.3.3+incompatible // indirect
 	github.com/tdewolff/test v0.0.0-20171106182207-265427085153 // indirect
 	golang.org/x/net v0.0.0-20181003013248-f5e5bdd77824 // indirect
+	golang.org/x/tools v0.0.0-20181006002542-f60d9635b16a // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0
 )

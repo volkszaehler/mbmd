@@ -66,20 +66,22 @@ func (p *DZGProducer) Probe() Operation {
 }
 
 func (p *DZGProducer) Produce() (res []Operation) {
-	for _, op := range []Measurement{VoltageL1, VoltageL2, VoltageL1} {
+	for _, op := range []Measurement{
+		VoltageL1, VoltageL2, VoltageL3,
+	} {
 		res = append(res, p.snip(op, 100))
 	}
 
 	for _, op := range []Measurement{
-		CurrentL1, CurrentL2, CurrentL1,
+		CurrentL1, CurrentL2, CurrentL3,
 		Import, Export, Cosphi,
 	} {
 		res = append(res, p.snip(op, 1000))
 	}
 
 	for _, op := range []Measurement{
-		ImportL1, ImportL2, ImportL1,
-		ExportL1, ExportL2, ExportL1,
+		ImportL1, ImportL2, ImportL3,
+		ExportL1, ExportL2, ExportL3,
 	} {
 		res = append(res, p.snip(op))
 	}
