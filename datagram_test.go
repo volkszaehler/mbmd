@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	// . "github.com/gonium/gosdm630"
 	. "github.com/gonium/gosdm630/internal/meters"
 )
 
@@ -43,8 +42,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML1Voltage,
-					IEC61850: "VolLocPhsA",
+					IEC61850: VoltageL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Voltage.L1) },
@@ -53,8 +51,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML2Voltage,
-					IEC61850: "VolLocPhsB",
+					IEC61850: VoltageL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Voltage.L2) },
@@ -63,8 +60,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML3Voltage,
-					IEC61850: "VolLocPhsC",
+					IEC61850: VoltageL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Voltage.L3) },
@@ -73,8 +69,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML1Current,
-					IEC61850: "AmpLocPhsA",
+					IEC61850: CurrentL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Current.L1) },
@@ -83,8 +78,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML2Current,
-					IEC61850: "AmpLocPhsB",
+					IEC61850: CurrentL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Current.L2) },
@@ -93,8 +87,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML3Current,
-					IEC61850: "AmpLocPhsC",
+					IEC61850: CurrentL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Current.L3) },
@@ -103,8 +96,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML1Power,
-					IEC61850: "WLocPhsA",
+					IEC61850: PowerL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Power.L1) },
@@ -113,8 +105,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML2Power,
-					IEC61850: "WLocPhsB",
+					IEC61850: PowerL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Power.L2) },
@@ -123,8 +114,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML3Power,
-					IEC61850: "WLocPhsC",
+					IEC61850: PowerL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Power.L3) },
@@ -133,8 +123,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML1Cosphi,
-					IEC61850: "AngLocPhsA",
+					IEC61850: CosphiL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Cosphi.L1) },
@@ -143,8 +132,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML2Cosphi,
-					IEC61850: "AngLocPhsB",
+					IEC61850: CosphiL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Cosphi.L2) },
@@ -153,8 +141,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML3Cosphi,
-					IEC61850: "AngLocPhsC",
+					IEC61850: CosphiL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Cosphi.L3) },
@@ -163,8 +150,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML1Import,
-					IEC61850: "TotkWhImportPhsA",
+					IEC61850: ImportL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Import.L1) },
@@ -173,8 +159,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML2Import,
-					IEC61850: "TotkWhImportPhsB",
+					IEC61850: ImportL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Import.L2) },
@@ -183,8 +168,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML3Import,
-					IEC61850: "TotkWhImportPhsC",
+					IEC61850: ImportL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Import.L3) },
@@ -193,8 +177,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML1Export,
-					IEC61850: "TotkWhExportPhsA",
+					IEC61850: ExportL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Export.L1) },
@@ -203,8 +186,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML2Export,
-					IEC61850: "TotkWhExportPhsB",
+					IEC61850: ExportL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Export.L2) },
@@ -213,8 +195,7 @@ func TestQuerySnipMerge(t *testing.T) {
 			QuerySnip{
 				DeviceId: 1, Value: setvalue,
 				Operation: Operation{
-					OpCode:   OpCodeSDML3Export,
-					IEC61850: "TotkWhExportPhsC",
+					IEC61850: ExportL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Export.L3) },

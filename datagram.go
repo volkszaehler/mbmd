@@ -5,6 +5,8 @@ import (
 	"log"
 	"math"
 	"time"
+
+	. "github.com/gonium/gosdm630/internal/meters"
 )
 
 // UniqueIdFormat is a format string for unique ID generation.
@@ -188,63 +190,63 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 	r.Timestamp = q.ReadTimestamp
 	r.Unix = r.Timestamp.Unix()
 	switch q.IEC61850 {
-	case "VolLocPhsA":
+	case VoltageL1:
 		r.Voltage.L1 = &q.Value
-	case "VolLocPhsB":
+	case VoltageL2:
 		r.Voltage.L2 = &q.Value
-	case "VolLocPhsC":
+	case VoltageL3:
 		r.Voltage.L3 = &q.Value
-	case "AmpLocPhsA":
+	case CurrentL1:
 		r.Current.L1 = &q.Value
-	case "AmpLocPhsB":
+	case CurrentL2:
 		r.Current.L2 = &q.Value
-	case "AmpLocPhsC":
+	case CurrentL3:
 		r.Current.L3 = &q.Value
-	case "WLocPhsA":
+	case PowerL1:
 		r.Power.L1 = &q.Value
-	case "WLocPhsB":
+	case PowerL2:
 		r.Power.L2 = &q.Value
-	case "WLocPhsC":
+	case PowerL3:
 		r.Power.L3 = &q.Value
-	case "AngLocPhsA":
+	case CosphiL1:
 		r.Cosphi.L1 = &q.Value
-	case "AngLocPhsB":
+	case CosphiL2:
 		r.Cosphi.L2 = &q.Value
-	case "AngLocPhsC":
+	case CosphiL3:
 		r.Cosphi.L3 = &q.Value
-	case "TotkWhImportPhsA":
+	case ImportL1:
 		r.Import.L1 = &q.Value
-	case "TotkWhImportPhsB":
+	case ImportL2:
 		r.Import.L2 = &q.Value
-	case "TotkWhImportPhsC":
+	case ImportL3:
 		r.Import.L3 = &q.Value
-	case "TotkWhImport":
+	case Import:
 		r.TotalImport = &q.Value
-	case "TotkWhExportPhsA":
+	case ExportL1:
 		r.Export.L1 = &q.Value
-	case "TotkWhExportPhsB":
+	case ExportL2:
 		r.Export.L2 = &q.Value
-	case "TotkWhExportPhsC":
+	case ExportL3:
 		r.Export.L3 = &q.Value
-	case "TotkWhExport":
+	case Export:
 		r.TotalExport = &q.Value
-		//	case OpCodeL1THDCurrent:
+		//	case L1THDCurrent
 		//		r.THD.Current.L1 = &q.Value
-		//	case OpCodeL2THDCurrent:
+		//	case L2THDCurrent
 		//		r.THD.Current.L2 = &q.Value
-		//	case OpCodeL3THDCurrent:
+		//	case L3THDCurrent
 		//		r.THD.Current.L3 = &q.Value
-		//	case OpCodeAvgTHDCurrent:
+		//	case THDCurrent
 		//		r.THD.AvgCurrent = &q.Value
-	case "ThdVolPhsA":
+	case THDL1:
 		r.THD.VoltageNeutral.L1 = &q.Value
-	case "ThdVolPhsB":
+	case THDL2:
 		r.THD.VoltageNeutral.L2 = &q.Value
-	case "ThdVolPhsC":
+	case THDL3:
 		r.THD.VoltageNeutral.L3 = &q.Value
-	case "ThdVol":
+	case THD:
 		r.THD.AvgVoltageNeutral = &q.Value
-	case "Freq":
+	case Frequency:
 		r.Frequency = &q.Value
 	default:
 		log.Fatalf("Cannot merge unknown IEC: %+v", q)

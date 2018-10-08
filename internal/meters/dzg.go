@@ -2,77 +2,87 @@ package meters
 
 const (
 	METERTYPE_DZG = "DZG"
-
-	/***
-	 * Opcodes for DZG DVH4014.
-	 * See "User Manual DVH4013", not public.
-	 */
-	OpCodeDZGTotalImportPower = 0x0000
-	OpCodeDZGTotalExportPower = 0x0002
-	OpCodeDZGL1Voltage        = 0x0004
-	OpCodeDZGL2Voltage        = 0x0006
-	OpCodeDZGL3Voltage        = 0x0008
-	OpCodeDZGL1Current        = 0x000A
-	OpCodeDZGL2Current        = 0x000C
-	OpCodeDZGL3Current        = 0x000E
-	OpCodeDZGL1Import         = 0x4020
-	OpCodeDZGL2Import         = 0x4040
-	OpCodeDZGL3Import         = 0x4060
-	OpCodeDZGTotalImport      = 0x4000
-	OpCodeDZGL1Export         = 0x4120
-	OpCodeDZGL2Export         = 0x4140
-	OpCodeDZGL3Export         = 0x4160
-	OpCodeDZGTotalExport      = 0x4100
 )
 
 type DZGProducer struct {
+	MeasurementMapping
 }
 
 func NewDZGProducer() *DZGProducer {
-	return &DZGProducer{}
+	/**
+	 * Opcodes for DZG DVH4014.
+	 * https://www.dzg.de/fileadmin/dzg/content/downloads/produkte-zaehler/dvh4013/Communication-Protocol_DVH4013.pdf
+	 */
+	ops := Measurements{
+		ActivePower:   0x0000, // 0x0 instant values and parameters
+		ReactivePower: 0x0002,
+		VoltageL1:     0x0004,
+		VoltageL2:     0x0006,
+		VoltageL3:     0x0008,
+		CurrentL1:     0x000A,
+		CurrentL2:     0x000C,
+		CurrentL3:     0x000E,
+		Cosphi:        0x0010, // DVH4013
+		Frequency:     0x0012, // DVH4013
+		// Import:        0x0014, // DVH4013
+		// Export:        0x0016, // DVH4013
+		Import:   0x4000, // 0x4 energy
+		ImportL1: 0x4020,
+		ImportL2: 0x4040,
+		ImportL3: 0x4060,
+		Export:   0x4100,
+		ExportL1: 0x4120,
+		ExportL2: 0x4140,
+		ExportL3: 0x4160,
+		// 0x8 max demand
+	}
+	return &DZGProducer{
+		MeasurementMapping{ops},
+	}
 }
 
 func (p *DZGProducer) GetMeterType() string {
 	return METERTYPE_DZG
 }
 
-func (p *DZGProducer) snip(opcode uint16, iec string, scaler ...float64) Operation {
+func (p *DZGProducer) snip(iec Measurement, scaler ...float64) Operation {
 	transform := RTU32ToFloat64 // default conversion
 	if len(scaler) > 0 {
 		transform = MakeRTU32ScaledIntToFloat64(scaler[0])
 	}
 
-	return Operation{
+	snip := Operation{
 		FuncCode:  ReadHoldingReg,
-		OpCode:    opcode,
+		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,
 		Transform: transform,
 	}
+	return snip
 }
 
 func (p *DZGProducer) Probe() Operation {
-	return p.snip(OpCodeDZGL1Voltage, "VolLocPhsA", 100)
+	return p.snip(VoltageL1, 100)
 }
 
 func (p *DZGProducer) Produce() (res []Operation) {
-	res = append(res, p.snip(OpCodeDZGL1Voltage, "VolLocPhsA", 100))
-	res = append(res, p.snip(OpCodeDZGL2Voltage, "VolLocPhsB", 100))
-	res = append(res, p.snip(OpCodeDZGL3Voltage, "VolLocPhsC", 100))
+	for _, op := range []Measurement{VoltageL1, VoltageL2, VoltageL1} {
+		res = append(res, p.snip(op, 100))
+	}
 
-	res = append(res, p.snip(OpCodeDZGL1Current, "AmpLocPhsA", 1000))
-	res = append(res, p.snip(OpCodeDZGL2Current, "AmpLocPhsB", 1000))
-	res = append(res, p.snip(OpCodeDZGL3Current, "AmpLocPhsC", 1000))
+	for _, op := range []Measurement{
+		CurrentL1, CurrentL2, CurrentL1,
+		Import, Export, Cosphi,
+	} {
+		res = append(res, p.snip(op, 1000))
+	}
 
-	res = append(res, p.snip(OpCodeDZGL1Import, "TotkWhImportPhsA"))
-	res = append(res, p.snip(OpCodeDZGL2Import, "TotkWhImportPhsB"))
-	res = append(res, p.snip(OpCodeDZGL3Import, "TotkWhImportPhsC"))
-	res = append(res, p.snip(OpCodeDZGTotalImport, "TotkWhImport", 1000))
-
-	res = append(res, p.snip(OpCodeDZGL1Export, "TotkWhExportPhsA"))
-	res = append(res, p.snip(OpCodeDZGL2Export, "TotkWhExportPhsB"))
-	res = append(res, p.snip(OpCodeDZGL3Export, "TotkWhExportPhsC"))
-	res = append(res, p.snip(OpCodeDZGTotalExport, "TotkWhExport", 1000))
+	for _, op := range []Measurement{
+		ImportL1, ImportL2, ImportL1,
+		ExportL1, ExportL2, ExportL1,
+	} {
+		res = append(res, p.snip(op))
+	}
 
 	return res
 }

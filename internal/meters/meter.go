@@ -16,7 +16,7 @@ type Operation struct {
 	FuncCode  uint8
 	OpCode    uint16
 	ReadLen   uint16
-	IEC61850  string
+	IEC61850  Measurement
 	Transform RTUTransform `json:"-"`
 }
 
@@ -48,6 +48,21 @@ type Producer interface {
 	GetMeterType() string
 	Produce() []Operation
 	Probe() Operation
+}
+
+// MeasurementMapping maps measurements to phyiscal registers
+type MeasurementMapping struct {
+	ops Measurements
+}
+
+// Opcode returns physical register for measurement type
+func (o *MeasurementMapping) Opcode(iec Measurement) uint16 {
+	if opcode, ok := o.ops[iec]; ok {
+		return opcode
+	}
+
+	log.Fatalf("Undefined opcode for measurement %s", iec.String())
+	return 0
 }
 
 // NewMeterByType meter factory

@@ -44,8 +44,8 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 	}{
 		DeviceId:    q.DeviceId,
 		Value:       q.Value,
-		IEC61850:    q.IEC61850,
-		Description: GetIecDescription(q.IEC61850),
+		IEC61850:    q.IEC61850.String(),
+		Description: q.IEC61850.Description(),
 		Timestamp:   q.ReadTimestamp.UnixNano() / 1e6,
 	})
 }

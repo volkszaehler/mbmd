@@ -28,7 +28,7 @@ func (mqttClient *MqttClient) Run() {
 				snip.DeviceId,
 				snip.IEC61850,
 				snip.Value,
-				GetIecDescription(snip.IEC61850))
+				snip.IEC61850)
 		}
 
 		uniqueID := fmt.Sprintf(UniqueIdFormat, snip.DeviceId)

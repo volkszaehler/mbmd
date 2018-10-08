@@ -212,7 +212,7 @@ SCAN:
 				log.Printf("Device %d: %s type device found, %s: %.2f\r\n",
 					deviceId,
 					producer.GetMeterType(),
-					GetIecDescription(snip.IEC61850),
+					snip.IEC61850,
 					snip.Transform(value))
 				dev := DeviceInfo{
 					DeviceId:  deviceId,

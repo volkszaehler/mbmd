@@ -53,56 +53,56 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr class="d-flex" v-if="meter.VolLocPhsA != null || meter.VolLocPhsB != null || meter.VolLocPhsC != null">
+						<tr class="d-flex" v-if="meter.VoltageL1 != null || meter.VoltageL2 != null || meter.VoltageL3 != null">
 							<td class="col-3">Voltage (V)</td>
-							<td class="col-2">${ meter.VolLocPhsA }</td>
-							<td class="col-2">${ meter.VolLocPhsB }</td>
-							<td class="col-2">${ meter.VolLocPhsC }</td>
+							<td class="col-2">${ meter.VoltageL1 }</td>
+							<td class="col-2">${ meter.VoltageL2 }</td>
+							<td class="col-2">${ meter.VoltageL3 }</td>
 							<td class="col-3">-</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.AmpLocPhsA != null || meter.AmpLocPhsB != null || meter.AmpLocPhsB != null">
+						<tr class="d-flex" v-if="meter.CurrentL1 != null || meter.CurrentL2 != null || meter.CurrentL3 != null">
 							<td class="col-3">Current (A)</td>
-							<td class="col-2">${ meter.AmpLocPhsA }</td>
-							<td class="col-2">${ meter.AmpLocPhsB }</td>
-							<td class="col-2">${ meter.AmpLocPhsB }</td>
-							<td class="col-3">${ (parseFloat(meter.AmpLocPhsA) + parseFloat(meter.AmpLocPhsB) + parseFloat(meter.AmpLocPhsB)).toFixed(2) }</td>
+							<td class="col-2">${ meter.CurrentL1 }</td>
+							<td class="col-2">${ meter.CurrentL2 }</td>
+							<td class="col-2">${ meter.CurrentL3 }</td>
+							<td class="col-3">${ (parseFloat(meter.CurrentL1) + parseFloat(meter.CurrentL2) + parseFloat(meter.CurrentL3)).toFixed(2) }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.WLocPhsA != null || meter.WLocPhsB != null || meter.WLocPhsB != null">
+						<tr class="d-flex" v-if="meter.PowerL1 != null || meter.PowerL2 != null || meter.PowerL3 != null">
 							<td class="col-3">Power (W)</td>
-							<td class="col-2">${ meter.WLocPhsA }</td>
-							<td class="col-2">${ meter.WLocPhsB }</td>
-							<td class="col-2">${ meter.WLocPhsB }</td>
-							<td class="col-3">${ (parseFloat(meter.WLocPhsA) + parseFloat(meter.WLocPhsB) + parseFloat(meter.WLocPhsB)).toFixed(2) }</td>
+							<td class="col-2">${ meter.PowerL1 }</td>
+							<td class="col-2">${ meter.PowerL2 }</td>
+							<td class="col-2">${ meter.PowerL3 }</td>
+							<td class="col-3">${ (parseFloat(meter.PowerL1) + parseFloat(meter.PowerL2) + parseFloat(meter.PowerL3)).toFixed(2) }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.TotkWhImportPhsA != null || meter.TotkWhImportPhsB != null || meter.TotkWhImportPhsB != null || meter.TotkWhImport != null">
+						<tr class="d-flex" v-if="meter.ImportL1 != null || meter.ImportL2 != null || meter.ImportL3 != null || meter.Import != null">
 							<td class="col-3">Import (kWh)</td>
-							<td class="col-2">${ meter.TotkWhImportPhsA }</td>
-							<td class="col-2">${ meter.TotkWhImportPhsB }</td>
-							<td class="col-2">${ meter.TotkWhImportPhsB }</td>
-							<td class="col-3">${ meter.TotkWhImport }</td>
+							<td class="col-2">${ meter.ImportL1 }</td>
+							<td class="col-2">${ meter.ImportL2 }</td>
+							<td class="col-2">${ meter.ImportL3 }</td>
+							<td class="col-3">${ meter.Import }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.TotkWhExportPhsA != null || meter.TotkWhExportPhsB != null || meter.TotkWhExportPhsB != null || meter.TotkWhExport != null">
+						<tr class="d-flex" v-if="meter.ExportL1 != null || meter.ExportL2 != null || meter.ExportL3 != null || meter.Export != null">
 							<td class="col-3">Export (kWh)</td>
-							<td class="col-2">${ meter.TotkWhExportPhsA }</td>
-							<td class="col-2">${ meter.TotkWhExportPhsB }</td>
-							<td class="col-2">${ meter.TotkWhExportPhsB }</td>
-							<td class="col-3">${ meter.TotkWhExport }</td>
+							<td class="col-2">${ meter.ExportL1 }</td>
+							<td class="col-2">${ meter.ExportL2 }</td>
+							<td class="col-2">${ meter.ExportL3 }</td>
+							<td class="col-3">${ meter.Export }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.AngLocPhsA != null || meter.AngLocPhsB != null || meter.AngLocPhsB != null">
-							<td class="col-3">Power Factor</td>
-							<td class="col-2">${ meter.AngLocPhsA }</td>
-							<td class="col-2">${ meter.AngLocPhsB }</td>
-							<td class="col-2">${ meter.AngLocPhsB }</td>
+						<tr class="d-flex" v-if="meter.CosphiL1 != null || meter.CosphiL2 != null || meter.CosphiL3 != null">
+							<td class="col-3">Power Factor (cos 𝜑)</td>
+							<td class="col-2">${ meter.CosphiL1 }</td>
+							<td class="col-2">${ meter.CosphiL2 }</td>
+							<td class="col-2">${ meter.CosphiL3 }</td>
 							<td class="col-3">-</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.ThdVolPhsA != null || meter.ThdVolPhsB != null || meter.ThdVolPhsB != null || meter.ThdVol != null">
+						<tr class="d-flex" v-if="meter.THDL1 != null || meter.THDL2 != null || meter.THDL3 != null || meter.THD != null">
 							<td class="col-3">THD Voltage (%)</td>
-							<td class="col-2">${ meter.ThdVolPhsA }</td>
-							<td class="col-2">${ meter.ThdVolPhsB }</td>
-							<td class="col-2">${ meter.ThdVolPhsB }</td>
-							<td class="col-3">${ meter.ThdVol }</td>
+							<td class="col-2">${ meter.THDL1 }</td>
+							<td class="col-2">${ meter.THDL2 }</td>
+							<td class="col-2">${ meter.THDL3 }</td>
+							<td class="col-3">${ meter.THD }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.Freq != null">
+						<tr class="d-flex" v-if="meter.Frequency != null">
 							<td class="col-3">Frequency (Hz)</td>
 							<td class="col-2">-</td>
 							<td class="col-2">-</td>
