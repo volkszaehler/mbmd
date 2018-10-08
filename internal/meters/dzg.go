@@ -46,9 +46,9 @@ func (p *DZGProducer) GetMeterType() string {
 }
 
 func (p *DZGProducer) snip(iec Measurement, scaler ...float64) Operation {
-	transform := RTU32ToFloat64 // default conversion
+	transform := RTUUint32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		transform = MakeRTU32ScaledIntToFloat64(scaler[0])
+		transform = MakeRTUScaledUint32ToFloat64(scaler[0])
 	}
 
 	snip := Operation{

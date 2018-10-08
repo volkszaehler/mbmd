@@ -4,139 +4,127 @@ const (
 	METERTYPE_SUN = "SUN"
 
 	// MODBUS protocol address (base 0)
-	Base = 40000 - 1
+	base = 40000
+)
 
+type SUNProducer struct {
+	MeasurementMapping
+}
+
+func NewSUNProducer() *SUNProducer {
 	/***
 	 * Opcodes for SunSpec- compatible Inverters like SolarEdge
 	 * https://www.solaredge.com/sites/default/files/sunspec-implementation-technical-note.pdf
 	 */
-	OpCodeSunSpecInverterL1Current = 73
-	OpCodeSunSpecInverterL2Current = 74
-	OpCodeSunSpecInverterL3Current = 75
+	ops := Measurements{
+		CurrentL1: 73,
+		CurrentL2: 74,
+		CurrentL3: 75, // + scaler
 
-	OpCodeSunSpecInverterL1Voltage = 80
-	OpCodeSunSpecInverterL2Voltage = 81
-	OpCodeSunSpecInverterL3Voltage = 82
+		VoltageL1: 80,
+		VoltageL2: 81,
+		VoltageL3: 82, // + scaler
 
-	OpCodeSunSpecInverterFrequency = 86
+		Power: 84, // + scaler
+		// ApparentPower: 88, // + scaler
+		// ReactivePower: 90, // + scaler
+		Export: 94, // + scaler
 
-	// // power
-	// q(base+84, 1)
-	// q(base+85, 1) // SF
+		Cosphi:    92, // + scaler
+		Frequency: 86, // + scaler
 
-	// // PF
-	// q(base+92, 1)
-	// q(base+93, 1) // SF
+		DCCurrent: 97,  // + scaler
+		DCVoltage: 99,  // + scaler
+		DCPower:   101, // + scaler
 
-	// q(base+1, 2)
-	// q(base+3, 1)
-	// q(base+5, 16)
-	// q(base+21, 16)
-	// q(base+45, 8)
-	// q(base+53, 16)
-
-	// q(base+69, 1)
-
-	// q(base+70, 1)
-	// q(base+71, 1)
-
-	// // strom
-	// q(base+72, 1) // total
-
-	// // power
-	// q(base+84, 1)
-	// q(base+85, 1) // SF
-
-	// // freq
-	// q(base+86, 1)
-	// q(base+87, 1) // SF
-
-	// // apparent
-	// q(base+88, 1)
-	// q(base+89, 1) // SF
-
-	// // reactive
-	// q(base+90, 1)
-	// q(base+91, 1) // SF
-
-	// // PF
-	// q(base+92, 1)
-	// q(base+93, 1) // SF
-
-	// // energy
-	// q(base+94, 2)
-
-	// q(base+97, 1)  // DC current + SF
-	// q(base+99, 1)  // DC voltage + SF
-	// q(base+101, 1) // DC power + SF
-
-	// // hreatsink temp
-	// q(base+104, 1)
-	// q(base+105, 1) // SF
-
-	// q(base+108, 1) // status
-	// q(base+109, 1) // vendor status
-
-	// // meter
-	// q(base+121, 1)
-)
-
-type SUNProducer struct {
-}
-
-func NewSUNProducer() *SUNProducer {
-	return &SUNProducer{}
+		HeatSinkTemp: 104, // + scaler
+	}
+	return &SUNProducer{
+		MeasurementMapping{ops},
+	}
 }
 
 func (p *SUNProducer) GetMeterType() string {
 	return METERTYPE_SUN
 }
 
-// func (p *SUNProducer) snip(opcode uint16, iec string) Operation {
-// 	return Operation{
-// 		FuncCode:  ReadHoldingReg,
-// 		OpCode:    Base + opcode,
-// 		ReadLen:   1,
-// 		IEC61850:  iec,
-// 		Transform: MakeRTU16ScaledIntToFloat64(10),
-// 	}
-// }
-
-func (p *SUNProducer) snip(opcode uint16, iec string, readlen uint16) Operation {
+func (p *SUNProducer) snip(iec Measurement, readlen uint16) Operation {
 	return Operation{
 		FuncCode: ReadHoldingReg,
-		OpCode:   Base + opcode,
+		OpCode:   base + p.Opcode(iec) - 1, // adjust according to docs
 		ReadLen:  readlen,
 		IEC61850: iec,
 	}
 }
 
-// op16 creates modbus operation for single register
-func (p *SUNProducer) snip16(opcode uint16, iec string, scaler ...float64) Operation {
-	snip := p.snip(opcode, iec, 1)
+func (p *SUNProducer) snip16uint(iec Measurement, scaler ...float64) Operation {
+	snip := p.snip(iec, 1)
 
-	snip.Transform = RTU16ToFloat64 // default conversion
+	snip.Transform = RTUUint16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTU16ScaledIntToFloat64(scaler[0])
+		snip.Transform = MakeRTUScaledUint16ToFloat64(scaler[0])
+	}
+
+	return snip
+}
+
+func (p *SUNProducer) snip16int(iec Measurement, scaler ...float64) Operation {
+	snip := p.snip(iec, 1)
+
+	snip.Transform = RTUInt16ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		snip.Transform = MakeRTUScaledInt16ToFloat64(scaler[0])
+	}
+
+	return snip
+}
+
+func (p *SUNProducer) snip32(iec Measurement, scaler ...float64) Operation {
+	snip := p.snip(iec, 2)
+
+	snip.Transform = RTUUint32ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		snip.Transform = MakeRTUScaledUint32ToFloat64(scaler[0])
 	}
 
 	return snip
 }
 
 func (p *SUNProducer) Probe() Operation {
-	return p.snip(OpCodeSunSpecInverterL1Voltage, "VolLocPhsA", 10)
+	return p.snip16uint(VoltageL1, 10)
 }
 
 func (p *SUNProducer) Produce() (res []Operation) {
-	res = append(res, p.snip16(OpCodeSunSpecInverterL1Voltage, "VolLocPhsA", 10))
-	res = append(res, p.snip16(OpCodeSunSpecInverterL2Voltage, "VolLocPhsB", 10))
-	res = append(res, p.snip16(OpCodeSunSpecInverterL3Voltage, "VolLocPhsC", 10))
+	for _, op := range []Measurement{
+		VoltageL1, VoltageL2, VoltageL1,
+	} {
+		res = append(res, p.snip16uint(op, 10))
+	}
 
-	res = append(res, p.snip16(OpCodeSunSpecInverterL1Current, "AmpLocPhsA", 100))
-	res = append(res, p.snip16(OpCodeSunSpecInverterL2Current, "AmpLocPhsB", 100))
-	res = append(res, p.snip16(OpCodeSunSpecInverterL3Current, "AmpLocPhsC", 100))
+	for _, op := range []Measurement{
+		CurrentL1, CurrentL2, CurrentL1,
+		Frequency,
+	} {
+		res = append(res, p.snip16uint(op, 100))
+	}
 
-	res = append(res, p.snip16(OpCodeSunSpecInverterFrequency, "Freq", 100))
+	for _, op := range []Measurement{
+		Power, Cosphi, DCPower, HeatSinkTemp,
+	} {
+		res = append(res, p.snip16int(op, 100))
+	}
+
+	for _, op := range []Measurement{
+		DCCurrent, DCVoltage,
+	} {
+		res = append(res, p.snip16uint(op, 10))
+	}
+
+	for _, op := range []Measurement{
+		Export,
+	} {
+		res = append(res, p.snip32(op, 1000))
+	}
 
 	return res
 }

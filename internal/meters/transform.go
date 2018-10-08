@@ -8,41 +8,54 @@ import (
 // RTUTransform functions convert RTU bytes to meaningful data types.
 type RTUTransform func([]byte) float64
 
-// RTU32ToFloat64 converts 32 bit readings
-func RTU32ToFloat64(b []byte) float64 {
+// RTUIeee754ToFloat64 converts 32 bit IEEE 754 float readings
+func RTUIeee754ToFloat64(b []byte) float64 {
 	bits := binary.BigEndian.Uint32(b)
 	f := math.Float32frombits(bits)
 	return float64(f)
 }
 
-// RTU16ToFloat64 converts 16 bit readings
-func RTU16ToFloat64(b []byte) float64 {
+// RTUUint16ToFloat64 converts 16 bit unsigned integer readings
+func RTUUint16ToFloat64(b []byte) float64 {
 	u := binary.BigEndian.Uint16(b)
 	return float64(u)
 }
 
-func rtuScaledInt32ToFloat64(b []byte, scalar float64) float64 {
-	unscaled := float64(binary.BigEndian.Uint32(b))
-	f := unscaled / scalar
-	return float64(f)
-}
-
-// MakeRTU32ScaledIntToFloat64 creates a 32 bit scaled reading transform
-func MakeRTU32ScaledIntToFloat64(scalar float64) RTUTransform {
+// MakeRTUScaledUint16ToFloat64 creates a 16 bit scaled reading transform
+func MakeRTUScaledUint16ToFloat64(scaler float64) RTUTransform {
 	return RTUTransform(func(b []byte) float64 {
-		return rtuScaledInt32ToFloat64(b, scalar)
+		unscaled := RTUUint16ToFloat64(b)
+		f := unscaled / scaler
+		return float64(f)
 	})
 }
 
-func rtuScaledInt16ToFloat64(b []byte, scalar float64) float64 {
-	unscaled := float64(binary.BigEndian.Uint16(b))
-	f := unscaled / scalar
-	return float64(f)
+// RTUUint32ToFloat64 converts 32 bit unsigned integer readings
+func RTUUint32ToFloat64(b []byte) float64 {
+	u := binary.BigEndian.Uint32(b)
+	return float64(u)
 }
 
-// MakeRTU16ScaledIntToFloat64 creates a 16 bit scaled reading transform
-func MakeRTU16ScaledIntToFloat64(scalar float64) RTUTransform {
+// MakeRTUScaledUint32ToFloat64 creates a 32 bit scaled reading transform
+func MakeRTUScaledUint32ToFloat64(scaler float64) RTUTransform {
 	return RTUTransform(func(b []byte) float64 {
-		return rtuScaledInt16ToFloat64(b, scalar)
+		unscaled := RTUUint32ToFloat64(b)
+		f := unscaled / scaler
+		return float64(f)
+	})
+}
+
+// RTUInt16ToFloat64 converts 16 bit signed integer readings
+func RTUInt16ToFloat64(b []byte) float64 {
+	u := uint16(b[0])<<8 + uint16(b[1])
+	return float64(u)
+}
+
+// MakeRTUScaledInt16ToFloat64 creates a 16 bit scaled reading transform
+func MakeRTUScaledInt16ToFloat64(scaler float64) RTUTransform {
+	return RTUTransform(func(b []byte) float64 {
+		unscaled := RTUInt16ToFloat64(b)
+		f := unscaled / scaler
+		return float64(f)
 	})
 }

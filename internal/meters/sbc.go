@@ -62,9 +62,9 @@ func (p *SBCProducer) snip(iec Measurement, readlen uint16) Operation {
 func (p *SBCProducer) snip16(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
-	snip.Transform = RTU16ToFloat64 // default conversion
+	snip.Transform = RTUUint16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTU16ScaledIntToFloat64(scaler[0])
+		snip.Transform = MakeRTUScaledUint16ToFloat64(scaler[0])
 	}
 
 	return snip
@@ -74,9 +74,9 @@ func (p *SBCProducer) snip16(iec Measurement, scaler ...float64) Operation {
 func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 2)
 
-	snip.Transform = RTU32ToFloat64 // default conversion
+	snip.Transform = RTUUint32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTU32ScaledIntToFloat64(scaler[0])
+		snip.Transform = MakeRTUScaledUint32ToFloat64(scaler[0])
 	}
 
 	return snip

@@ -50,7 +50,7 @@ func (p *JanitzaProducer) snip(iec Measurement) Operation {
 		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,
-		Transform: RTU32ToFloat64,
+		Transform: RTUIeee754ToFloat64,
 	}
 	return snip
 }

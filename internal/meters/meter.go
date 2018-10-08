@@ -2,6 +2,7 @@ package meters
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 )
