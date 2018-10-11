@@ -50,10 +50,12 @@ func main() {
 			Value: "SDM:1",
 			Usage: `MODBUS device type and ID to query, separated by comma.
 			Valid types are:
-			"SDM" for Eastron SDM meters
-			"JANITZA" for Janitza B-Series meters
-			"DZG" for the DZG Metering GmbH DVH4013 meters
-			"SBC" for the Saia Burgess Controls ALE3 meters
+			   ABB      ABB B-Series meters
+			   SDM      Eastron SDM meters
+			   JANITZA  Janitza B-Series meters
+			   DZG      DZG Metering GmbH DVH4013 meters
+			   SBC      Saia Burgess Controls ALE3 meters
+			   SUN      SunSpec-compatible inverters (e.g. SolarEdge 9k)
 			Example: -d JANITZA:1,SDM:22,DZG:23`,
 		},
 		cli.BoolFlag{

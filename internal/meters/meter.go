@@ -71,6 +71,8 @@ func NewMeterByType(typeid string, devid uint8) (*Meter, error) {
 	typeid = strings.ToUpper(typeid)
 
 	switch typeid {
+	case METERTYPE_ABB:
+		p = NewABBProducer()
 	case METERTYPE_SDM:
 		p = NewSDMProducer()
 	case METERTYPE_JANITZA:
