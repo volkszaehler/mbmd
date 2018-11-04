@@ -92,34 +92,32 @@ func (q *MeterScheduler) Run() {
 		select {
 		case snip := <-source:
 			q.out <- snip
+
 		case controlSnip := <-q.control:
+			meter, ok := q.meters[controlSnip.DeviceId]
+			if !ok {
+				log.Fatal("Internal device id mismatch")
+			}
+
 			switch controlSnip.Type {
 			case CONTROLSNIP_ERROR:
 				// search meter and deactivate it...
 				log.Printf("Device %d failed terminally due to: %s",
 					controlSnip.DeviceId, controlSnip.Message)
-				if meter, ok := q.meters[controlSnip.DeviceId]; ok {
-					state := meter.GetState()
-					meter.UpdateState(UNAVAILABLE)
-					if state == AVAILABLE && q.mc != nil {
-						// purge cache if present
-						q.mc.Purge(meter.DeviceId)
-					}
-				} else {
-					log.Fatal("Internal device id mismatch - this should not happen!")
+				state := meter.GetState()
+				meter.UpdateState(UNAVAILABLE)
+				if state == AVAILABLE && q.mc != nil {
+					// purge cache if present
+					q.mc.Purge(meter.DeviceId)
 				}
 			case CONTROLSNIP_OK:
 				// search meter and reactivate it...
-				if meter, ok := q.meters[controlSnip.DeviceId]; ok {
-					if meter.GetState() != AVAILABLE {
-						log.Printf("Reactivating device %d", controlSnip.DeviceId)
-						meter.UpdateState(AVAILABLE)
-					}
-				} else {
-					log.Fatal("Internal device id mismatch - this should not happen!")
+				if meter.GetState() != AVAILABLE {
+					log.Printf("Reactivating device %d", controlSnip.DeviceId)
+					meter.UpdateState(AVAILABLE)
 				}
 			default:
-				log.Fatal("Received unknown control snip - something weird happened.")
+				log.Fatal("Unknown control snip")
 			}
 		}
 	}

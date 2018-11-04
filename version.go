@@ -1,5 +1,5 @@
 package sdm630
 
 const (
-	RELEASEVERSION = "0.6.0"
+	RELEASEVERSION = "0.8.0"
 )
