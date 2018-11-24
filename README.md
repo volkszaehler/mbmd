@@ -71,6 +71,9 @@ reported for each connected phase.
  * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
  two tariffs, both import and export depending on meter version and compact (4TE).
  It's often used with Viessmann heat pumps.
+ * SunSpec: Apart from meters, SunSpec-compatible grid inverters are supported, too. This
+ includes popular devices from SolarEdge (SE3000, SE9000) and SMA (planned). Grid inverters
+ are typically connected using ModBus over TCP.
 
 Some of my test devices have been provided by [B+G
 E-Tech](http://bg-etech.de/) - please consider to buy your meter from

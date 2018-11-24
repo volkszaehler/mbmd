@@ -17,8 +17,17 @@ type Operation struct {
 	OpCode    uint16
 	ReadLen   uint16
 	IEC61850  Measurement
+	Splitter  Splitter     `json:"-"`
 	Transform RTUTransform `json:"-"`
 }
+
+type SplitResult struct {
+	OpCode   uint16
+	IEC61850 Measurement
+	Value    float64
+}
+
+type Splitter func(b []byte) []SplitResult
 
 type MeterState uint8
 

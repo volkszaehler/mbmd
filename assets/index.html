@@ -53,60 +53,81 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr class="d-flex" v-if="meter.VoltageL1 != null || meter.VoltageL2 != null || meter.VoltageL3 != null">
+						<tr class="d-flex" v-if="populated(meter.DCVoltage)">
+							<td class="col-3">DC Voltage (V)</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-3">${ val(meter.DCVoltage).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex" v-if="populated(meter.DCCurrent)">
+							<td class="col-3">DC Current (A)</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-3">${ val(meter.DCCurrent).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex" v-if="populated(meter.DCPower)">
+							<td class="col-3">DC Power (W)</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-3">${ val(meter.DCPower).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex" v-if="populated(meter.VoltageL1, meter.VoltageL2, meter.VoltageL3, meter.Voltage)">
 							<td class="col-3">Voltage (V)</td>
 							<td class="col-2">${ meter.VoltageL1 }</td>
 							<td class="col-2">${ meter.VoltageL2 }</td>
 							<td class="col-2">${ meter.VoltageL3 }</td>
-							<td class="col-3">-</td>
+							<td class="col-3">${ val(meter.Voltage).toFixed(2) }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.CurrentL1 != null || meter.CurrentL2 != null || meter.CurrentL3 != null">
+						<tr class="d-flex" v-if="populated(meter.CurrentL1, meter.CurrentL2, meter.CurrentL3, meter.Current)">
 							<td class="col-3">Current (A)</td>
 							<td class="col-2">${ meter.CurrentL1 }</td>
 							<td class="col-2">${ meter.CurrentL2 }</td>
 							<td class="col-2">${ meter.CurrentL3 }</td>
-							<td class="col-3">${ (parseFloat(meter.CurrentL1) + parseFloat(meter.CurrentL2) + parseFloat(meter.CurrentL3)).toFixed(2) }</td>
+							<td class="col-3">${ (val(meter.Current) || (val(meter.CurrentL1) + val(meter.CurrentL2) + val(meter.CurrentL3))).toFixed(2) }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.PowerL1 != null || meter.PowerL2 != null || meter.PowerL3 != null">
+						<tr class="d-flex" v-if="populated(meter.PowerL1, meter.PowerL2, meter.PowerL3, meter.Power)">
 							<td class="col-3">Power (W)</td>
 							<td class="col-2">${ meter.PowerL1 }</td>
 							<td class="col-2">${ meter.PowerL2 }</td>
 							<td class="col-2">${ meter.PowerL3 }</td>
-							<td class="col-3">${ (parseFloat(meter.PowerL1) + parseFloat(meter.PowerL2) + parseFloat(meter.PowerL3)).toFixed(2) }</td>
+							<td class="col-3">${ (val(meter.Power) || (val(meter.PowerL1) + val(meter.PowerL2) + val(meter.PowerL3))).toFixed(2) }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.ImportL1 != null || meter.ImportL2 != null || meter.ImportL3 != null || meter.Import != null">
+						<tr class="d-flex" v-if="populated(meter.ImportL1, meter.ImportL2, meter.ImportL3, meter.Import)">
 							<td class="col-3">Import (kWh)</td>
 							<td class="col-2">${ meter.ImportL1 }</td>
 							<td class="col-2">${ meter.ImportL2 }</td>
 							<td class="col-2">${ meter.ImportL3 }</td>
 							<td class="col-3">${ meter.Import }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.ExportL1 != null || meter.ExportL2 != null || meter.ExportL3 != null || meter.Export != null">
+						<tr class="d-flex" v-if="populated(meter.ExportL1, meter.ExportL2, meter.ExportL3, meter.Export)">
 							<td class="col-3">Export (kWh)</td>
 							<td class="col-2">${ meter.ExportL1 }</td>
 							<td class="col-2">${ meter.ExportL2 }</td>
 							<td class="col-2">${ meter.ExportL3 }</td>
 							<td class="col-3">${ meter.Export }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.CosphiL1 != null || meter.CosphiL2 != null || meter.CosphiL3 != null">
+						<tr class="d-flex" v-if="populated(meter.CosphiL1, meter.CosphiL2, meter.CosphiL3)">
 							<td class="col-3">Power Factor (cos 𝜑)</td>
 							<td class="col-2">${ meter.CosphiL1 }</td>
 							<td class="col-2">${ meter.CosphiL2 }</td>
 							<td class="col-2">${ meter.CosphiL3 }</td>
-							<td class="col-3">-</td>
+							<td class="col-3">&mdash;</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.THDL1 != null || meter.THDL2 != null || meter.THDL3 != null || meter.THD != null">
+						<tr class="d-flex" v-if="populated(meter.THDL1, meter.THDL2, meter.THDL3, meter.THD)">
 							<td class="col-3">THD Voltage (%)</td>
 							<td class="col-2">${ meter.THDL1 }</td>
 							<td class="col-2">${ meter.THDL2 }</td>
 							<td class="col-2">${ meter.THDL3 }</td>
 							<td class="col-3">${ meter.THD }</td>
 						</tr>
-						<tr class="d-flex" v-if="meter.Frequency != null">
+						<tr class="d-flex" v-if="populated(meter.Frequency)">
 							<td class="col-3">Frequency (Hz)</td>
-							<td class="col-2">-</td>
-							<td class="col-2">-</td>
-							<td class="col-2">-</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
+							<td class="col-2">&mdash;</td>
 							<td class="col-3">${ meter.Frequency }</td>
 						</tr>
 					</tbody>

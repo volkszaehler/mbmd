@@ -166,7 +166,45 @@ func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
 	return retval, err
 }
 
-func (q *ModbusEngine) Transform(
+// Transform converts raw query result into one or more Readings
+func (q *ModbusEngine) Transform(snip QuerySnip, bytes []byte) []QuerySnip {
+	now := time.Now()
+
+	if snip.Splitter != nil {
+		// block reading - needs splitting
+		snips := snip.Splitter(bytes)
+		res := make([]QuerySnip, len(snips))
+
+		for idx, sr := range snips {
+			splitSnip := QuerySnip{
+				DeviceId: snip.DeviceId,
+				Operation: Operation{
+					OpCode:   sr.OpCode,
+					IEC61850: sr.IEC61850,
+				},
+				Value:         sr.Value,
+				ReadTimestamp: now,
+			}
+			res[idx] = splitSnip
+		}
+
+		return res
+	}
+
+	// single reading
+	if snip.Transform == nil {
+		log.Fatalf("Snip transformation not defined: %v", snip)
+	}
+
+	// convert bytes to value
+	snip.Value = snip.Transform(bytes)
+	snip.ReadTimestamp = now
+
+	return []QuerySnip{snip}
+}
+
+// Run consumes device operations and produces operation results
+func (q *ModbusEngine) Run(
 	inputStream QuerySnipChannel,
 	controlStream ControlSnipChannel,
 	outputStream QuerySnipChannel,
@@ -183,16 +221,15 @@ func (q *ModbusEngine) Transform(
 		}
 
 		for retryCount := 0; retryCount < MaxRetryCount; retryCount++ {
-			reading, err := q.query(snip)
+			bytes, err := q.query(snip)
 			if err == nil {
-				if snip.Transform == nil {
-					log.Fatalf("Snip transformation not defined: %v", snip)
+				snips := q.Transform(snip, bytes)
+				for _, snip := range snips {
+					if q.verbose {
+						log.Printf("Device %d - %s: %.2f\n", snip.DeviceId, snip.IEC61850.String(), snip.Value)
+					}
+					outputStream <- snip
 				}
-
-				// convert bytes to value
-				snip.Value = snip.Transform(reading)
-				snip.ReadTimestamp = time.Now()
-				outputStream <- snip
 
 				// signal ok
 				successSnip := ControlSnip{

@@ -39,7 +39,7 @@ func SetupScheduler(meters map[uint8]*Meter, qe *ModbusEngine) (*MeterScheduler,
 		meters,
 	)
 
-	go qe.Transform(
+	go qe.Run(
 		scheduler2queryengine, // input
 		queryengine2scheduler, // error
 		queryengine2tee,       // output

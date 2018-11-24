@@ -6,8 +6,11 @@ type Measurements map[Measurement]uint16
 
 //go:generate stringer -type=Measurement
 const (
+	// split signals block operations that need be split into individual results
+	Split Measurement = iota
+
 	// phases
-	VoltageL1 Measurement = iota
+	VoltageL1
 	VoltageL2
 	VoltageL3
 	CurrentL1

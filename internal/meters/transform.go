@@ -47,7 +47,7 @@ func MakeRTUScaledUint32ToFloat64(scaler float64) RTUTransform {
 
 // RTUInt16ToFloat64 converts 16 bit signed integer readings
 func RTUInt16ToFloat64(b []byte) float64 {
-	u := uint16(b[0])<<8 + uint16(b[1])
+	u := int16(uint16(b[0])<<8 + uint16(b[1]))
 	return float64(u)
 }
 
