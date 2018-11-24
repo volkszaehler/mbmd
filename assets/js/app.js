@@ -4,6 +4,23 @@ var meterapp = new Vue({
 	data: {
 		meters: {},
 		message: 'Loading...'
+	},
+	methods: {
+		// populated returns true if it was called with any non-null argumnt
+		populated: function () {
+			for(var i = 0; i<arguments.length; i++) {
+				if (arguments[i] !== undefined && arguments[i] !== null && arguments[i] !== "") {
+					return true;
+				}
+			}
+			return false;
+		},
+
+		// val returns addable value: null, NaN and empty are converted to 0
+		val: function (v) {
+			v = parseFloat(v);
+			return isNaN(v) ? 0 : v;
+		}
 	}
 })
 
