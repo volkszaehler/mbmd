@@ -137,12 +137,23 @@ func (p *SUNProducer) mkSplitInt16(iecs ...Measurement) Splitter {
 	return p.mkBlockSplitter(2, RTUInt16ToFloat64, iecs...)
 }
 
+// RTUUint16ToFloat64WithNaN converts 16 bit unsigned integer readings
+// If byte sequence is 0xffff, NaN is returned for compatibility with 1-phase inverters
+func RTUUint16ToFloat64WithNaN(b []byte) float64 {
+	u := binary.BigEndian.Uint16(b)
+	if u == 0xffff {
+		return math.NaN()
+	}
+	return float64(u)
+}
+
 func (p *SUNProducer) mkSplitUint16(iecs ...Measurement) Splitter {
-	return p.mkBlockSplitter(2, RTUUint16ToFloat64, iecs...)
+	return p.mkBlockSplitter(2, RTUUint16ToFloat64WithNaN, iecs...)
 }
 
 func (p *SUNProducer) mkSplitUint32(iecs ...Measurement) Splitter {
-	return p.mkBlockSplitter(4, RTUUint32ToFloat64, iecs...)
+	// use div 1000 for kWh conversion
+	return p.mkBlockSplitter(4, MakeRTUScaledUint32ToFloat64(1000), iecs...)
 }
 
 func (p *SUNProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float64, iecs ...Measurement) Splitter {
@@ -152,12 +163,17 @@ func (p *SUNProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) floa
 		exp := int(int16(binary.BigEndian.Uint16(b[len(b)-2:]))) // last int16
 		scaler := math.Pow10(exp)
 
-		res := make([]SplitResult, len(iecs))
+		res := make([]SplitResult, 0, len(iecs))
 
 		// split result block into individual readings
-		for idx, iec := range iecs {
+		for _, iec := range iecs {
 			opcode := p.Opcode(iec)
 			val := valFunc(b[dataSize*(opcode-min):]) // 2 bytes per uint16, 4 bytes per uint32
+
+			// filter results of RTUUint16ToFloat64WithNaN
+			if math.IsNaN(val) {
+				continue
+			}
 
 			op := SplitResult{
 				OpCode:   base + opcode - 1,
@@ -165,7 +181,7 @@ func (p *SUNProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) floa
 				Value:    scaler * val,
 			}
 
-			res[idx] = op
+			res = append(res, op)
 		}
 
 		return res
