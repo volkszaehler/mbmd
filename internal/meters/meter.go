@@ -92,6 +92,8 @@ func NewMeterByType(typeid string, devid uint8) (*Meter, error) {
 		p = NewSBCProducer()
 	case METERTYPE_SE:
 		p = NewSEProducer()
+	case METERTYPE_SMA:
+		p = NewSMAProducer()
 	default:
 		return nil, fmt.Errorf("Unknown meter type %s", typeid)
 	}

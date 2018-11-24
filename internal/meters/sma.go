@@ -6,52 +6,58 @@ import (
 )
 
 const (
-	METERTYPE_SE = "SolarEdge"
+	METERTYPE_SMA = "SMA"
 )
 
-type SEProducer struct {
+type SMAProducer struct {
 	MeasurementMapping
 }
 
-func NewSEProducer() *SEProducer {
+func NewSMAProducer() *SMAProducer {
 	/***
-	 * Opcodes for SunSpec-compatible Inverters like SolarEdge
-	 * https://www.solaredge.com/sites/default/files/sunspec-implementation-technical-note.pdf
+	 * Opcodes for SMA SunSpec-compatible Inverters
+	 * https://www.sma.de/fileadmin/content/landingpages/pl/FAQ/SunSpec_Modbus-TI-en-15.pdf
 	 */
 	ops := Measurements{
-		Current:   72,
-		CurrentL1: 73,
-		CurrentL2: 74,
-		CurrentL3: 75, // + scaler
+		Current:   188, // uint16
+		CurrentL1: 189,
+		CurrentL2: 190,
+		CurrentL3: 191, // + scaler
 
-		VoltageL1: 80,
-		VoltageL2: 81,
-		VoltageL3: 82, // + scaler
+		VoltageL1: 196, // uint16
+		VoltageL2: 197,
+		VoltageL3: 198, // + scaler
 
-		Power: 84, // + scaler
-		// ApparentPower: 88, // + scaler
-		// ReactivePower: 90, // + scaler
-		Export: 94, // + scaler
+		Power: 200, // int16 + scaler
+		// ApparentPower: 204, // int16 + scaler
+		// ReactivePower: 206, // int16 + scaler
+		Export: 210, // uint32 + scaler
 
-		Cosphi:    92, // + scaler
-		Frequency: 86, // + scaler
+		Cosphi:    208, // int16 + scaler
+		Frequency: 202, // uint16 + scaler
 
-		DCCurrent: 97,  // + scaler
-		DCVoltage: 99,  // + scaler
-		DCPower:   101, // + scaler
+		DCPower: 217, // int16 + scaler
 
-		HeatSinkTemp: 104, // + scaler
+		// DC block with global scale factors
+		// DCCurrent1: 641,  // uint16
+		// DCVoltage1: 642,  // uint16
+		// DCPower1:   643, // uint16
+		// DCCurrent2: 661,  // uint16
+		// DCVoltage2: 662,  // uint16
+		// DCPower2:   663, // uint16
+
+		HeatSinkTemp: 219, // int16 + scaler
 	}
-	return &SEProducer{
+	return &SMAProducer{
 		MeasurementMapping{ops},
 	}
 }
 
-func (p *SEProducer) GetMeterType() string {
-	return METERTYPE_SE
+func (p *SMAProducer) GetMeterType() string {
+	return METERTYPE_SMA
 }
 
-func (p *SEProducer) snip(iec Measurement, readlen uint16) Operation {
+func (p *SMAProducer) snip(iec Measurement, readlen uint16) Operation {
 	return Operation{
 		FuncCode: ReadHoldingReg,
 		OpCode:   sunspecBase + p.Opcode(iec) - 1, // adjust according to docs
@@ -60,7 +66,7 @@ func (p *SEProducer) snip(iec Measurement, readlen uint16) Operation {
 	}
 }
 
-func (p *SEProducer) snip16uint(iec Measurement, scaler ...float64) Operation {
+func (p *SMAProducer) snip16uint(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
 	snip.Transform = RTUUint16ToFloat64 // default conversion
@@ -71,7 +77,7 @@ func (p *SEProducer) snip16uint(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
-func (p *SEProducer) snip16int(iec Measurement, scaler ...float64) Operation {
+func (p *SMAProducer) snip16int(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
 	snip.Transform = RTUInt16ToFloat64 // default conversion
@@ -82,7 +88,7 @@ func (p *SEProducer) snip16int(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
-func (p *SEProducer) snip32(iec Measurement, scaler ...float64) Operation {
+func (p *SMAProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 2)
 
 	snip.Transform = RTUUint32ToFloat64 // default conversion
@@ -93,7 +99,7 @@ func (p *SEProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
-func (p *SEProducer) minMax(iec ...Measurement) (uint16, uint16) {
+func (p *SMAProducer) minMax(iec ...Measurement) (uint16, uint16) {
 	var min = uint16(0xFFFF)
 	var max = uint16(0x0000)
 	for _, i := range iec {
@@ -109,7 +115,7 @@ func (p *SEProducer) minMax(iec ...Measurement) (uint16, uint16) {
 }
 
 // create a block reading function the result of which is then split into measurements
-func (p *SEProducer) scaleSnip16(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
+func (p *SMAProducer) scaleSnip16(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
 	min, max := p.minMax(iecs...)
 
 	// read register block
@@ -124,26 +130,26 @@ func (p *SEProducer) scaleSnip16(splitter func(...Measurement) Splitter, iecs ..
 	return op
 }
 
-func (p *SEProducer) scaleSnip32(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
+func (p *SMAProducer) scaleSnip32(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
 	op := p.scaleSnip16(splitter, iecs...)
 	op.ReadLen = (op.ReadLen-1)*2 + 1 // read 4 bytes instead of 2 plus trailing scale factor
 	return op
 }
 
-func (p *SEProducer) mkSplitInt16(iecs ...Measurement) Splitter {
+func (p *SMAProducer) mkSplitInt16(iecs ...Measurement) Splitter {
 	return p.mkBlockSplitter(2, RTUInt16ToFloat64, iecs...)
 }
 
-func (p *SEProducer) mkSplitUint16(iecs ...Measurement) Splitter {
+func (p *SMAProducer) mkSplitUint16(iecs ...Measurement) Splitter {
 	return p.mkBlockSplitter(2, RTUUint16ToFloat64WithNaN, iecs...)
 }
 
-func (p *SEProducer) mkSplitUint32(iecs ...Measurement) Splitter {
+func (p *SMAProducer) mkSplitUint32(iecs ...Measurement) Splitter {
 	// use div 1000 for kWh conversion
 	return p.mkBlockSplitter(4, MakeRTUScaledUint32ToFloat64(1000), iecs...)
 }
 
-func (p *SEProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float64, iecs ...Measurement) Splitter {
+func (p *SMAProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float64, iecs ...Measurement) Splitter {
 	min, _ := p.minMax(iecs...)
 	return func(b []byte) []SplitResult {
 		// get scaler from last entry in result block
@@ -175,11 +181,11 @@ func (p *SEProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float
 	}
 }
 
-func (p *SEProducer) Probe() Operation {
+func (p *SMAProducer) Probe() Operation {
 	return p.snip16uint(VoltageL1, 10)
 }
 
-func (p *SEProducer) Produce() (res []Operation) {
+func (p *SMAProducer) Produce() (res []Operation) {
 	res = []Operation{
 		// uint16
 		p.scaleSnip16(p.mkSplitUint16, VoltageL1, VoltageL2, VoltageL3),
