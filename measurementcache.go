@@ -58,7 +58,7 @@ func (mc *MeasurementCache) Consume() {
 			// add the snip to the cache
 			meter.AddSnip(snip)
 			if mc.verbose {
-				log.Printf("%s\r\n", meter.Current.String())
+				// log.Printf("%s\r\n", meter.Current.String())
 			}
 		} else {
 			log.Fatal("Snip for unknown meter received - this should not happen.")

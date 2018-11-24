@@ -225,6 +225,9 @@ func (q *ModbusEngine) Run(
 			if err == nil {
 				snips := q.Transform(snip, bytes)
 				for _, snip := range snips {
+					if q.verbose {
+						log.Printf("Device %d - %s: %.2f\n", snip.DeviceId, snip.IEC61850.String(), snip.Value)
+					}
 					outputStream <- snip
 				}
 
