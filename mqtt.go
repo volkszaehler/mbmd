@@ -38,18 +38,30 @@ func (mqttClient *MqttClient) Run() {
 		now := time.Now()
 		if mqttClient.mqttRate == 0 || now.Unix() > t {
 			message := fmt.Sprintf("%.3f", snip.Value)
-			token := mqttClient.client.Publish(topic, byte(mqttClient.mqttQos), true, message)
-			if mqttClient.verbose {
-				log.Printf("MQTT: push %s, message: %s", topic, message)
-			}
-			if token.Wait() && token.Error() != nil {
-				log.Fatal("MQTT: Error connecting, trying to reconnect: ", token.Error())
-			}
+			mqttClient.Publish(topic, false, message)
 			mqttRateMap[topic] = now.Unix() + int64(mqttClient.mqttRate)
 		} else {
 			if mqttClient.verbose {
 				log.Printf("MQTT: skipped %s, rate to high", topic)
 			}
+		}
+	}
+}
+
+// Publish MQTT message with error handling
+func (mqttClient *MqttClient) Publish(topic string, retained bool, message interface{}) {
+	token := mqttClient.client.Publish(topic, byte(mqttClient.mqttQos), false, message)
+	if mqttClient.verbose {
+		log.Printf("MQTT: publish %s, message: %s", topic, message)
+	}
+
+	if token.WaitTimeout(2000 * time.Millisecond) {
+		if token.Error() != nil {
+			log.Printf("MQTT: Error: %s", token.Error())
+		}
+	} else {
+		if mqttClient.verbose {
+			log.Printf("MQTT: Timeout")
 		}
 	}
 }
@@ -103,7 +115,7 @@ func NewMqttClient(
 	message = fmt.Sprintf("connected")
 	token := mqttClient.Publish(topic, byte(mqttQos), true, message)
 	if verbose {
-		log.Printf("MQTT: push %s, message: %s", topic, message)
+		log.Printf("MQTT: publish %s, message: %s", topic, message)
 	}
 	if token.Wait() && token.Error() != nil {
 		log.Fatal("MQTT: Error connecting, trying to reconnect: ", token.Error())
