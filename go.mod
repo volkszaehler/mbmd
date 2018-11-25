@@ -2,7 +2,7 @@ module github.com/gonium/gosdm630
 
 require (
 	github.com/aprice/embed v0.0.0-20171223211210-e0f543275bf966271e2c3b3ab70265f635f0394a
-	github.com/eclipse/paho.mqtt.golang v1.1.1
+	github.com/eclipse/paho.mqtt.golang v1.1.2-0.20181115095102-103f6a1ef3ff
 	github.com/goburrow/modbus v0.1.0
 	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect

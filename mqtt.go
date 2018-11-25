@@ -3,6 +3,7 @@ package sdm630
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -18,38 +19,47 @@ type MqttClient struct {
 }
 
 // Run MQTT client publisher
-func (mqttClient *MqttClient) Run() {
+func (m *MqttClient) Run() {
 	mqttRateMap := make(map[string]int64)
 
 	for {
-		snip := <-mqttClient.in
-		if mqttClient.verbose {
-			log.Printf("MQTT: got meter data (device %d: data: %s, value: %.3f, desc: %s)",
-				snip.DeviceId,
-				snip.IEC61850,
-				snip.Value,
-				snip.IEC61850.Description())
-		}
-
-		uniqueID := fmt.Sprintf(UniqueIdFormat, snip.DeviceId)
-		topic := fmt.Sprintf("%s/%s/%s", mqttClient.mqttTopic, uniqueID, snip.IEC61850)
+		snip := <-m.in
+		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.MeterTopic(snip.DeviceId), snip.IEC61850)
 
 		t := mqttRateMap[topic]
 		now := time.Now()
-		if mqttClient.mqttRate == 0 || now.Unix() > t {
+		if m.mqttRate == 0 || now.Unix() > t {
 			message := fmt.Sprintf("%.3f", snip.Value)
-			token := mqttClient.client.Publish(topic, byte(mqttClient.mqttQos), true, message)
-			if mqttClient.verbose {
-				log.Printf("MQTT: push %s, message: %s", topic, message)
-			}
-			if token.Wait() && token.Error() != nil {
-				log.Fatal("MQTT: Error connecting, trying to reconnect: ", token.Error())
-			}
-			mqttRateMap[topic] = now.Unix() + int64(mqttClient.mqttRate)
+			go m.Publish(topic, false, message)
+			mqttRateMap[topic] = now.Unix() + int64(m.mqttRate)
 		} else {
-			if mqttClient.verbose {
+			if m.verbose {
 				log.Printf("MQTT: skipped %s, rate to high", topic)
 			}
+		}
+	}
+}
+
+// MeterTopic converts meter's device id to topic string
+func (m *MqttClient) MeterTopic(deviceId uint8) string {
+	uniqueID := fmt.Sprintf(UniqueIdFormat, deviceId)
+	return strings.Replace(strings.ToLower(uniqueID), "#", "", -1)
+}
+
+// Publish MQTT message with error handling
+func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
+	token := m.client.Publish(topic, byte(m.mqttQos), false, message)
+	if m.verbose {
+		log.Printf("MQTT: publish %s, message: %s", topic, message)
+	}
+
+	if token.WaitTimeout(2000 * time.Millisecond) {
+		if token.Error() != nil {
+			log.Printf("MQTT: Error: %s", token.Error())
+		}
+	} else {
+		if m.verbose {
+			log.Printf("MQTT: Timeout")
 		}
 	}
 }
@@ -103,7 +113,7 @@ func NewMqttClient(
 	message = fmt.Sprintf("connected")
 	token := mqttClient.Publish(topic, byte(mqttQos), true, message)
 	if verbose {
-		log.Printf("MQTT: push %s, message: %s", topic, message)
+		log.Printf("MQTT: publish %s, message: %s", topic, message)
 	}
 	if token.Wait() && token.Error() != nil {
 		log.Fatal("MQTT: Error connecting, trying to reconnect: ", token.Error())
