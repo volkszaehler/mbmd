@@ -6,64 +6,34 @@ import (
 )
 
 const (
-	METERTYPE_SUN = "SUN"
-
 	// MODBUS protocol address (base 0)
-	base = 40000
+	sunspecBase = 40000
 )
 
-type SUNProducer struct {
+// RTUUint16ToFloat64WithNaN converts 16 bit unsigned integer readings
+// If byte sequence is 0xffff, NaN is returned for compatibility with SunSpec/SE 1-phase inverters
+func RTUUint16ToFloat64WithNaN(b []byte) float64 {
+	u := binary.BigEndian.Uint16(b)
+	if u == 0xffff {
+		return math.NaN()
+	}
+	return float64(u)
+}
+
+type SunSpecCore struct {
 	MeasurementMapping
 }
 
-func NewSUNProducer() *SUNProducer {
-	/***
-	 * Opcodes for SunSpec-compatible Inverters like SolarEdge
-	 * https://www.solaredge.com/sites/default/files/sunspec-implementation-technical-note.pdf
-	 */
-	ops := Measurements{
-		Current:   72,
-		CurrentL1: 73,
-		CurrentL2: 74,
-		CurrentL3: 75, // + scaler
-
-		VoltageL1: 80,
-		VoltageL2: 81,
-		VoltageL3: 82, // + scaler
-
-		Power: 84, // + scaler
-		// ApparentPower: 88, // + scaler
-		// ReactivePower: 90, // + scaler
-		Export: 94, // + scaler
-
-		Cosphi:    92, // + scaler
-		Frequency: 86, // + scaler
-
-		DCCurrent: 97,  // + scaler
-		DCVoltage: 99,  // + scaler
-		DCPower:   101, // + scaler
-
-		HeatSinkTemp: 104, // + scaler
-	}
-	return &SUNProducer{
-		MeasurementMapping{ops},
-	}
-}
-
-func (p *SUNProducer) GetMeterType() string {
-	return METERTYPE_SUN
-}
-
-func (p *SUNProducer) snip(iec Measurement, readlen uint16) Operation {
+func (p *SunSpecCore) snip(iec Measurement, readlen uint16) Operation {
 	return Operation{
 		FuncCode: ReadHoldingReg,
-		OpCode:   base + p.Opcode(iec) - 1, // adjust according to docs
+		OpCode:   sunspecBase + p.Opcode(iec) - 1, // adjust according to docs
 		ReadLen:  readlen,
 		IEC61850: iec,
 	}
 }
 
-func (p *SUNProducer) snip16uint(iec Measurement, scaler ...float64) Operation {
+func (p *SunSpecCore) snip16uint(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
 	snip.Transform = RTUUint16ToFloat64 // default conversion
@@ -74,7 +44,7 @@ func (p *SUNProducer) snip16uint(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
-func (p *SUNProducer) snip16int(iec Measurement, scaler ...float64) Operation {
+func (p *SunSpecCore) snip16int(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
 	snip.Transform = RTUInt16ToFloat64 // default conversion
@@ -85,7 +55,7 @@ func (p *SUNProducer) snip16int(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
-func (p *SUNProducer) snip32(iec Measurement, scaler ...float64) Operation {
+func (p *SunSpecCore) snip32(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 2)
 
 	snip.Transform = RTUUint32ToFloat64 // default conversion
@@ -96,7 +66,7 @@ func (p *SUNProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
-func (p *SUNProducer) minMax(iec ...Measurement) (uint16, uint16) {
+func (p *SunSpecCore) minMax(iec ...Measurement) (uint16, uint16) {
 	var min = uint16(0xFFFF)
 	var max = uint16(0x0000)
 	for _, i := range iec {
@@ -112,14 +82,14 @@ func (p *SUNProducer) minMax(iec ...Measurement) (uint16, uint16) {
 }
 
 // create a block reading function the result of which is then split into measurements
-func (p *SUNProducer) scaleSnip16(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
+func (p *SunSpecCore) scaleSnip16(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
 	min, max := p.minMax(iecs...)
 
 	// read register block
 	op := Operation{
 		FuncCode: ReadHoldingReg,
-		OpCode:   base + min - 1, // adjust according to docs
-		ReadLen:  max - min + 2,  // registers plus int16 scale factor
+		OpCode:   sunspecBase + min - 1, // adjust according to docs
+		ReadLen:  max - min + 2,         // registers plus int16 scale factor
 		IEC61850: Split,
 		Splitter: splitter(iecs...),
 	}
@@ -127,36 +97,26 @@ func (p *SUNProducer) scaleSnip16(splitter func(...Measurement) Splitter, iecs .
 	return op
 }
 
-func (p *SUNProducer) scaleSnip32(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
+func (p *SunSpecCore) scaleSnip32(splitter func(...Measurement) Splitter, iecs ...Measurement) Operation {
 	op := p.scaleSnip16(splitter, iecs...)
 	op.ReadLen = (op.ReadLen-1)*2 + 1 // read 4 bytes instead of 2 plus trailing scale factor
 	return op
 }
 
-func (p *SUNProducer) mkSplitInt16(iecs ...Measurement) Splitter {
+func (p *SunSpecCore) mkSplitInt16(iecs ...Measurement) Splitter {
 	return p.mkBlockSplitter(2, RTUInt16ToFloat64, iecs...)
 }
 
-// RTUUint16ToFloat64WithNaN converts 16 bit unsigned integer readings
-// If byte sequence is 0xffff, NaN is returned for compatibility with 1-phase inverters
-func RTUUint16ToFloat64WithNaN(b []byte) float64 {
-	u := binary.BigEndian.Uint16(b)
-	if u == 0xffff {
-		return math.NaN()
-	}
-	return float64(u)
-}
-
-func (p *SUNProducer) mkSplitUint16(iecs ...Measurement) Splitter {
+func (p *SunSpecCore) mkSplitUint16(iecs ...Measurement) Splitter {
 	return p.mkBlockSplitter(2, RTUUint16ToFloat64WithNaN, iecs...)
 }
 
-func (p *SUNProducer) mkSplitUint32(iecs ...Measurement) Splitter {
+func (p *SunSpecCore) mkSplitUint32(iecs ...Measurement) Splitter {
 	// use div 1000 for kWh conversion
 	return p.mkBlockSplitter(4, MakeRTUScaledUint32ToFloat64(1000), iecs...)
 }
 
-func (p *SUNProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float64, iecs ...Measurement) Splitter {
+func (p *SunSpecCore) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float64, iecs ...Measurement) Splitter {
 	min, _ := p.minMax(iecs...)
 	return func(b []byte) []SplitResult {
 		// get scaler from last entry in result block
@@ -176,7 +136,7 @@ func (p *SUNProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) floa
 			}
 
 			op := SplitResult{
-				OpCode:   base + opcode - 1,
+				OpCode:   sunspecBase + opcode - 1,
 				IEC61850: iec,
 				Value:    scaler * val,
 			}
@@ -186,31 +146,4 @@ func (p *SUNProducer) mkBlockSplitter(dataSize uint16, valFunc func([]byte) floa
 
 		return res
 	}
-}
-
-func (p *SUNProducer) Probe() Operation {
-	return p.snip16uint(VoltageL1, 10)
-}
-
-func (p *SUNProducer) Produce() (res []Operation) {
-	res = []Operation{
-		// uint16
-		p.scaleSnip16(p.mkSplitUint16, VoltageL1, VoltageL2, VoltageL3),
-		p.scaleSnip16(p.mkSplitUint16, Current, CurrentL1, CurrentL2, CurrentL3),
-
-		p.scaleSnip16(p.mkSplitUint16, Frequency),
-		p.scaleSnip16(p.mkSplitUint16, DCCurrent),
-		p.scaleSnip16(p.mkSplitUint16, DCVoltage),
-
-		// int16
-		p.scaleSnip16(p.mkSplitInt16, Cosphi),
-		p.scaleSnip16(p.mkSplitInt16, Power),
-		p.scaleSnip16(p.mkSplitInt16, DCPower),
-		p.scaleSnip16(p.mkSplitInt16, HeatSinkTemp),
-
-		// uint32
-		p.scaleSnip32(p.mkSplitUint32, Export),
-	}
-
-	return res
 }
