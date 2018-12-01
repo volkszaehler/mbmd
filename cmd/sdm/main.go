@@ -183,7 +183,6 @@ func main() {
 
 		// scheduler and meter data channel
 		scheduler, snips := SetupScheduler(meters, qe)
-		go scheduler.Run()
 
 		// tee that broadcasts meter messages to multiple recipients
 		tee := NewQuerySnipBroadcaster(snips)
@@ -205,15 +204,17 @@ func main() {
 				c.Bool("clean"),
 				c.Bool("verbose"))
 
+			// homie needs to scan the bust, start it first
+			if c.String("homie") != "" {
+				homieRunner := HomieRunner{MqttClient: mqtt}
+				homieRunner.Register(c.String("homie"), meters, qe)
+				go homieRunner.Run(tee.Attach(), c.Int("rate"))
+			}
+
+			// start "normal" mqtt handler after homie setup
 			if c.String("topic") != "" {
 				mqttRunner := MqttRunner{MqttClient: mqtt}
 				go mqttRunner.Run(tee.Attach(), c.Int("rate"))
-			}
-
-			if c.String("homie") != "" {
-				homieRunner := HomieRunner{MqttClient: mqtt}
-				homieRunner.Register(c.String("homie"), meters)
-				homieRunner.Run(tee.Attach(), c.Int("rate"))
 			}
 		}
 
@@ -226,6 +227,9 @@ func main() {
 			c.Bool("verbose"),
 		)
 		go mc.Consume()
+
+		// start the scheduler
+		go scheduler.Run()
 
 		Run_httpd(
 			mc,

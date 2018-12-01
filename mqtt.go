@@ -34,24 +34,6 @@ type MqttClient struct {
 	verbose   bool
 }
 
-// Publish MQTT message with error handling
-func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
-	token := m.client.Publish(topic, byte(m.mqttQos), false, message)
-	if m.verbose {
-		log.Printf("MQTT: publish %s, message: %s", topic, message)
-	}
-
-	if token.WaitTimeout(2000 * time.Millisecond) {
-		if token.Error() != nil {
-			log.Printf("MQTT: error: %s", token.Error())
-		}
-	} else {
-		if m.verbose {
-			log.Printf("MQTT: timeout")
-		}
-	}
-}
-
 func NewMqttClient(
 	mqttBroker string,
 	mqttTopic string,
@@ -110,6 +92,28 @@ func NewMqttClient(
 		mqttTopic: mqttTopic,
 		mqttQos:   mqttQos,
 		verbose:   verbose,
+	}
+}
+
+// Publish MQTT message with error handling
+func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
+	token := m.client.Publish(topic, byte(m.mqttQos), false, message)
+	if m.verbose {
+		log.Printf("MQTT: publish %s, message: %s", topic, message)
+	}
+	m.WaitForToken(token)
+}
+
+// WaitForToken synchronously waits until token operation completed
+func (m *MqttClient) WaitForToken(token MQTT.Token) {
+	if token.WaitTimeout(2000 * time.Millisecond) {
+		if token.Error() != nil {
+			log.Printf("MQTT: error: %s", token.Error())
+		}
+	} else {
+		if m.verbose {
+			log.Printf("MQTT: timeout")
+		}
 	}
 }
 

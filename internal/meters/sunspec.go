@@ -2,13 +2,30 @@ package meters
 
 import (
 	"encoding/binary"
+	"errors"
 	"math"
+	"strings"
 )
 
 const (
 	// MODBUS protocol address (base 0)
-	sunspecBase = 40000
+	sunspecBase         = 40000
+	sunspecID           = 1
+	sunspecModelID      = 3
+	sunspecManufacturer = 5
+	sunspecModel        = 21
+	sunspecVersion      = 45
+	sunspecSerial       = 53
+
+	sunsSignature = 0x53756e53 // SunS
 )
+
+type SunSpecDeviceDescriptor struct {
+	Manufacturer string
+	Model        string
+	Version      string
+	Serial       string
+}
 
 // RTUUint16ToFloat64WithNaN converts 16 bit unsigned integer readings
 // If byte sequence is 0xffff, NaN is returned for compatibility with SunSpec/SE 1-phase inverters
@@ -22,6 +39,44 @@ func RTUUint16ToFloat64WithNaN(b []byte) float64 {
 
 type SunSpecCore struct {
 	MeasurementMapping
+}
+
+func (p *SunSpecCore) GetSunSpecCommonBlock() Operation {
+	// must return 0x53756e53 = SunS
+	return Operation{
+		FuncCode: ReadHoldingReg,
+		OpCode:   sunspecBase, // adjust according to docs
+		ReadLen:  sunspecSerial,
+		// IEC61850: iec,
+	}
+}
+
+func (p *SunSpecCore) DecodeSunSpecCommonBlock(b []byte) (SunSpecDeviceDescriptor, error) {
+	// log.Printf("%0 x", b)
+	res := SunSpecDeviceDescriptor{}
+
+	if len(b) < sunspecSerial+2*16 {
+		return res, errors.New("Could not read SunSpec device descriptor")
+	}
+
+	u := binary.BigEndian.Uint32(b[sunspecID-1:])
+	if u != sunsSignature {
+		return res, errors.New("Invalid SunSpec device signature")
+	}
+
+	res.Manufacturer = p.stringDecode(b, sunspecManufacturer, 16)
+	res.Model = p.stringDecode(b, sunspecModel, 16)
+	res.Version = p.stringDecode(b, sunspecVersion, 8)
+	res.Serial = p.stringDecode(b, sunspecSerial, 16)
+
+	return res, nil
+}
+
+func (p *SunSpecCore) stringDecode(b []byte, reg int, len int) string {
+	start := 2 * (reg - 1)
+	end := 2 * (reg + len - 1)
+	// trim space and null
+	return strings.TrimRight(string(b[start:end-1]), " \x00")
 }
 
 func (p *SunSpecCore) snip(iec Measurement, readlen uint16) Operation {
