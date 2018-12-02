@@ -3,12 +3,12 @@ module github.com/gonium/gosdm630
 require (
 	github.com/aprice/embed v0.0.0-20171223211210-e0f543275bf966271e2c3b3ab70265f635f0394a
 	github.com/eclipse/paho.mqtt.golang v1.1.2-0.20181115095102-103f6a1ef3ff
-	github.com/goburrow/modbus v0.1.0
-	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.6.2
 	github.com/gorilla/websocket v1.4.0
+	github.com/grid-x/modbus v0.0.0-20181018165204-c7d0f8b5ab1b
+	github.com/grid-x/serial v0.0.0-20171015094157-98648473d6ff // indirect
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/tdewolff/minify v2.3.5+incompatible // indirect
 	github.com/tdewolff/parse v2.3.3+incompatible // indirect
