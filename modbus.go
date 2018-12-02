@@ -83,7 +83,7 @@ func NewModbusEngine(
 
 	if simulate {
 		log.Println("*** Simulation mode ***")
-		mbclient = NewMockClient(50) // 50% error rate for testing
+		mbclient = NewMockClient(20) // error rate for testing
 	} else {
 		// parse adapter string
 		re := regexp.MustCompile(":[0-9]+$")
@@ -142,7 +142,7 @@ func (q *ModbusEngine) setTimeout(timeout time.Duration) time.Duration {
 	return 0
 }
 
-func (q *ModbusEngine) query(snip QuerySnip) (retval []byte, err error) {
+func (q *ModbusEngine) Query(snip QuerySnip) (retval []byte, err error) {
 	q.setDevice(snip.DeviceId)
 
 	if snip.ReadLen <= 0 {
@@ -221,7 +221,7 @@ func (q *ModbusEngine) Run(
 		}
 
 		for retryCount := 0; retryCount < MaxRetryCount; retryCount++ {
-			bytes, err := q.query(snip)
+			bytes, err := q.Query(snip)
 			if err == nil {
 				snips := q.Transform(snip, bytes)
 				for _, snip := range snips {
@@ -289,7 +289,7 @@ SCAN:
 			operation := producer.Probe()
 			snip := NewQuerySnip(deviceId, operation)
 
-			value, err := q.query(snip)
+			value, err := q.Query(snip)
 			if err == nil {
 				log.Printf("Device %d: %s type device found, %s: %.2f\r\n",
 					deviceId,

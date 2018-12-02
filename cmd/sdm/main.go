@@ -92,7 +92,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "topic, t",
 			Value: "sdm",
-			Usage: "MQTT: Topic name to/from which to publish/subscribe (optional)",
+			Usage: "MQTT: Topic name to/from which to publish/subscribe. Set empty to disable publishing.",
 			// Destination: &mqttTopic,
 		},
 		cli.StringFlag{
@@ -110,13 +110,13 @@ func main() {
 		cli.StringFlag{
 			Name:  "clientid, i",
 			Value: "sdm630",
-			Usage: "MQTT: ClientID (optional)",
+			Usage: "MQTT: ClientID",
 			// Destination: &mqttClientID,
 		},
 		cli.IntFlag{
 			Name:  "rate, r",
 			Value: 0,
-			Usage: "MQTT: Maximum update rate (default 0, i.e. unlimited) (after a push we will ignore more data from same device and channel for this time)",
+			Usage: "MQTT: Maximum update rate in seconds per message, 0 is unlimited",
 			// Destination: &mqttRate,
 		},
 		cli.BoolFlag{
@@ -129,6 +129,11 @@ func main() {
 			Value: 0,
 			Usage: "MQTT: Quality of Service 0,1,2 (default 0)",
 			// Destination: &mqttQos,
+		},
+		cli.StringFlag{
+			Name:  "homie",
+			Value: "homie",
+			Usage: "MQTT: Homie IOT discovery base topic. Set empty to disable. See homieiot.github.io for details.",
 		},
 	}
 
@@ -178,7 +183,6 @@ func main() {
 
 		// scheduler and meter data channel
 		scheduler, snips := SetupScheduler(meters, qe)
-		go scheduler.Run()
 
 		// tee that broadcasts meter messages to multiple recipients
 		tee := NewQuerySnipBroadcaster(snips)
@@ -191,17 +195,27 @@ func main() {
 		// MQTT client
 		if c.String("broker") != "" {
 			mqtt := NewMqttClient(
-				tee.Attach(),
 				c.String("broker"),
 				c.String("topic"),
 				c.String("user"),
 				c.String("password"),
 				c.String("clientid"),
 				c.Int("qos"),
-				c.Int("rate"),
 				c.Bool("clean"),
 				c.Bool("verbose"))
-			go mqtt.Run()
+
+			// homie needs to scan the bust, start it first
+			if c.String("homie") != "" {
+				homieRunner := HomieRunner{MqttClient: mqtt}
+				homieRunner.Register(c.String("homie"), meters, qe)
+				go homieRunner.Run(tee.Attach(), c.Int("rate"))
+			}
+
+			// start "normal" mqtt handler after homie setup
+			if c.String("topic") != "" {
+				mqttRunner := MqttRunner{MqttClient: mqtt}
+				go mqttRunner.Run(tee.Attach(), c.Int("rate"))
+			}
 		}
 
 		// MeasurementCache for REST API
@@ -213,6 +227,9 @@ func main() {
 			c.Bool("verbose"),
 		)
 		go mc.Consume()
+
+		// start the scheduler
+		go scheduler.Run()
 
 		Run_httpd(
 			mc,
