@@ -3,12 +3,11 @@ package sdm630
 import (
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"time"
 
-	"github.com/goburrow/modbus"
 	. "github.com/gonium/gosdm630/internal/meters"
+	"github.com/grid-x/modbus"
 )
 
 const (
@@ -32,43 +31,61 @@ type ModbusEngine struct {
 	status  *Status
 }
 
-func NewRTUClientHandler(rtuDevice string, comset int, verbose bool) *modbus.RTUClientHandler {
-	// Modbus RTU/ASCII
-	rtuclient := modbus.NewRTUClientHandler(rtuDevice)
+// injectable logger for grid-x modbus implementation
+type modbusLogger struct{}
 
-	rtuclient.Parity = "N"
-	rtuclient.DataBits = 8
-	rtuclient.StopBits = 1
+func (l *modbusLogger) Printf(format string, v ...interface{}) {
+	log.Printf(format, v...)
+}
+
+// NewRTUClientHandler creates a serial line  RTU/ASCII modbus handler
+func NewRTUClientHandler(rtuDevice string, comset int, verbose bool) *modbus.RTUClientHandler {
+	handler := modbus.NewRTUClientHandler(rtuDevice)
+
+	handler.Parity = "N"
+	handler.DataBits = 8
+	handler.StopBits = 1
 
 	switch comset {
 	case ModbusComset2400_8N1:
-		rtuclient.BaudRate = 2400
+		handler.BaudRate = 2400
 	case ModbusComset9600_8N1:
-		rtuclient.BaudRate = 9600
+		handler.BaudRate = 9600
 	case ModbusComset19200_8N1:
-		rtuclient.BaudRate = 19200
+		handler.BaudRate = 19200
 	case ModbusComset2400_8E1:
-		rtuclient.BaudRate = 2400
-		rtuclient.Parity = "E"
+		handler.BaudRate = 2400
+		handler.Parity = "E"
 	case ModbusComset9600_8E1:
-		rtuclient.BaudRate = 9600
-		rtuclient.Parity = "E"
+		handler.BaudRate = 9600
+		handler.Parity = "E"
 	case ModbusComset19200_8E1:
-		rtuclient.BaudRate = 19200
-		rtuclient.Parity = "E"
+		handler.BaudRate = 19200
+		handler.Parity = "E"
 	default:
 		log.Fatal("Invalid communication set specified. See -h for help.")
 	}
 
-	rtuclient.Timeout = 300 * time.Millisecond
+	handler.Timeout = 300 * time.Millisecond
 	if verbose {
-		rtuclient.Logger = log.New(os.Stdout, "RTUClientHandler: ", log.LstdFlags)
+		logger := &modbusLogger{}
+		handler.Logger = logger
 		log.Printf("Connecting to RTU via %s, %d %d%s%d\r\n", rtuDevice,
-			rtuclient.BaudRate, rtuclient.DataBits, rtuclient.Parity,
-			rtuclient.StopBits)
+			handler.BaudRate, handler.DataBits, handler.Parity,
+			handler.StopBits)
 	}
 
-	return rtuclient
+	return handler
+}
+
+// NewTCPClientHandler creates a TCP modbus handler
+func NewTCPClientHandler(rtuDevice string, verbose bool) *modbus.TCPClientHandler {
+	handler := modbus.NewTCPClientHandler(rtuDevice)
+	if verbose {
+		logger := &modbusLogger{}
+		handler.Logger = logger
+	}
+	return handler
 }
 
 func NewModbusEngine(
@@ -89,20 +106,15 @@ func NewModbusEngine(
 		re := regexp.MustCompile(":[0-9]+$")
 		if re.MatchString(rtuDevice) {
 			// tcp connection
-			handler = modbus.NewTCPClientHandler(rtuDevice)
-			mbclient = modbus.NewClient(handler)
-
-			if err := handler.(*modbus.TCPClientHandler).Connect(); err != nil {
-				log.Fatal("Failed to connect: ", err)
-			}
+			handler = NewTCPClientHandler(rtuDevice, verbose)
 		} else {
 			// serial connection
 			handler = NewRTUClientHandler(rtuDevice, comset, verbose)
-			mbclient = modbus.NewClient(handler)
+		}
 
-			if err := handler.(*modbus.RTUClientHandler).Connect(); err != nil {
-				log.Fatal("Failed to connect: ", err)
-			}
+		mbclient = modbus.NewClient(handler)
+		if err := handler.Connect(); err != nil {
+			log.Fatal("Failed to connect: ", err)
 		}
 	}
 
@@ -112,18 +124,6 @@ func NewModbusEngine(
 		verbose: verbose,
 		status:  status,
 	}
-}
-
-func (q *ModbusEngine) setDevice(deviceId uint8) {
-	// update the slave id in the handler
-	if handler, ok := q.handler.(*modbus.RTUClientHandler); ok {
-		handler.SlaveId = deviceId
-	} else if handler, ok := q.handler.(*modbus.TCPClientHandler); ok {
-		handler.SlaveId = deviceId
-	} else if handler != nil {
-		log.Fatal("Unsupported modbus handler")
-	}
-	q.status.IncreaseRequestCounter()
 }
 
 func (q *ModbusEngine) setTimeout(timeout time.Duration) time.Duration {
@@ -143,7 +143,8 @@ func (q *ModbusEngine) setTimeout(timeout time.Duration) time.Duration {
 }
 
 func (q *ModbusEngine) Query(snip QuerySnip) (retval []byte, err error) {
-	q.setDevice(snip.DeviceId)
+	q.handler.SetSlave(snip.DeviceId)
+	q.status.IncreaseRequestCounter()
 
 	if snip.ReadLen <= 0 {
 		log.Fatalf("Invalid meter operation %v.", snip)
