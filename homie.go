@@ -101,9 +101,7 @@ func (m *HomieRunner) deviceDescriptor(meter *Meter, qe *ModbusEngine) SunSpecDe
 			Operation: op,
 		}
 		if b, err := qe.Query(snip); err == nil {
-			if descriptor, err = sunspec.DecodeSunSpecCommonBlock(b); err == nil {
-				fmt.Println(descriptor)
-			} else {
+			if descriptor, err = sunspec.DecodeSunSpecCommonBlock(b); err != nil {
 				log.Println(err)
 			}
 		} else {
