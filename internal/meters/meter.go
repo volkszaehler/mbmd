@@ -84,6 +84,8 @@ func NewMeterByType(typeid string, devid uint8) (*Meter, error) {
 		p = NewABBProducer()
 	case METERTYPE_SDM:
 		p = NewSDMProducer()
+	case METERTYPE_INEPRO:
+		p = NewIneproProducer()
 	case METERTYPE_JANITZA:
 		p = NewJanitzaProducer()
 	case METERTYPE_DZG:

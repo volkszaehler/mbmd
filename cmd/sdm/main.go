@@ -67,6 +67,7 @@ func main() {
 			Valid types are:
 			   ABB      ABB B-Series meters
 			   SDM      Eastron SDM meters
+			   INEPRO   Inepro Metering Pro 380 (experimental)
 			   JANITZA  Janitza B-Series meters
 			   DZG      DZG Metering GmbH DVH4013 meters
 			   SBC      Saia Burgess Controls ALE3 meters

@@ -21,10 +21,13 @@ const (
 	PowerL3
 	ActivePowerL1
 	ReactivePowerL1
+	ApparentPowerL1
 	ActivePowerL2
 	ReactivePowerL2
+	ApparentPowerL2
 	ActivePowerL3
 	ReactivePowerL3
+	ApparentPowerL3
 	ImportL1
 	ImportL2
 	ImportL3
@@ -47,6 +50,7 @@ const (
 	Power
 	ActivePower
 	ReactivePower
+	ApparentPower
 	PowerFactor
 	Cosphi
 	THD
@@ -57,10 +61,12 @@ const (
 	NetL1
 	NetL2
 	NetL3
+	Active
 	ActiveNet
 	ActiveNetL1
 	ActiveNetL2
 	ActiveNetL3
+	Reactive
 	ReactiveNet
 	ReactiveNetL1
 	ReactiveNetL2

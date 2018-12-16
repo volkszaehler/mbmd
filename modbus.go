@@ -278,6 +278,7 @@ func (q *ModbusEngine) Scan() {
 		NewSBCProducer(),
 		NewSEProducer(),
 		NewSMAProducer(),
+		NewIneproProducer(),
 	}
 
 SCAN:
