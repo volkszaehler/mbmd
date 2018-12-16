@@ -37,3 +37,6 @@ vendor/
 embeddedassets.go
 
 go.sum
+
+# created during build
+version.go

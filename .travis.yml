@@ -1,18 +1,13 @@
 sudo: false
 language: go
 go:
-  - 1.8
-  - 1.9
-  - "1.10"
+  - "1.11"
   - "master"
 go_import_path: github.com/gonium/gosdm630
 env:
   - "PATH=/home/travis/gopath/bin:$PATH"
-before_install:
-  - echo $TRAVIS_GO_VERSION
-  - go get -u github.com/golang/dep/cmd/dep
 install:
   - make dep
 script:
   - make
-  - go test
+  - make test

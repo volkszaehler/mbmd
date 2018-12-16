@@ -4,9 +4,9 @@ package meters
 
 import "strconv"
 
-const _Measurement_name = "SplitVoltageL1VoltageL2VoltageL3CurrentL1CurrentL2CurrentL3PowerL1PowerL2PowerL3ActivePowerL1ReactivePowerL1ActivePowerL2ReactivePowerL2ActivePowerL3ReactivePowerL3ImportL1ImportL2ImportL3ExportL1ExportL2ExportL3PowerFactorL1PowerFactorL2PowerFactorL3CosphiL1CosphiL2CosphiL3THDL1THDL2THDL3VoltageCurrentPowerActivePowerReactivePowerPowerFactorCosphiTHDFrequencyNetNetL1NetL2NetL3ActiveNetActiveNetL1ActiveNetL2ActiveNetL3ReactiveNetReactiveNetL1ReactiveNetL2ReactiveNetL3ImportExportActiveImportT1ActiveImportT2ReactiveImportT1ReactiveImportT2ActiveExportT1ActiveExportT2ReactiveExportT1ReactiveExportT2DCCurrentDCVoltageDCPowerHeatSinkTemp"
+const _Measurement_name = "SplitVoltageL1VoltageL2VoltageL3CurrentL1CurrentL2CurrentL3PowerL1PowerL2PowerL3ActivePowerL1ReactivePowerL1ApparentPowerL1ActivePowerL2ReactivePowerL2ApparentPowerL2ActivePowerL3ReactivePowerL3ApparentPowerL3ImportL1ImportL2ImportL3ExportL1ExportL2ExportL3PowerFactorL1PowerFactorL2PowerFactorL3CosphiL1CosphiL2CosphiL3THDL1THDL2THDL3VoltageCurrentPowerActivePowerReactivePowerApparentPowerPowerFactorCosphiTHDFrequencyNetNetL1NetL2NetL3ActiveActiveNetActiveNetL1ActiveNetL2ActiveNetL3ReactiveReactiveNetReactiveNetL1ReactiveNetL2ReactiveNetL3ImportExportActiveImportT1ActiveImportT2ReactiveImportT1ReactiveImportT2ActiveExportT1ActiveExportT2ReactiveExportT1ReactiveExportT2DCCurrentDCVoltageDCPowerHeatSinkTemp"
 
-var _Measurement_index = [...]uint16{0, 5, 14, 23, 32, 41, 50, 59, 66, 73, 80, 93, 108, 121, 136, 149, 164, 172, 180, 188, 196, 204, 212, 225, 238, 251, 259, 267, 275, 280, 285, 290, 297, 304, 309, 320, 333, 344, 350, 353, 362, 365, 370, 375, 380, 389, 400, 411, 422, 433, 446, 459, 472, 478, 484, 498, 512, 528, 544, 558, 572, 588, 604, 613, 622, 629, 641}
+var _Measurement_index = [...]uint16{0, 5, 14, 23, 32, 41, 50, 59, 66, 73, 80, 93, 108, 123, 136, 151, 166, 179, 194, 209, 217, 225, 233, 241, 249, 257, 270, 283, 296, 304, 312, 320, 325, 330, 335, 342, 349, 354, 365, 378, 391, 402, 408, 411, 420, 423, 428, 433, 438, 444, 453, 464, 475, 486, 494, 505, 518, 531, 544, 550, 556, 570, 584, 600, 616, 630, 644, 660, 676, 685, 694, 701, 713}
 
 func (i Measurement) String() string {
 	if i < 0 || i >= Measurement(len(_Measurement_index)-1) {

@@ -1,7 +1,6 @@
 PWD := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BIN := $(PWD)/bin
-BUILD := GOBIN=$(BIN) go install ./...
-GOPATH := $(shell go env GOPATH)
+BUILD := env GO111MODULE=on GOBIN=$(BIN) go install ./...
 
 all: build
 
@@ -16,24 +15,21 @@ binaries:
 assets:
 	./hash.sh
 	@echo "Generating embedded assets"
-	$(GOPATH)/bin/embed http.go
+	env GO111MODULE=on go generate ./...
 
 release: test clean assets
 	./build.sh
 
 test:
 	@echo "Running testsuite"
-	env GO111MODULE=on go test
+	env GO111MODULE=on go test ./...
 
 clean:
 	rm -rf bin/ pkg/ *.zip
 
 dep:
-	@echo "Installing vendor dependencies"
-	dep ensure
-
 	@echo "Installing embed tool"
-	env GO111MODULE=on go get github.com/aprice/embed/cmd/embed
 	env GO111MODULE=on go install github.com/aprice/embed/cmd/embed
+	env GO111MODULE=on go install golang.org/x/tools/cmd/stringer
 
 .PHONY: all build binaries assets release test clean dep
