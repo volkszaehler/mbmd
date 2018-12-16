@@ -39,7 +39,7 @@ func MkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 			SoftwareVersion string
 			GolangVersion   string
 		}{
-			SoftwareVersion: RELEASEVERSION,
+			SoftwareVersion: TAG,
 			GolangVersion:   runtime.Version(),
 		}
 		err := t.Execute(w, data)

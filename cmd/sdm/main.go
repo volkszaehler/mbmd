@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	. "github.com/gonium/gosdm630"
 	. "github.com/gonium/gosdm630/internal/meters"
+	"github.com/tcnksm/go-latest"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -16,11 +18,24 @@ const (
 	DEFAULT_METER_STORE_SECONDS = 120 * time.Second
 )
 
+func checkVersion() {
+	githubTag := &latest.GithubTag{
+		Owner:      "gonium",
+		Repository: "gosdm630",
+	}
+
+	if res, err := latest.Check(githubTag, TAG); err == nil {
+		if res.Outdated {
+			log.Printf("updates available - please upgrade to ingress %s", res.Current)
+		}
+	}
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "sdm"
 	app.Usage = "SDM MODBUS daemon"
-	app.Version = RELEASEVERSION
+	app.Version = fmt.Sprintf("%s (https://github.com/gonium/gosdm/commit/%s)", TAG, HASH)
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
 		// general
@@ -141,6 +156,8 @@ func main() {
 		if c.NArg() > 0 {
 			log.Fatalf("Unexpected arguments: %v", c.Args())
 		}
+
+		go checkVersion()
 
 		// Set unique ID format
 		UniqueIdFormat = c.String("unique_id_format")

@@ -24,6 +24,8 @@ function build {
 	zip $RELEASE/sdm630-$GOOS-$GOARCH $BIN/*
 }
 
+source hash.sh
+
 echo "Building for ..."
 echo "... Linux/32bit"
 build linux 386
@@ -31,7 +33,7 @@ echo "... Linux/64bit"
 build linux amd64
 echo "... Raspberry Pi/Linux"
 build linux arm 5
-echo "... Mac OS/64bit"
+echo "... MacOS/64bit"
 build darwin amd64
 echo "... Windows/32bit"
 build windows 386

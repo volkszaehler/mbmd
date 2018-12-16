@@ -14,6 +14,7 @@ binaries:
 	@ls -1 bin
 
 assets:
+	./hash.sh
 	@echo "Generating embedded assets"
 	$(GOPATH)/bin/embed http.go
 
