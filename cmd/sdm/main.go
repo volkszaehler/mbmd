@@ -72,7 +72,8 @@ func main() {
 			   DZG      DZG Metering GmbH DVH4013 meters
 			   SBC      Saia Burgess Controls ALE3 meters
 			   SE       SolarEdge SunSpec-compatible inverters (e.g. SolarEdge 9k)
-			   SMA      SMA SunSpec-compatible inverters (e.g. Sunny Boy or Tripower)
+			   SMA      SMA SunSpec-compatible inverters (e.g. Sunny Boy or Tripower) (experimental)
+			   KOSTAL   Kostal SunSpec-compatible inverters (e.g. Pico IQ) (experimental)
 			Example: -d JANITZA:1,SDM:22,DZG:23`,
 		},
 		cli.BoolFlag{

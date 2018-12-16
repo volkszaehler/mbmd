@@ -17,7 +17,7 @@ const (
 	sunspecVersion      = 45
 	sunspecSerial       = 53
 
-	sunsSignature = 0x53756e53 // SunS
+	sunspecSignature = 0x53756e53 // SunS
 )
 
 type SunSpecDeviceDescriptor struct {
@@ -60,7 +60,7 @@ func (p *SunSpecCore) DecodeSunSpecCommonBlock(b []byte) (SunSpecDeviceDescripto
 	}
 
 	u := binary.BigEndian.Uint32(b[sunspecID-1:])
-	if u != sunsSignature {
+	if u != sunspecSignature {
 		return res, errors.New("Invalid SunSpec device signature")
 	}
 

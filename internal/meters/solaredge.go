@@ -23,10 +23,10 @@ func NewSEProducer() *SEProducer {
 		VoltageL2: 81,
 		VoltageL3: 82, // + scaler
 
-		Power: 84, // + scaler
-		// ApparentPower: 88, // + scaler
-		// ReactivePower: 90, // + scaler
-		Export: 94, // + scaler
+		Power:         84, // + scaler
+		ApparentPower: 88, // + scaler
+		ReactivePower: 90, // + scaler
+		Export:        94, // + scaler
 
 		Cosphi:    92, // + scaler
 		Frequency: 86, // + scaler

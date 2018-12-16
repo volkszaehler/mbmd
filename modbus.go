@@ -279,6 +279,7 @@ func (q *ModbusEngine) Scan() {
 		NewSEProducer(),
 		NewSMAProducer(),
 		NewIneproProducer(),
+		NewKostalProducer(),
 	}
 
 SCAN:
