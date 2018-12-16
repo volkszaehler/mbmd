@@ -70,8 +70,7 @@ func NewMqttClient(
 
 	mqttClient := MQTT.NewClient(mqttOpts)
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatal("MQTT: error connecting: ", token.Error())
-		panic(token.Error())
+		log.Fatalf("MQTT: error connecting: %s", token.Error())
 	}
 	if verbose {
 		log.Println("MQTT: connected")
@@ -97,7 +96,7 @@ func NewMqttClient(
 
 // Publish MQTT message with error handling
 func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
-	token := m.client.Publish(topic, byte(m.mqttQos), false, message)
+	token := m.client.Publish(topic, byte(m.mqttQos), retained, message)
 	if m.verbose {
 		log.Printf("MQTT: publish %s, message: %s", topic, message)
 	}

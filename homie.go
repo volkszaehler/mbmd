@@ -130,6 +130,7 @@ func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *Modbu
 		}
 	}
 
+	// sort by measurement type
 	sort.Slice(snips, func(a, b int) bool {
 		return snips[a].IEC61850.String() < snips[b].IEC61850.String()
 	})
