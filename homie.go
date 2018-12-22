@@ -32,7 +32,7 @@ func (m *HomieRunner) Run(in QuerySnipChannel, rate int) {
 			m.rootTopic,
 			m.DeviceTopic(snip.DeviceId),
 			nodeTopic,
-			snip.IEC61850)
+			strings.ToLower(snip.IEC61850.String()))
 
 		if rateMap.Allowed(rate, topic) {
 			message := fmt.Sprintf("%.3f", snip.Value)
