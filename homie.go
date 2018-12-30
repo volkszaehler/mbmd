@@ -142,21 +142,20 @@ func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *Modbu
 		property := strings.ToLower(operation.IEC61850.String())
 		properties[i] = property
 
+		var unit string
 		description := operation.IEC61850.Description()
 		matches := re.FindStringSubmatch(description)
 		if len(matches) == 3 {
 			// strip unit from name
 			description = matches[1]
+			unit = matches[2]
 		}
 
 		propertySubtopic := fmt.Sprintf("%s/%s", subtopic, property)
 		m.publish(propertySubtopic+"/$name", description)
 
-		if len(matches) == 3 {
-			unit := matches[2]
-			m.publish(propertySubtopic+"/$unit", unit)
-			m.publish(propertySubtopic+"/$datatype", "float")
-		}
+		m.publish(propertySubtopic+"/$unit", unit)
+		m.publish(propertySubtopic+"/$datatype", "float")
 	}
 	m.publish(subtopic+"/$properties", strings.Join(properties[:], ","))
 }
