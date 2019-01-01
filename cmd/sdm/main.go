@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	. "github.com/gonium/gosdm630"
@@ -29,6 +32,39 @@ func checkVersion() {
 			log.Printf("updates available - please upgrade to ingress %s", res.Current)
 		}
 	}
+}
+
+func createMeters(deviceslice []string) map[uint8]*Meter {
+	meters := make(map[uint8]*Meter)
+	for _, meterdef := range deviceslice {
+		splitdef := strings.Split(meterdef, ":")
+		if len(splitdef) != 2 {
+			log.Fatalf("Cannot parse device definition %s. See -h for help.", meterdef)
+		}
+		metertype, devid := splitdef[0], splitdef[1]
+		id, err := strconv.Atoi(devid)
+		if err != nil {
+			log.Fatalf("Error parsing device id %s: %s. See -h for help.", meterdef, err.Error())
+		}
+		meter, err := NewMeterByType(metertype, uint8(id))
+		if err != nil {
+			log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
+		}
+		meters[uint8(id)] = meter
+	}
+	return meters
+}
+
+func waitForSignal(signals ...os.Signal) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	channel := make(chan os.Signal, 1)
+	signal.Notify(channel, signals...)
+	go func() {
+		<-channel
+		wg.Done()
+	}()
+	wg.Wait()
 }
 
 func main() {
@@ -80,11 +116,17 @@ func main() {
 			Name:  "detect",
 			Usage: "Detect MODBUS devices",
 		},
+		cli.IntFlag{
+			Name:  "rate, r",
+			Value: 0,
+			Usage: "Maximum update rate in seconds per message, 0 is unlimited",
+			// Destination: &mqttRate,
+		},
 		cli.StringFlag{
-			Name:  "unique_id_format, f",
-			Value: "Meter#%d",
-			Usage: `Unique ID format.
-			Example: -f Meter#%d
+			Name:  "idformat, f",
+			Value: "Meter%d",
+			Usage: `Meter id format. Determines meter id for REST and MQTT.
+			Example: -f Meter%d
 			The %d is replaced by the device ID`,
 		},
 		cli.BoolFlag{
@@ -109,7 +151,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "topic, t",
 			Value: "sdm",
-			Usage: "MQTT: Topic name to/from which to publish/subscribe. Set empty to disable publishing.",
+			Usage: "MQTT: Base topic. Set empty to disable publishing.",
 			// Destination: &mqttTopic,
 		},
 		cli.StringFlag{
@@ -130,27 +172,21 @@ func main() {
 			Usage: "MQTT: ClientID",
 			// Destination: &mqttClientID,
 		},
-		cli.IntFlag{
-			Name:  "rate, r",
-			Value: 0,
-			Usage: "MQTT: Maximum update rate in seconds per message, 0 is unlimited",
-			// Destination: &mqttRate,
-		},
 		cli.BoolFlag{
 			Name:  "clean, l",
-			Usage: "MQTT: Set Clean Session (default false)",
+			Usage: "MQTT: Set Clean Session (default: false)",
 			// Destination: &mqttCleanSession,
 		},
 		cli.IntFlag{
 			Name:  "qos, q",
 			Value: 0,
-			Usage: "MQTT: Quality of Service 0,1,2 (default 0)",
+			Usage: "MQTT: Quality of Service 0,1,2",
 			// Destination: &mqttQos,
 		},
 		cli.StringFlag{
 			Name:  "homie",
 			Value: "homie",
-			Usage: "MQTT: Homie IOT discovery base topic. Set empty to disable. See homieiot.github.io for details.",
+			Usage: "MQTT: Homie IoT discovery base topic (homieiot.github.io). Set empty to disable.",
 		},
 	}
 
@@ -159,30 +195,14 @@ func main() {
 			log.Fatalf("Unexpected arguments: %v", c.Args())
 		}
 
+		log.Printf("sdm %s %s", TAG, HASH)
 		go checkVersion()
 
 		// Set unique ID format
-		UniqueIdFormat = c.String("unique_id_format")
+		UniqueIdFormat = c.String("idformat")
 
 		// Parse the devices parameter
-		deviceslice := strings.Split(c.String("devices"), ",")
-		meters := make(map[uint8]*Meter)
-		for _, meterdef := range deviceslice {
-			splitdef := strings.Split(meterdef, ":")
-			if len(splitdef) != 2 {
-				log.Fatalf("Cannot parse device definition %s. See -h for help.", meterdef)
-			}
-			metertype, devid := splitdef[0], splitdef[1]
-			id, err := strconv.Atoi(devid)
-			if err != nil {
-				log.Fatalf("Error parsing device id %s: %s. See -h for help.", meterdef, err.Error())
-			}
-			meter, err := NewMeterByType(metertype, uint8(id))
-			if err != nil {
-				log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
-			}
-			meters[uint8(id)] = meter
-		}
+		meters := createMeters(strings.Split(c.String("devices"), ","))
 
 		// create ModbusEngine with status
 		status := NewStatus(meters)
@@ -208,8 +228,8 @@ func main() {
 		go tee.Run()
 
 		// websocket hub
-		hub := NewSocketHub(tee.Attach(), status)
-		go hub.Run()
+		hub := NewSocketHub(status)
+		tee.AttachRunner(hub.Run)
 
 		// MQTT client
 		if c.String("broker") != "" {
@@ -227,28 +247,40 @@ func main() {
 			if c.String("homie") != "" {
 				homieRunner := HomieRunner{MqttClient: mqtt}
 				homieRunner.Register(c.String("homie"), meters, qe)
-				go homieRunner.Run(tee.Attach(), c.Int("rate"))
+				tee.AttachRunner(homieRunner.Run)
 			}
 
 			// start "normal" mqtt handler after homie setup
 			if c.String("topic") != "" {
 				mqttRunner := MqttRunner{MqttClient: mqtt}
-				go mqttRunner.Run(tee.Attach(), c.Int("rate"))
+				tee.AttachRunner(mqttRunner.Run)
 			}
 		}
 
 		// MeasurementCache for REST API
 		mc := NewMeasurementCache(
 			meters,
-			tee.Attach(),
 			scheduler,
 			DEFAULT_METER_STORE_SECONDS,
 			c.Bool("verbose"),
 		)
-		go mc.Consume()
+		tee.AttachRunner(mc.Run)
 
 		// start the scheduler
-		go scheduler.Run()
+		ctx, cancelScheduler := context.WithCancel(context.Background())
+		go scheduler.Run(ctx, c.Int("rate"))
+
+		// handle os signals and gracefully exit Run methods
+		go func() {
+			waitForSignal(os.Interrupt, os.Kill)
+			log.Println("Received signal - stopping")
+			cancelScheduler() // cancel scheduler
+			select {          // wait for Run methods attached to tee to finish
+			case <-tee.Done():
+				log.Println("Stopped")
+				os.Exit(0)
+			}
+		}()
 
 		Run_httpd(
 			mc,

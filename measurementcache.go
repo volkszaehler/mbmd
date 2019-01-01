@@ -11,7 +11,6 @@ import (
 )
 
 type MeasurementCache struct {
-	in      QuerySnipChannel
 	meters  map[uint8]MeasurementCacheItem
 	maxAge  time.Duration
 	verbose bool
@@ -24,7 +23,6 @@ type MeasurementCacheItem struct {
 
 func NewMeasurementCache(
 	meters map[uint8]*Meter,
-	inChannel QuerySnipChannel,
 	scheduler *MeterScheduler,
 	maxAge time.Duration,
 	isVerbose bool,
@@ -39,7 +37,6 @@ func NewMeasurementCache(
 	}
 
 	cache := &MeasurementCache{
-		in:      inChannel,
 		meters:  items,
 		maxAge:  maxAge,
 		verbose: isVerbose,
@@ -49,9 +46,9 @@ func NewMeasurementCache(
 	return cache
 }
 
-func (mc *MeasurementCache) Consume() {
-	for {
-		snip := <-mc.in
+// Run consumes meter readings into snip cache
+func (mc *MeasurementCache) Run(in QuerySnipChannel) {
+	for snip := range in {
 		devid := snip.DeviceId
 		// Search corresponding meter
 		if meter, ok := mc.meters[devid]; ok {
@@ -61,7 +58,7 @@ func (mc *MeasurementCache) Consume() {
 				// log.Printf("%s\r\n", meter.Current.String())
 			}
 		} else {
-			log.Fatal("Snip for unknown meter received - this should not happen.")
+			log.Fatalf("Snip for unknown meter received - this should not happen (%v).", snip)
 		}
 	}
 }

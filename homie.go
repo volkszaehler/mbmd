@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
+	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 
@@ -15,33 +17,28 @@ import (
 const (
 	version   = "3.0.1"
 	nodeTopic = "meter"
+	timeout   = 500 * time.Millisecond
 )
 
 type HomieRunner struct {
 	*MqttClient
 	rootTopic string
+	meters    map[uint8]*Meter
 }
 
 // Run MQTT client publisher
-func (m *HomieRunner) Run(in QuerySnipChannel, rate int) {
-	rateMap := make(RateMap)
+func (m *HomieRunner) Run(in QuerySnipChannel) {
+	defer m.unregister() // cleanup topics
 
-	for {
-		snip := <-in
+	for snip := range in {
 		topic := fmt.Sprintf("%s/%s/%s/%s",
 			m.rootTopic,
 			m.DeviceTopic(snip.DeviceId),
 			nodeTopic,
 			strings.ToLower(snip.IEC61850.String()))
 
-		if rateMap.Allowed(rate, topic) {
-			message := fmt.Sprintf("%.3f", snip.Value)
-			go m.Publish(topic, false, message)
-		} else {
-			if m.verbose {
-				log.Printf("MQTT: skipped %s, rate to high", topic)
-			}
-		}
+		message := fmt.Sprintf("%.3f", snip.Value)
+		go m.Publish(topic, false, message)
 	}
 }
 
@@ -182,10 +179,10 @@ func (m *HomieRunner) unpublish(subtopic string) {
 		tokens = append(tokens, token)
 	}))
 
-	// wait for tokens
-	for _, token := range tokens {
-		m.WaitForToken(token)
-	}
+		// wait for tokens
+		for _, token := range tokens {
+			m.WaitForToken(token)
+		}
 
 	// stop listening
 	token := m.client.Unsubscribe(topic)
