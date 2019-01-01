@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
+	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 
@@ -15,33 +17,28 @@ import (
 const (
 	version   = "3.0.1"
 	nodeTopic = "meter"
+	timeout   = 500 * time.Millisecond
 )
 
 type HomieRunner struct {
 	*MqttClient
 	rootTopic string
+	meters    map[uint8]*Meter
 }
 
 // Run MQTT client publisher
-func (m *HomieRunner) Run(in QuerySnipChannel, rate int) {
-	rateMap := make(RateMap)
+func (m *HomieRunner) Run(in QuerySnipChannel) {
+	defer m.unregister() // cleanup topics
 
-	for {
-		snip := <-in
+	for snip := range in {
 		topic := fmt.Sprintf("%s/%s/%s/%s",
 			m.rootTopic,
 			m.DeviceTopic(snip.DeviceId),
 			nodeTopic,
 			strings.ToLower(snip.IEC61850.String()))
 
-		if rateMap.Allowed(rate, topic) {
-			message := fmt.Sprintf("%.3f", snip.Value)
-			go m.Publish(topic, false, message)
-		} else {
-			if m.verbose {
-				log.Printf("MQTT: skipped %s, rate to high", topic)
-			}
-		}
+		message := fmt.Sprintf("%.3f", snip.Value)
+		go m.Publish(topic, false, message)
 	}
 }
 
@@ -49,10 +46,21 @@ func (m *HomieRunner) Run(in QuerySnipChannel, rate int) {
 func (m *HomieRunner) Register(rootTopic string, meters map[uint8]*Meter, qe *ModbusEngine) {
 	// mqttOpts.SetWill(m.homieTopic("$state"), "lost", byte(m.mqttQos), true)
 	m.rootTopic = stripSlash(rootTopic)
+	m.meters = meters
 
 	// devices
 	for _, meter := range meters {
 		m.publishMeter(meter, qe)
+	}
+}
+
+// Register subcribes GoSDM as discoverable device
+func (m *HomieRunner) unregister() {
+	// devices
+	for _, meter := range m.meters {
+		// clear retained messages
+		subTopic := m.DeviceTopic(meter.DeviceId)
+		m.unpublish(subTopic)
 	}
 }
 
@@ -169,25 +177,38 @@ func (m *HomieRunner) publish(subtopic string, message string) {
 func (m *HomieRunner) unpublish(subtopic string) {
 	topic := fmt.Sprintf("%s/%s/#", m.rootTopic, subtopic)
 	if m.verbose {
-		log.Printf("MQTT: cleaning %s", topic)
+		log.Printf("MQTT: unpublish %s", topic)
 	}
 
+	var mux sync.Mutex
 	tokens := make([]MQTT.Token, 0)
+
+	mux.Lock()
 	tokens = append(tokens, m.client.Subscribe(topic, byte(m.mqttQos), func(c MQTT.Client, msg MQTT.Message) {
 		topic := msg.Topic()
 		token := m.client.Publish(topic, byte(m.mqttQos), true, []byte{})
 		if m.verbose {
-			log.Printf("MQTT: cleaned %s", topic)
+			// log.Printf("MQTT: unpublish %s", topic)
 		}
+
+		mux.Lock()
+		defer mux.Unlock()
 		tokens = append(tokens, token)
 	}))
+	mux.Unlock()
 
-	// wait for tokens
-	for _, token := range tokens {
-		m.WaitForToken(token)
+	// wait for timeout according to specification
+	select {
+	case <-time.After(timeout):
+		mux.Lock()
+		defer mux.Unlock()
+
+		// stop listening
+		m.client.Unsubscribe(topic)
+
+		// wait for tokens
+		for _, token := range tokens {
+			m.WaitForToken(token)
+		}
 	}
-
-	// stop listening
-	token := m.client.Unsubscribe(topic)
-	m.WaitForToken(token)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	MaxRetryCount = 5
+	maxRetry = 5
 )
 
 const (
@@ -206,14 +206,15 @@ func (q *ModbusEngine) Transform(snip QuerySnip, bytes []byte) []QuerySnip {
 
 // Run consumes device operations and produces operation results
 func (q *ModbusEngine) Run(
-	inputStream QuerySnipChannel,
-	controlStream ControlSnipChannel,
-	outputStream QuerySnipChannel,
+	snipChannel QuerySnipChannel,
+	controlChannel ControlSnipChannel,
+	outputChannel QuerySnipChannel,
 ) {
+	defer close(outputChannel)
+	defer close(controlChannel)
+
 	var previousDeviceId uint8
-	for {
-	PROCESS_READINGS:
-		snip := <-inputStream
+	for snip := range snipChannel {
 		// The SDM devices need to have a little pause between querying
 		// different devices.
 		if previousDeviceId != snip.DeviceId {
@@ -221,41 +222,48 @@ func (q *ModbusEngine) Run(
 			previousDeviceId = snip.DeviceId
 		}
 
-		for retryCount := 0; retryCount < MaxRetryCount; retryCount++ {
-			bytes, err := q.Query(snip)
+		var bytes []byte
+		var err error
+		var controlSnip ControlSnip
+
+		for retry := 0; retry < maxRetry; retry++ {
+			bytes, err = q.Query(snip)
 			if err == nil {
-				snips := q.Transform(snip, bytes)
-				for _, snip := range snips {
-					if q.verbose {
-						log.Printf("Device %d - %s: %.2f\n", snip.DeviceId, snip.IEC61850.String(), snip.Value)
-					}
-					outputStream <- snip
-				}
+				break
+			}
 
-				// signal ok
-				successSnip := ControlSnip{
-					Type:     CONTROLSNIP_OK,
-					Message:  "OK",
-					DeviceId: snip.DeviceId,
-				}
-				controlStream <- successSnip
+			q.status.IncreaseReconnectCounter()
+			log.Printf("Device %d failed to respond - retry attempt %d of %d",
+				snip.DeviceId, retry+1, maxRetry)
+			time.Sleep(time.Duration(100) * time.Millisecond)
+		}
 
-				goto PROCESS_READINGS
-			} else {
-				q.status.IncreaseReconnectCounter()
-				log.Printf("Device %d failed to respond - retry attempt %d of %d",
-					snip.DeviceId, retryCount+1, MaxRetryCount)
-				time.Sleep(time.Duration(100) * time.Millisecond)
+		if err == nil {
+			// success
+			snips := q.Transform(snip, bytes)
+			for _, snip := range snips {
+				if q.verbose {
+					log.Printf("Device %d - %s: %.2f\n", snip.DeviceId, snip.IEC61850.String(), snip.Value)
+				}
+				outputChannel <- snip
+			}
+
+			// signal ok
+			controlSnip = ControlSnip{
+				Type:     CONTROLSNIP_OK,
+				Message:  "OK",
+				DeviceId: snip.DeviceId,
+			}
+		} else {
+			// signal error
+			controlSnip = ControlSnip{
+				Type:     CONTROLSNIP_ERROR,
+				Message:  fmt.Sprintf("Device %d did not respond.", snip.DeviceId),
+				DeviceId: snip.DeviceId,
 			}
 		}
 
-		// signal error
-		errorSnip := ControlSnip{
-			Type:     CONTROLSNIP_ERROR,
-			Message:  fmt.Sprintf("Device %d did not respond.", snip.DeviceId),
-			DeviceId: snip.DeviceId,
-		}
-		controlStream <- errorSnip
+		controlChannel <- controlSnip
 	}
 }
 

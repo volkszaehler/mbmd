@@ -9,24 +9,6 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-type RateMap map[string]int64
-
-// Allowed checks if topic has bee published longer than rate ago
-func (r *RateMap) Allowed(rate int, topic string) bool {
-	if rate == 0 {
-		return true
-	}
-
-	t := (*r)[topic]
-	now := time.Now().Unix()
-	if now > t {
-		(*r)[topic] = now + int64(rate)
-		return true
-	}
-
-	return false
-}
-
 type MqttClient struct {
 	client    MQTT.Client
 	mqttTopic string
@@ -127,20 +109,10 @@ type MqttRunner struct {
 }
 
 // Run MQTT client publisher
-func (m *MqttRunner) Run(in QuerySnipChannel, rate int) {
-	rateMap := make(RateMap)
-
-	for {
-		snip := <-in
+func (m *MqttRunner) Run(in QuerySnipChannel) {
+	for snip := range in {
 		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.DeviceTopic(snip.DeviceId), snip.IEC61850)
-
-		if rateMap.Allowed(rate, topic) {
-			message := fmt.Sprintf("%.3f", snip.Value)
-			go m.Publish(topic, false, message)
-		} else {
-			if m.verbose {
-				log.Printf("MQTT: skipped %s, rate to high", topic)
-			}
-		}
+		message := fmt.Sprintf("%.3f", snip.Value)
+		go m.Publish(topic, false, message)
 	}
 }

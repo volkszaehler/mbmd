@@ -76,14 +76,11 @@ type SocketHub struct {
 	// Unregister requests from clients.
 	unregister chan *Client
 
-	// meter data stream
-	in QuerySnipChannel
-
 	// status stream
 	statusStream chan *Status
 }
 
-func NewSocketHub(inChannel QuerySnipChannel, status *Status) *SocketHub {
+func NewSocketHub(status *Status) *SocketHub {
 	// Attach a goroutine that will push meter status information
 	// periodically
 	var statusstream = make(chan *Status)
@@ -99,7 +96,6 @@ func NewSocketHub(inChannel QuerySnipChannel, status *Status) *SocketHub {
 		register:     make(chan *Client),
 		unregister:   make(chan *Client),
 		clients:      make(map[*Client]bool),
-		in:           inChannel,
 		statusStream: statusstream,
 	}
 }
@@ -122,7 +118,7 @@ func (h *SocketHub) Broadcast(i interface{}) {
 	}
 }
 
-func (h *SocketHub) Run() {
+func (h *SocketHub) Run(in QuerySnipChannel) {
 	for {
 		select {
 		case client := <-h.register:
@@ -132,7 +128,10 @@ func (h *SocketHub) Run() {
 				delete(h.clients, client)
 				close(client.send)
 			}
-		case obj := <-h.in:
+		case obj, ok := <-in:
+			if !ok {
+				return // break if channel closed
+			}
 			// make sure to pass a pointer or MarshalJSON won't work
 			h.Broadcast(&obj)
 		case obj := <-h.statusStream:

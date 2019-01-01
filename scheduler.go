@@ -1,11 +1,69 @@
 package sdm630
 
 import (
+	"context"
 	"log"
+	"strconv"
 	"time"
 
 	. "github.com/gonium/gosdm630/internal/meters"
 )
+
+type RateMap map[string]int64
+
+// Allowed checks if topic has been published longer than rate ago
+func (r *RateMap) Allowed(rate int, topic string) bool {
+	if rate == 0 {
+		return true
+	}
+
+	t := (*r)[topic]
+	now := time.Now().Unix()
+	if now > t {
+		(*r)[topic] = now + int64(rate)
+		return true
+	}
+
+	return false
+}
+
+// WaitForCooldown waits until the rate limit has been honored
+func (r *RateMap) WaitForCooldown(rate int, topic string) {
+	if rate == 0 {
+		return
+	}
+
+	t := (*r)[topic]
+	waituntil := t + int64(rate)*1e9 // use ns
+	now := time.Now().UnixNano()
+
+	if waituntil > now {
+		time.Sleep(time.Until(time.Unix(0, waituntil)))
+		(*r)[topic] = waituntil
+	} else {
+		(*r)[topic] = now
+	}
+}
+
+// CooldownDuration returns the time duration to wait for the cooldown period
+// to expire. It updates the rate map assuming that the cooldown duration is honored.
+func (r *RateMap) CooldownDuration(rate int, topic string) time.Duration {
+	if rate == 0 {
+		return time.Duration(0)
+	}
+
+	t := (*r)[topic]
+	waituntil := time.Unix(0, t).Add(time.Duration(rate) * time.Second)
+	remaining := time.Until(waituntil) // use ns
+
+	if remaining <= 0 {
+		(*r)[topic] = time.Now().UnixNano()
+		return time.Duration(0)
+	}
+
+	(*r)[topic] = waituntil.UnixNano()
+	return remaining
+}
 
 type MeterScheduler struct {
 	out     QuerySnipChannel
@@ -21,52 +79,38 @@ func NewMeterScheduler(
 ) *MeterScheduler {
 	return &MeterScheduler{
 		out:     out,
-		meters:  devices,
 		control: control,
+		meters:  devices,
 	}
 }
 
 // SetupScheduler creates a scheduler and its wiring
 func SetupScheduler(meters map[uint8]*Meter, qe *ModbusEngine) (*MeterScheduler, QuerySnipChannel) {
 	// Create Channels that link the goroutines
-	var scheduler2queryengine = make(QuerySnipChannel)
-	var queryengine2scheduler = make(ControlSnipChannel)
-	var queryengine2tee = make(QuerySnipChannel)
+	var out = make(QuerySnipChannel)
+	var control = make(ControlSnipChannel)
+	var tee = make(QuerySnipChannel)
 
 	scheduler := NewMeterScheduler(
-		scheduler2queryengine,
-		queryengine2scheduler,
+		out,
+		control,
 		meters,
 	)
 
 	go qe.Run(
-		scheduler2queryengine, // input
-		queryengine2scheduler, // error
-		queryengine2tee,       // output
+		out,     // scheduler produceSnips output -> qe input
+		control, // qe error -> scheduler handleControl input
+		tee,     // qe output -> tee
 	)
 
-	return scheduler, queryengine2tee
+	return scheduler, tee
 }
 
 func (q *MeterScheduler) SetCache(mc *MeasurementCache) {
 	q.mc = mc
 }
 
-func (q *MeterScheduler) produceSnips(out QuerySnipChannel) {
-	for {
-		for _, meter := range q.meters {
-			operations := meter.Producer.Produce()
-			for _, operation := range operations {
-				// Check if meter is still valid
-				if meter.GetState() != UNAVAILABLE {
-					snip := NewQuerySnip(meter.DeviceId, operation)
-					q.out <- snip
-				}
-			}
-		}
-	}
-}
-
+// supervisor restarts failed meters by pinging them at regular interval
 func (q *MeterScheduler) supervisor() {
 	for {
 		for _, meter := range q.meters {
@@ -82,43 +126,88 @@ func (q *MeterScheduler) supervisor() {
 	}
 }
 
-func (q *MeterScheduler) Run() {
-	source := make(QuerySnipChannel)
-
-	go q.supervisor()
-	go q.produceSnips(source)
+// produceQuerySnips cycles all meters to create reading operations
+func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate int) {
+	defer close(q.out)
+	rateMap := make(RateMap)
 
 	for {
 		select {
-		case snip := <-source:
-			q.out <- snip
+		case <-done:
+			return // trigger closing out channel
+		default:
+			var meterAvailable bool
+			for _, meter := range q.meters {
+				// check if meter is still valid
+				if meter.GetState() == UNAVAILABLE {
+					continue
+				}
 
-		case controlSnip := <-q.control:
-			meter, ok := q.meters[controlSnip.DeviceId]
-			if !ok {
-				log.Fatal("Internal device id mismatch")
+				// rate limiting with early exit if signaled
+				wait := rateMap.CooldownDuration(rate, strconv.Itoa(int(meter.DeviceId)))
+				select {
+				case <-time.After(wait):
+				case <-done:
+					return
+				}
+
+				meterAvailable = true
+				operations := meter.Producer.Produce()
+				for _, operation := range operations {
+					snip := NewQuerySnip(meter.DeviceId, operation)
+					q.out <- snip
+				}
 			}
 
-			switch controlSnip.Type {
-			case CONTROLSNIP_ERROR:
-				// search meter and deactivate it...
-				log.Printf("Device %d failed terminally due to: %s",
-					controlSnip.DeviceId, controlSnip.Message)
-				state := meter.GetState()
-				meter.UpdateState(UNAVAILABLE)
-				if state == AVAILABLE && q.mc != nil {
-					// purge cache if present
-					q.mc.Purge(meter.DeviceId)
-				}
-			case CONTROLSNIP_OK:
-				// search meter and reactivate it...
-				if meter.GetState() != AVAILABLE {
-					log.Printf("Reactivating device %d", controlSnip.DeviceId)
-					meter.UpdateState(AVAILABLE)
-				}
-			default:
-				log.Fatal("Unknown control snip")
+			// wait before retry if no meter is available
+			if !meterAvailable {
+				time.Sleep(100 * time.Millisecond)
 			}
 		}
+	}
+}
+
+// handleControlSnips manages the meter status
+func (q *MeterScheduler) handleControlSnips() {
+	for controlSnip := range q.control {
+		meter, ok := q.meters[controlSnip.DeviceId]
+		if !ok {
+			log.Fatal("Internal device id mismatch")
+		}
+
+		switch controlSnip.Type {
+		case CONTROLSNIP_ERROR:
+			// search meter and deactivate it...
+			log.Printf("Device %d failed terminally due to: %s",
+				controlSnip.DeviceId, controlSnip.Message)
+			if meter.GetState() == AVAILABLE && q.mc != nil {
+				// purge cache if present
+				q.mc.Purge(meter.DeviceId)
+			}
+			meter.UpdateState(UNAVAILABLE)
+		case CONTROLSNIP_OK:
+			// search meter and reactivate it...
+			if meter.GetState() != AVAILABLE {
+				log.Printf("Reactivating device %d", controlSnip.DeviceId)
+				meter.UpdateState(AVAILABLE)
+			}
+		default:
+			log.Fatal("Unknown control snip")
+		}
+	}
+}
+
+// Run scheduler starts production of meter readings
+func (q *MeterScheduler) Run(ctx context.Context, rate int) {
+	done := make(chan bool)
+
+	go q.supervisor()
+	go q.produceQuerySnips(done, rate)
+	go q.handleControlSnips()
+
+	// wait for cancel
+	select {
+	case <-ctx.Done():
+		done <- true
 	}
 }
