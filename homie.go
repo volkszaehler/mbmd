@@ -185,6 +185,11 @@ func (m *HomieRunner) unpublish(subtopic string) {
 
 	mux.Lock()
 	tokens = append(tokens, m.client.Subscribe(topic, byte(m.mqttQos), func(c MQTT.Client, msg MQTT.Message) {
+		// we'll also receive the unpublish messages here so ignore these
+		if len(msg.Payload()) == 0 {
+			return // exit on unpublish message
+		}
+
 		topic := msg.Topic()
 		token := m.client.Publish(topic, byte(m.mqttQos), true, []byte{})
 		if m.verbose {
