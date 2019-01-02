@@ -1,7 +1,7 @@
 module github.com/gonium/gosdm630
 
 require (
-	github.com/aprice/embed v0.0.0-20181126214606-b9ceb1f6d22d
+	github.com/aprice/embed v0.0.0-20171223211210-e0f543275bf966271e2c3b3ab70265f635f0394a
 	github.com/eclipse/paho.mqtt.golang v1.1.2-0.20181129145454-379fd9f99ba5
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
