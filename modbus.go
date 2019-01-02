@@ -145,8 +145,19 @@ func (q *ModbusEngine) setTimeout(timeout time.Duration) time.Duration {
 	return 0
 }
 
+func (q *ModbusEngine) setSlave(deviceId uint8) {
+	// update the slave id in the handler
+	if handler, ok := q.handler.(*modbus.RTUClientHandler); ok {
+		handler.SetSlave(deviceId)
+	} else if handler, ok := q.handler.(*modbus.TCPClientHandler); ok {
+		handler.SetSlave(deviceId)
+	} else if handler != nil {
+		log.Fatal("Unsupported modbus handler")
+	}
+}
+
 func (q *ModbusEngine) Query(snip QuerySnip) (retval []byte, err error) {
-	q.handler.SetSlave(snip.DeviceId)
+	q.setSlave(snip.DeviceId)
 	q.status.IncreaseRequestCounter()
 
 	if snip.ReadLen <= 0 {
