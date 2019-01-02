@@ -81,6 +81,9 @@ func NewRTUClientHandler(rtuDevice string, comset int, verbose bool) *modbus.RTU
 // NewTCPClientHandler creates a TCP modbus handler
 func NewTCPClientHandler(rtuDevice string, verbose bool) *modbus.TCPClientHandler {
 	handler := modbus.NewTCPClientHandler(rtuDevice)
+	handler.ProtocolRecoveryTimeout = 10 * time.Second
+	handler.LinkRecoveryTimeout = 60 * time.Second
+
 	if verbose {
 		logger := &modbusLogger{}
 		handler.Logger = logger
