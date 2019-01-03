@@ -4,7 +4,7 @@ type Measurement int
 
 type Measurements map[Measurement]uint16
 
-//go:generate stringer -type=Measurement
+//go:generate go run golang.org/x/tools/cmd/stringer -type=Measurement
 const (
 	// split signals block operations that need be split into individual results
 	Split Measurement = iota

@@ -16,14 +16,13 @@ import (
 
 const (
 	SECONDS_BETWEEN_STATUSUPDATE = 1
+	devAssets                    = false
 )
 
-// Generate the embedded assets using https://github.com/aprice/embed
-//go:generate go run github.com/aprice/embed/cmd/embed -c "embed.json"
+//go:generate go run github.com/mjibson/esc -private -o assets.go -pkg sdm630 -prefix assets assets
 
-func MkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
-	loader := GetEmbeddedContent()
-	mainTemplate, err := loader.GetContents("/index.html")
+func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
 		log.Fatal("Failed to load embedded template: " + err.Error())
 	}
@@ -49,7 +48,7 @@ func MkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 	})
 }
 
-func MkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		ids := mc.GetSortedIDs()
@@ -76,7 +75,7 @@ func MkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *htt
 	})
 }
 
-func MkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
@@ -97,7 +96,7 @@ func MkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *
 	})
 }
 
-func MkLastMinuteAvgSingleHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastMinuteAvgSingleHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
@@ -118,7 +117,7 @@ func MkLastMinuteAvgSingleHandler(mc *MeasurementCache) func(http.ResponseWriter
 	})
 }
 
-func MkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		ids := mc.GetSortedIDs()
@@ -142,7 +141,7 @@ func MkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *
 	})
 }
 
-func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
+func mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		s.Update()
@@ -152,7 +151,7 @@ func MkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	})
 }
 
-func MkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
+func mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ServeWebsocket(hub, w, r)
 	}
@@ -178,19 +177,23 @@ func Run_httpd(
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static
-	router.HandleFunc("/", MkIndexHandler(mc))
-	router.PathPrefix("/js/").Handler(GetEmbeddedContent())
-	router.PathPrefix("/css/").Handler(GetEmbeddedContent())
+	router.HandleFunc("/", mkIndexHandler(mc))
+
+	// individual handlers per folder
+	for _, folder := range []string{"js", "css"} {
+		prefix := fmt.Sprintf("/%s/", folder)
+		router.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(devAssets, prefix))))
+	}
 
 	// api
-	router.HandleFunc("/last", serveJson(MkLastAllValuesHandler(mc)))
-	router.HandleFunc("/last/{id:[0-9]+}", serveJson(MkLastSingleValuesHandler(mc)))
-	router.HandleFunc("/minuteavg", serveJson(MkLastMinuteAvgAllHandler(mc)))
-	router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(MkLastMinuteAvgSingleHandler(mc)))
-	router.HandleFunc("/status", serveJson(MkStatusHandler(s)))
+	router.HandleFunc("/last", serveJson(mkLastAllValuesHandler(mc)))
+	router.HandleFunc("/last/{id:[0-9]+}", serveJson(mkLastSingleValuesHandler(mc)))
+	router.HandleFunc("/minuteavg", serveJson(mkLastMinuteAvgAllHandler(mc)))
+	router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(mkLastMinuteAvgSingleHandler(mc)))
+	router.HandleFunc("/status", serveJson(mkStatusHandler(s)))
 
 	// websocket
-	router.HandleFunc("/ws", MkSocketHandler(hub))
+	router.HandleFunc("/ws", mkSocketHandler(hub))
 
 	srv := http.Server{
 		Addr:         url,

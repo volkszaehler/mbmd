@@ -41,3 +41,4 @@ go.sum
 # created during build
 version.go
 launch.json
+assets.go

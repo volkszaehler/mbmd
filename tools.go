@@ -3,6 +3,6 @@
 package sdm630
 
 import (
-	_ "github.com/aprice/embed/cmd/embed"
-	_ "github.com/aprice/embed/loader"
+	_ "github.com/mjibson/esc"
+	_ "golang.org/x/tools/cmd/stringer"
 )

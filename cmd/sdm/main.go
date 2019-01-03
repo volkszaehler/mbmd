@@ -13,8 +13,8 @@ import (
 
 	. "github.com/gonium/gosdm630"
 	. "github.com/gonium/gosdm630/internal/meters"
-	"github.com/tcnksm/go-latest"
-	"gopkg.in/urfave/cli.v1"
+	latest "github.com/tcnksm/go-latest"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 const (
