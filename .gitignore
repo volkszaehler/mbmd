@@ -39,6 +39,7 @@ embeddedassets.go
 go.sum
 
 # created during build
+.vscode/launch.json
 version.go
-launch.json
 assets.go
+internal/meters/measurement_string.go
