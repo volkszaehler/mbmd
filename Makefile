@@ -27,9 +27,4 @@ test:
 clean:
 	rm -rf bin/ pkg/ *.zip
 
-dep:
-	@echo "Installing embed tool"
-	env GO111MODULE=on go install github.com/aprice/embed/cmd/embed
-	env GO111MODULE=on go install golang.org/x/tools/cmd/stringer
-
-.PHONY: all build binaries assets release test clean dep
+.PHONY: all build binaries assets release test clean

@@ -21,7 +21,7 @@ function build {
 	done
 	cd ..
 
-	zip $RELEASE/sdm630-$GOOS-$GOARCH $BIN/*
+	zip $RELEASE/sdm-$GOOS-$GOARCH $BIN/*
 }
 
 source hash.sh
