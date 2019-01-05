@@ -47,13 +47,13 @@ func (r *RateMap) WaitForCooldown(rate int, topic string) {
 
 // CooldownDuration returns the time duration to wait for the cooldown period
 // to expire. It updates the rate map assuming that the cooldown duration is honored.
-func (r *RateMap) CooldownDuration(rate int, topic string) time.Duration {
+func (r *RateMap) CooldownDuration(rate time.Duration, topic string) time.Duration {
 	if rate == 0 {
 		return time.Duration(0)
 	}
 
 	t := (*r)[topic]
-	waituntil := time.Unix(0, t).Add(time.Duration(rate) * time.Second)
+	waituntil := time.Unix(0, t).Add(rate)
 	remaining := time.Until(waituntil) // use ns
 
 	if remaining <= 0 {
@@ -114,7 +114,7 @@ func (q *MeterScheduler) SetCache(mc *MeasurementCache) {
 func (q *MeterScheduler) supervisor() {
 	for {
 		for _, meter := range q.meters {
-			if meter.GetState() == UNAVAILABLE {
+			if meter.State() == UNAVAILABLE {
 				log.Printf("Attempting to ping unavailable device %d", meter.DeviceId)
 				// inject probe snip - the re-enabling logic is in Run()
 				operation := meter.Producer.Probe()
@@ -127,7 +127,7 @@ func (q *MeterScheduler) supervisor() {
 }
 
 // produceQuerySnips cycles all meters to create reading operations
-func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate int) {
+func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate time.Duration) {
 	defer close(q.out)
 	rateMap := make(RateMap)
 
@@ -138,11 +138,6 @@ func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate int) {
 		default:
 			var meterAvailable bool
 			for _, meter := range q.meters {
-				// check if meter is still valid
-				if meter.GetState() == UNAVAILABLE {
-					continue
-				}
-
 				// rate limiting with early exit if signaled
 				wait := rateMap.CooldownDuration(rate, strconv.Itoa(int(meter.DeviceId)))
 				select {
@@ -154,6 +149,11 @@ func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate int) {
 				meterAvailable = true
 				operations := meter.Producer.Produce()
 				for _, operation := range operations {
+					// check if meter is still valid
+					if meter.State() == UNAVAILABLE {
+						continue
+					}
+
 					snip := NewQuerySnip(meter.DeviceId, operation)
 					q.out <- snip
 				}
@@ -180,16 +180,16 @@ func (q *MeterScheduler) handleControlSnips() {
 			// search meter and deactivate it...
 			log.Printf("Device %d failed terminally due to: %s",
 				controlSnip.DeviceId, controlSnip.Message)
-			if meter.GetState() == AVAILABLE && q.mc != nil {
+			if meter.State() == AVAILABLE && q.mc != nil {
 				// purge cache if present
 				q.mc.Purge(meter.DeviceId)
 			}
-			meter.UpdateState(UNAVAILABLE)
+			meter.SetState(UNAVAILABLE)
 		case CONTROLSNIP_OK:
 			// search meter and reactivate it...
-			if meter.GetState() != AVAILABLE {
+			if meter.State() != AVAILABLE {
 				log.Printf("Reactivating device %d", controlSnip.DeviceId)
-				meter.UpdateState(AVAILABLE)
+				meter.SetState(AVAILABLE)
 			}
 		default:
 			log.Fatal("Unknown control snip")
@@ -198,7 +198,7 @@ func (q *MeterScheduler) handleControlSnips() {
 }
 
 // Run scheduler starts production of meter readings
-func (q *MeterScheduler) Run(ctx context.Context, rate int) {
+func (q *MeterScheduler) Run(ctx context.Context, rate time.Duration) {
 	done := make(chan bool)
 
 	go q.supervisor()
