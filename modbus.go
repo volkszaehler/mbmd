@@ -247,7 +247,7 @@ func (q *ModbusEngine) Run(
 			}
 
 			q.status.IncreaseReconnectCounter()
-			log.Printf("Device %d failed to respond - retry attempt %d of %d",
+			log.Printf("Device %d failed to respond (%d/%d)",
 				snip.DeviceId, retry+1, maxRetry)
 			time.Sleep(time.Duration(100) * time.Millisecond)
 		}

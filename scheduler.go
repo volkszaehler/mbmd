@@ -138,11 +138,6 @@ func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate time.Duration)
 		default:
 			var meterAvailable bool
 			for _, meter := range q.meters {
-				// check if meter is still valid
-				if meter.GetState() == UNAVAILABLE {
-					continue
-				}
-
 				// rate limiting with early exit if signaled
 				wait := rateMap.CooldownDuration(rate, strconv.Itoa(int(meter.DeviceId)))
 				select {
@@ -154,6 +149,11 @@ func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate time.Duration)
 				meterAvailable = true
 				operations := meter.Producer.Produce()
 				for _, operation := range operations {
+					// check if meter is still valid
+					if meter.State() == UNAVAILABLE {
+						continue
+					}
+
 					snip := NewQuerySnip(meter.DeviceId, operation)
 					q.out <- snip
 				}
