@@ -47,13 +47,13 @@ func (r *RateMap) WaitForCooldown(rate int, topic string) {
 
 // CooldownDuration returns the time duration to wait for the cooldown period
 // to expire. It updates the rate map assuming that the cooldown duration is honored.
-func (r *RateMap) CooldownDuration(rate int, topic string) time.Duration {
+func (r *RateMap) CooldownDuration(rate time.Duration, topic string) time.Duration {
 	if rate == 0 {
 		return time.Duration(0)
 	}
 
 	t := (*r)[topic]
-	waituntil := time.Unix(0, t).Add(time.Duration(rate) * time.Second)
+	waituntil := time.Unix(0, t).Add(rate)
 	remaining := time.Until(waituntil) // use ns
 
 	if remaining <= 0 {
@@ -127,7 +127,7 @@ func (q *MeterScheduler) supervisor() {
 }
 
 // produceQuerySnips cycles all meters to create reading operations
-func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate int) {
+func (q *MeterScheduler) produceQuerySnips(done <-chan bool, rate time.Duration) {
 	defer close(q.out)
 	rateMap := make(RateMap)
 
@@ -198,7 +198,7 @@ func (q *MeterScheduler) handleControlSnips() {
 }
 
 // Run scheduler starts production of meter readings
-func (q *MeterScheduler) Run(ctx context.Context, rate int) {
+func (q *MeterScheduler) Run(ctx context.Context, rate time.Duration) {
 	done := make(chan bool)
 
 	go q.supervisor()

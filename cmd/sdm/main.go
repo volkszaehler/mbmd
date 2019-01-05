@@ -116,9 +116,9 @@ func main() {
 			Name:  "detect",
 			Usage: "Detect MODBUS devices",
 		},
-		cli.IntFlag{
+		cli.StringFlag{
 			Name:  "rate, r",
-			Value: 0,
+			Value: "1s",
 			Usage: "Maximum update rate in seconds per message, 0 is unlimited",
 			// Destination: &mqttRate,
 		},
@@ -204,6 +204,11 @@ func main() {
 		// Parse the devices parameter
 		meters := createMeters(strings.Split(c.String("devices"), ","))
 
+		rate, err := time.ParseDuration(c.String("rate"))
+		if err != nil {
+			log.Fatalf("Invalid rate %s", err)
+		}
+
 		// create ModbusEngine with status
 		status := NewStatus(meters)
 		qe := NewModbusEngine(
@@ -268,7 +273,7 @@ func main() {
 
 		// start the scheduler
 		ctx, cancelScheduler := context.WithCancel(context.Background())
-		go scheduler.Run(ctx, c.Int("rate"))
+		go scheduler.Run(ctx, rate)
 
 		// handle os signals and gracefully exit Run methods
 		go func() {
