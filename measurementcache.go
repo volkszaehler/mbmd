@@ -84,7 +84,7 @@ func (mc *MeasurementCache) GetSortedIDs() []byte {
 
 func (mc *MeasurementCache) GetCurrent(deviceId byte) (*Readings, error) {
 	if meter, ok := mc.meters[deviceId]; ok {
-		if meter.GetState() == AVAILABLE {
+		if meter.State() == AVAILABLE {
 			return &meter.Current, nil
 		}
 		return nil, fmt.Errorf("Device %d is not available.", deviceId)
@@ -94,7 +94,7 @@ func (mc *MeasurementCache) GetCurrent(deviceId byte) (*Readings, error) {
 
 func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
 	if meter, ok := mc.meters[deviceId]; ok {
-		if meter.GetState() == AVAILABLE {
+		if meter.State() == AVAILABLE {
 			measurements := meter.Historic
 			lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
 

@@ -114,7 +114,7 @@ func (q *MeterScheduler) SetCache(mc *MeasurementCache) {
 func (q *MeterScheduler) supervisor() {
 	for {
 		for _, meter := range q.meters {
-			if meter.GetState() == UNAVAILABLE {
+			if meter.State() == UNAVAILABLE {
 				log.Printf("Attempting to ping unavailable device %d", meter.DeviceId)
 				// inject probe snip - the re-enabling logic is in Run()
 				operation := meter.Producer.Probe()
@@ -180,16 +180,16 @@ func (q *MeterScheduler) handleControlSnips() {
 			// search meter and deactivate it...
 			log.Printf("Device %d failed terminally due to: %s",
 				controlSnip.DeviceId, controlSnip.Message)
-			if meter.GetState() == AVAILABLE && q.mc != nil {
+			if meter.State() == AVAILABLE && q.mc != nil {
 				// purge cache if present
 				q.mc.Purge(meter.DeviceId)
 			}
-			meter.UpdateState(UNAVAILABLE)
+			meter.SetState(UNAVAILABLE)
 		case CONTROLSNIP_OK:
 			// search meter and reactivate it...
-			if meter.GetState() != AVAILABLE {
+			if meter.State() != AVAILABLE {
 				log.Printf("Reactivating device %d", controlSnip.DeviceId)
-				meter.UpdateState(AVAILABLE)
+				meter.SetState(AVAILABLE)
 			}
 		default:
 			log.Fatal("Unknown control snip")

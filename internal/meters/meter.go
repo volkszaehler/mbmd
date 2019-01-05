@@ -113,13 +113,13 @@ func NewMeter(devid uint8, producer Producer) *Meter {
 	}
 }
 
-func (m *Meter) UpdateState(newstate MeterState) {
+func (m *Meter) SetState(newstate MeterState) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 	m.state = newstate
 }
 
-func (m *Meter) GetState() MeterState {
+func (m *Meter) State() MeterState {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 	return m.state
