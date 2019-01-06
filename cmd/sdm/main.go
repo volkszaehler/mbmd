@@ -6,13 +6,15 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	. "github.com/gonium/gosdm630"
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
+	_ "github.com/gonium/gosdm630/meters/impl"
 	latest "github.com/tcnksm/go-latest"
 	cli "gopkg.in/urfave/cli.v1"
 )
@@ -67,6 +69,33 @@ func waitForSignal(signals ...os.Signal) {
 	wg.Wait()
 }
 
+func meterHelp() string {
+	var s string
+	for _, c := range []ConnectionType{RS485, TCP} {
+		s += fmt.Sprintf("\n\t\t\t\t%s", c.String())
+		// s += fmt.Sprintf("\n\t\t\t\t%s", strings.Repeat("-", len(c.String())))
+
+		types := make([]string, 0)
+		for t, f := range Producers {
+			p := f()
+			if c != p.ConnectionType() {
+				continue
+			}
+
+			types = append(types, t)
+		}
+
+		sort.Strings(types)
+
+		for _, t := range types {
+			f := Producers[t]
+			p := f()
+			s += fmt.Sprintf("\n\t\t\t\t %-9s%s", t, p.Description())
+		}
+	}
+	return s
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "sdm"
@@ -84,12 +113,12 @@ func main() {
 			Name:  "comset, c",
 			Value: ModbusComset9600_8N1,
 			Usage: `Communication parameters:
-		` + strconv.Itoa(ModbusComset2400_8N1) + `:  2400 baud, 8N1
-		` + strconv.Itoa(ModbusComset9600_8N1) + `:  9600 baud, 8N1
-		` + strconv.Itoa(ModbusComset19200_8N1) + `: 19200 baud, 8N1
-		` + strconv.Itoa(ModbusComset2400_8E1) + `:  2400 baud, 8E1
-		` + strconv.Itoa(ModbusComset9600_8E1) + `:  9600 baud, 8E1
-		` + strconv.Itoa(ModbusComset19200_8E1) + `: 19200 baud, 8E1
+			` + strconv.Itoa(ModbusComset2400_8N1) + `:  2400 baud, 8N1
+			` + strconv.Itoa(ModbusComset9600_8N1) + `:  9600 baud, 8N1
+			` + strconv.Itoa(ModbusComset19200_8N1) + `: 19200 baud, 8N1
+			` + strconv.Itoa(ModbusComset2400_8E1) + `:  2400 baud, 8E1
+			` + strconv.Itoa(ModbusComset9600_8E1) + `:  9600 baud, 8E1
+			` + strconv.Itoa(ModbusComset19200_8E1) + `: 19200 baud, 8E1
 			`,
 		},
 		cli.BoolFlag{
@@ -100,16 +129,7 @@ func main() {
 			Name:  "devices, d",
 			Value: "SDM:1",
 			Usage: `MODBUS device type and ID to query, separated by comma.
-			Valid types are:
-			   ABB      ABB B-Series meters
-			   SDM      Eastron SDM meters
-			   INEPRO   Inepro Metering Pro 380 (experimental)
-			   JANITZA  Janitza B-Series meters
-			   DZG      DZG Metering GmbH DVH4013 meters
-			   SBC      Saia Burgess Controls ALE3 meters
-			   SE       SolarEdge SunSpec-compatible inverters (e.g. SolarEdge 9k)
-			   SMA      SMA SunSpec-compatible inverters (e.g. Sunny Boy or Tripower) (experimental)
-			   KOSTAL   Kostal SunSpec-compatible inverters (e.g. Pico IQ) (experimental)
+			Valid types are:` + meterHelp() + `
 			Example: -d JANITZA:1,SDM:22,DZG:23`,
 		},
 		cli.BoolFlag{
