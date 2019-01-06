@@ -1,18 +1,25 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewIneproProducer)
+}
 
 const (
 	METERTYPE_INEPRO = "INEPRO"
 )
 
 type IneproProducer struct {
-	ops Measurements
+	RS485Core
+	Opcodes
 }
 
-func NewIneproProducer() *IneproProducer {
+func NewIneproProducer() Producer {
 	/***
 	 * https://ineprometering.com/wp-content/uploads/2018/09/PRO380-user-manual-V2-18.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		Voltage:   0x5000,
 		VoltageL1: 0x5002,
 		VoltageL2: 0x5004,
@@ -48,17 +55,19 @@ func NewIneproProducer() *IneproProducer {
 		Active:   0x6000,
 		Reactive: 0x6024,
 	}
-	return &IneproProducer{
-		ops: ops,
-	}
+	return &IneproProducer{Opcodes: ops}
 }
 
-func (p *IneproProducer) GetMeterType() string {
+func (p *IneproProducer) Type() string {
 	return METERTYPE_INEPRO
 }
 
+func (p *IneproProducer) Description() string {
+	return "Inepro Metering Pro 380 (experimental)"
+}
+
 func (p *IneproProducer) snip(iec Measurement) Operation {
-	opcode := p.ops[iec]
+	opcode := p.Opcodes[iec]
 	return Operation{
 		FuncCode:  ReadHoldingReg,
 		OpCode:    opcode,
@@ -73,7 +82,7 @@ func (p *IneproProducer) Probe() Operation {
 }
 
 func (p *IneproProducer) Produce() (res []Operation) {
-	for op, _ := range p.ops {
+	for op, _ := range p.Opcodes {
 		res = append(res, p.snip(op))
 	}
 

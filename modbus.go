@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"time"
 
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
 	"github.com/grid-x/modbus"
 )
 
@@ -292,25 +292,14 @@ func (q *ModbusEngine) Scan() {
 	oldtimeout := q.setTimeout(50 * time.Millisecond)
 	log.Printf("Starting bus scan")
 
-	producers := []Producer{
-		NewSDMProducer(),
-		NewJanitzaProducer(),
-		NewDZGProducer(),
-		NewABBProducer(),
-		NewSBCProducer(),
-		NewSEProducer(),
-		NewSMAProducer(),
-		NewIneproProducer(),
-		NewKostalProducer(),
-	}
-
 SCAN:
 	// loop over all valid slave adresses
 	for deviceId = 1; deviceId <= 247; deviceId++ {
 		// give the bus some time to recover before querying the next device
 		time.Sleep(time.Duration(40) * time.Millisecond)
 
-		for _, producer := range producers {
+		for _, factory := range Producers {
+			producer := factory()
 			operation := producer.Probe()
 			snip := NewQuerySnip(deviceId, operation)
 
@@ -318,12 +307,12 @@ SCAN:
 			if err == nil {
 				log.Printf("Device %d: %s type device found, %s: %.2f\r\n",
 					deviceId,
-					producer.GetMeterType(),
+					producer.Type(),
 					snip.IEC61850,
 					snip.Transform(value))
 				dev := DeviceInfo{
 					DeviceId:  deviceId,
-					MeterType: producer.GetMeterType(),
+					MeterType: producer.Type(),
 				}
 				deviceList = append(deviceList, dev)
 				continue SCAN

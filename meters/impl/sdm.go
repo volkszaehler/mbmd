@@ -1,21 +1,28 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewSDMProducer)
+}
 
 const (
 	METERTYPE_SDM = "SDM"
 )
 
 type SDMProducer struct {
-	MeasurementMapping
+	RS485Core
+	Opcodes
 }
 
-func NewSDMProducer() *SDMProducer {
+func NewSDMProducer() Producer {
 	/**
 	 * Opcodes as defined by Eastron.
 	 * See http://bg-etech.de/download/manual/SDM630Register.pdf
 	 * Please note that this is the superset of all SDM devices -
 	 * some opcodes might not work on some devicep.
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		VoltageL1: 0x0000,
 		VoltageL2: 0x0002,
 		VoltageL3: 0x0004,
@@ -46,13 +53,15 @@ func NewSDMProducer() *SDMProducer {
 		THD:       0x00F8, // voltage
 		Frequency: 0x0046,
 	}
-	return &SDMProducer{
-		MeasurementMapping{ops},
-	}
+	return &SDMProducer{Opcodes: ops}
 }
 
-func (p *SDMProducer) GetMeterType() string {
+func (p *SDMProducer) Type() string {
 	return METERTYPE_SDM
+}
+
+func (p *SDMProducer) Description() string {
+	return "Eastron SDM meters"
 }
 
 func (p *SDMProducer) snip(iec Measurement) Operation {
@@ -71,7 +80,7 @@ func (p *SDMProducer) Probe() Operation {
 }
 
 func (p *SDMProducer) Produce() (res []Operation) {
-	for op := range p.ops {
+	for op := range p.Opcodes {
 		res = append(res, p.snip(op))
 	}
 

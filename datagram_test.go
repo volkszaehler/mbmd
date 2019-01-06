@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
 )
 
 func TestQuerySnipMerge(t *testing.T) {

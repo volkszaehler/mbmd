@@ -1,4 +1,10 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewSEProducer)
+}
 
 const (
 	METERTYPE_SE = "SE"
@@ -8,12 +14,12 @@ type SEProducer struct {
 	SunSpecCore
 }
 
-func NewSEProducer() *SEProducer {
+func NewSEProducer() Producer {
 	/***
 	 * Opcodes for SunSpec-compatible Inverters like SolarEdge
 	 * https://www.solaredge.com/sites/default/files/sunspec-implementation-technical-note.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		Current:   72,
 		CurrentL1: 73,
 		CurrentL2: 74,
@@ -38,12 +44,16 @@ func NewSEProducer() *SEProducer {
 		HeatSinkTemp: 104, // + scaler
 	}
 	return &SEProducer{
-		SunSpecCore{MeasurementMapping{ops}},
+		SunSpecCore{ops},
 	}
 }
 
-func (p *SEProducer) GetMeterType() string {
+func (p *SEProducer) Type() string {
 	return METERTYPE_SE
+}
+
+func (p *SEProducer) Description() string {
+	return "SolarEdge SunSpec-compatible inverters (e.g. SolarEdge 9k)"
 }
 
 func (p *SEProducer) Probe() Operation {

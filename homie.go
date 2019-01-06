@@ -11,7 +11,7 @@ import (
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
 )
 
 const (
@@ -98,11 +98,11 @@ func (m *HomieRunner) publishMeter(meter *Meter, qe *ModbusEngine) {
 
 func (m *HomieRunner) deviceDescriptor(meter *Meter, qe *ModbusEngine) SunSpecDeviceDescriptor {
 	descriptor := SunSpecDeviceDescriptor{
-		Manufacturer: meter.Producer.GetMeterType(),
+		Manufacturer: meter.Producer.Type(),
 		Model:        nodeTopic,
 	}
 
-	if sunspec, ok := meter.Producer.(*SEProducer); ok {
+	if sunspec, ok := meter.Producer.(SunSpecProducer); ok {
 		op := sunspec.GetSunSpecCommonBlock()
 		snip := QuerySnip{
 			DeviceId:  meter.DeviceId,

@@ -51,22 +51,40 @@ type Meter struct {
 	mux      sync.Mutex // syncs the meter state variable
 }
 
+// ConnectionType is the phyisical type of meter connection
+type ConnectionType int
+
+const (
+	// RS485 is the default modbus connection
+	RS485 ConnectionType = iota
+	// TCP is used for sunspec-compatible modbus meters
+	TCP
+)
+
+func (c ConnectionType) String() string {
+	if c == RS485 {
+		return "RS485"
+	} else {
+		return "TCP"
+	}
+}
+
 // Producer is the interface that produces query snips which represent
 // modbus operations
 type Producer interface {
-	GetMeterType() string
+	Type() string
+	Description() string
+	ConnectionType() ConnectionType
 	Produce() []Operation
 	Probe() Operation
 }
 
-// MeasurementMapping maps measurements to phyiscal registers
-type MeasurementMapping struct {
-	ops Measurements
-}
+// Opcodes map measurements to phyiscal registers
+type Opcodes map[Measurement]uint16
 
 // Opcode returns physical register for measurement type
-func (o *MeasurementMapping) Opcode(iec Measurement) uint16 {
-	if opcode, ok := o.ops[iec]; ok {
+func (o *Opcodes) Opcode(iec Measurement) uint16 {
+	if opcode, ok := (*o)[iec]; ok {
 		return opcode
 	}
 
@@ -76,33 +94,14 @@ func (o *MeasurementMapping) Opcode(iec Measurement) uint16 {
 
 // NewMeterByType meter factory
 func NewMeterByType(typeid string, devid uint8) (*Meter, error) {
-	var p Producer
 	typeid = strings.ToUpper(typeid)
 
-	switch typeid {
-	case METERTYPE_ABB:
-		p = NewABBProducer()
-	case METERTYPE_SDM:
-		p = NewSDMProducer()
-	case METERTYPE_INEPRO:
-		p = NewIneproProducer()
-	case METERTYPE_JANITZA:
-		p = NewJanitzaProducer()
-	case METERTYPE_DZG:
-		p = NewDZGProducer()
-	case METERTYPE_SBC:
-		p = NewSBCProducer()
-	case METERTYPE_SE:
-		p = NewSEProducer()
-	case METERTYPE_SMA:
-		p = NewSMAProducer()
-	case METERTYPE_KOSTAL:
-		p = NewKostalProducer()
-	default:
+	f, ok := Producers[typeid]
+	if !ok {
 		return nil, fmt.Errorf("Unknown meter type %s", typeid)
 	}
 
-	return NewMeter(devid, p), nil
+	return NewMeter(devid, f()), nil
 }
 
 func NewMeter(devid uint8, producer Producer) *Meter {

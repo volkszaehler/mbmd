@@ -1,4 +1,10 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewSMAProducer)
+}
 
 const (
 	METERTYPE_SMA = "SMA"
@@ -8,12 +14,12 @@ type SMAProducer struct {
 	SunSpecCore
 }
 
-func NewSMAProducer() *SMAProducer {
+func NewSMAProducer() Producer {
 	/***
 	 * Opcodes for SMA SunSpec-compatible Inverters
 	 * https://www.sma.de/fileadmin/content/landingpages/pl/FAQ/SunSpec_Modbus-TI-en-15.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		Current:   188, // uint16
 		CurrentL1: 189,
 		CurrentL2: 190,
@@ -44,12 +50,16 @@ func NewSMAProducer() *SMAProducer {
 		HeatSinkTemp: 219, // int16 + scaler
 	}
 	return &SMAProducer{
-		SunSpecCore{MeasurementMapping{ops}},
+		SunSpecCore{ops},
 	}
 }
 
-func (p *SMAProducer) GetMeterType() string {
+func (p *SMAProducer) Type() string {
 	return METERTYPE_SMA
+}
+
+func (p *SMAProducer) Description() string {
+	return "SMA SunSpec-compatible inverters (e.g. Sunny Boy or Tripower) (experimental)"
 }
 
 func (p *SMAProducer) Probe() Operation {
