@@ -1,19 +1,26 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewSBCProducer)
+}
 
 const (
 	METERTYPE_SBC = "SBC"
 )
 
 type SBCProducer struct {
-	MeasurementMapping
+	RS485Core
+	Opcodes
 }
 
-func NewSBCProducer() *SBCProducer {
+func NewSBCProducer() Producer {
 	/**
 	 * Opcodes for Saia Burgess ALE3
 	 * http://datenblatt.stark-elektronik.de/saia_burgess/DE_DS_Energymeter-ALE3-with-Modbus.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		Import: 28, // double, scaler 100
 		Export: 32, // double, scaler 100
 		// PartialImport: 30, // double, scaler 100
@@ -40,13 +47,15 @@ func NewSBCProducer() *SBCProducer {
 		Power:         51, // scaler 100
 		ReactivePower: 52, // scaler 100
 	}
-	return &SBCProducer{
-		MeasurementMapping{ops},
-	}
+	return &SBCProducer{Opcodes: ops}
 }
 
-func (p *SBCProducer) GetMeterType() string {
+func (p *SBCProducer) Type() string {
 	return METERTYPE_SBC
+}
+
+func (p *SBCProducer) Description() string {
+	return "Saia Burgess Controls ALE3 meters"
 }
 
 func (p *SBCProducer) snip(iec Measurement, readlen uint16) Operation {

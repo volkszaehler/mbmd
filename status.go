@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
 )
 
 type MemoryStatus struct {
@@ -90,7 +90,7 @@ func (s *Status) Update() {
 	for id, meter := range s.metermap {
 		ms := MeterStatus{
 			Id:     id,
-			Type:   meter.Producer.GetMeterType(),
+			Type:   meter.Producer.Type(),
 			Status: meter.State().String(),
 		}
 

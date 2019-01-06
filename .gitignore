@@ -32,14 +32,15 @@ _testmain.go
 *.test
 *.prof
 
-release/
-vendor/
-embeddedassets.go
-
+# created during build
 go.sum
 
-# created during build
-.vscode/launch.json
 version.go
 assets.go
+embeddedassets.go
+meters/measurement_string.go
 internal/meters/measurement_string.go
+
+.vscode/
+release/
+vendor/

@@ -2,8 +2,6 @@ package meters
 
 type Measurement int
 
-type Measurements map[Measurement]uint16
-
 //go:generate go run golang.org/x/tools/cmd/stringer -type=Measurement
 const (
 	// split signals block operations that need be split into individual results

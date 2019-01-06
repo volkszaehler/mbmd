@@ -1,4 +1,10 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewKostalProducer)
+}
 
 const (
 	METERTYPE_KOSTAL = "KOSTAL"
@@ -8,12 +14,12 @@ type KostalProducer struct {
 	SunSpecCore
 }
 
-func NewKostalProducer() *KostalProducer {
+func NewKostalProducer() Producer {
 	/***
 	 * Opcodes for SunSpec-compatible Inverters from Kostal
 	 * https://www.kostal-solar-electric.com/de-de/download/-/media/document%20library%20folder%20-%20kse/2018/08/30/08/53/ba_kostal_interface_modbus-tcp_sunspec.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		DCPower: 100, // + scaler
 		/*
 			HomeOwnBatteryPower: 106, // + scaler
@@ -68,12 +74,16 @@ func NewKostalProducer() *KostalProducer {
 		*/
 	}
 	return &KostalProducer{
-		SunSpecCore{MeasurementMapping{ops}},
+		SunSpecCore{ops},
 	}
 }
 
-func (p *KostalProducer) GetMeterType() string {
+func (p *KostalProducer) Type() string {
 	return METERTYPE_KOSTAL
+}
+
+func (p *KostalProducer) Description() string {
+	return "Kostal SunSpec-compatible inverters (e.g. Pico IQ) (experimental)"
 }
 
 func (p *KostalProducer) Probe() Operation {

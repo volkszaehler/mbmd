@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
 )
 
 // QuerySnip represents modbus query operations

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
 )
 
 type RateMap map[string]int64

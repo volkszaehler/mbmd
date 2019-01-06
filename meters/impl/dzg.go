@@ -1,19 +1,26 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewDZGProducer)
+}
 
 const (
 	METERTYPE_DZG = "DZG"
 )
 
 type DZGProducer struct {
-	MeasurementMapping
+	RS485Core
+	Opcodes
 }
 
-func NewDZGProducer() *DZGProducer {
+func NewDZGProducer() Producer {
 	/**
 	 * Opcodes for DZG DVH4014.
 	 * https://www.dzg.de/fileadmin/dzg/content/downloads/produkte-zaehler/dvh4013/Communication-Protocol_DVH4013.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		ActivePower:   0x0000, // 0x0 instant values and parameters
 		ReactivePower: 0x0002,
 		VoltageL1:     0x0004,
@@ -36,13 +43,15 @@ func NewDZGProducer() *DZGProducer {
 		ExportL3: 0x4160,
 		// 0x8 max demand
 	}
-	return &DZGProducer{
-		MeasurementMapping{ops},
-	}
+	return &DZGProducer{Opcodes: ops}
 }
 
-func (p *DZGProducer) GetMeterType() string {
+func (p *DZGProducer) Type() string {
 	return METERTYPE_DZG
+}
+
+func (p *DZGProducer) Description() string {
+	return "DZG Metering GmbH DVH4013 meters"
 }
 
 func (p *DZGProducer) snip(iec Measurement, scaler ...float64) Operation {

@@ -1,4 +1,6 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
 
 import (
 	"encoding/binary"
@@ -20,13 +22,6 @@ const (
 	sunspecSignature = 0x53756e53 // SunS
 )
 
-type SunSpecDeviceDescriptor struct {
-	Manufacturer string
-	Model        string
-	Version      string
-	Serial       string
-}
-
 // RTUUint16ToFloat64WithNaN converts 16 bit unsigned integer readings
 // If byte sequence is 0xffff, NaN is returned for compatibility with SunSpec/SE 1-phase inverters
 func RTUUint16ToFloat64WithNaN(b []byte) float64 {
@@ -38,7 +33,11 @@ func RTUUint16ToFloat64WithNaN(b []byte) float64 {
 }
 
 type SunSpecCore struct {
-	MeasurementMapping
+	Opcodes
+}
+
+func (p *SunSpecCore) ConnectionType() ConnectionType {
+	return TCP
 }
 
 func (p *SunSpecCore) GetSunSpecCommonBlock() Operation {

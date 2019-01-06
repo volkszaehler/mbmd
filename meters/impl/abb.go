@@ -1,18 +1,25 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewABBProducer)
+}
 
 const (
 	METERTYPE_ABB = "ABB"
 )
 
 type ABBProducer struct {
-	ops Measurements
+	RS485Core
+	Opcodes
 }
 
-func NewABBProducer() *ABBProducer {
+func NewABBProducer() Producer {
 	/***
 	 * http://datenblatt.stark-elektronik.de/Energiezaehler_B-Serie_Handbuch.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		VoltageL1: 0x5B00,
 		VoltageL2: 0x5B02,
 		VoltageL3: 0x5B04,
@@ -33,17 +40,19 @@ func NewABBProducer() *ABBProducer {
 
 		Frequency: 0x5B2C,
 	}
-	return &ABBProducer{
-		ops: ops,
-	}
+	return &ABBProducer{Opcodes: ops}
 }
 
-func (p *ABBProducer) GetMeterType() string {
+func (p *ABBProducer) Type() string {
 	return METERTYPE_ABB
 }
 
+func (p *ABBProducer) Description() string {
+	return "ABB B-Series meters"
+}
+
 func (p *ABBProducer) snip(iec Measurement, readlen uint16) Operation {
-	opcode := p.ops[iec]
+	opcode := p.Opcodes[iec]
 	return Operation{
 		FuncCode: ReadHoldingReg,
 		OpCode:   opcode,

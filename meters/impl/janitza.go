@@ -1,19 +1,26 @@
-package meters
+package impl
+
+import . "github.com/gonium/gosdm630/meters"
+
+func init() {
+	Register(NewJanitzaProducer)
+}
 
 const (
 	METERTYPE_JANITZA = "JANITZA"
 )
 
 type JanitzaProducer struct {
-	MeasurementMapping
+	RS485Core
+	Opcodes
 }
 
-func NewJanitzaProducer() *JanitzaProducer {
+func NewJanitzaProducer() Producer {
 	/**
 	 * Opcodes for Janitza B23.
 	 * See https://www.janitza.de/betriebsanleitungen.html?file=files/download/manuals/current/B-Series/MID-Energy-Meters-Product-Manual.pdf
 	 */
-	ops := Measurements{
+	ops := Opcodes{
 		VoltageL1: 0x4A38,
 		VoltageL2: 0x4A3A,
 		VoltageL3: 0x4A3C,
@@ -35,13 +42,15 @@ func NewJanitzaProducer() *JanitzaProducer {
 		CosphiL2:  0x4A66,
 		CosphiL3:  0x4A68,
 	}
-	return &JanitzaProducer{
-		MeasurementMapping{ops},
-	}
+	return &JanitzaProducer{Opcodes: ops}
 }
 
-func (p *JanitzaProducer) GetMeterType() string {
+func (p *JanitzaProducer) Type() string {
 	return METERTYPE_JANITZA
+}
+
+func (p *JanitzaProducer) Description() string {
+	return "Janitza B-Series meters"
 }
 
 func (p *JanitzaProducer) snip(iec Measurement) Operation {
@@ -60,7 +69,7 @@ func (p *JanitzaProducer) Probe() Operation {
 }
 
 func (p *JanitzaProducer) Produce() (res []Operation) {
-	for op := range p.ops {
+	for op := range p.Opcodes {
 		res = append(res, p.snip(op))
 	}
 

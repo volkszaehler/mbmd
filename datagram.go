@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	. "github.com/gonium/gosdm630/internal/meters"
+	. "github.com/gonium/gosdm630/meters"
 )
 
 // UniqueIdFormat is a format string for unique ID generation.
