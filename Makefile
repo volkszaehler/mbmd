@@ -1,6 +1,6 @@
 PWD := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BIN := $(PWD)/bin
-BUILD := env GO111MODULE=on GOBIN=$(BIN) go install ./...
+BUILD := GO111MODULE=on GOBIN=$(BIN) go install ./...
 
 all: build
 
@@ -15,14 +15,14 @@ binaries:
 assets:
 	./hash.sh
 	@echo "Generating embedded assets"
-	env GO111MODULE=on go generate ./...
+	GO111MODULE=on go generate ./...
 
 release: test clean assets
 	./build.sh
 
 test:
 	@echo "Running testsuite"
-	env GO111MODULE=on go test ./...
+	GO111MODULE=on go test ./...
 
 clean:
 	rm -rf bin/ pkg/ *.zip

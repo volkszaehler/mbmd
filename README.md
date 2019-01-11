@@ -147,14 +147,7 @@ Please install the Go compiler first. Then clone this repository:
 
     git clone https://github.com/gonium/gosdm630.git
 
-If you have ``make`` installed you can use the ``Makefile`` to install the tools:
-
-    $ cd gosdm630
-    $ make dep
-    Installing embed tool
-    Installing dep tool
-
-You can then build the software using the ``Makefile``:
+You can then build the software for the host platform using the ``Makefile``:
 
     $ make
     Generating embedded assets
@@ -163,18 +156,14 @@ You can then build the software using the ``Makefile``:
     Created binaries:
     sdm
 
-As you can see two sets of binaries are built:
-
- * ``bin/sdm630_{...}`` is the software built for the host platform
- * ``bin/sdm630_{...}-linux-arm`` is the same for the Raspberry Pi.
-
-If you want to build for all platforms you can use
+which creates ``./bin/sdm``. If you want to build for all platforms you can use
 
     $ make release
 
-or, for a single platform like the Raspberry Pi binary, use
+which creates zipped executables for each platform in ``./release``.
+For a single platform like the Raspberry Pi binary, use
 
-    $ GOOS=linux GOARCH=arm GOARM=5 make build
+    $ GO111MODULE=on GOBIN=$(pwd)/bin GOOS=linux GOARCH=arm GOARM=5 go install ./...
 
 
 ## Running
