@@ -81,8 +81,9 @@ func NewRTUClientHandler(rtuDevice string, comset int, verbose bool) *modbus.RTU
 // NewTCPClientHandler creates a TCP modbus handler
 func NewTCPClientHandler(rtuDevice string, verbose bool) *modbus.TCPClientHandler {
 	handler := modbus.NewTCPClientHandler(rtuDevice)
+	handler.Timeout = 1 * time.Second
 	handler.ProtocolRecoveryTimeout = 10 * time.Second
-	handler.LinkRecoveryTimeout = 60 * time.Second
+	handler.LinkRecoveryTimeout = 15 * time.Second
 
 	if verbose {
 		logger := &modbusLogger{}
@@ -156,6 +157,14 @@ func (q *ModbusEngine) setSlave(deviceId uint8) {
 	}
 }
 
+// Reconnect refreshes underlying modbus TCP connection if connected via TCP
+func (q *ModbusEngine) Reconnect() {
+	if handler, ok := q.handler.(*modbus.TCPClientHandler); ok {
+		handler.Close()
+	}
+}
+
+// Query modbus registers
 func (q *ModbusEngine) Query(snip QuerySnip) (retval []byte, err error) {
 	q.setSlave(snip.DeviceId)
 	q.status.IncreaseRequestCounter()

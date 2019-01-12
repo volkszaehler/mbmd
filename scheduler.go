@@ -65,19 +65,27 @@ func (r *RateMap) CooldownDuration(rate time.Duration, topic string) time.Durati
 	return remaining
 }
 
+// Reconnector refreshes the modbus connection, useful in case of TCP
+type Reconnector interface {
+	Reconnect()
+}
+
 type MeterScheduler struct {
 	out     QuerySnipChannel
 	control ControlSnipChannel
 	meters  map[uint8]*Meter
 	mc      *MeasurementCache
+	br      Reconnector
 }
 
 func NewMeterScheduler(
+	br Reconnector,
 	out QuerySnipChannel,
 	control ControlSnipChannel,
 	devices map[uint8]*Meter,
 ) *MeterScheduler {
 	return &MeterScheduler{
+		br:      br,
 		out:     out,
 		control: control,
 		meters:  devices,
@@ -92,6 +100,7 @@ func SetupScheduler(meters map[uint8]*Meter, qe *ModbusEngine) (*MeterScheduler,
 	var tee = make(QuerySnipChannel)
 
 	scheduler := NewMeterScheduler(
+		qe,
 		out,
 		control,
 		meters,
@@ -113,6 +122,21 @@ func (q *MeterScheduler) SetCache(mc *MeasurementCache) {
 // supervisor restarts failed meters by pinging them at regular interval
 func (q *MeterScheduler) supervisor() {
 	for {
+		time.Sleep(1 * time.Minute)
+
+		var busOk bool
+		for _, meter := range q.meters {
+			if meter.State() == AVAILABLE {
+				busOk = true
+				break
+			}
+		}
+
+		// if this is a TCP connection it may have dropped
+		if !busOk {
+			q.br.Reconnect()
+		}
+
 		for _, meter := range q.meters {
 			if meter.State() == UNAVAILABLE {
 				log.Printf("Attempting to ping unavailable device %d", meter.DeviceId)
@@ -122,7 +146,6 @@ func (q *MeterScheduler) supervisor() {
 				q.out <- snip
 			}
 		}
-		time.Sleep(1 * time.Minute)
 	}
 }
 
