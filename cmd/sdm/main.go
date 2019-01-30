@@ -96,6 +96,34 @@ func meterHelp() string {
 	return s
 }
 
+func logMeterDetails(meters map[uint8]*Meter, qe *ModbusEngine) {
+	for devid, meter := range meters {
+		producer := meter.Producer
+		log.Printf("#%d: %s (%s)", devid, producer.Description(), producer.ConnectionType())
+
+		if sunspec, ok := producer.(SunSpecProducer); ok {
+			op := sunspec.GetSunSpecCommonBlock()
+			snip := QuerySnip{
+				DeviceId:  meter.DeviceId,
+				Operation: op,
+			}
+
+			if b, err := qe.Query(snip); err == nil {
+				if descriptor, err := sunspec.DecodeSunSpecCommonBlock(b); err == nil {
+					log.Printf("    Manufacturer: %s", descriptor.Manufacturer)
+					log.Printf("    Model:        %s", descriptor.Model)
+					log.Printf("    Version:      %s", descriptor.Version)
+					log.Printf("    Serial:       %s", descriptor.Serial)
+				} else {
+					log.Println(err)
+				}
+			} else {
+				log.Println(err)
+			}
+		}
+	}
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "sdm"
@@ -247,6 +275,7 @@ func main() {
 
 		// scheduler and meter data channel
 		scheduler, snips := SetupScheduler(meters, qe)
+		logMeterDetails(meters, qe)
 
 		// tee that broadcasts meter messages to multiple recipients
 		tee := NewQuerySnipBroadcaster(snips)
