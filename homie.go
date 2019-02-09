@@ -3,7 +3,6 @@ package sdm630
 import (
 	"fmt"
 	"log"
-	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -144,20 +143,12 @@ func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *Modbu
 	})
 
 	properties := make([]string, len(snips))
-	re, _ := regexp.Compile(`^(.+) \((.+)\)$`)
 
 	for i, operation := range snips {
 		property := strings.ToLower(operation.IEC61850.String())
 		properties[i] = property
 
-		var unit string
-		description := operation.IEC61850.Description()
-		matches := re.FindStringSubmatch(description)
-		if len(matches) == 3 {
-			// strip unit from name
-			description = matches[1]
-			unit = matches[2]
-		}
+		description, unit := operation.IEC61850.DescriptionAndUnit()
 
 		propertySubtopic := fmt.Sprintf("%s/%s", subtopic, property)
 		m.publish(propertySubtopic+"/$name", description)
