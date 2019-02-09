@@ -7,76 +7,97 @@ const (
 	// split signals block operations that need be split into individual results
 	Split Measurement = iota
 
-	// phases
-	VoltageL1
-	VoltageL2
-	VoltageL3
+	// parameters
+	Frequency
+
+	Current
 	CurrentL1
 	CurrentL2
 	CurrentL3
+
+	// phases and sums
+	Voltage
+	VoltageL1
+	VoltageL2
+	VoltageL3
+
+	Power
 	PowerL1
 	PowerL2
 	PowerL3
+
+	ImportPower
+	ImportPowerL1
+	ImportPowerL2
+	ImportPowerL3
+
+	ExportPower
+	ExportPowerL1
+	ExportPowerL2
+	ExportPowerL3
+
+	ActivePower
 	ActivePowerL1
-	ReactivePowerL1
-	ApparentPowerL1
 	ActivePowerL2
-	ReactivePowerL2
-	ApparentPowerL2
 	ActivePowerL3
+
+	ReactivePower
+	ReactivePowerL1
+	ReactivePowerL2
 	ReactivePowerL3
+
+	ApparentPower
+	ApparentPowerL1
+	ApparentPowerL2
 	ApparentPowerL3
-	ImportL1
-	ImportL2
-	ImportL3
-	ExportL1
-	ExportL2
-	ExportL3
-	PowerFactorL1
-	PowerFactorL2
-	PowerFactorL3
+
+	Cosphi
 	CosphiL1
 	CosphiL2
 	CosphiL3
+
+	THD
 	THDL1
 	THDL2
 	THDL3
-
-	// sum/avg
-	Voltage
-	Current
-	Power
-	ActivePower
-	ReactivePower
-	ApparentPower
-	PowerFactor
-	Cosphi
-	THD
-	Frequency
 
 	// energy
 	Net
 	NetL1
 	NetL2
 	NetL3
+
 	Active
 	ActiveNet
 	ActiveNetL1
 	ActiveNetL2
 	ActiveNetL3
+
 	Reactive
 	ReactiveNet
 	ReactiveNetL1
 	ReactiveNetL2
 	ReactiveNetL3
+
 	Import
+	ImportL1
+	ImportL2
+	ImportL3
+
 	Export
+	ExportL1
+	ExportL2
+	ExportL3
+
 	ActiveImportT1
 	ActiveImportT2
+
 	ReactiveImportT1
 	ReactiveImportT2
+
 	ActiveExportT1
 	ActiveExportT2
+
 	ReactiveExportT1
 	ReactiveExportT2
 
