@@ -92,18 +92,15 @@ function meterUpdate(data) {
 
 	// extract the last update
 	var id = data["DeviceId"]
-	var iec61850 = data["IEC61850"]
-	var reading = fixed(data["Value"])
+	var type = data["IEC61850"]
+	var value = fixed(data["Value"])
+
 	// put into statusline
-	meterapp.message = "Received #" + id + " / " + iec61850 + ": " + si(reading)
-	// update data table
-	var datadict = meterapp.meters[id]
-	if (!datadict) {
-		// this is the first time we touch this meter, create an
-		// empty dict
-		var datadict = {}
-	}
-	datadict[iec61850] = reading
+	meterapp.message = "Received #" + id + " / " + type + ": " + si(value)
+
+	// create or update data table
+	var datadict = meterapp.meters[id] || {}
+	datadict[type] = value
 	// make update reactive, see
 	// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
 	Vue.set(meterapp.meters, id, datadict)
