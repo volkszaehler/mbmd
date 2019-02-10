@@ -15,6 +15,6 @@ require (
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	golang.org/x/net v0.0.0-20181213202711-891ebc4b82d6 // indirect
-	golang.org/x/tools v0.0.0-20181214171254-3c39ce7b6105
+	golang.org/x/tools v0.0.0-20190208222737-3744606dbb67
 	gopkg.in/urfave/cli.v1 v1.20.0
 )
