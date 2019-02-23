@@ -59,7 +59,7 @@ func (p *SMAProducer) Type() string {
 }
 
 func (p *SMAProducer) Description() string {
-	return "SMA SunSpec-compatible inverters (e.g. Sunny Boy or Tripower) (experimental)"
+	return "SMA SunSpec-compatible inverters (e.g. Sunny Boy or Tripower)"
 }
 
 func (p *SMAProducer) Probe() Operation {
@@ -71,9 +71,9 @@ func (p *SMAProducer) Produce() (res []Operation) {
 		// uint16
 		p.scaleSnip16(p.mkSplitUint16, VoltageL1, VoltageL2, VoltageL3),
 		p.scaleSnip16(p.mkSplitUint16, Frequency),
+		p.scaleSnip16(p.mkSplitUint16, Current, CurrentL1, CurrentL2, CurrentL3),
 
 		// int16
-		p.scaleSnip16(p.mkSplitInt16, Current, CurrentL1, CurrentL2, CurrentL3),
 		p.scaleSnip16(p.mkSplitInt16, Cosphi),
 		p.scaleSnip16(p.mkSplitInt16, Power),
 		p.scaleSnip16(p.mkSplitInt16, DCPower),
