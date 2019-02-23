@@ -73,7 +73,7 @@ func (p *SBCProducer) snip16(iec Measurement, scaler ...float64) Operation {
 
 	snip.Transform = RTUUint16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledUint16ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
@@ -85,7 +85,7 @@ func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 
 	snip.Transform = RTUUint32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledUint32ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip

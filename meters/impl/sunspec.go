@@ -1,12 +1,12 @@
 package impl
 
-import . "github.com/gonium/gosdm630/meters"
-
 import (
 	"encoding/binary"
 	"errors"
 	"math"
 	"strings"
+
+	. "github.com/gonium/gosdm630/meters"
 )
 
 const (
@@ -16,17 +16,38 @@ const (
 	sunspecModelID      = 3
 	sunspecManufacturer = 5
 	sunspecModel        = 21
+	sunspecOptions      = 37
 	sunspecVersion      = 45
 	sunspecSerial       = 53
 
 	sunspecSignature = 0x53756e53 // SunS
 )
 
-// RTUUint16ToFloat64WithNaN converts 16 bit unsigned integer readings
-// If byte sequence is 0xffff, NaN is returned for compatibility with SunSpec/SE 1-phase inverters
-func RTUUint16ToFloat64WithNaN(b []byte) float64 {
+// SunspecRTUUint16ToFloat64 converts 16 bit unsigned integer readings
+// If byte sequence is 0xffff, NaN is returned for compatibility with SunSpec inverters
+func SunspecRTUUint16ToFloat64(b []byte) float64 {
 	u := binary.BigEndian.Uint16(b)
 	if u == 0xffff {
+		return math.NaN()
+	}
+	return float64(u)
+}
+
+// SunspecRTUUint16ToFloat64 converts 16 bit unsigned integer readings
+// If byte sequence is 0xffff, NaN is returned for compatibility with SunSpec inverters
+func SunspecRTUInt16ToFloat64(b []byte) float64 {
+	u := binary.BigEndian.Uint16(b)
+	if u == 0x8000 {
+		return math.NaN()
+	}
+	return float64(int16(u))
+}
+
+// SunspecRTUUint32ToFloat64 converts 32 bit unsigned integer readings
+// If byte sequence is 0xffffffff, NaN is returned for compatibility with SunSpec inverters
+func SunspecRTUUint32ToFloat64(b []byte) float64 {
+	u := binary.BigEndian.Uint32(b)
+	if u == 0xffffffff {
 		return math.NaN()
 	}
 	return float64(u)
@@ -44,14 +65,12 @@ func (p *SunSpecCore) GetSunSpecCommonBlock() Operation {
 	// must return 0x53756e53 = SunS
 	return Operation{
 		FuncCode: ReadHoldingReg,
-		OpCode:   sunspecBase, // adjust according to docs
-		ReadLen:  sunspecSerial,
-		// IEC61850: iec,
+		OpCode:   sunspecBase,
+		ReadLen:  sunspecSerial + 16,
 	}
 }
 
 func (p *SunSpecCore) DecodeSunSpecCommonBlock(b []byte) (SunSpecDeviceDescriptor, error) {
-	// log.Printf("%0 x", b)
 	res := SunSpecDeviceDescriptor{}
 
 	if len(b) < sunspecSerial+2*16 {
@@ -65,6 +84,7 @@ func (p *SunSpecCore) DecodeSunSpecCommonBlock(b []byte) (SunSpecDeviceDescripto
 
 	res.Manufacturer = p.stringDecode(b, sunspecManufacturer, 16)
 	res.Model = p.stringDecode(b, sunspecModel, 16)
+	res.Options = p.stringDecode(b, sunspecOptions, 8)
 	res.Version = p.stringDecode(b, sunspecVersion, 8)
 	res.Serial = p.stringDecode(b, sunspecSerial, 16)
 
@@ -90,9 +110,9 @@ func (p *SunSpecCore) snip(iec Measurement, readlen uint16) Operation {
 func (p *SunSpecCore) snip16uint(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
-	snip.Transform = RTUUint16ToFloat64 // default conversion
+	snip.Transform = SunspecRTUUint16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledUint16ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
@@ -101,9 +121,9 @@ func (p *SunSpecCore) snip16uint(iec Measurement, scaler ...float64) Operation {
 func (p *SunSpecCore) snip16int(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 1)
 
-	snip.Transform = RTUInt16ToFloat64 // default conversion
+	snip.Transform = SunspecRTUInt16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledInt16ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
@@ -112,9 +132,9 @@ func (p *SunSpecCore) snip16int(iec Measurement, scaler ...float64) Operation {
 func (p *SunSpecCore) snip32(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 2)
 
-	snip.Transform = RTUUint32ToFloat64 // default conversion
+	snip.Transform = SunspecRTUUint32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledUint32ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
@@ -158,16 +178,16 @@ func (p *SunSpecCore) scaleSnip32(splitter func(...Measurement) Splitter, iecs .
 }
 
 func (p *SunSpecCore) mkSplitInt16(iecs ...Measurement) Splitter {
-	return p.mkBlockSplitter(2, RTUInt16ToFloat64, iecs...)
+	return p.mkBlockSplitter(2, SunspecRTUInt16ToFloat64, iecs...)
 }
 
 func (p *SunSpecCore) mkSplitUint16(iecs ...Measurement) Splitter {
-	return p.mkBlockSplitter(2, RTUUint16ToFloat64WithNaN, iecs...)
+	return p.mkBlockSplitter(2, SunspecRTUUint16ToFloat64, iecs...)
 }
 
 func (p *SunSpecCore) mkSplitUint32(iecs ...Measurement) Splitter {
 	// use div 1000 for kWh conversion
-	return p.mkBlockSplitter(4, MakeRTUScaledUint32ToFloat64(1000), iecs...)
+	return p.mkBlockSplitter(4, MakeScaledTransform(SunspecRTUUint32ToFloat64, 1000), iecs...)
 }
 
 func (p *SunSpecCore) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float64, iecs ...Measurement) Splitter {
@@ -184,7 +204,7 @@ func (p *SunSpecCore) mkBlockSplitter(dataSize uint16, valFunc func([]byte) floa
 			opcode := p.Opcode(iec)
 			val := valFunc(b[dataSize*(opcode-min):]) // 2 bytes per uint16, 4 bytes per uint32
 
-			// filter results of RTUUint16ToFloat64WithNaN
+			// filter results of Sunspec transforms
 			if math.IsNaN(val) {
 				continue
 			}
