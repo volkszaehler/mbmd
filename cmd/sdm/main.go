@@ -112,6 +112,7 @@ func logMeterDetails(meters map[uint8]*Meter, qe *ModbusEngine) {
 				if descriptor, err := sunspec.DecodeSunSpecCommonBlock(b); err == nil {
 					log.Printf("    Manufacturer: %s", descriptor.Manufacturer)
 					log.Printf("    Model:        %s", descriptor.Model)
+					log.Printf("    Options:      %s", descriptor.Options)
 					log.Printf("    Version:      %s", descriptor.Version)
 					log.Printf("    Serial:       %s", descriptor.Serial)
 				} else {

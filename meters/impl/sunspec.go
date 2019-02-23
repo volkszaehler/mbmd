@@ -1,12 +1,12 @@
 package impl
 
-import . "github.com/gonium/gosdm630/meters"
-
 import (
 	"encoding/binary"
 	"errors"
 	"math"
 	"strings"
+
+	. "github.com/gonium/gosdm630/meters"
 )
 
 const (
@@ -16,6 +16,7 @@ const (
 	sunspecModelID      = 3
 	sunspecManufacturer = 5
 	sunspecModel        = 21
+	sunspecOptions      = 37
 	sunspecVersion      = 45
 	sunspecSerial       = 53
 
@@ -44,14 +45,12 @@ func (p *SunSpecCore) GetSunSpecCommonBlock() Operation {
 	// must return 0x53756e53 = SunS
 	return Operation{
 		FuncCode: ReadHoldingReg,
-		OpCode:   sunspecBase, // adjust according to docs
-		ReadLen:  sunspecSerial,
-		// IEC61850: iec,
+		OpCode:   sunspecBase,
+		ReadLen:  sunspecSerial + 16,
 	}
 }
 
 func (p *SunSpecCore) DecodeSunSpecCommonBlock(b []byte) (SunSpecDeviceDescriptor, error) {
-	// log.Printf("%0 x", b)
 	res := SunSpecDeviceDescriptor{}
 
 	if len(b) < sunspecSerial+2*16 {
@@ -65,6 +64,7 @@ func (p *SunSpecCore) DecodeSunSpecCommonBlock(b []byte) (SunSpecDeviceDescripto
 
 	res.Manufacturer = p.stringDecode(b, sunspecManufacturer, 16)
 	res.Model = p.stringDecode(b, sunspecModel, 16)
+	res.Options = p.stringDecode(b, sunspecOptions, 8)
 	res.Version = p.stringDecode(b, sunspecVersion, 8)
 	res.Serial = p.stringDecode(b, sunspecSerial, 16)
 
