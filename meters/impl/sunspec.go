@@ -92,7 +92,7 @@ func (p *SunSpecCore) snip16uint(iec Measurement, scaler ...float64) Operation {
 
 	snip.Transform = RTUUint16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledUint16ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
@@ -103,7 +103,7 @@ func (p *SunSpecCore) snip16int(iec Measurement, scaler ...float64) Operation {
 
 	snip.Transform = RTUInt16ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledInt16ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
@@ -114,7 +114,7 @@ func (p *SunSpecCore) snip32(iec Measurement, scaler ...float64) Operation {
 
 	snip.Transform = RTUUint32ToFloat64 // default conversion
 	if len(scaler) > 0 {
-		snip.Transform = MakeRTUScaledUint32ToFloat64(scaler[0])
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
@@ -167,7 +167,7 @@ func (p *SunSpecCore) mkSplitUint16(iecs ...Measurement) Splitter {
 
 func (p *SunSpecCore) mkSplitUint32(iecs ...Measurement) Splitter {
 	// use div 1000 for kWh conversion
-	return p.mkBlockSplitter(4, MakeRTUScaledUint32ToFloat64(1000), iecs...)
+	return p.mkBlockSplitter(4, MakeScaledTransform(SunspecRTUUint32ToFloat64, 1000), iecs...)
 }
 
 func (p *SunSpecCore) mkBlockSplitter(dataSize uint16, valFunc func([]byte) float64, iecs ...Measurement) Splitter {
