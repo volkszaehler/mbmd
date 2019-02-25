@@ -94,7 +94,7 @@
 							<td class="col-2" v-if="populated(m.CurrentL3)">${ m.CurrentL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.Current)">${ m.Current }</td>
-							<td class="col-3" v-else>{ (val(m.CurrentL1) + val(m.CurrentL2) +
+							<td class="col-3" v-else>${ ((val(m.CurrentL1) + val(m.CurrentL2) +
 								val(m.CurrentL3))).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex" v-if="populated(m.PowerL1, m.PowerL2, m.PowerL3, m.Power)">
@@ -106,7 +106,7 @@
 							<td class="col-2" v-if="populated(m.PowerL3)">${ m.PowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.Power)">${ m.Power }</td>
-							<td class="col-3" v-else>{ (val(m.PowerL1) + val(m.PowerL2) + val(m.PowerL3))).toFixed(2) }
+							<td class="col-3" v-else>${ ((val(m.PowerL1) + val(m.PowerL2) + val(m.PowerL3))).toFixed(2) }
 							</td>
 						</tr>
 						<tr class="d-flex"
@@ -119,7 +119,7 @@
 							<td class="col-2" v-if="populated(m.ActivePowerL3)">${ m.ActivePowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.ActivePower)">${ m.ActivePower }</td>
-							<td class="col-3" v-else>{ ((val(m.ActivePowerL1) + val(m.ActivePowerL2) +
+							<td class="col-3" v-else>${ ((val(m.ActivePowerL1) + val(m.ActivePowerL2) +
 								val(m.ActivePowerL3))).toFixed(2) }</td>
 							</tr>
 						<tr class="d-flex"
@@ -132,7 +132,7 @@
 							<td class="col-2" v-if="populated(m.ReactivePowerL3)">${ m.ReactivePowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.ReactivePower)">${ m.ReactivePower }</td>
-							<td class="col-3" v-else>{ ((val(m.ReactivePowerL1) + val(m.ReactivePowerL2) +
+							<td class="col-3" v-else>${ ((val(m.ReactivePowerL1) + val(m.ReactivePowerL2) +
 								val(m.ReactivePowerL3))).toFixed(2)
 								}</td>
 						</tr>
@@ -146,7 +146,7 @@
 							<td class="col-2" v-if="populated(m.ImportPowerL3)">${ m.ImportPowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.ImportPower)">${ m.ImportPower }</td>
-							<td class="col-3" v-else>{ ((val(m.ImportPowerL1) + val(m.ImportPowerL2) +
+							<td class="col-3" v-else>${ ((val(m.ImportPowerL1) + val(m.ImportPowerL2) +
 								val(m.ImportPowerL3))).toFixed(2) }
 						</tr>
 						<tr class="d-flex"
