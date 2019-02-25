@@ -27,6 +27,12 @@ func RTUUint32ToFloat64(b []byte) float64 {
 	return float64(u)
 }
 
+// RTUUint64ToFloat64 converts 64 bit unsigned integer readings
+func RTUUint64ToFloat64(b []byte) float64 {
+	u := binary.BigEndian.Uint64(b)
+	return float64(u)
+}
+
 // RTUInt16ToFloat64 converts 16 bit signed integer readings
 func RTUInt16ToFloat64(b []byte) float64 {
 	u := int16(binary.BigEndian.Uint16(b))
