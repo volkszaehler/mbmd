@@ -41,7 +41,7 @@ manuals for yourself, I could be wrong):
 | Janitza B23-312 | 3 | + | + | + | + | + | + | - | - |
 | DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
 | SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
-| ABB B-Series | 3 | + | + | + | + | + | + | + | + |
+| ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
 | SunSpec Inverters | 3 | + | + | + | + | - | + | - | - |
 
 Please note that voltage, current, power and power factor are always

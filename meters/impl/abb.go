@@ -28,10 +28,20 @@ func NewABBProducer() Producer {
 		CurrentL2: 0x5B0E,
 		CurrentL3: 0x5B10,
 
-		Power:   0x5B24, // Apparent Power
-		PowerL1: 0x5B26,
-		PowerL2: 0x5B28,
-		PowerL3: 0x5B2A,
+		Power:   0x5B14,
+		PowerL1: 0x5B16,
+		PowerL2: 0x5B18,
+		PowerL3: 0x5B1A,
+		
+		ImportL1:  0x5460,
+		ImportL2:  0x5464,
+		ImportL3:  0x5468,
+		Import:    0x5000,
+		
+		ExportL1:  0x546C,
+		ExportL2:  0x5470,
+		ExportL3:  0x5474,
+		Export:    0x5004,
 
 		Cosphi:   0x5B3A,
 		CosphiL1: 0x5B3B,
@@ -48,7 +58,7 @@ func (p *ABBProducer) Type() string {
 }
 
 func (p *ABBProducer) Description() string {
-	return "ABB B-Series meters"
+	return "ABB A/B-Series meters"
 }
 
 func (p *ABBProducer) snip(iec Measurement, readlen uint16) Operation {
@@ -73,11 +83,47 @@ func (p *ABBProducer) snip16(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
+// snip16i creates modbus operation for single register
+func (p *ABBProducer) snip16i(iec Measurement, scaler ...float64) Operation {
+	snip := p.snip(iec, 1)
+
+	snip.Transform = RTUInt16ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
+	}
+
+	return snip
+}
+
 // snip32 creates modbus operation for double register
 func (p *ABBProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 2)
 
 	snip.Transform = RTUUint32ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
+	}
+
+	return snip
+}
+
+// snip32i creates modbus operation for double register
+func (p *ABBProducer) snip32i(iec Measurement, scaler ...float64) Operation {
+	snip := p.snip(iec, 2)
+
+	snip.Transform = RTUInt32ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
+	}
+
+	return snip
+}
+
+// snip64 creates modbus operation for double register
+func (p *ABBProducer) snip64(iec Measurement, scaler ...float64) Operation {
+	snip := p.snip(iec, 4)
+
+	snip.Transform = RTUUint64ToFloat64 // default conversion
 	if len(scaler) > 0 {
 		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
@@ -93,16 +139,33 @@ func (p *ABBProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,
 		CurrentL1, CurrentL2, CurrentL3,
-		Power, PowerL1, PowerL2, PowerL3,
 	} {
-		res = append(res, p.snip32(op, 100))
+		res = append(res, p.snip32(op, 10))
+	}
+	
+	for _, op := range []Measurement{
+		Cosphi, CosphiL1, CosphiL2, CosphiL3,
+	} {
+		res = append(res, p.snip16i(op, 1000))
 	}
 
 	for _, op := range []Measurement{
-		Cosphi, CosphiL1, CosphiL2, CosphiL3,
 		Frequency,
 	} {
-		res = append(res, p.snip16(op))
+		res = append(res, p.snip16(op,100))
+	}
+	
+	for _, op := range []Measurement{
+		Power, PowerL1, PowerL2, PowerL3,
+	} {
+		res = append(res, p.snip32i(op, 10))
+	}
+
+	for _, op := range []Measurement{
+		Import, ImportL1, ImportL2, ImportL3,
+		Export, ExportL1, ExportL2, ExportL3,
+	} {
+		res = append(res, p.snip64(op,100))
 	}
 
 	return res
