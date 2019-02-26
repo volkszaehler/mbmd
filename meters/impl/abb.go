@@ -32,16 +32,16 @@ func NewABBProducer() Producer {
 		PowerL1: 0x5B16,
 		PowerL2: 0x5B18,
 		PowerL3: 0x5B1A,
-		
-		ImportL1:  0x5460,
-		ImportL2:  0x5464,
-		ImportL3:  0x5468,
-		Import:    0x5000,
-		
-		ExportL1:  0x546C,
-		ExportL2:  0x5470,
-		ExportL3:  0x5474,
-		Export:    0x5004,
+
+		ImportL1: 0x5460,
+		ImportL2: 0x5464,
+		ImportL3: 0x5468,
+		Import:   0x5000,
+
+		ExportL1: 0x546C,
+		ExportL2: 0x5470,
+		ExportL3: 0x5474,
+		Export:   0x5004,
 
 		Cosphi:   0x5B3A,
 		CosphiL1: 0x5B3B,
@@ -61,78 +61,49 @@ func (p *ABBProducer) Description() string {
 	return "ABB A/B-Series meters"
 }
 
-func (p *ABBProducer) snip(iec Measurement, readlen uint16) Operation {
-	opcode := p.Opcodes[iec]
-	return Operation{
-		FuncCode: ReadHoldingReg,
-		OpCode:   opcode,
-		ReadLen:  readlen,
-		IEC61850: iec,
+func (p *ABBProducer) snip(iec Measurement, readlen uint16, transform RTUTransform, scaler ...float64) Operation {
+	snip := Operation{
+		FuncCode:  ReadHoldingReg,
+		OpCode:    p.Opcodes[iec],
+		ReadLen:   readlen,
+		Transform: transform,
+		IEC61850:  iec,
 	}
-}
 
-// snip16 creates modbus operation for single register
-func (p *ABBProducer) snip16(iec Measurement, scaler ...float64) Operation {
-	snip := p.snip(iec, 1)
-
-	snip.Transform = RTUUint16ToFloat64 // default conversion
 	if len(scaler) > 0 {
 		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
 	}
 
 	return snip
+}
+
+// snip16u creates modbus operation for single register
+func (p *ABBProducer) snip16u(iec Measurement, scaler ...float64) Operation {
+	return p.snip(iec, 1, RTUUint16ToFloat64, scaler...)
 }
 
 // snip16i creates modbus operation for single register
 func (p *ABBProducer) snip16i(iec Measurement, scaler ...float64) Operation {
-	snip := p.snip(iec, 1)
-
-	snip.Transform = RTUInt16ToFloat64 // default conversion
-	if len(scaler) > 0 {
-		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
-	}
-
-	return snip
+	return p.snip(iec, 1, RTUInt16ToFloat64, scaler...)
 }
 
-// snip32 creates modbus operation for double register
-func (p *ABBProducer) snip32(iec Measurement, scaler ...float64) Operation {
-	snip := p.snip(iec, 2)
-
-	snip.Transform = RTUUint32ToFloat64 // default conversion
-	if len(scaler) > 0 {
-		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
-	}
-
-	return snip
+// snip32u creates modbus operation for double register
+func (p *ABBProducer) snip32u(iec Measurement, scaler ...float64) Operation {
+	return p.snip(iec, 2, RTUUint32ToFloat64, scaler...)
 }
 
 // snip32i creates modbus operation for double register
 func (p *ABBProducer) snip32i(iec Measurement, scaler ...float64) Operation {
-	snip := p.snip(iec, 2)
-
-	snip.Transform = RTUInt32ToFloat64 // default conversion
-	if len(scaler) > 0 {
-		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
-	}
-
-	return snip
+	return p.snip(iec, 2, RTUInt32ToFloat64, scaler...)
 }
 
-// snip64 creates modbus operation for double register
-func (p *ABBProducer) snip64(iec Measurement, scaler ...float64) Operation {
-	snip := p.snip(iec, 4)
-
-	snip.Transform = RTUUint64ToFloat64 // default conversion
-	if len(scaler) > 0 {
-		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
-	}
-
-	return snip
+// snip64u creates modbus operation for double register
+func (p *ABBProducer) snip64u(iec Measurement, scaler ...float64) Operation {
+	return p.snip(iec, 4, RTUUint64ToFloat64, scaler...)
 }
 
 func (p *ABBProducer) Probe() Operation {
-	return p.snip16(VoltageL1)
+	return p.snip32u(VoltageL1, 10)
 }
 
 func (p *ABBProducer) Produce() (res []Operation) {
@@ -140,9 +111,9 @@ func (p *ABBProducer) Produce() (res []Operation) {
 		VoltageL1, VoltageL2, VoltageL3,
 		CurrentL1, CurrentL2, CurrentL3,
 	} {
-		res = append(res, p.snip32(op, 10))
+		res = append(res, p.snip32u(op, 10))
 	}
-	
+
 	for _, op := range []Measurement{
 		Cosphi, CosphiL1, CosphiL2, CosphiL3,
 	} {
@@ -152,9 +123,9 @@ func (p *ABBProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		Frequency,
 	} {
-		res = append(res, p.snip16(op,100))
+		res = append(res, p.snip16u(op, 100))
 	}
-	
+
 	for _, op := range []Measurement{
 		Power, PowerL1, PowerL2, PowerL3,
 	} {
@@ -165,7 +136,7 @@ func (p *ABBProducer) Produce() (res []Operation) {
 		Import, ImportL1, ImportL2, ImportL3,
 		Export, ExportL1, ExportL2, ExportL3,
 	} {
-		res = append(res, p.snip64(op,100))
+		res = append(res, p.snip64u(op, 100))
 	}
 
 	return res
