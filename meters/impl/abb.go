@@ -1,13 +1,21 @@
 package impl
 
-import . "github.com/gonium/gosdm630/meters"
+import (
+	"math"
+
+	. "github.com/gonium/gosdm630/meters"
+)
 
 func init() {
 	Register(NewABBProducer)
 }
 
+type signedness int
+
 const (
-	METERTYPE_ABB = "ABB"
+	METERTYPE_ABB            = "ABB"
+	unsigned      signedness = iota
+	signed
 )
 
 type ABBProducer struct {
@@ -61,12 +69,35 @@ func (p *ABBProducer) Description() string {
 	return "ABB A/B-Series meters"
 }
 
-func (p *ABBProducer) snip(iec Measurement, readlen uint16, transform RTUTransform, scaler ...float64) Operation {
+// wrapTransform validates if reading result is undefined and returns NaN in that case
+func wrapTransform(byteCount uint16, sign signedness, transform RTUTransform) RTUTransform {
+	var nan []byte
+	if sign == signed {
+		nan = []byte{0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+	} else {
+		nan = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+	}
+
+	return func(b []byte) float64 {
+		var i uint16
+		for i = 0; i < byteCount; i++ {
+			if b[i] != nan[i] {
+				return transform(b)
+			}
+		}
+		return math.NaN()
+	}
+}
+
+func (p *ABBProducer) snip(iec Measurement, readlen uint16, sign signedness, transform RTUTransform, scaler ...float64) Operation {
+	// wrap the transformation inside a NaN check
+	nanAwareTransform := wrapTransform(2*readlen, sign, transform)
+
 	snip := Operation{
 		FuncCode:  ReadHoldingReg,
 		OpCode:    p.Opcodes[iec],
 		ReadLen:   readlen,
-		Transform: transform,
+		Transform: nanAwareTransform,
 		IEC61850:  iec,
 	}
 
@@ -79,27 +110,27 @@ func (p *ABBProducer) snip(iec Measurement, readlen uint16, transform RTUTransfo
 
 // snip16u creates modbus operation for single register
 func (p *ABBProducer) snip16u(iec Measurement, scaler ...float64) Operation {
-	return p.snip(iec, 1, RTUUint16ToFloat64, scaler...)
+	return p.snip(iec, 1, unsigned, RTUUint16ToFloat64, scaler...)
 }
 
 // snip16i creates modbus operation for single register
 func (p *ABBProducer) snip16i(iec Measurement, scaler ...float64) Operation {
-	return p.snip(iec, 1, RTUInt16ToFloat64, scaler...)
+	return p.snip(iec, 1, signed, RTUInt16ToFloat64, scaler...)
 }
 
 // snip32u creates modbus operation for double register
 func (p *ABBProducer) snip32u(iec Measurement, scaler ...float64) Operation {
-	return p.snip(iec, 2, RTUUint32ToFloat64, scaler...)
+	return p.snip(iec, 2, unsigned, RTUUint32ToFloat64, scaler...)
 }
 
 // snip32i creates modbus operation for double register
 func (p *ABBProducer) snip32i(iec Measurement, scaler ...float64) Operation {
-	return p.snip(iec, 2, RTUInt32ToFloat64, scaler...)
+	return p.snip(iec, 2, signed, RTUInt32ToFloat64, scaler...)
 }
 
 // snip64u creates modbus operation for double register
 func (p *ABBProducer) snip64u(iec Measurement, scaler ...float64) Operation {
-	return p.snip(iec, 4, RTUUint64ToFloat64, scaler...)
+	return p.snip(iec, 4, unsigned, RTUUint64ToFloat64, scaler...)
 }
 
 func (p *ABBProducer) Probe() Operation {
