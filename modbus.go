@@ -3,6 +3,7 @@ package sdm630
 import (
 	"fmt"
 	"log"
+	"math"
 	"regexp"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 )
 
 const (
-	maxRetry = 5
+	maxRetry = 3
 )
 
 const (
@@ -223,6 +224,11 @@ func (q *ModbusEngine) Transform(snip QuerySnip, bytes []byte) []QuerySnip {
 	// convert bytes to value
 	snip.Value = snip.Transform(bytes)
 	snip.ReadTimestamp = now
+
+	// check if result is valid
+	if math.IsNaN(snip.Value) {
+		return []QuerySnip{}
+	}
 
 	return []QuerySnip{snip}
 }
