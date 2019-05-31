@@ -1,0 +1,5 @@
+issues:
+  exclude:
+  - "`sunspecModelID` is unused"
+  - "U1000: func `..SunSpecCore..snip16int` is unused"
+  - "U1000: func `..SunSpecCore..snip32` is unused"

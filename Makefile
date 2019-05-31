@@ -1,20 +1,23 @@
-PWD := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-BIN := $(PWD)/bin
-BUILD := GO111MODULE=on GOBIN=$(BIN) go install ./...
+.PHONY: default clean checks test build assets binaries publish-images test-release
 
-all: build
+TAG_NAME := $(shell git tag -l --contains HEAD)
+SHA := $(shell git rev-parse --short HEAD)
+VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
+BUILD_DATE := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
+default: clean checks test build
 
+clean:
+	rm -rf bin/ pkg/ dist/ *.zip
 
-release: test clean assets
+checks: assets
+	golangci-lint run
 
 test:
 	@echo "Running testsuite"
 	GO111MODULE=on go test ./...
 
-clean:
-	rm -rf bin/ pkg/ *.zip
 build: assets binaries
 
 assets:
@@ -25,4 +28,3 @@ binaries:
 	@echo Version: $(VERSION) $(BUILD_DATE)
 	go build -v -ldflags '-X "github.com/gonium/gosdm630.Version=${VERSION}" -X "github.com/gonium/gosdm630.Commit=${SHA}"' ./cmd/sdm
 
-.PHONY: all build binaries assets release test clean

@@ -54,9 +54,6 @@ func (mc *MeasurementCache) Run(in QuerySnipChannel) {
 		if meter, ok := mc.meters[devid]; ok {
 			// add the snip to the cache
 			meter.AddSnip(snip)
-			if mc.verbose {
-				// log.Printf("%s\r\n", meter.Current.String())
-			}
 		} else {
 			log.Fatalf("Snip for unknown meter received - this should not happen (%v).", snip)
 		}
@@ -75,7 +72,7 @@ func (mc *MeasurementCache) Purge(deviceId byte) error {
 
 func (mc *MeasurementCache) GetSortedIDs() []byte {
 	var keys ByteSlice
-	for k, _ := range mc.meters {
+	for k := range mc.meters {
 		keys = append(keys, k)
 	}
 	sort.Sort(keys)

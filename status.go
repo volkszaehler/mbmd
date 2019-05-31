@@ -38,7 +38,7 @@ type Status struct {
 	Modbus           ModbusStatus
 	ConfiguredMeters []MeterStatus
 	metermap         map[uint8]*Meter
-	mux              sync.RWMutex `json:"-"`
+	mux              sync.RWMutex
 }
 
 type MeterStatus struct {

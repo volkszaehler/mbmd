@@ -82,7 +82,7 @@ func (p *IneproProducer) Probe() Operation {
 }
 
 func (p *IneproProducer) Produce() (res []Operation) {
-	for op, _ := range p.Opcodes {
+	for op := range p.Opcodes {
 		res = append(res, p.snip(op))
 	}
 
