@@ -1,6 +1,7 @@
 package sdm630
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -267,9 +268,21 @@ func (r ReadingSlice) NotOlderThan(ts time.Time) (res ReadingSlice) {
 }
 
 // Average calculates average across a ReadingSlice
-func (r *ReadingSlice) Average() (*Readings, error) {
-	var avg *Readings
-	var err error
+func (r *ReadingSlice) Average() (avg *Readings, err error) {
+	// check for panics
+	defer func() {
+		if r := recover(); r != nil {
+			avg = nil
+			switch x := r.(type) {
+			case string:
+				err = errors.New(x)
+			case error:
+				err = x
+			default:
+				err = errors.New("unknown panic")
+			}
+		}
+	}()
 
 	for idx, r := range *r {
 		if idx == 0 {
@@ -281,6 +294,10 @@ func (r *ReadingSlice) Average() (*Readings, error) {
 				return nil, err
 			}
 		}
+	}
+
+	if len(*r) == 0 {
+		return nil, errors.New("readings empty")
 	}
 
 	return avg.divide(float64(len(*r))), nil
