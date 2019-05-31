@@ -21,12 +21,12 @@ COPY go.* ./
 RUN go mod download
 
 COPY . .
-RUN make build
+RUN GOARCH={{ .GoARCH }} GOARM={{ .GoARM }} make build
 
 #############################
 ## STEP 2 build a small image
 #############################
-FROM alpine
+FROM {{ .RuntimeImage }}
 
 # Import from builder.
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
@@ -39,7 +39,5 @@ COPY --from=builder /build/sdm /go/bin/sdm
 # Use an unprivileged user.
 USER appuser
 
-EXPOSE 8080
-
 # Run the binary.
-CMD /go/bin/sdm --url 0.0.0.0:8080
+ENTRYPOINT ["/go/bin/sdm"]

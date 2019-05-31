@@ -44,3 +44,7 @@ internal/meters/measurement_string.go
 .vscode/
 release/
 vendor/
+dist/
+sdm
+manifest.json
+linux-*.Dockerfile

@@ -1,0 +1,29 @@
+# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+before:
+  hooks:
+    # you may remove this if you don't need go generate
+    - go generate ./...
+builds:
+-
+  # Path to main.go file or main package.
+  main: ./cmd/sdm/main.go
+  # Binary name.
+  binary: sdm
+  ldflags:
+  - -X github.com/gonium/gosdm630.Version={{.Version}} -X github.com/gonium/gosdm630.Commit={{.ShortCommit}}
+  env:
+  - CGO_ENABLED=0
+  ignore:
+  - goos: darwin
+    goarch: 386
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'

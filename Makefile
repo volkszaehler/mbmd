@@ -28,3 +28,9 @@ binaries:
 	@echo Version: $(VERSION) $(BUILD_DATE)
 	go build -v -ldflags '-X "github.com/gonium/gosdm630.Version=${VERSION}" -X "github.com/gonium/gosdm630.Commit=${SHA}"' ./cmd/sdm
 
+publish-images:
+	@echo Version: $(VERSION) $(BUILD_DATE)
+	seihon publish -v "$(TAG_NAME)" -v "latest" --image-name andig/gosdm --base-runtime-image alpine --dry-run=false
+
+test-release:
+	goreleaser --snapshot --skip-publish --rm-dist
