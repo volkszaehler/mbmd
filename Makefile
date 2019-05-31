@@ -4,21 +4,10 @@ BUILD := GO111MODULE=on GOBIN=$(BIN) go install ./...
 
 all: build
 
-build: assets binaries
 
-binaries:
-	@echo "Building for host platform"
-	$(BUILD)
-	@echo "Created binaries:"
-	@ls -1 bin
 
-assets:
-	./hash.sh
-	@echo "Generating embedded assets"
-	GO111MODULE=on go generate ./...
 
 release: test clean assets
-	./build.sh
 
 test:
 	@echo "Running testsuite"
@@ -26,5 +15,14 @@ test:
 
 clean:
 	rm -rf bin/ pkg/ *.zip
+build: assets binaries
+
+assets:
+	@echo "Generating embedded assets"
+	GO111MODULE=on go generate ./...
+
+binaries:
+	@echo Version: $(VERSION) $(BUILD_DATE)
+	go build -v -ldflags '-X "github.com/gonium/gosdm630.Version=${VERSION}" -X "github.com/gonium/gosdm630.Commit=${SHA}"' ./cmd/sdm
 
 .PHONY: all build binaries assets release test clean

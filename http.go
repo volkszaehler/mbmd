@@ -19,6 +19,11 @@ const (
 	devAssets                    = false
 )
 
+var (
+	Version = "unknown version"
+	Commit  = "unknown commit"
+)
+
 //go:generate go run github.com/mjibson/esc -private -o assets.go -pkg sdm630 -prefix assets assets
 
 func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
@@ -38,7 +43,7 @@ func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 			SoftwareVersion string
 			GolangVersion   string
 		}{
-			SoftwareVersion: TAG,
+			SoftwareVersion: Version,
 			GolangVersion:   runtime.Version(),
 		}
 		err := t.Execute(w, data)

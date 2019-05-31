@@ -29,7 +29,7 @@ func checkVersion() {
 		Repository: "gosdm630",
 	}
 
-	if res, err := latest.Check(githubTag, TAG); err == nil {
+	if res, err := latest.Check(githubTag, Version); err == nil {
 		if res.Outdated {
 			log.Printf("updates available - please upgrade to ingress %s", res.Current)
 		}
@@ -129,7 +129,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "sdm"
 	app.Usage = "SDM MODBUS daemon"
-	app.Version = fmt.Sprintf("%s (https://github.com/gonium/gosdm/commit/%s)", TAG, HASH)
+	app.Version = fmt.Sprintf("%s (https://github.com/gonium/gosdm/commit/%s)", Version, Commit)
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
 		// general
@@ -244,7 +244,7 @@ func main() {
 			log.Fatalf("Unexpected arguments: %v", c.Args())
 		}
 
-		log.Printf("sdm %s %s", TAG, HASH)
+		log.Printf("sdm %s %s", Version, Commit)
 		go checkVersion()
 
 		// Set unique ID format
@@ -330,11 +330,11 @@ func main() {
 			waitForSignal(os.Interrupt, os.Kill)
 			log.Println("Received signal - stopping")
 			cancelScheduler() // cancel scheduler
-			select {          // wait for Run methods attached to tee to finish
-			case <-tee.Done():
-				log.Println("Stopped")
-				os.Exit(0)
-			}
+
+			// wait for Run methods attached to tee to finish
+			<-tee.Done()
+			log.Println("Stopped")
+			os.Exit(0)
 		}()
 
 		Run_httpd(
@@ -345,5 +345,5 @@ func main() {
 		)
 	}
 
-	app.Run(os.Args)
+	_ = app.Run(os.Args)
 }
