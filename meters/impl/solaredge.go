@@ -1,6 +1,6 @@
 package impl
 
-import . "github.com/gonium/gosdm630/meters"
+import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
 	Register(NewSEProducer)

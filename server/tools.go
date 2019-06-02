@@ -1,6 +1,6 @@
 // +build tools
 
-package sdm630
+package server
 
 import (
 	_ "github.com/mjibson/esc"

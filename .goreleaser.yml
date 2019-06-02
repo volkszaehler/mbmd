@@ -5,18 +5,21 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:
--
+- id: mbmd
   # Path to main.go file or main package.
-  main: ./cmd/sdm/main.go
-  # Binary name.
-  binary: sdm
+  main: ./cmd/mbmd/main.go
   ldflags:
-  - -X github.com/gonium/gosdm630.Version={{.Version}} -X github.com/gonium/gosdm630.Commit={{.ShortCommit}}
+  - -X github.com/volkszaehler/mbmd.Version={{.Version}} -X github.com/volkszaehler/mbmd.Commit={{.ShortCommit}}
   env:
   - CGO_ENABLED=0
-  ignore:
-  - goos: darwin
-    goarch: 386
+  goos:
+  - linux
+  - darwin
+  goarch:
+  - amd64
+  - arm
+  goarm:
+  - "6"
 checksum:
   name_template: 'checksums.txt'
 snapshot:

@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/gonium/gosdm630"
-	. "github.com/gonium/gosdm630/meters"
-	_ "github.com/gonium/gosdm630/meters/impl"
 	latest "github.com/tcnksm/go-latest"
+	. "github.com/volkszaehler/mbmd/meters"
+	_ "github.com/volkszaehler/mbmd/meters/impl"
+	. "github.com/volkszaehler/mbmd/server"
 	cli "gopkg.in/urfave/cli.v1"
 )
 
@@ -25,8 +25,8 @@ const (
 
 func checkVersion() {
 	githubTag := &latest.GithubTag{
-		Owner:      "gonium",
-		Repository: "gosdm630",
+		Owner:      "volkszaehler",
+		Repository: "mbmd",
 	}
 
 	if res, err := latest.Check(githubTag, Version); err == nil {
@@ -127,9 +127,9 @@ func logMeterDetails(meters map[uint8]*Meter, qe *ModbusEngine) {
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "sdm"
-	app.Usage = "SDM MODBUS daemon"
-	app.Version = fmt.Sprintf("%s (https://github.com/gonium/gosdm/commit/%s)", Version, Commit)
+	app.Name = "mbmd"
+	app.Usage = "ModBus Measurement Daemon"
+	app.Version = fmt.Sprintf("%s (https://github.com/volkszaehler/mbmd/commit/%s)", Version, Commit)
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
 		// general
@@ -199,7 +199,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "topic, t",
-			Value: "sdm",
+			Value: "mbmd",
 			Usage: "MQTT: Base topic. Set empty to disable publishing.",
 			// Destination: &mqttTopic,
 		},
@@ -217,7 +217,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "clientid, i",
-			Value: "sdm630",
+			Value: "mbmd",
 			Usage: "MQTT: ClientID",
 			// Destination: &mqttClientID,
 		},
@@ -244,7 +244,7 @@ func main() {
 			log.Fatalf("Unexpected arguments: %v", c.Args())
 		}
 
-		log.Printf("sdm %s %s", Version, Commit)
+		log.Printf("mbmd %s %s", Version, Commit)
 		go checkVersion()
 
 		// Set unique ID format

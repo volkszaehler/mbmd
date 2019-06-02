@@ -6,7 +6,7 @@ import (
 	"math"
 	"strings"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 const (

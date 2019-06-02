@@ -1,4 +1,4 @@
-package sdm630
+package server
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 // QuerySnip represents modbus query operations

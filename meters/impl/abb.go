@@ -3,7 +3,7 @@ package impl
 import (
 	"math"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 func init() {
