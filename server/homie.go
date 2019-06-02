@@ -1,4 +1,4 @@
-package sdm630
+package server
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 const (

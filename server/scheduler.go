@@ -1,4 +1,4 @@
-package sdm630
+package server
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 type RateMap map[string]int64

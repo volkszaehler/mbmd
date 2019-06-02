@@ -1,10 +1,10 @@
-package sdm630
+package server
 
 import (
 	"testing"
 	"time"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 func TestQuerySnipMerge(t *testing.T) {

@@ -1,4 +1,4 @@
-package sdm630
+package server
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 // UniqueIdFormat is a format string for unique ID generation.

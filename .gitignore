@@ -48,3 +48,4 @@ dist/
 sdm
 manifest.json
 linux-*.Dockerfile
+mbmd

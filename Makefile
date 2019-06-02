@@ -9,28 +9,28 @@ BUILD_DATE := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 default: clean checks test build
 
 clean:
-	rm -rf bin/ pkg/ dist/ *.zip
+	rm -rf dist/ *.zip
 
 checks: assets
 	golangci-lint run
 
 test:
 	@echo "Running testsuite"
-	GO111MODULE=on go test ./...
+	go test ./...
 
 build: assets binaries
 
 assets:
 	@echo "Generating embedded assets"
-	GO111MODULE=on go generate ./...
+	go generate ./...
 
 binaries:
 	@echo Version: $(VERSION) $(BUILD_DATE)
-	go build -v -ldflags '-X "github.com/gonium/gosdm630.Version=${VERSION}" -X "github.com/gonium/gosdm630.Commit=${SHA}"' ./cmd/sdm
+	go build -v -ldflags '-X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"' ./cmd/mbmd
 
 publish-images:
 	@echo Version: $(VERSION) $(BUILD_DATE)
-	seihon publish -v "$(TAG_NAME)" -v "latest" --image-name andig/gosdm --base-runtime-image alpine --dry-run=false
+	seihon publish -v "$(TAG_NAME)" -v "latest" --image-name volkszaehler/mbmd --base-runtime-image alpine --dry-run=false
 
 test-release:
 	goreleaser --snapshot --skip-publish --rm-dist
