@@ -1,4 +1,4 @@
-package sdm630
+package server
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"time"
 
-	. "github.com/gonium/gosdm630/meters"
+	. "github.com/volkszaehler/mbmd/meters"
 	"github.com/grid-x/modbus"
 )
 

@@ -1,4 +1,4 @@
-package sdm630
+package server
 
 import (
 	"encoding/json"
@@ -24,14 +24,14 @@ var (
 	Commit  = "unknown commit"
 )
 
-//go:generate go run github.com/mjibson/esc -private -o assets.go -pkg sdm630 -prefix assets assets
+//go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
 func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
 		log.Fatal("Failed to load embedded template: " + err.Error())
 	}
-	t, err := template.New("gosdm630").Parse(string(mainTemplate))
+	t, err := template.New("mbmd").Parse(string(mainTemplate))
 	if err != nil {
 		log.Fatal("Failed to create main page template: ", err.Error())
 	}

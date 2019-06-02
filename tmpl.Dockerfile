@@ -34,10 +34,12 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 
 # Copy our static executable
-COPY --from=builder /build/sdm /go/bin/sdm
+COPY --from=builder /build/mbmd /go/bin/mbmd
 
 # Use an unprivileged user.
 USER appuser
 
+EXPOSE 8080
+
 # Run the binary.
-ENTRYPOINT ["/go/bin/sdm"]
+CMD /go/bin/mbmd --url 0.0.0.0:8080

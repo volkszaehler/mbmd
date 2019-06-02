@@ -1,4 +1,4 @@
-package sdm630
+package server
 
 import (
 	"errors"

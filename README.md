@@ -1,226 +1,71 @@
-# An HTTP interface to MODBUS smart meters
+# ModBus Measurement Daemon
 
-GoSDM provides an http interface to smart meters with a MODBUS interface.
-Meter data, i.e. readings, is made accessible through REST API and MQTT.
-Communication is possible over RS485 connections as well as TCP sockets.
+A daemon for collecting measurement data from smart meters and grid inverters over modbus.
 
-A wide range of DIN-rail meters is supported (see [supported sevices](#supported-devices)).
+`mbmd` provides an http interface to smart meters and grid inverters with modbus interface.
+Meter readings are made accessible through REST API and MQTT.
+Modbus communication is possible over RS485 connections as well as TCP sockets.
 
-**NOTE** Starting with version 0.7 several breaking changes were introduced. See [changelog](#changelog) for details.
+`mbmd` was originally developer by Mathias Dalheimer under the name of `gosdm`. Previous releases are still [available](https://github.com/gonium/gosdm).
 
 # Table of Contents
 
-* [Supported Devices](#supported-devices)
+* [Requirements](#requirements)
 * [Installation](#installation)
-  * [Hardware installation](#hardware-installation)
-  * [Software installation](#software-installation)
-  * [Running](#running)
-  * [Installation on the Raspberry Pi](#installation-on-the-raspberry-pi)
+  * [Raspberry Pi](#raspberry-pi)
   * [Detecting connected meters](#detecting-connected-meters)
 * [API](#api)
   * [Rest API](#rest-api)
   * [Websocket API](#websocket-api)
   * [MQTT API](#mqtt-api)
+* [Supported Devices](#supported-devices)
 * [Changelog](#changelog)
 
-# Supported Devices
 
-The meters have slightly different capabilities. The EASTRON SDM630 offers
-a lot of features, while the smaller devices only support basic
-features.  This table gives you an overview (please note: check the
-manuals for yourself, I could be wrong):
+## Requirements
 
-| Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
-|---|---|---|---|---|---|---|---|---|---|
-| SDM120 | 1 | + | + | + | + | + | + | - | - |
-| SDM220 | 1 | + | + | + | + | + | + | - | - |
-| SDM220 | 1 | + | + | + | + | + | + | - | - |
-| SDM530 | 3 | + | + | + | + | + | + | - | - |
-| SDM630 v1 | 3 | + | + | + | + | + | + | + | + |
-| SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
-| Janitza B23-312 | 3 | + | + | + | + | + | + | - | - |
-| DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
-| SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
-| ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
-| SunSpec Inverters | 3 | + | + | + | + | - | + | - | - |
-
-Please note that voltage, current, power and power factor are always
-reported for each connected phase.
-
- * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS,
-		 which is currently not supported by this project. You can use e.g.
-		 [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
- * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and
- button.
- * SDM530: Very big (7TE) - takes up a lot of space, but all connections are
- on the underside of the meter.
- * SDM630 v1 and v2, both MID and non-MID. Compact (4TE) and with lots
- of features. Can be configured for 1P2 (single phase with neutral), 3P3
- (three phase without neutral) and 3P4 (three phase with neutral)
-	systems.
- * Janitza B23-312: These meters have a higher update rate than the Eastron
- devices, but they are more expensive. The -312 variant is the one with a MODBUS interface.
- * DZG DVH4013: This meter does not provide raw phase power measurements
- and only aggregated import/export measurements. The meter is only
- partially implemented and not recommended. If you want to use it: By
- default, the meter communicates using 9600 8E1 (comset 5). The meter ID
- is derived from the serial number: take the last two numbers of the
- serial number (top right of the device), e.g. 23, and add one (24).
- Assume this is a hexadecimal number and convert it to decimal (36). Use
- this as the meter ID.
- * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
- two tariffs, both import and export depending on meter version and compact (4TE).
- It's often used with Viessmann heat pumps.
- * SunSpec: Apart from meters, SunSpec-compatible grid inverters are supported, too. This
- includes popular devices from SolarEdge (SE3000, SE9000) and SMA (Sunny Boy and Sunny Tripower). Grid inverters
- are typically connected using ModBus over TCP.
-
-Some of my test devices have been provided by [B+G
-E-Tech](http://bg-etech.de/) - please consider to buy your meter from
-them!
+You'll need:
+* A supported Modbus/RTU smart meter OR an supported Modbus/TCP SunSpec-compatible grid inverter.
+* In case of Modbus/RTU: A USB RS485 adapter. See [USB-ISO-RS485 project](https://github.com/gonium/usb-iso-rs485) for a home-grown adapter.
 
 
-# Installation
-
-The installation consists of a hardware and a software part.
-Make sure you buy/fetch the following things before starting:
-
-* A supported Modbus/RTU smart meter.
-* A USB RS485 adaptor. I use a homegrown one, please see [my
-USB-ISO-RS485 project](https://github.com/gonium/usb-iso-rs485)
-* Some cables to connect the adapter to the SDM630 (for testing, I use
-an old speaker cable I had sitting on my workbench, for the permanent
-installation, a shielded CAT5 cable seems adequate)
-
-
-## Hardware installation
-
-![SDM630 in my test setup](img/SDM630-MODBUS.jpg)
-
-First, you should integrate the meter into your fuse box. Please ask a
-professional to do this for you - I don't want you to hurt yourself!
-Refer to the meter installation manual on how to do this. You need to
-set the MODBUS communication parameters to ``9600 8N1``.
-After this you need to connect a RS485 adaptor to the meter. This is
-how I did the wiring:
-
-![USB-SDM630 wiring](img/wiring.jpg)
-
-You can try to use a cheap USB-RS485 adaptor, or you can [build your own
-isolated adaptor](https://github.com/gonium/usb-iso-rs485). I did my
-first experiments with a [Digitus USB-RS485
-adaptor](http://www.digitus.info/en/products/accessories/adapter-and-converter/r-usb-serial-adapter-usb-20-da-70157/)
-which comes with a handy terminal block. I mounted the [bias
-network](https://en.wikipedia.org/wiki/RS-485) directly on the terminal
-block:
-
-![bias network](img/USB-RS485-Adaptor.jpg)
-
-Since then, I tested various adaptors:
-
-* Supercheap adaptors from China: No ground connection, one worked fine,
-	another one was unstable
-* Industrial adaptors like the [Meilhaus RedCOM
-USB-COMi-SI](https://www.meilhaus.de/usb-comi-si.htm) or the [ADAM
-4561](http://www.advantech.com/products/gf-5u7m/adam-4561/mod_92dc04b1-c0fe-4f2b-baf6-5c27e79900c6)
-isolate the RS-485 bus from the USB line and work extremely reliable.
-But they are really expensive.
-
-I started to develop [my own isolated
-adaptor](https://github.com/gonium/usb-iso-rs485). Please check this
-link for more information.
-
-
-## Software installation
+## Installation
 
 ### Using the precompiled binaries
 
-You can use the [precompiled releases](https://github.com/gonium/gosdm630/releases) if you like. Just
-download the right binary for your platform and unzip.
+Precompiled release packages are [available](https://github.com/volkszaehler/mbmd/releases). Download the right package for the target platform and unzip.
 
-### Installing the software from source
+### Building from source
 
-You need a working [Golang installation](http://golang.org), the [dep
-package management tool](https://github.com/golang/dep) and
-[Embed](http://github.com/aprice/embed) in order to compile your binary.
-Please install the Go compiler first. Then clone this repository:
+`mbmd` is developed in [Go] (http://golang.org) and requires >1.11. To build from source use `make build` which creates `./mbmd`.
 
-    git clone https://github.com/gonium/gosdm630.git
+To cross-build for a different archtecture (e.g. Raspberry Pi), use
 
-You can then build the software for the host platform using the ``Makefile``:
+    GOOS=linux GOARCH=arm GOARM=5 make build
 
-    $ make
-    Generating embedded assets
-    Generation complete in 109.907612ms
-    Building for host platform
-    Created binaries:
-    sdm
+### Using Docker
 
-which creates ``./bin/sdm``. If you want to build for all platforms you can use
+Docker images are provided as well:
 
-    $ make release
+	docker run -p 8080:8080 --device=/dev/ttyUSB0 volkszaehler/mbmd -a /dev/ttyUSB0 -u 0.0.0.0:8080 -d sdm:1
 
-which creates zipped executables for each platform in ``./release``.
-For a single platform like the Raspberry Pi binary, use
+### Running
 
-    $ GO111MODULE=on GOBIN=$(pwd)/bin GOOS=linux GOARCH=arm GOARM=5 go install ./...
+To get help on the various command line options run
 
-
-## Running
-
-Now fire up the software:
-
-````
-$ ./bin/sdm630 --help
-NAME:
-   sdm - SDM modbus daemon
-
-USAGE:
-   sdm630 [global options] command [command options] [arguments...]
-
-COMMANDS:
-     help, h  Shows a list of commands or help for one command
-
-GLOBAL OPTIONS:
-   --serialadapter value, -s value     path to serial RTU device (default: "/dev/ttyUSB0")
-   --comset value, -c value            which communication parameter set to use. Valid sets are
-                                         1:  2400 baud, 8N1
-                                         2:  9600 baud, 8N1
-                                         3: 19200 baud, 8N1
-                                         4:  2400 baud, 8E1
-                                         5:  9600 baud, 8E1
-                                         6: 19200 baud, 8E1
-                                            (default: 2)
-   --device_list value, -d value       MODBUS device type and ID to query, separated by comma.
-                                           Valid types are:
-                                           "SDM" for Eastron SDM meters
-                                           "JANITZA" for Janitza B-Series DIN-Rail meters
-                                           "DZG" for the DZG Metering GmbH DVH4013 DIN-Rail meter
-                                           Example: -d JANITZA:1,SDM:22,DZG:23 (default: "SDM:1")
-   --unique_id_format value, -f value  Unique ID format.
-                                           Example: -f Instrument%d
-                                           The %d is replaced by the device ID (default: "Instrument%d")
-   --verbose, -v                       print verbose messages
-   --url value, -u value               the URL the server should respond on (default: ":8080")
-   --broker value, -b value            MQTT: The broker URI. ex: tcp://10.10.1.1:1883
-   --topic value, -t value             MQTT: The topic name to/from which to publish/subscribe (optional) (default: "sdm630")
-   --user value                        MQTT: The User (optional)
-   --password value                    MQTT: The password (optional)
-   --clientid value, -i value          MQTT: The ClientID (optional) (default: "sdm630")
-   --rate value, -r value              MQTT: The maximum update rate (default 0, i.e. unlimited) (after a push we will ignore more data from same device andchannel for this time) (default: 0)
-   --clean, -l                         MQTT: Set Clean Session (default false)
-   --qos value, -q value               MQTT: The Quality of Service 0,1,2 (default 0) (default: 0)
-   --help, -h                          show help
-````
+	mbmd -h
 
 A typical invocation looks like this:
 
-    $ ./bin/sdm630 -s /dev/ttyUSB0 -d janitza:26,sdm:1
+    $ ./bin/mbmd -a /dev/ttyUSB0 -d janitza:26,sdm:1
     2017/01/25 16:34:26 Connecting to RTU via /dev/ttyUSB0
     2017/01/25 16:34:26 Starting API at :8080
 
 This call queries a Janitza B23 meter with ID 26 and an Eastron SDM
-meter at ID 1. It . If you use the ``-v`` commandline switch you can see
+meter at ID 1. Not all devices are by default configured to use ID 1.
+The default device IDs depend on the meter type and documented in the meter's manual.
+
+If you use the ``-v`` commandline switch you can see
 modbus traffic and the current readings on the command line.  At
 [http://localhost:8080](http://localhost:8080) you can see an embedded
 web page that updates itself with the latest values:
@@ -228,18 +73,17 @@ web page that updates itself with the latest values:
 ![realtime view of incoming measurements](img/realtimeview.png)
 
 
-## Installation on the Raspberry Pi
+## Raspberry Pi
 
-You simply copy the binary from the ``bin`` subdirectory to the RPi
-and start it. I usually put the binary into ``/usr/local/bin`` and
-rename it to ``sdm630``. The following sytemd unit can be used to
-start the service (put this into ``/etc/systemd/system``):
+Download the ARM package for usage with Raspberry Pi and copy the binary
+into `/usr/local/bin`. The following sytemd unit can be used to
+start `mbmd` as service (put this into ``/etc/systemd/system``):
 
     [Unit]
-    Description=SDM630 via HTTP API
+    Description=mbmd
     After=syslog.target
     [Service]
-    ExecStart=/usr/local/bin/sdm630 -s /dev/ttyAMA0
+    ExecStart=/usr/local/bin/mbmd -d /dev/ttyAMA0
     Restart=always
     [Install]
     WantedBy=multi-user.target
@@ -247,37 +91,33 @@ start the service (put this into ``/etc/systemd/system``):
 You might need to adjust the ``-s`` parameter depending on where your
 RS485 adapter is connected. Then, use
 
-    # systemctl start sdm630
+    systemctl start mbmd
 
 to test your installation. If you're satisfied use
 
-    # systemctl enable sdm630
+    systemctl enable mbmd
 
 to start the service at boot time automatically.
 
-*WARNING:* If you use an FTDI-based USB-RS485 adaptor you might see the
-Raspberry Pi becoming unreachable after a while. This is most likely not
-an issue with your RS485-USB adaptor or this software, but because of [a
+*WARNING:* When using an FTDI-based USB-RS485 adaptor the
+Raspberry Pi might become unreachable after a while. This is most likely not
+an issue with the RS485-USB adaptor or this software, but because of [a
 bug in the Raspberry Pi kernel](https://github.com/raspberrypi/linux/issues/1187).
-As mentioned there, add the following parameter to your
-``/boot/cmdline.txt``:
+To fix switch the internal `dwc` USB hub of the Raspberry Pi to
+USB1.1 by adding the following parameter to `/boot/cmdline.txt`:
 
     dwc_otg.speed=1
-
-This switches the internal ``dwc`` USB hub of the Raspberry Pi to
-USB1.1. While this reduces the available USB speed, the device now works
-reliably.
 
 
 ## Detecting connected meters
 
 MODBUS/RTU does not provide a mechanism to discover devices. There is no
-reliable way to detect all attached devices. The ``sdm`` tool when used
-with the `-detect` option attempts to read the L1 voltage from all valid
+reliable way to detect all attached devices.
+As workaround `mbmd -detect` attempts to read the L1 voltage from all
 device IDs and reports which one replied correctly:
 
 ````
-./bin/sdm -detect
+./mbmd -detect
 2017/06/21 10:22:34 Starting bus scan
 2017/06/21 10:22:35 Device 1: n/a
 ...
@@ -300,7 +140,7 @@ device IDs and reports which one replied correctly:
 
 ## Rest API
 
-GoSDM provides a convenient REST API. Supported endpoints are:
+`mbmd` provides a convenient REST API. Supported endpoints are:
 
 * `/last/{ID}` current data for device
 * `/minuteavg/{ID}` averaged data for device
@@ -423,25 +263,76 @@ meter updates for all connected meters without further subscription.
 ## MQTT API
 
 Another option for receiving client updates is by using the built-in MQTT publisher.
-By default, readings are published at `/sdm/<unique id>/<reading>`. Rate limiting is possible.
+By default, readings are published at `/mbmd/<unique id>/<reading>`. Rate limiting is possible.
+
+
+# Supported Devices
+
+`mbmd` supports a range of DIN rail meters and grid inverters.
+
+## Modbus RTU Meters
+
+The meters have slightly different capabilities. The EASTRON SDM630 offers
+a lot of features, while the smaller devices only support basic
+features.  The table below gives an overview (please consult the
+manuals for definitive guidance):
+
+| Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
+|---|---|---|---|---|---|---|---|---|---|
+| SDM120 | 1 | + | + | + | + | + | + | - | - |
+| SDM220 | 1 | + | + | + | + | + | + | - | - |
+| SDM220 | 1 | + | + | + | + | + | + | - | - |
+| SDM530 | 3 | + | + | + | + | + | + | - | - |
+| SDM630 v1 | 3 | + | + | + | + | + | + | + | + |
+| SDM630 v2 | 3 | + | + | + | + | + | + | + | + |
+| Janitza B23-312 | 3 | + | + | + | + | + | + | - | - |
+| DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
+| SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
+| ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
+
+ * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project. You can use e.g.
+ [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
+ * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and
+ button.
+ * SDM530: Very big (7TE) - takes up a lot of space, but all connections are
+ on the underside of the meter.
+ * SDM630 v1 and v2, both MID and non-MID. Compact (4TE) and with lots
+ of features. Can be configured for 1P2 (single phase with neutral), 3P3
+ (three phase without neutral) and 3P4 (three phase with neutral) systems.
+ * Janitza B23-312: These meters have a higher update rate than the Eastron
+ devices, but they are more expensive. The -312 variant is the one with a MODBUS interface.
+ * DZG DVH4013: This meter does not provide raw phase power measurements
+ and only aggregated import/export measurements. The meter is only
+ partially implemented and not recommended. If you want to use it: By
+ default, the meter communicates using 9600 8E1 (comset 5). The meter ID
+ is derived from the serial number: take the last two numbers of the
+ serial number (top right of the device), e.g. 23, and add one (24).
+ Assume this is a hexadecimal number and convert it to decimal (36). Use
+ this as the meter ID.
+ * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
+ two tariffs, both import and export depending on meter version and compact (4TE).
+ It's often used with Viessmann heat pumps.
+
+ ## Modbus TCP Grid Inverters
+
+ Apart from meters, SunSpec-compatible grid inverters connected over TCP
+ are supported, too. SunSpec defines a default register layout for accessing
+ the devices.
+
+ Supported inverters include popular devices from SolarEdge (SE3000, SE9000)
+ and SMA (Sunny Boy and Sunny Tripower).
+
+ In case of TCP connection, the adapter paramter becomes the hostname and port:
+
+	./mbmd -a 192.168.0.44:502 -d SMA:23
 
 
 # Changelog
 
 ## 0.8 (unreleased)
 
-  - Renamed `sdm630` command to `sdm` which also includes `sdm_detect` now
-  - Remove legacy commands. `sdm630_logger`, `sdm630_monitor` and `sdm630_http` are no longer supported. `sdm` is now the single command provided. The legacy commands are still available in the [0.7 version](https://github.com/gonium/gosdm630/releases).
-  - Parameters updated:
-    - renamed `serialadapter` to `adapter` and allow TCP sockets as well
-    - renamed `device_list` to `devices`
-  - Add MODBUS over TCP support
-  - Support SunSpec-compatible grid inverters
+Initial release at https://github.com/volkszaehler/mbmd
 
 ## 0.7
 
-  - Support Saia Burgess Controls ALE3 meters
-  - Implement modbus simulation for testing
-  - Various improvements of the web UI
-  - Support for go 1.11
-  - Improved the README
+Before versoin 0.8, `mbmd` was known as `sdm630` and developed by Mathias Dalheimer. Older releases of `mbmd`/`sdm630` can be found at https://github.com/gonium/gosdm

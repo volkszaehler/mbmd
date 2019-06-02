@@ -1,15 +1,13 @@
 sudo: false
+
 language: go
 go:
   - "1.12"
-go_import_path: github.com/gonium/gosdm630
+go_import_path: github.com/volkszaehler/mbmd
+
 env:
   global:
     - PATH=/home/travis/gopath/bin:$PATH
-    # docker credentials
-    - secure: "JObzZsqZNenjO9s/ptYSfPYRU/IMTuV0LlmkZwve9pGZN/GiCwNORQxniaTbVihqv4U8RdiyzHi9gjXkYuJY4FLOSf5e9oyoM8podPZuu1A5QIwOShaNAoAy8BB69I8RYN3fkMiGVFza5b+M2//6xoy3u98rQRYd/zO5BIOPTvQ07Ho2RQt84MG5Ge4b0WjZLVBK1JuJrtANvtLSjVdNKGvWD8/Nglnznrm/QlrkHX/O4aTwP+7Y1AsIobpuSU4xBINZsH2CCnEtYmf38dT1mJC+hQOhK4wD/QmxEw28/9LeYsECQ+WGdgM78UA76R0UpA2/RoKhhrGTsb5LLiiUWAp5XxM2Z2GNzm0L6F1Pg8C5ikQY7zR1qxAlvm5EcJdpo8e+EeSXGcnXSfEamSA/n+vsUel+pUyxT/0epEt1MfVrI7j7P+u7/HsVdfkiroc5m30YAG1xgEVUdddNC8VBWZwyINZLxPjvUVVyL5Z2vOIbYpucgx0jHkrdnNUhv84Ex66nf8oVPcJuJe23AtKltyjdqwWmVQqKgh7uwscHuykLbOeUgakWXggwdelGcUmRqgIiiF3lM4+At/vGLVHn37Qk8KC9DXav2wV9/yZVfBPXi2FjZqSOZnqkcKqMwDjbf1VI5rKhB5KcJh4dT9zn3xR7lR6mz2z+iCwdz3SU5hg="
-    - secure: "ILFSFTcZHfbuhimlSBGd+LLhVhaSRMG54U9ws43/ZbROS8zc9NRznhIbxQ2fqWIL1bvC1wLmlxa4HXbSOXWOXMqMZSpnc8zgvIkfqF3bQhBN2ArPkctz/xTVUspUz7VWqMhavvC+8mzwIjfTft+VkQADhTIdTG2pR+ak6z1qwyMPaovpef7qHZXbcpbu42r7gLvsfs/Tj7kQUG7GFTaTluzcV5L0ur2wnPMFg1y1jtuVjFHO6YH3SOeNMvvN6CarUNd5JoP9QrWdYD1z2LmCNadqQFJrHsE4ciz23eZtP2bWQnARGfLCbLj6pdFG4WTOgEKjmlXrsExczUlcLQh2datTkke1DcNX4FAIZbleq6SL/ra5EUKIgdnAvFYnRQExLnceB9gFZbg0knIeFPD21cp4tys0RP/NiiNi82VC2fDs8/tR1SgBK3PHseTD/uCbddLydOseI6BoYc17PbB85dhuIWtfGDm0jKY3a2GhUHRTNLpWdBHQnc4yh7fz3GV/JNmePu+SS7U2zJCVkTzPDdePO9tItwnN3b9yV5ZZc3v03/v9BerpQu953ahr9VNqlsgUkTa/YmLuzvv9lWmhRIpw7jMMAkcRg6c2MebcyEBaT1+AgTFe3WOvEAia1acWuCRb3b7r48xemkKu9DEmDFekVIcxmrPoIgVwXlhf42E="
-    - COMMIT=${TRAVIS_COMMIT::8}
 
 before_install:
   # Install linters and misspell

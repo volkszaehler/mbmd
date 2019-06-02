@@ -6,12 +6,12 @@ before:
     - go generate ./...
 builds:
 -
-  # Path to main.go file or main package.
-  main: ./cmd/sdm/main.go
-  # Binary name.
-  binary: sdm
+  # # Path to main.go file or main package.
+  # main: ./cmd/sdm/main.go
+  # # Binary name.
+  # binary: sdm
   ldflags:
-  - -X github.com/gonium/gosdm630.Version={{.Version}} -X github.com/gonium/gosdm630.Commit={{.ShortCommit}}
+  - -X github.com/volkszaehler/mbmd.Version={{.Version}} -X github.com/volkszaehler/mbmd.Commit={{.ShortCommit}}
   env:
   - CGO_ENABLED=0
   ignore:

@@ -1,4 +1,4 @@
-module github.com/gonium/gosdm630
+module github.com/volkszaehler/mbmd
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
