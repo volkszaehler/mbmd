@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
-	"math"
 	"net/url"
 	"os"
 	"strconv"
@@ -95,11 +95,11 @@ func main() {
 
 				b.Do(func(p sunspec.Point) {
 					t := p.Type()[0:3]
-					v := math.NaN()
+					v := ""
 					if t == "int" || t == "uin" || t == "acc" {
-						v = p.ScaledValue()
+						v = fmt.Sprintf("%.2f", p.ScaledValue())
 					}
-					log.Printf("%s %s %v %.2f", p.Type(), p.Id(), p.Value(), v)
+					log.Printf("%10s %-16s %8v %10s", p.Type(), p.Id(), p.Value(), v)
 				})
 			})
 		})
