@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log"
+	"math"
 	"net/url"
 	"os"
 	"strconv"
@@ -93,7 +94,12 @@ func main() {
 				}
 
 				b.Do(func(p sunspec.Point) {
-					log.Printf("%s %s %v", p.Type(), p.Id(), p.Value())
+					t := p.Type()[0:3]
+					v := math.NaN()
+					if t == "int" || t == "uin" || t == "acc" {
+						v = p.ScaledValue()
+					}
+					log.Printf("%s %s %v %.2f", p.Type(), p.Id(), p.Value(), v)
 				})
 			})
 		})
