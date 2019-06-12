@@ -1,7 +1,11 @@
 module github.com/volkszaehler/mbmd
 
 require (
+	github.com/brutella/can v0.0.1 // indirect
+	github.com/crabmusket/gosunspec v0.0.0-20170310004250-4c2adf6161ca
 	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/goburrow/modbus v0.1.0 // indirect
+	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
