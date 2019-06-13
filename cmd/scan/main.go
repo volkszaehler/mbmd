@@ -49,21 +49,8 @@ func uriDefaultSchemeAndPort(addr string, scheme string, port string) (string, e
 	return addr, nil
 }
 
-func test(addr string) {
-	s, err := uriDefaultSchemeAndPort(addr, "tcp", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("%s -> %s", addr, s)
-}
-
 func main() {
 	addr := os.Args[1]
-	_, err := url.Parse(addr)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	deviceID, err := strconv.Atoi(os.Args[2])
 	if err != nil {
