@@ -147,7 +147,6 @@ func scanSunspec(client modbus.Client) {
 					log.Fatal(err)
 				}
 
-				fmt.Println("read points")
 				b.Do(func(p sunspec.Point) {
 					t := p.Type()[0:3]
 					v := ""
@@ -155,7 +154,7 @@ func scanSunspec(client modbus.Client) {
 						// v = fmt.Sprintf("%.2f", p.ScaledValue())
 						v = fmt.Sprintf("%.2f", scaledValue(p))
 					}
-					pf("%10s %-18s %8v %10s", p.Type(), p.Id(), p.Value(), v)
+					pf("%10s %-18s %10v %10s", p.Type(), p.Id(), p.Value(), v)
 				})
 			})
 
@@ -188,7 +187,7 @@ func printModel(m *smdx.ModelElement) {
 			if p.Units != "" {
 				u = p.Units
 			}
-			pf("%4d %4d %8s %-4s %s", p.Offset, p.Length, p.Id, u, p.Type)
+			pf("%4d %4d %12s %-8s %s", p.Offset, p.Length, p.Id, u, p.Type)
 		}
 	}
 }
