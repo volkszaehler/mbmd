@@ -28,35 +28,35 @@ func scaledValue(p sunspec.Point) float64 {
 	f := p.ScaledValue()
 
 	switch p.Type() {
-	case "Acc16":
+	case "acc16":
 		fallthrough
-	case "Uint16":
-		if p.Value() == math.MaxUint16 {
+	case "uint16":
+		if p.Value() == uint16(math.MaxUint16) {
 			f = math.NaN()
 		}
-	case "Acc32":
+	case "acc32":
 		fallthrough
-	case "Uint32":
-		if p.Value() == math.MaxUint32 {
+	case "uint32":
+		if p.Value() == uint32(math.MaxUint32) {
 			f = math.NaN()
 		}
-	case "Acc64":
+	case "acc64":
 		fallthrough
-	case "Uint64":
+	case "uint64":
 		maxUint64 := uint64(math.MaxUint64)
 		if p.Value() == maxUint64 {
 			f = math.NaN()
 		}
-	case "Int16":
-		if p.Value() == math.MinInt16 {
+	case "int16":
+		if p.Value() == int16(math.MinInt16) {
 			f = math.NaN()
 		}
-	case "Int32":
-		if p.Value() == math.MinInt32 {
+	case "int32":
+		if p.Value() == int32(math.MinInt32) {
 			f = math.NaN()
 		}
-	case "Int64":
-		if p.Value() == math.MinInt64 {
+	case "int64":
+		if p.Value() == int64(math.MinInt64) {
 			f = math.NaN()
 		}
 	}
@@ -152,11 +152,14 @@ func scanSunspec(client modbus.Client) {
 					t := p.Type()[0:3]
 					v := ""
 					if t == "int" || t == "uin" || t == "acc" {
-						v = fmt.Sprintf("%.2f", p.ScaledValue())
+						// v = fmt.Sprintf("%.2f", p.ScaledValue())
+						v = fmt.Sprintf("%.2f", scaledValue(p))
 					}
 					pf("%10s %-18s %8v %10s", p.Type(), p.Id(), p.Value(), v)
 				})
 			})
+
+			printModel(smdx.GetModel(uint16(m.Id())))
 		})
 	})
 }
