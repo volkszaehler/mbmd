@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 	"log"
 	"math"
@@ -13,9 +12,6 @@ import (
 	bus "github.com/crabmusket/gosunspec/modbus"
 	_ "github.com/crabmusket/gosunspec/models" // import models
 	"github.com/crabmusket/gosunspec/smdx"
-
-	custom "github.com/volkszaehler/mbmd/meters"
-	customImpl "github.com/volkszaehler/mbmd/meters/impl"
 
 	"github.com/grid-x/modbus"
 )
@@ -76,56 +72,56 @@ func (l *modbusLogger) Printf(format string, v ...interface{}) {
 	pf(format, v...)
 }
 
-func scanCustom(client modbus.Client) {
-	loop := uint16(base)
-	loop += 2
+// func scanCustom(client modbus.Client) {
+// 	loop := uint16(base)
+// 	loop += 2
 
-	for {
-		b, err := client.ReadHoldingRegisters(loop, 2)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pf("loop: %d bytes: % x", loop, b)
+// 	for {
+// 		b, err := client.ReadHoldingRegisters(loop, 2)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		pf("loop: %d bytes: % x", loop, b)
 
-		id := binary.BigEndian.Uint16(b)
-		length := binary.BigEndian.Uint16(b[2:])
-		pf("id/len: %d %d", id, length)
+// 		id := binary.BigEndian.Uint16(b)
+// 		length := binary.BigEndian.Uint16(b[2:])
+// 		pf("id/len: %d %d", id, length)
 
-		if model, ok := custom.SunspecModels[int(id)]; ok {
-			pf("model: %s", model)
-		}
+// 		if model, ok := custom.SunspecModels[int(id)]; ok {
+// 			pf("model: %s", model)
+// 		}
 
-		if id == 0xffff {
-			goto DONE
-		}
+// 		if id == 0xffff {
+// 			goto DONE
+// 		}
 
-		model := smdx.GetModel(id)
-		if model != nil {
-			pf("fixed length: %d blocks: %d", model.Length, len(model.Blocks))
-			pf("%v", model)
-		}
+// 		model := smdx.GetModel(id)
+// 		if model != nil {
+// 			pf("fixed length: %d blocks: %d", model.Length, len(model.Blocks))
+// 			pf("%v", model)
+// 		}
 
-		b, err = client.ReadHoldingRegisters(loop+2, length)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pf("data: % x", b)
+// 		b, err = client.ReadHoldingRegisters(loop+2, length)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		pf("data: % x", b)
 
-		if id == 1 {
-			core := customImpl.SunSpecCore{}
-			suns := []byte{0x53, 0x75, 0x6e, 0x53, 0x00, 0x00, 0x00, 0x00}
+// 		if id == 1 {
+// 			core := customImpl.SunSpecCore{}
+// 			suns := []byte{0x53, 0x75, 0x6e, 0x53, 0x00, 0x00, 0x00, 0x00}
 
-			cb := append(suns, b...)
-			d, err := core.DecodeSunSpecCommonBlock(cb)
-			if err != nil {
-				log.Fatal(err)
-			}
-			pf("%+v", d)
-		}
-		loop += length + 2
-	}
-DONE:
-}
+// 			cb := append(suns, b...)
+// 			d, err := core.DecodeSunSpecCommonBlock(cb)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			pf("%+v", d)
+// 		}
+// 		loop += length + 2
+// 	}
+// DONE:
+// }
 
 func scanSunspec(client modbus.Client) {
 	in, err := bus.Open(client)
