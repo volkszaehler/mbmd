@@ -39,8 +39,7 @@ func scaledValue(p sunspec.Point) float64 {
 	case "acc64":
 		fallthrough
 	case "uint64":
-		maxUint64 := uint64(math.MaxUint64)
-		if p.Value() == maxUint64 {
+		if p.Value() == uint64(math.MaxUint64) {
 			f = math.NaN()
 		}
 	case "int16":
@@ -133,6 +132,9 @@ func scanSunspec(client modbus.Client) {
 		d.Do(func(m sunspec.Model) {
 			pf("--------- Model %d %s ---------", m.Id(), modelName(m))
 
+			printModel(smdx.GetModel(uint16(m.Id())))
+			pf("-- Data --")
+
 			if m.Id() == 11 {
 				return
 			}
@@ -153,8 +155,6 @@ func scanSunspec(client modbus.Client) {
 					pf("%10s %-18s %10v %10s", p.Type(), p.Id(), p.Value(), v)
 				})
 			})
-
-			printModel(smdx.GetModel(uint16(m.Id())))
 		})
 	})
 }
@@ -168,14 +168,14 @@ func modelName(m sunspec.Model) string {
 }
 
 func printModel(m *smdx.ModelElement) {
-	pf("----")
-	pf("Model:  %d - %s", m.Id, m.Name)
+	pf("-- Definition --")
+	// pf("----")
+	// pf("Model:  %d - %s", m.Id, m.Name)
 	pf("Length: %d (0x%02x words, 0x%02x bytes)", m.Length, m.Length, 2*m.Length)
 	pf("Blocks: %d", len(m.Blocks))
 
 	for i, b := range m.Blocks {
-		pf("--")
-		pf("#%d - %s", i, b.Name)
+		pf("-- block #%d - %s", i, b.Name)
 		pf("Length: %d", b.Length)
 
 		for _, p := range b.Points {
