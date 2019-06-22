@@ -21,4 +21,4 @@ require (
 	gopkg.in/urfave/cli.v1 v1.20.0
 )
 
-replace github.com/crabmusket/gosunspec => github.com/andig/gosunspec v0.0.0-20190613063246-3c54c2ccb77a
+replace github.com/crabmusket/gosunspec => github.com/andig/gosunspec v0.0.0-20190614165542-21773ee3c451

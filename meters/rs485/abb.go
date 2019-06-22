@@ -1,4 +1,4 @@
-package impl
+package rs485
 
 import (
 	"math"
@@ -10,6 +10,7 @@ func init() {
 	Register(NewABBProducer)
 }
 
+
 type signedness int
 
 const (
@@ -19,8 +20,7 @@ const (
 )
 
 type ABBProducer struct {
-	RS485Core
-	Opcodes
+	Opcodes map[Measurement]uint16
 }
 
 func NewABBProducer() Producer {

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	latest "github.com/tcnksm/go-latest"
 	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters/bus"
 	_ "github.com/volkszaehler/mbmd/meters/impl"
 	. "github.com/volkszaehler/mbmd/server"
 	cli "gopkg.in/urfave/cli.v1"
@@ -124,6 +126,7 @@ func logMeterDetails(meters map[uint8]*Meter, qe *ModbusEngine) {
 		}
 	}
 }
+
 
 func main() {
 	app := cli.NewApp()

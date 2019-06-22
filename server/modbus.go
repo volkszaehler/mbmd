@@ -195,27 +195,6 @@ func (q *ModbusEngine) Query(snip QuerySnip) (retval []byte, err error) {
 func (q *ModbusEngine) Transform(snip QuerySnip, bytes []byte) []QuerySnip {
 	now := time.Now()
 
-	if snip.Splitter != nil {
-		// block reading - needs splitting
-		snips := snip.Splitter(bytes)
-		res := make([]QuerySnip, len(snips))
-
-		for idx, sr := range snips {
-			splitSnip := QuerySnip{
-				DeviceId: snip.DeviceId,
-				Operation: Operation{
-					OpCode:   sr.OpCode,
-					IEC61850: sr.IEC61850,
-				},
-				Value:         sr.Value,
-				ReadTimestamp: now,
-			}
-			res[idx] = splitSnip
-		}
-
-		return res
-	}
-
 	// single reading
 	if snip.Transform == nil {
 		log.Fatalf("Snip transformation not defined: %v", snip)

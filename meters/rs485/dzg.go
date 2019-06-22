@@ -1,4 +1,4 @@
-package impl
+package rs485
 
 import . "github.com/volkszaehler/mbmd/meters"
 
@@ -11,9 +11,9 @@ const (
 )
 
 type DZGProducer struct {
-	RS485Core
 	Opcodes
 }
+
 
 func NewDZGProducer() Producer {
 	/**

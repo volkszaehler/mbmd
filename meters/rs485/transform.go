@@ -1,4 +1,4 @@
-package meters
+package rs485
 
 import (
 	"encoding/binary"

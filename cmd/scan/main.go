@@ -24,24 +24,6 @@ func scaledValue(p sunspec.Point) float64 {
 	f := p.ScaledValue()
 
 	switch p.Type() {
-	case "acc16":
-		fallthrough
-	case "uint16":
-		if p.Value() == uint16(math.MaxUint16) {
-			f = math.NaN()
-		}
-	case "acc32":
-		fallthrough
-	case "uint32":
-		if p.Value() == uint32(math.MaxUint32) {
-			f = math.NaN()
-		}
-	case "acc64":
-		fallthrough
-	case "uint64":
-		if p.Value() == uint64(math.MaxUint64) {
-			f = math.NaN()
-		}
 	case "int16":
 		if p.Value() == int16(math.MinInt16) {
 			f = math.NaN()
@@ -52,6 +34,18 @@ func scaledValue(p sunspec.Point) float64 {
 		}
 	case "int64":
 		if p.Value() == int64(math.MinInt64) {
+			f = math.NaN()
+		}
+	case "uint16":
+		if p.Value() == uint16(math.MaxUint16) {
+			f = math.NaN()
+		}
+	case "uint32":
+		if p.Value() == uint32(math.MaxUint32) {
+			f = math.NaN()
+		}
+	case "uint64":
+		if p.Value() == uint64(math.MaxUint64) {
 			f = math.NaN()
 		}
 	}
@@ -71,56 +65,14 @@ func (l *modbusLogger) Printf(format string, v ...interface{}) {
 	pf(format, v...)
 }
 
-// func scanCustom(client modbus.Client) {
-// 	loop := uint16(base)
-// 	loop += 2
+func doModels(d sunspec.Device, cb func(m sunspec.Model)) {
+	modelIds := []sunspec.ModelId{1, 101, 103}
+	models := d.Collect(sunspec.OneOfSeveralModelIds(modelIds))
 
-// 	for {
-// 		b, err := client.ReadHoldingRegisters(loop, 2)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		pf("loop: %d bytes: % x", loop, b)
-
-// 		id := binary.BigEndian.Uint16(b)
-// 		length := binary.BigEndian.Uint16(b[2:])
-// 		pf("id/len: %d %d", id, length)
-
-// 		if model, ok := custom.SunspecModels[int(id)]; ok {
-// 			pf("model: %s", model)
-// 		}
-
-// 		if id == 0xffff {
-// 			goto DONE
-// 		}
-
-// 		model := smdx.GetModel(id)
-// 		if model != nil {
-// 			pf("fixed length: %d blocks: %d", model.Length, len(model.Blocks))
-// 			pf("%v", model)
-// 		}
-
-// 		b, err = client.ReadHoldingRegisters(loop+2, length)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		pf("data: % x", b)
-
-// 		if id == 1 {
-// 			core := customImpl.SunSpecCore{}
-// 			suns := []byte{0x53, 0x75, 0x6e, 0x53, 0x00, 0x00, 0x00, 0x00}
-
-// 			cb := append(suns, b...)
-// 			d, err := core.DecodeSunSpecCommonBlock(cb)
-// 			if err != nil {
-// 				log.Fatal(err)
-// 			}
-// 			pf("%+v", d)
-// 		}
-// 		loop += length + 2
-// 	}
-// DONE:
-// }
+	for _, model := range models {
+		cb(model)
+	}
+}
 
 func scanSunspec(client modbus.Client) {
 	in, err := bus.Open(client)
@@ -130,14 +82,11 @@ func scanSunspec(client modbus.Client) {
 
 	in.Do(func(d sunspec.Device) {
 		d.Do(func(m sunspec.Model) {
+			// doModels(d, func(m sunspec.Model) {
 			pf("--------- Model %d %s ---------", m.Id(), modelName(m))
 
 			printModel(smdx.GetModel(uint16(m.Id())))
 			pf("-- Data --")
-
-			if m.Id() == 11 {
-				return
-			}
 
 			m.Do(func(b sunspec.Block) {
 				err = b.Read()
@@ -149,7 +98,6 @@ func scanSunspec(client modbus.Client) {
 					t := p.Type()[0:3]
 					v := ""
 					if t == "int" || t == "uin" || t == "acc" {
-						// v = fmt.Sprintf("%.2f", p.ScaledValue())
 						v = fmt.Sprintf("%.2f", scaledValue(p))
 					}
 					pf("%10s %-18s %10v %10s", p.Type(), p.Id(), p.Value(), v)
@@ -189,14 +137,6 @@ func printModel(m *smdx.ModelElement) {
 }
 
 func main() {
-	// model := smdx.GetModel(1)
-	// printModel(model)
-	// model = smdx.GetModel(101)
-	// printModel(model)
-	// model = smdx.GetModel(11)
-	// printModel(model)
-	// os.Exit(0)
-
 	addr := os.Args[1]
 
 	deviceID, err := strconv.Atoi(os.Args[2])
@@ -214,6 +154,13 @@ func main() {
 	handler.Logger = mbl
 
 	handler.SetSlave(byte(deviceID))
+
+	// b, err := client.ReadHoldingRegisters(40072, 7)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// pf("% x", b)
+	// os.Exit(0)
 
 	scanSunspec(client)
 	// scanCustom(client)

@@ -1,4 +1,4 @@
-package impl
+package rs485
 
 import . "github.com/volkszaehler/mbmd/meters"
 
@@ -11,7 +11,6 @@ const (
 )
 
 type SDMProducer struct {
-	RS485Core
 	Opcodes
 }
 
