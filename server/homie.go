@@ -72,52 +72,52 @@ func stripSlash(s string) string {
 }
 
 func (m *HomieRunner) publishMeter(meter *Meter, qe *ModbusEngine) {
-	descriptor := m.deviceDescriptor(meter, qe)
+	// descriptor := m.deviceDescriptor(meter, qe)
 
-	// clear retained messages
-	subTopic := m.DeviceTopic(meter.DeviceId)
-	m.unpublish(subTopic)
+	// // clear retained messages
+	// subTopic := m.DeviceTopic(meter.DeviceId)
+	// m.unpublish(subTopic)
 
-	// device
-	m.publish(subTopic+"/$homie", specVersion)
-	m.publish(subTopic+"/$name", "GoSDM")
-	m.publish(subTopic+"/$state", "ready")
-	// m.publish(subTopic+"/$implementation", "GoSDM")
+	// // device
+	// m.publish(subTopic+"/$homie", specVersion)
+	// m.publish(subTopic+"/$name", "GoSDM")
+	// m.publish(subTopic+"/$state", "ready")
+	// // m.publish(subTopic+"/$implementation", "GoSDM")
 
-	// node
-	m.publish(subTopic+"/$nodes", nodeTopic)
+	// // node
+	// m.publish(subTopic+"/$nodes", nodeTopic)
 
-	subTopic = fmt.Sprintf("%s/%s", subTopic, nodeTopic)
-	m.publish(subTopic+"/$name", descriptor.Manufacturer)
-	m.publish(subTopic+"/$type", descriptor.Model)
+	// subTopic = fmt.Sprintf("%s/%s", subTopic, nodeTopic)
+	// m.publish(subTopic+"/$name", descriptor.Manufacturer)
+	// m.publish(subTopic+"/$type", descriptor.Model)
 
-	// properties
-	m.publishProperties(subTopic, meter, qe)
+	// // properties
+	// m.publishProperties(subTopic, meter, qe)
 }
 
-func (m *HomieRunner) deviceDescriptor(meter *Meter, qe *ModbusEngine) SunSpecDeviceDescriptor {
-	descriptor := SunSpecDeviceDescriptor{
-		Manufacturer: meter.Producer.Type(),
-		Model:        nodeTopic,
-	}
+// func (m *HomieRunner) deviceDescriptor(meter *Meter, qe *ModbusEngine) sunspec.DeviceDescriptor {
+// 	descriptor := sunspec.DeviceDescriptor{
+// 		Manufacturer: meter.Producer.Type(),
+// 		Model:        nodeTopic,
+// 	}
 
-	if sunspec, ok := meter.Producer.(SunSpecProducer); ok {
-		op := sunspec.GetSunSpecCommonBlock()
-		snip := QuerySnip{
-			DeviceId:  meter.DeviceId,
-			Operation: op,
-		}
-		if b, err := qe.Query(snip); err == nil {
-			if descriptor, err = sunspec.DecodeSunSpecCommonBlock(b); err != nil {
-				log.Println(err)
-			}
-		} else {
-			log.Println(err)
-		}
-	}
+// 	if sunspec, ok := meter.Producer.(SunSpecProducer); ok {
+// 		op := sunspec.GetSunSpecCommonBlock()
+// 		snip := QuerySnip{
+// 			DeviceId:  meter.DeviceId,
+// 			Operation: op,
+// 		}
+// 		if b, err := qe.Query(snip); err == nil {
+// 			if descriptor, err = sunspec.DecodeSunSpecCommonBlock(b); err != nil {
+// 				log.Println(err)
+// 			}
+// 		} else {
+// 			log.Println(err)
+// 		}
+// 	}
 
-	return descriptor
-}
+// 	return descriptor
+// }
 
 func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *ModbusEngine) {
 	meterOps := meter.Producer.Produce()

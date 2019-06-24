@@ -18,6 +18,7 @@ const (
 )
 
 type RTU struct {
+	manager
 	device  string
 	Client  modbus.Client
 	Handler *modbus.RTUClientHandler
@@ -73,6 +74,8 @@ func NewRTU(device string, comset int) Bus {
 		Client:  client,
 		Handler: handler,
 	}
+
+	b.manager = NewManager(b)
 
 	return b
 }

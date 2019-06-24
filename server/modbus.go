@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"time"
 
-	. "github.com/volkszaehler/mbmd/meters"
 	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 const (
@@ -33,9 +33,9 @@ type ModbusEngine struct {
 }
 
 // injectable logger for grid-x modbus implementation
-type modbusLogger struct{}
+type ModbusLogger struct{}
 
-func (l *modbusLogger) Printf(format string, v ...interface{}) {
+func (l *ModbusLogger) Printf(format string, v ...interface{}) {
 	log.Printf(format, v...)
 }
 
@@ -69,7 +69,7 @@ func NewRTUClientHandler(rtuDevice string, comset int, verbose bool) *modbus.RTU
 
 	handler.Timeout = 300 * time.Millisecond
 	if verbose {
-		logger := &modbusLogger{}
+		logger := &ModbusLogger{}
 		handler.Logger = logger
 		log.Printf("Connecting to RTU via %s, %d %d%s%d\r\n", rtuDevice,
 			handler.BaudRate, handler.DataBits, handler.Parity,
@@ -87,7 +87,7 @@ func NewTCPClientHandler(rtuDevice string, verbose bool) *modbus.TCPClientHandle
 	handler.LinkRecoveryTimeout = 15 * time.Second
 
 	if verbose {
-		logger := &modbusLogger{}
+		logger := &ModbusLogger{}
 		handler.Logger = logger
 	}
 	return handler
@@ -108,8 +108,7 @@ func NewModbusEngine(
 		mbclient = NewMockClient(20) // error rate for testing
 	} else {
 		// parse adapter string
-		re := regexp.MustCompile(":[0-9]+$")
-		if re.MatchString(rtuDevice) {
+		if tcp, _ := regexp.MatchString(":[0-9]+$", rtuDevice); tcp {
 			// tcp connection
 			handler = NewTCPClientHandler(rtuDevice, verbose)
 		} else {

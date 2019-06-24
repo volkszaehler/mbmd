@@ -7,6 +7,7 @@ import (
 )
 
 type TCP struct {
+	manager
 	address string
 	Client  modbus.Client
 	Handler *modbus.TCPClientHandler
@@ -33,10 +34,13 @@ func NewTCP(address string) Bus {
 	client := modbus.NewClient(handler)
 
 	b := &TCP{
+		// manager: NewManager(),
 		address: address,
 		Client:  client,
 		Handler: handler,
 	}
+
+	b.manager = NewManager(b)
 
 	return b
 }

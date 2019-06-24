@@ -74,6 +74,7 @@ func createDevices(connections []string, defaultDevice string) {
 
 		_ = meter
 
+		// test
 		log.Println(id)
 		busDevice.Slave(uint8(id))
 		if err := meter.Initialize(busDevice.(*bus.TCP).Client); err != nil {
@@ -86,6 +87,10 @@ func createDevices(connections []string, defaultDevice string) {
 			log.Println(res)
 		}
 
+		if err := busDevice.Add(uint8(id), meter); err != nil {
+			log.Fatal(err)
+		}
+
 		// meter, err := NewMeterByType(meterType, uint8(id))
 		// if err != nil {
 		// 	log.Fatalf("Unknown meter type %s for device %d. See -h for help.", metertype, id)
@@ -93,12 +98,16 @@ func createDevices(connections []string, defaultDevice string) {
 		// meters[uint8(id)] = meter
 	}
 
+	for _, b := range devices {
+		println("Running...")
+		b.Run()
+	}
 }
 
 func main() {
 	createDevices([]string{
 		"sma:126@localhost:5061",
-		"sma:126@localhost:5062",
-		"sma:126@localhost:5063",
+		// "sma:126@localhost:5062",
+		// "sma:126@localhost:5063",
 	}, "")
 }
