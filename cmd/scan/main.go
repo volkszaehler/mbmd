@@ -7,11 +7,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"text/tabwriter"
 
-	sunspec "github.com/crabmusket/gosunspec"
-	bus "github.com/crabmusket/gosunspec/modbus"
-	_ "github.com/crabmusket/gosunspec/models" // import models
-	"github.com/crabmusket/gosunspec/smdx"
+	sunspec "github.com/andig/gosunspec"
+	bus "github.com/andig/gosunspec/modbus"
+	_ "github.com/andig/gosunspec/models" // import models
+	"github.com/andig/gosunspec/smdx"
 
 	"github.com/grid-x/modbus"
 )
@@ -19,39 +20,6 @@ import (
 const (
 	base = 40000
 )
-
-func scaledValue(p sunspec.Point) float64 {
-	f := p.ScaledValue()
-
-	switch p.Type() {
-	case "int16":
-		if p.Value() == int16(math.MinInt16) {
-			f = math.NaN()
-		}
-	case "int32":
-		if p.Value() == int32(math.MinInt32) {
-			f = math.NaN()
-		}
-	case "int64":
-		if p.Value() == int64(math.MinInt64) {
-			f = math.NaN()
-		}
-	case "uint16":
-		if p.Value() == uint16(math.MaxUint16) {
-			f = math.NaN()
-		}
-	case "uint32":
-		if p.Value() == uint32(math.MaxUint32) {
-			f = math.NaN()
-		}
-	case "uint64":
-		if p.Value() == uint64(math.MaxUint64) {
-			f = math.NaN()
-		}
-	}
-
-	return f
-}
 
 func pf(format string, v ...interface{}) {
 	format = strings.TrimSuffix(format, "\n") + "\n"
@@ -80,15 +48,22 @@ func scanSunspec(client modbus.Client) {
 		log.Fatal(err)
 	}
 
+	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+
 	in.Do(func(d sunspec.Device) {
 		d.Do(func(m sunspec.Model) {
 			// doModels(d, func(m sunspec.Model) {
 			pf("--------- Model %d %s ---------", m.Id(), modelName(m))
+			// printModel(smdx.GetModel(uint16(m.Id())))
+			// pf("-- Data --")
 
-			printModel(smdx.GetModel(uint16(m.Id())))
-			pf("-- Data --")
-
+			blocknum := 0
 			m.Do(func(b sunspec.Block) {
+				if blocknum > 0 {
+					fmt.Fprintln(tw, fmt.Sprintf("-- Block %d --", blocknum))
+				}
+				blocknum++
+
 				err = b.Read()
 				if err != nil {
 					log.Fatal(err)
@@ -96,13 +71,20 @@ func scanSunspec(client modbus.Client) {
 
 				b.Do(func(p sunspec.Point) {
 					t := p.Type()[0:3]
-					v := ""
-					if t == "int" || t == "uin" || t == "acc" {
-						v = fmt.Sprintf("%.2f", scaledValue(p))
+					v := p.Value()
+					if p.NotImplemented() || (t == "sunssf" && p.Int16() == int16(math.MinInt16)) {
+						v = "n/a"
+					} else if t == "int" || t == "uin" || t == "acc" {
+						v = fmt.Sprintf("%.2f", p.ScaledValue())
 					}
-					pf("%10s %-18s %10v %10s", p.Type(), p.Id(), p.Value(), v)
+
+					// pf("%-14s %20v   %-10s", p.Id(), v, p.Type(), raw)
+					vs := fmt.Sprintf("%17v", v)
+					fmt.Fprintln(tw, fmt.Sprintf("%s\t%s\t   %s", p.Id(), vs, p.Type()))
 				})
 			})
+
+			tw.Flush()
 		})
 	})
 }
@@ -152,6 +134,7 @@ func main() {
 
 	mbl := &modbusLogger{}
 	handler.Logger = mbl
+	handler.Logger = nil
 
 	handler.SetSlave(byte(deviceID))
 
