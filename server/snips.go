@@ -3,50 +3,37 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"sync"
-	"time"
 
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
 // QuerySnip represents modbus query operations
 type QuerySnip struct {
-	DeviceId      uint8
-	Operation     `json:"-"`
-	Value         float64
-	ReadTimestamp time.Time
-}
-
-func NewQuerySnip(deviceId uint8, operation Operation) QuerySnip {
-	snip := QuerySnip{
-		DeviceId:  deviceId,
-		Operation: operation,
-		Value:     math.NaN(),
-	}
-	return snip
+	Device string
+	MeasurementResult
 }
 
 // String representation
 func (q *QuerySnip) String() string {
-	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode: %x, IEC: %s, Value: %.3f",
-		q.DeviceId, q.FuncCode, q.OpCode, q.IEC61850, q.Value)
+	return fmt.Sprintf("Dev: %s, IEC: %s, Value: %.3f",
+		q.Device, q.Measurement.String(), q.Value)
 }
 
-// MarshalJSON converts QuerySnip to json, replacing ReadTimestamp with unix time representation
+// MarshalJSON converts QuerySnip to json, replacing Timestamp with unix time representation
 func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		DeviceId    uint8
+		Device      string
 		Value       float64
 		IEC61850    string
 		Description string
 		Timestamp   int64
 	}{
-		DeviceId:    q.DeviceId,
+		Device:      q.Device,
 		Value:       q.Value,
-		IEC61850:    q.IEC61850.String(),
-		Description: q.IEC61850.Description(),
-		Timestamp:   q.ReadTimestamp.UnixNano() / 1e6,
+		IEC61850:    q.Measurement.String(),
+		Description: q.Measurement.Description(),
+		Timestamp:   q.Timestamp.UnixNano() / 1e6,
 	})
 }
 
@@ -123,16 +110,16 @@ func (b *QuerySnipBroadcaster) AttachRunner(runner func(QuerySnipChannel)) {
 
 // ControlSnip wraps control information like query success or failure.
 type ControlSnip struct {
-	Type     ControlSnipType
-	Message  string
-	DeviceId uint8
+	Device  string
+	Result  ControlSnipType
+	Message string
 }
 
 type ControlSnipType uint8
 
 const (
-	CONTROLSNIP_OK ControlSnipType = iota
-	CONTROLSNIP_ERROR
+	ok ControlSnipType = iota
+	failure
 )
 
 type ControlSnipChannel chan ControlSnip

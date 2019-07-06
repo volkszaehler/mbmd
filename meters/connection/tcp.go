@@ -9,7 +9,7 @@ import (
 
 type TCP struct {
 	address string
-	Client  meters.Client
+	Client  meters.ModbusClient
 	Handler *modbus.TCPClientHandler
 }
 
@@ -17,6 +17,7 @@ type TCP struct {
 func NewTCPClientHandler(device string) *modbus.TCPClientHandler {
 	handler := modbus.NewTCPClientHandler(device)
 
+	// set default timings
 	handler.Timeout = 1 * time.Second
 	handler.ProtocolRecoveryTimeout = 10 * time.Second
 	handler.LinkRecoveryTimeout = 15 * time.Second
@@ -46,7 +47,7 @@ func (b *TCP) String() string {
 	return b.address
 }
 
-func (b *TCP) ModbusClient() meters.Client {
+func (b *TCP) ModbusClient() meters.ModbusClient {
 	return b.Client
 }
 
@@ -64,8 +65,8 @@ func (b *TCP) Timeout(timeout time.Duration) time.Duration {
 	return t
 }
 
-// Reconnect refreshes underlying modbus TCP connection by closing it
-// and thus forcing the client to reopen
-func (b *TCP) Reconnect() {
+// Close closes the modbus connection.
+// This forces the modbus client to reopen the connection before the next bus operations.
+func (b *TCP) Close() {
 	b.Handler.Close()
 }

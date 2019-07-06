@@ -2,11 +2,11 @@ package connection
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/volkszaehler/mbmd/meters"
 )
 
+// Manager handles devices attached to a connection
 type Manager struct {
 	Devices map[uint8]meters.Device
 	Conn    Connection
@@ -21,6 +21,7 @@ func NewManager(conn Connection) Manager {
 	return m
 }
 
+// Add adds device to the device manager at specified device id
 func (m *Manager) Add(id uint8, device meters.Device) error {
 	if _, ok := m.Devices[id]; ok {
 		return fmt.Errorf("duplicate device id %d", id)
@@ -30,21 +31,11 @@ func (m *Manager) Add(id uint8, device meters.Device) error {
 	return nil
 }
 
+// All iterates over all devices and executes the callback per device.
+// Before the callback, the slave id is set on the underlying connection.
 func (m *Manager) All(cb func(uint8, meters.Device)) {
 	for id, device := range m.Devices {
 		m.Conn.Slave(id)
 		cb(id, device)
-	}
-}
-
-func (m *Manager) Run() {
-	for id, device := range m.Devices {
-		m.Conn.Slave(id)
-
-		if results, err := device.Query(m.Conn.ModbusClient()); err != nil {
-			log.Fatal(err)
-		} else {
-			log.Println(results)
-		}
 	}
 }

@@ -40,162 +40,180 @@ func TestQuerySnipMerge(t *testing.T) {
 	}{
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: VoltageL1,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: VoltageL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Voltage.L1) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: VoltageL2,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: VoltageL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Voltage.L2) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: VoltageL3,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: VoltageL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Voltage.L3) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: CurrentL1,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: CurrentL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Current.L1) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: CurrentL2,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: CurrentL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Current.L2) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: CurrentL3,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: CurrentL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Current.L3) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: PowerL1,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: PowerL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Power.L1) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: PowerL2,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: PowerL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Power.L2) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: PowerL3,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: PowerL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Power.L3) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: CosphiL1,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: CosphiL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Cosphi.L1) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: CosphiL2,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: CosphiL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Cosphi.L2) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: CosphiL3,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: CosphiL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Cosphi.L3) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: ImportL1,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: ImportL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Import.L1) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: ImportL2,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: ImportL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Import.L2) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: ImportL3,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: ImportL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Import.L3) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: ExportL1,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: ExportL1,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Export.L1) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: ExportL2,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: ExportL2,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Export.L2) },
 		},
 		{
 			QuerySnip{
-				DeviceId: 1, Value: setvalue,
-				Operation: Operation{
-					IEC61850: ExportL3,
+				Device: "dev",
+				MeasurementResult: MeasurementResult{
+					Value:       setvalue,
+					Measurement: ExportL3,
 				},
 			},
 			func(r Readings) float64 { return Fp2f(r.Export.L3) },

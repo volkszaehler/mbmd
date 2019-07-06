@@ -25,7 +25,7 @@ func NewDevice() meters.Device {
 	return &sunSpec{}
 }
 
-func (d *sunSpec) Initialize(client meters.Client) error {
+func (d *sunSpec) Initialize(client meters.ModbusClient) error {
 	in, err := sunspecbus.Open(client)
 	if err != nil {
 		return err
@@ -112,7 +112,7 @@ func (d *sunSpec) Descriptor() meters.DeviceDescriptor {
 	return d.descriptor
 }
 
-func (d *sunSpec) Probe(client meters.Client) (res meters.MeasurementResult, err error) {
+func (d *sunSpec) Probe(client meters.ModbusClient) (res meters.MeasurementResult, err error) {
 	for _, model := range d.models {
 		if model.Id() != 101 && model.Id() != 103 {
 			continue
@@ -147,7 +147,7 @@ func (d *sunSpec) Probe(client meters.Client) (res meters.MeasurementResult, err
 	return res, fmt.Errorf("sunspec: could not find model for probe snip")
 }
 
-func (d *sunSpec) Query(client meters.Client) ([]meters.MeasurementResult, error) {
+func (d *sunSpec) Query(client meters.ModbusClient) ([]meters.MeasurementResult, error) {
 	res := make([]meters.MeasurementResult, 0)
 
 	for _, model := range d.models {

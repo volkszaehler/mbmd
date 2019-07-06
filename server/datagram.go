@@ -9,19 +9,15 @@ import (
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
-// UniqueIdFormat is a format string for unique ID generation.
 // It expects one %d conversion specifier,
 // which will be replaced with the device ID.
-// The UniqueIdFormat can be changed on program startup,
 // before any additional goroutines are started.
-var UniqueIdFormat string = "Instrument%d"
 
 // Readings combines readings of all measurements into one data structure
 type Readings struct {
-	UniqueId    string
+	DeviceID    string
 	Timestamp   time.Time
 	Unix        int64
-	DeviceId    uint8 `json:"ModbusDeviceId"`
 	Power       ThreePhaseReadings
 	Voltage     ThreePhaseReadings
 	Current     ThreePhaseReadings
@@ -72,7 +68,6 @@ func (r *Readings) String() string {
 		"L3: %.1fV %.2fA %.0fW %.2fcos | " +
 		"%.1fHz"
 	return fmt.Sprintf(fmtString,
-		r.UniqueId,
 		Fp2f(r.Voltage.L1),
 		Fp2f(r.Current.L1),
 		Fp2f(r.Power.L1),
@@ -108,15 +103,14 @@ func tpAdd(lhs ThreePhaseReadings, rhs ThreePhaseReadings) ThreePhaseReadings {
 * the time: the latter of the two times is copied over to the result
  */
 func (lhs *Readings) add(rhs *Readings) (*Readings, error) {
-	if lhs.DeviceId != rhs.DeviceId {
+	if lhs.DeviceID != rhs.DeviceID {
 		return &Readings{}, fmt.Errorf(
 			"Cannot add readings of different devices - got IDs %d and %d",
-			lhs.DeviceId, rhs.DeviceId)
+			lhs.DeviceID, rhs.DeviceID)
 	}
 
 	res := &Readings{
-		UniqueId: lhs.UniqueId,
-		DeviceId: lhs.DeviceId,
+		DeviceID: lhs.DeviceID,
 		Voltage:  tpAdd(lhs.Voltage, rhs.Voltage),
 		Current:  tpAdd(lhs.Current, rhs.Current),
 		Power:    tpAdd(lhs.Power, rhs.Power),
@@ -164,8 +158,7 @@ func (lhs *Readings) divide(scaler float64) *Readings {
 	res := &Readings{
 		Timestamp: lhs.Timestamp,
 		Unix:      lhs.Unix,
-		DeviceId:  lhs.DeviceId,
-		UniqueId:  lhs.UniqueId,
+		DeviceID:  lhs.DeviceID,
 
 		Voltage:     tpDivide(lhs.Voltage, scaler),
 		Current:     tpDivide(lhs.Current, scaler),
@@ -187,9 +180,9 @@ func (lhs *Readings) divide(scaler float64) *Readings {
 // MergeSnip adds the values represented by the QuerySnip to the
 // Readings and updates the current time stamp
 func (r *Readings) MergeSnip(q QuerySnip) {
-	r.Timestamp = q.ReadTimestamp
+	r.Timestamp = q.Timestamp
 	r.Unix = r.Timestamp.Unix()
-	switch q.IEC61850 {
+	switch q.Measurement {
 	case VoltageL1:
 		r.Voltage.L1 = &q.Value
 	case VoltageL2:

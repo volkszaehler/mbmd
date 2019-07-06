@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// MeasurementResult is the result of modbus read operation
 type MeasurementResult struct {
 	Measurement
 	Value     float64
@@ -16,6 +17,7 @@ func (r MeasurementResult) String() string {
 	return fmt.Sprintf("%s: %.2f%s", r.Measurement.String(), r.Value, unit)
 }
 
+// Measurement is the type of measurement, i.e. the physical property being measued in common notation
 type Measurement int
 
 //go:generate go run golang.org/x/tools/cmd/stringer -type=Measurement
@@ -184,6 +186,7 @@ var iec = map[Measurement][]string{
 	BatteryVoltage:  {"Battery Voltage", "V"},
 }
 
+// DescriptionAndUnit returns a measurements human-readable name and its unit
 func (m *Measurement) DescriptionAndUnit() (string, string) {
 	if details, ok := iec[*m]; ok {
 		unit := ""
@@ -196,6 +199,7 @@ func (m *Measurement) DescriptionAndUnit() (string, string) {
 	return m.String(), ""
 }
 
+// Description returns a measurements human-readable name
 func (m *Measurement) Description() string {
 	description, unit := m.DescriptionAndUnit()
 	if unit != "" {

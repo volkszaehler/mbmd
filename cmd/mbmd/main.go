@@ -98,7 +98,7 @@ func meterHelp() string {
 	return s
 }
 
-func logMeterDetails(meters map[uint8]*Meter, qe *ModbusEngine) {
+func logMeterDetails(meters map[uint8]*Meter, qe *QueryEngine) {
 	for devid, meter := range meters {
 		producer := meter.Producer
 		log.Printf("#%d: %s (%s)", devid, producer.Description(), producer.ConnectionType())
@@ -261,9 +261,9 @@ func main() {
 			log.Fatalf("Invalid rate %s", err)
 		}
 
-		// create ModbusEngine with status
+		// create QueryEngine with status
 		status := NewStatus(meters)
-		qe := NewModbusEngine(
+		qe := NewQueryEngine(
 			c.String("adapter"),
 			c.Int("comset"),
 			c.Bool("simulate"),
@@ -315,8 +315,8 @@ func main() {
 			}
 		}
 
-		// MeasurementCache for REST API
-		mc := NewMeasurementCache(
+		// Cache for REST API
+		mc := NewCache(
 			meters,
 			scheduler,
 			DEFAULT_METER_STORE_SECONDS,

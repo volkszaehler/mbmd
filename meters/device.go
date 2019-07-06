@@ -13,7 +13,7 @@ type DeviceDescriptor struct {
 type Device interface {
 	// Initialize prepares the device for usage. Any setup or initilization should be done here.
 	// It requires that the client has the correct device id applied.
-	Initialize(client Client) error
+	Initialize(client ModbusClient) error
 
 	// Descriptor returns the device descriptor. Since this method does not have
 	// bus access the descriptor should be preared during initilization.
@@ -21,9 +21,9 @@ type Device interface {
 
 	// Probe tests if a basic register, typically VoltageL1, can be read.
 	// It requires that the client has the correct device id applied.
-	Probe(client Client) (MeasurementResult, error)
+	Probe(client ModbusClient) (MeasurementResult, error)
 
 	// Query retrieves all registers that the device supports.
 	// It requires that the client has the correct device id applied.
-	Query(client Client) ([]MeasurementResult, error)
+	Query(client ModbusClient) ([]MeasurementResult, error)
 }

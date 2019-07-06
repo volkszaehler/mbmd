@@ -5,8 +5,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	. "github.com/volkszaehler/mbmd/meters"
 )
 
 type MemoryStatus struct {
@@ -37,17 +35,18 @@ type Status struct {
 	Memory           MemoryStatus
 	Modbus           ModbusStatus
 	ConfiguredMeters []MeterStatus
-	metermap         map[uint8]*Meter
-	mux              sync.RWMutex
+	// metermap         map[uint8]*Meter
+	mux sync.RWMutex
 }
 
 type MeterStatus struct {
-	Id     uint8
+	// Id     uint8
 	Type   string
 	Status string
 }
 
-func NewStatus(metermap map[uint8]*Meter) *Status {
+// func NewStatus(metermap map[uint8]*Meter) *Status {
+func NewStatus() *Status {
 	return &Status{
 		Memory:        CurrentMemoryStatus(),
 		Starttime:     time.Now(),
@@ -60,7 +59,7 @@ func NewStatus(metermap map[uint8]*Meter) *Status {
 			ErrorsPerMinute:   0,
 		},
 		ConfiguredMeters: nil,
-		metermap:         metermap,
+		// metermap:         metermap,
 	}
 }
 
@@ -87,15 +86,15 @@ func (s *Status) Update() {
 	s.Modbus.RequestsPerMinute = float64(s.Modbus.Requests) / (s.UptimeSeconds / 60)
 
 	var confmeters []MeterStatus
-	for id, meter := range s.metermap {
-		ms := MeterStatus{
-			Id:     id,
-			Type:   meter.Producer.Type(),
-			Status: meter.State().String(),
-		}
+	// for id, meter := range s.metermap {
+	// 	ms := MeterStatus{
+	// 		Id:     id,
+	// 		Type:   meter.Type(),
+	// 		Status: meter.State().String(),
+	// 	}
 
-		confmeters = append(confmeters, ms)
-	}
+	// 	confmeters = append(confmeters, ms)
+	// }
 	s.ConfiguredMeters = confmeters
 }
 

@@ -23,8 +23,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// Client is a middleman between the websocket connection and the hub.
-type Client struct {
+// SocketClient is a middleman between the websocket connection and the hub.
+type SocketClient struct {
 	hub *SocketHub
 
 	// The websocket connection.
@@ -35,7 +35,7 @@ type Client struct {
 }
 
 // writePump pumps messages from the hub to the websocket connection.
-func (c *Client) writePump() {
+func (c *SocketClient) writePump() {
 	defer func() {
 		c.conn.Close()
 	}()
@@ -57,7 +57,7 @@ func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &SocketClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
 	// run writing to client in goroutine
@@ -68,13 +68,13 @@ func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 // clients.
 type SocketHub struct {
 	// Registered clients.
-	clients map[*Client]bool
+	clients map[*SocketClient]bool
 
 	// Register requests from the clients.
-	register chan *Client
+	register chan *SocketClient
 
 	// Unregister requests from clients.
-	unregister chan *Client
+	unregister chan *SocketClient
 
 	// status stream
 	statusStream chan *Status
@@ -93,9 +93,9 @@ func NewSocketHub(status *Status) *SocketHub {
 	}()
 
 	return &SocketHub{
-		register:     make(chan *Client),
-		unregister:   make(chan *Client),
-		clients:      make(map[*Client]bool),
+		register:     make(chan *SocketClient),
+		unregister:   make(chan *SocketClient),
+		clients:      make(map[*SocketClient]bool),
 		statusStream: statusstream,
 	}
 }

@@ -26,7 +26,7 @@ var (
 
 //go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
-func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
 		log.Fatal("Failed to load embedded template: " + err.Error())
@@ -53,10 +53,10 @@ func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 	})
 }
 
-func mkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		ids := mc.GetSortedIDs()
+		ids := mc.SortedIDs()
 		lasts := ReadingSlice{}
 		for _, id := range ids {
 			reading, err := mc.GetCurrent(id)
@@ -80,7 +80,7 @@ func mkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *htt
 	})
 }
 
-func mkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
@@ -101,7 +101,7 @@ func mkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *
 	})
 }
 
-func mkLastMinuteAvgSingleHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
@@ -122,10 +122,10 @@ func mkLastMinuteAvgSingleHandler(mc *MeasurementCache) func(http.ResponseWriter
 	})
 }
 
-func mkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		ids := mc.GetSortedIDs()
+		ids := mc.SortedIDs()
 		avgs := ReadingSlice{}
 		for _, id := range ids {
 			reading, err := mc.GetMinuteAvg(id)
@@ -172,7 +172,7 @@ func serveJson(f http.HandlerFunc) http.HandlerFunc {
 }
 
 func Run_httpd(
-	mc *MeasurementCache,
+	mc *Cache,
 	hub *SocketHub,
 	s *Status,
 	url string,

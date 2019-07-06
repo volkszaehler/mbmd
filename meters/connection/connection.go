@@ -9,7 +9,7 @@ import (
 // Connection encapsulates a physical modbus connection, either RTU or TCP
 type Connection interface {
 	// ModbusClient returns the underlying modbus client
-	ModbusClient() meters.Client
+	ModbusClient() meters.ModbusClient
 
 	// Slave sets the modbus device id
 	Slave(deviceID uint8)
@@ -17,9 +17,9 @@ type Connection interface {
 	// Timeout sets the modbus timeout
 	Timeout(timeout time.Duration) time.Duration
 
-	// Reconnect closes the modbus connection.
+	// Close closes the modbus connection.
 	// This forces the modbus client to reopen the connection before the next bus operations.
-	Reconnect()
+	Close()
 
 	// Logger sets a logging instance for physical bus operations
 	Logger(l Logger)

@@ -20,8 +20,9 @@ const (
 
 type RTU struct {
 	device  string
-	Client  meters.Client
+	Client  meters.ModbusClient
 	Handler *modbus.RTUClientHandler
+	prevID  uint8
 }
 
 // NewClientHandler creates a serial line RTU modbus handler
@@ -82,7 +83,7 @@ func (b *RTU) String() string {
 	return b.device
 }
 
-func (b *RTU) ModbusClient() meters.Client {
+func (b *RTU) ModbusClient() meters.ModbusClient {
 	return b.Client
 }
 
@@ -91,6 +92,12 @@ func (b *RTU) Logger(l Logger) {
 }
 
 func (b *RTU) Slave(deviceID uint8) {
+	// Some devices like SDM need to have a little pause between querying different device ids
+	if b.prevID != 0 && deviceID != b.prevID {
+		time.Sleep(time.Duration(100) * time.Millisecond)
+		b.prevID = deviceID
+	}
+
 	b.Handler.SetSlave(deviceID)
 }
 
@@ -100,6 +107,8 @@ func (b *RTU) Timeout(timeout time.Duration) time.Duration {
 	return t
 }
 
-func (b *RTU) Reconnect() {
-
+// Close closes the modbus connection.
+// This forces the modbus client to reopen the connection before the next bus operations.
+func (b *RTU) Close() {
+	b.Handler.Close()
 }

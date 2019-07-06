@@ -30,7 +30,7 @@ func NewDevice(typeid string) (meters.Device, error) {
 }
 
 // Initialize prepares the device for usage. Any setup or initilization should be done here.
-func (d *rs485) Initialize(client meters.Client) error {
+func (d *rs485) Initialize(client meters.ModbusClient) error {
 	return nil
 }
 
@@ -42,7 +42,7 @@ func (d *rs485) Descriptor() meters.DeviceDescriptor {
 	}
 }
 
-func (d *rs485) query(client meters.Client, op Operation) (res meters.MeasurementResult, err error) {
+func (d *rs485) query(client meters.ModbusClient, op Operation) (res meters.MeasurementResult, err error) {
 	var bytes []byte
 
 	if op.ReadLen <= 0 {
@@ -76,7 +76,7 @@ func (d *rs485) query(client meters.Client, op Operation) (res meters.Measuremen
 }
 
 // Probe is called by the BusManager after preparing the bus by setting the device id and waiting for rate limit
-func (d *rs485) Probe(client meters.Client) (res meters.MeasurementResult, err error) {
+func (d *rs485) Probe(client meters.ModbusClient) (res meters.MeasurementResult, err error) {
 	op := d.producer.Probe()
 
 	res, err = d.query(client, op)
@@ -88,7 +88,7 @@ func (d *rs485) Probe(client meters.Client) (res meters.MeasurementResult, err e
 }
 
 // Query is called by the BusManager after preparing the bus by setting the device id and waiting for rate limit
-func (d *rs485) Query(client meters.Client) (res []meters.MeasurementResult, err error) {
+func (d *rs485) Query(client meters.ModbusClient) (res []meters.MeasurementResult, err error) {
 	res = make([]meters.MeasurementResult, 0)
 
 	for _, op := range d.producer.Produce() {

@@ -7,37 +7,36 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
-type MeasurementCache struct {
-	meters  map[uint8]MeasurementCacheItem
+type Cache struct {
+	items   map[string]CacheItem
 	maxAge  time.Duration
 	verbose bool
 }
 
-type MeasurementCacheItem struct {
-	*Meter
+type CacheItem struct {
+	// *meters.Device
 	*MeterReadings
 }
 
-func NewMeasurementCache(
-	meters map[uint8]*Meter,
+func NewCache(
+	devices map[string]meters.Device,
 	scheduler *MeterScheduler,
 	maxAge time.Duration,
 	isVerbose bool,
-) *MeasurementCache {
-	items := make(map[uint8]MeasurementCacheItem)
+) *Cache {
+	items := make(map[string]CacheItem)
 
-	for _, meter := range meters {
-		items[meter.DeviceId] = MeasurementCacheItem{
-			meter,
-			NewMeterReadings(meter.DeviceId, maxAge),
+	for deviceID := range devices {
+		items[deviceID] = CacheItem{
+			NewMeterReadings(deviceID, maxAge),
 		}
 	}
 
-	cache := &MeasurementCache{
-		meters:  items,
+	cache := &Cache{
+		items:   items,
 		maxAge:  maxAge,
 		verbose: isVerbose,
 	}
@@ -47,13 +46,13 @@ func NewMeasurementCache(
 }
 
 // Run consumes meter readings into snip cache
-func (mc *MeasurementCache) Run(in QuerySnipChannel) {
+func (mc *Cache) Run(in QuerySnipChannel) {
 	for snip := range in {
-		devid := snip.DeviceId
+		devid := snip.Device
 		// Search corresponding meter
-		if meter, ok := mc.meters[devid]; ok {
+		if ci, ok := mc.items[devid]; ok {
 			// add the snip to the cache
-			meter.AddSnip(snip)
+			ci.AddSnip(snip)
 		} else {
 			log.Fatalf("Snip for unknown meter received - this should not happen (%v).", snip)
 		}
@@ -61,36 +60,36 @@ func (mc *MeasurementCache) Run(in QuerySnipChannel) {
 }
 
 // Purge removes accumulated data for specified device
-func (mc *MeasurementCache) Purge(deviceId byte) error {
-	if meter, ok := mc.meters[deviceId]; ok {
-		meter.Purge(deviceId)
+func (mc *Cache) Purge(deviceID string) error {
+	if meter, ok := mc.items[deviceID]; ok {
+		meter.Purge(deviceID)
 		return nil
 	}
 
-	return fmt.Errorf("Device with id %d does not exist.", deviceId)
+	return fmt.Errorf("Device with id %d does not exist.", deviceID)
 }
 
-func (mc *MeasurementCache) GetSortedIDs() []byte {
+func (mc *Cache) SortedIDs() []byte {
 	var keys ByteSlice
-	for k := range mc.meters {
+	for k := range mc.items {
 		keys = append(keys, k)
 	}
 	sort.Sort(keys)
 	return keys
 }
 
-func (mc *MeasurementCache) GetCurrent(deviceId byte) (*Readings, error) {
-	if meter, ok := mc.meters[deviceId]; ok {
+func (mc *Cache) GetCurrent(deviceID string) (*Readings, error) {
+	if meter, ok := mc.items[deviceID]; ok {
 		if meter.State() == AVAILABLE {
 			return &meter.Current, nil
 		}
-		return nil, fmt.Errorf("Device %d is not available.", deviceId)
+		return nil, fmt.Errorf("Device %d is not available.", deviceID)
 	}
-	return nil, fmt.Errorf("Device %d does not exist.", deviceId)
+	return nil, fmt.Errorf("Device %d does not exist.", deviceID)
 }
 
-func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
-	if meter, ok := mc.meters[deviceId]; ok {
+func (mc *Cache) GetMinuteAvg(deviceID string) (*Readings, error) {
+	if meter, ok := mc.items[deviceID]; ok {
 		if meter.State() == AVAILABLE {
 			measurements := meter.Historic
 			lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
@@ -106,9 +105,9 @@ func (mc *MeasurementCache) GetMinuteAvg(deviceId byte) (*Readings, error) {
 			}
 			return res, nil
 		}
-		return nil, fmt.Errorf("Device %d is not available.", deviceId)
+		return nil, fmt.Errorf("Device %d is not available.", deviceID)
 	}
-	return nil, fmt.Errorf("Device %d does not exist.", deviceId)
+	return nil, fmt.Errorf("Device %d does not exist.", deviceID)
 }
 
 // ByteSlice attaches the methods of sort.Interface to []byte, sorting in increasing order.
@@ -124,12 +123,11 @@ type MeterReadings struct {
 	mux      sync.Mutex
 }
 
-func NewMeterReadings(devid uint8, maxAge time.Duration) *MeterReadings {
+func NewMeterReadings(deviceID string, maxAge time.Duration) *MeterReadings {
 	res := &MeterReadings{
 		Historic: ReadingSlice{},
 		Current: Readings{
-			UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
-			DeviceId: devid,
+			DeviceID: deviceID,
 		},
 	}
 	go func(mr *MeterReadings) {
@@ -143,14 +141,13 @@ func NewMeterReadings(devid uint8, maxAge time.Duration) *MeterReadings {
 	return res
 }
 
-func (mr *MeterReadings) Purge(devid uint8) {
+func (mr *MeterReadings) Purge(deviceID string) {
 	mr.mux.Lock()
 	defer mr.mux.Unlock()
 
 	mr.Historic = ReadingSlice{}
 	mr.Current = Readings{
-		UniqueId: fmt.Sprintf(UniqueIdFormat, devid),
-		DeviceId: devid,
+		DeviceID: deviceID,
 	}
 }
 

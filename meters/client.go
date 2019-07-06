@@ -1,7 +1,7 @@
 package meters
 
-// Client abstracts the actual modbus client implementation
-type Client interface {
+// ModbusClient abstracts the actual modbus client implementation
+type ModbusClient interface {
 	// Bit access
 
 	// ReadCoils reads from 1 to 2000 contiguous status of coils in a

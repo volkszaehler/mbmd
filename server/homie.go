@@ -32,17 +32,18 @@ func (m *HomieRunner) Run(in QuerySnipChannel) {
 	for snip := range in {
 		topic := fmt.Sprintf("%s/%s/%s/%s",
 			m.rootTopic,
-			m.DeviceTopic(snip.DeviceId),
+			m.DeviceTopic(snip.Device),
 			nodeTopic,
-			strings.ToLower(snip.IEC61850.String()))
+			strings.ToLower(snip.Measurement.String()),
+		)
 
 		message := fmt.Sprintf("%.3f", snip.Value)
 		go m.Publish(topic, false, message)
 	}
 }
 
-// Register subcribes GoSDM as discoverable device
-func (m *HomieRunner) Register(rootTopic string, meters map[uint8]*Meter, qe *ModbusEngine) {
+// Register publishes device tree
+func (m *HomieRunner) Register(rootTopic string, meters map[uint8]*Meter, qe *QueryEngine) {
 	// mqttOpts.SetWill(m.homieTopic("$state"), "lost", byte(m.mqttQos), true)
 	m.rootTopic = stripSlash(rootTopic)
 	m.meters = meters
@@ -71,7 +72,7 @@ func stripSlash(s string) string {
 	return s
 }
 
-func (m *HomieRunner) publishMeter(meter *Meter, qe *ModbusEngine) {
+func (m *HomieRunner) publishMeter(meter *Meter, qe *QueryEngine) {
 	// descriptor := m.deviceDescriptor(meter, qe)
 
 	// // clear retained messages
@@ -95,7 +96,7 @@ func (m *HomieRunner) publishMeter(meter *Meter, qe *ModbusEngine) {
 	// m.publishProperties(subTopic, meter, qe)
 }
 
-// func (m *HomieRunner) deviceDescriptor(meter *Meter, qe *ModbusEngine) sunspec.DeviceDescriptor {
+// func (m *HomieRunner) deviceDescriptor(meter *Meter, qe *QueryEngine) sunspec.DeviceDescriptor {
 // 	descriptor := sunspec.DeviceDescriptor{
 // 		Manufacturer: meter.Producer.Type(),
 // 		Model:        nodeTopic,
@@ -119,7 +120,7 @@ func (m *HomieRunner) publishMeter(meter *Meter, qe *ModbusEngine) {
 // 	return descriptor
 // }
 
-func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *ModbusEngine) {
+func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *QueryEngine) {
 	meterOps := meter.Producer.Produce()
 
 	// read from device to split block operations
@@ -137,16 +138,16 @@ func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *Modbu
 
 	// sort by measurement type
 	sort.Slice(snips, func(a, b int) bool {
-		return snips[a].IEC61850.String() < snips[b].IEC61850.String()
+		return snips[a].Measurement.String() < snips[b].Measurement.String()
 	})
 
 	properties := make([]string, len(snips))
 
 	for i, operation := range snips {
-		property := strings.ToLower(operation.IEC61850.String())
+		property := strings.ToLower(operation.Measurement())
 		properties[i] = property
 
-		description, unit := operation.IEC61850.DescriptionAndUnit()
+		description, unit := operation.Measurement.DescriptionAndUnit()
 
 		propertySubtopic := fmt.Sprintf("%s/%s", subtopic, property)
 		m.publish(propertySubtopic+"/$name", description)

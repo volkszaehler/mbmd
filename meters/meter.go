@@ -7,15 +7,16 @@ import (
 type MeterState int
 
 const (
-	ONLINE  MeterState = iota // The device responds (initial state)
-	OFFLINE                   // The device does not respond
+	_       MeterState = iota
+	ONLINE             // The device responds (initial state)
+	OFFLINE            // The device does not respond
 )
 
 func (ms MeterState) String() string {
 	if ms == ONLINE {
-		return "available"
+		return "online"
 	}
-	return "unavailable"
+	return "offline"
 }
 
 type Meter struct {

@@ -11,6 +11,7 @@ import (
 	"github.com/volkszaehler/mbmd/meters/connection"
 	"github.com/volkszaehler/mbmd/meters/rs485"
 	"github.com/volkszaehler/mbmd/meters/sunspec"
+	"github.com/volkszaehler/mbmd/server"
 )
 
 var managers map[string]connection.Manager
@@ -19,8 +20,8 @@ func init() {
 	managers = make(map[string]connection.Manager, 0)
 }
 
+// createConnection parses adapter string to create TCP or RTU connection
 func createConnection(device string) (res connection.Connection) {
-	// parse adapter string
 	if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
 		res = connection.NewTCP(device) // tcp connection
 	} else {
@@ -29,6 +30,7 @@ func createConnection(device string) (res connection.Connection) {
 	return res
 }
 
+// createDevice creates new device and adds it to the
 func createDevice(deviceDef string, defaultDevice string) {
 	deviceSplit := strings.Split(deviceDef, "@")
 	if len(deviceSplit) == 0 || len(deviceSplit) > 2 {
@@ -36,20 +38,20 @@ func createDevice(deviceDef string, defaultDevice string) {
 	}
 
 	meterDef := deviceSplit[0]
-	device := defaultDevice
+	connSpec := defaultDevice
 	if len(deviceSplit) == 2 {
-		device = deviceSplit[1]
+		connSpec = deviceSplit[1]
 	}
 
-	if device == "" {
+	if connSpec == "" {
 		log.Fatalf("Cannot parse connect string- missing physical device or connection for %s. See -h for help.", deviceDef)
 	}
 
-	manager, ok := managers[device]
+	manager, ok := managers[connSpec]
 	if !ok {
-		conn := createConnection(device)
+		conn := createConnection(connSpec)
 		manager = connection.NewManager(conn)
-		managers[device] = manager
+		managers[connSpec] = manager
 	}
 
 	meterSplit := strings.Split(meterDef, ":")
@@ -135,7 +137,16 @@ func main() {
 	wg.Wait()
 
 	println("Running...")
-	for _, m := range managers {
-		m.Run()
-	}
+	// for _, m := range managers {
+	// 	m.Run()
+	// }
+
+	status := make(map[string]server.MeterStatus)
+	qe := server.NewQueryEngine(managers, status)
+
+	devmap := qe.DeviceMap()
+
+	cc := make(chan server.ControlSnip)
+	rc := make(chan server.QuerySnip)
+	qe.Run(cc, rc)
 }
