@@ -4,11 +4,6 @@ import (
 	"sync"
 )
 
-const (
-	ReadInputReg   = 4
-	ReadHoldingReg = 3
-)
-
 type MeterState int
 
 const (

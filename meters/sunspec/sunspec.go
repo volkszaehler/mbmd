@@ -1,7 +1,7 @@
 package sunspec
 
 import (
-	"errors"
+	"fmt"
 	"math"
 	"time"
 
@@ -10,21 +10,22 @@ import (
 
 	_ "github.com/andig/gosunspec/models" // device tree parsing requires all models
 	"github.com/andig/gosunspec/models/model1"
-
-	"github.com/grid-x/modbus"
-	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/andig/gosunspec/models/model101"
+	"github.com/pkg/errors"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 type sunSpec struct {
 	models     []sunspec.Model
-	descriptor DeviceDescriptor
+	descriptor meters.DeviceDescriptor
 }
 
-func NewDevice() Device {
+// NewDevice creates a Sunspec device
+func NewDevice() meters.Device {
 	return &sunSpec{}
 }
 
-func (d *sunSpec) Initialize(client modbus.Client) error {
+func (d *sunSpec) Initialize(client meters.Client) error {
 	in, err := sunspecbus.Open(client)
 	if err != nil {
 		return err
@@ -62,7 +63,7 @@ func (d *sunSpec) readCommonBlock(device sunspec.Device) error {
 		return err
 	}
 
-	d.descriptor = DeviceDescriptor{
+	d.descriptor = meters.DeviceDescriptor{
 		Manufacturer: b.MustPoint(model1.Mn).StringValue(),
 		Model:        b.MustPoint(model1.Md).StringValue(),
 		Options:      b.MustPoint(model1.Opt).StringValue(),
@@ -107,16 +108,47 @@ func (d *sunSpec) sanitizeModels() {
 	}
 }
 
-func (d *sunSpec) Descriptor() DeviceDescriptor {
+func (d *sunSpec) Descriptor() meters.DeviceDescriptor {
 	return d.descriptor
 }
 
-func (d *sunSpec) Probe(client modbus.Client) (MeasurementResult, error) {
-	return MeasurementResult{},nil
+func (d *sunSpec) Probe(client meters.Client) (res meters.MeasurementResult, err error) {
+	for _, model := range d.models {
+		if model.Id() != 101 && model.Id() != 103 {
+			continue
+		}
+
+		b := model.MustBlock(0)
+		if err = b.Read(); err != nil {
+			return
+		}
+
+		pointID := model101.PhVphA
+		p := b.MustPoint(pointID)
+
+		if m, ok := opcodeMap[pointID]; !ok {
+			panic("sunspec: no measurement for point id " + pointID)
+		} else {
+			v := p.ScaledValue()
+			if math.IsNaN(v) {
+				return res, errors.Wrapf(err, "sunspec: could not read probe snip")
+			}
+
+			mr := meters.MeasurementResult{
+				Measurement: m,
+				Value:       v,
+				Timestamp:   time.Now(),
+			}
+
+			return mr, nil
+		}
+	}
+
+	return res, fmt.Errorf("sunspec: could not find model for probe snip")
 }
 
-func (d *sunSpec) Query(client modbus.Client) ([]MeasurementResult, error) {
-	res := make([]MeasurementResult, 0)
+func (d *sunSpec) Query(client meters.Client) ([]meters.MeasurementResult, error) {
+	res := make([]meters.MeasurementResult, 0)
 
 	for _, model := range d.models {
 		// TODO catch panic
@@ -132,12 +164,12 @@ func (d *sunSpec) Query(client modbus.Client) ([]MeasurementResult, error) {
 			if m, ok := opcodeMap[pointID]; !ok {
 				panic("sunspec: no measurement for point id " + pointID)
 			} else {
-				v := ScaledValue(p)
+				v := p.ScaledValue()
 				if math.IsNaN(v) {
 					continue
 				}
 
-				mr := MeasurementResult{
+				mr := meters.MeasurementResult{
 					Measurement: m,
 					Value:       v,
 					Timestamp:   time.Now(),
@@ -149,38 +181,4 @@ func (d *sunSpec) Query(client modbus.Client) ([]MeasurementResult, error) {
 	}
 
 	return res, nil
-}
-
-// ScaledValue uses Point.ScaledValue and checks the result for NaN-encoded values
-func ScaledValue(p sunspec.Point) float64 {
-	f := p.ScaledValue()
-
-	switch p.Type() {
-	case "int16":
-		if p.Value() == int16(math.MinInt16) {
-			f = math.NaN()
-		}
-	case "int32":
-		if p.Value() == int32(math.MinInt32) {
-			f = math.NaN()
-		}
-	case "int64":
-		if p.Value() == int64(math.MinInt64) {
-			f = math.NaN()
-		}
-	case "uint16":
-		if p.Value() == uint16(math.MaxUint16) {
-			f = math.NaN()
-		}
-	case "uint32":
-		if p.Value() == uint32(math.MaxUint32) {
-			f = math.NaN()
-		}
-	case "uint64":
-		if p.Value() == uint64(math.MaxUint64) {
-			f = math.NaN()
-		}
-	}
-
-	return f
 }

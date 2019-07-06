@@ -1,4 +1,4 @@
-package bus
+package connection
 
 import (
 	"time"
@@ -6,9 +6,10 @@ import (
 	"github.com/volkszaehler/mbmd/meters"
 )
 
-// Bus encapsulates a physical modbus connection, either RTU or TCP
-type Bus interface {
-	// physical access
+// Connection encapsulates a physical modbus connection, either RTU or TCP
+type Connection interface {
+	// ModbusClient returns the underlying modbus client
+	ModbusClient() meters.Client
 
 	// Slave sets the modbus device id
 	Slave(deviceID uint8)
@@ -25,12 +26,4 @@ type Bus interface {
 
 	// String returns the bus device/address
 	String() string
-
-	// device management
-
-	// Add adds a device connected to a specific id
-	Add(id uint8, device meters.Device) error
-
-	// Run queries all devices connected to the bus
-	Run()
 }

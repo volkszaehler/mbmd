@@ -1,11 +1,9 @@
 package rs485
 
 import (
-	// "fmt"
-	"log"
-	// "strings"
+	"fmt"
 
-	 "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 type Operation struct {
@@ -13,30 +11,8 @@ type Operation struct {
 	OpCode    uint16
 	ReadLen   uint16
 	IEC61850  meters.Measurement
-	Transform RTUTransform `json:"-"`
+	Transform RTUTransform
 }
-
-// type MeterState uint8
-
-// const (
-// 	AVAILABLE   MeterState = iota // The device responds (initial state)
-// 	UNAVAILABLE                   // The device does not respond
-// )
-
-// func (ms MeterState) String() string {
-// 	if ms == AVAILABLE {
-// 		return "available"
-// 	} else {
-// 		return "unavailable"
-// 	}
-// }
-
-// type Meter struct {
-// 	DeviceId uint8
-// 	Producer Producer
-// 	state    MeterState
-// 	mux      sync.Mutex // syncs the meter state variable
-// }
 
 // Producer is the interface that produces query snips which represent
 // modbus operations
@@ -47,7 +23,6 @@ type Producer interface {
 	Probe() Operation
 }
 
-
 // Opcodes map measurements to phyiscal registers
 type Opcodes map[meters.Measurement]uint16
 
@@ -57,38 +32,5 @@ func (o *Opcodes) Opcode(iec meters.Measurement) uint16 {
 		return opcode
 	}
 
-	log.Fatalf("Undefined opcode for measurement %s", iec.String())
-	return 0
+	panic(fmt.Sprintf("Undefined opcode for measurement %s", iec.String()))
 }
-
-// NewProducerByType meter factory
-// func NewProducerByType(typeid string, devid uint8) (*Meter, error) {
-// 	typeid = strings.ToUpper(typeid)
-
-// 	f, ok := Producers[typeid]
-// 	if !ok {
-// 		return nil, fmt.Errorf("Unknown meter type %s", typeid)
-// 	}
-
-// 	return NewMeter(devid, f()), nil
-// }
-
-// func NewMeter(devid uint8, producer Producer) *Meter {
-// 	return &Meter{
-// 		Producer: producer,
-// 		DeviceId: devid,
-// 		state:    AVAILABLE,
-// 	}
-// }
-
-// func (m *Meter) SetState(newstate MeterState) {
-// 	m.mux.Lock()
-// 	defer m.mux.Unlock()
-// 	m.state = newstate
-// }
-
-// func (m *Meter) State() MeterState {
-// 	m.mux.Lock()
-// 	defer m.mux.Unlock()
-// 	return m.state
-// }

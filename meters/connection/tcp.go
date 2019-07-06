@@ -1,15 +1,15 @@
-package bus
+package connection
 
 import (
 	"time"
 
 	"github.com/grid-x/modbus"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 type TCP struct {
-	manager
 	address string
-	Client  modbus.Client
+	Client  meters.Client
 	Handler *modbus.TCPClientHandler
 }
 
@@ -29,24 +29,25 @@ func NewTCPClientHandler(device string) *modbus.TCPClientHandler {
 	return handler
 }
 
-func NewTCP(address string) Bus {
+func NewTCP(address string) Connection {
 	handler := NewTCPClientHandler(address)
 	client := modbus.NewClient(handler)
 
 	b := &TCP{
-		// manager: NewManager(),
 		address: address,
 		Client:  client,
 		Handler: handler,
 	}
-
-	b.manager = NewManager(b)
 
 	return b
 }
 
 func (b *TCP) String() string {
 	return b.address
+}
+
+func (b *TCP) ModbusClient() meters.Client {
+	return b.Client
 }
 
 func (b *TCP) Logger(l Logger) {

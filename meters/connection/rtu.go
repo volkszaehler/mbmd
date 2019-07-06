@@ -1,10 +1,11 @@
-package bus
+package connection
 
 import (
 	"log"
 	"time"
 
 	"github.com/grid-x/modbus"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 const (
@@ -18,9 +19,8 @@ const (
 )
 
 type RTU struct {
-	manager
 	device  string
-	Client  modbus.Client
+	Client  meters.Client
 	Handler *modbus.RTUClientHandler
 }
 
@@ -65,7 +65,7 @@ func NewClientHandler(device string, comset int) *modbus.RTUClientHandler {
 	return handler
 }
 
-func NewRTU(device string, comset int) Bus {
+func NewRTU(device string, comset int) Connection {
 	handler := NewClientHandler(device, comset)
 	client := modbus.NewClient(handler)
 
@@ -75,13 +75,15 @@ func NewRTU(device string, comset int) Bus {
 		Handler: handler,
 	}
 
-	b.manager = NewManager(b)
-
 	return b
 }
 
 func (b *RTU) String() string {
 	return b.device
+}
+
+func (b *RTU) ModbusClient() meters.Client {
+	return b.Client
 }
 
 func (b *RTU) Logger(l Logger) {

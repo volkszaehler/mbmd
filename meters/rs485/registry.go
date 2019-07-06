@@ -5,11 +5,10 @@ import (
 	"strings"
 )
 
-type producerFactory func() Producer
+var producers = make(map[string]func() Producer)
 
-var producers = make(map[string]producerFactory)
-
-func Register(factory producerFactory) {
+// Register registers a producer implementation
+func Register(factory func() Producer) {
 	p := factory()
 	meterType := strings.ToUpper(p.Type())
 

@@ -5,7 +5,7 @@ import (
 	"github.com/andig/gosunspec/models/model103"
 	"github.com/andig/gosunspec/models/model124"
 
-	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 var modelPoints = map[int][]string{
@@ -52,24 +52,24 @@ var modelPoints = map[int][]string{
 	},
 }
 
-var opcodeMap = map[string]Measurement{
-	model103.A:        Current,
-	model103.AphA:     CurrentL1,
-	model103.AphB:     CurrentL2,
-	model103.AphC:     CurrentL3,
-	model103.PhVphA:   VoltageL1,
-	model103.PhVphB:   VoltageL2,
-	model103.PhVphC:   VoltageL3,
-	model103.Hz:       Frequency,
-	model103.W:        Power,
-	model103.VA:       ApparentPower,
-	model103.VAr:      ReactivePower,
-	model103.PF:       Cosphi,
-	model103.WH:       Export,
-	model103.DCA:      DCCurrent,
-	model103.DCV:      DCVoltage,
-	model103.DCW:      DCPower,
-	model103.TmpCab:   HeatSinkTemp,
-	model124.ChaState: ChargeState,
-	model124.InBatV:   BatteryVoltage,
+var opcodeMap = map[string]meters.Measurement{
+	model103.A:        meters.Current,
+	model103.AphA:     meters.CurrentL1,
+	model103.AphB:     meters.CurrentL2,
+	model103.AphC:     meters.CurrentL3,
+	model103.PhVphA:   meters.VoltageL1,
+	model103.PhVphB:   meters.VoltageL2,
+	model103.PhVphC:   meters.VoltageL3,
+	model103.Hz:       meters.Frequency,
+	model103.W:        meters.Power,
+	model103.VA:       meters.ApparentPower,
+	model103.VAr:      meters.ReactivePower,
+	model103.PF:       meters.Cosphi,
+	model103.WH:       meters.Export,
+	model103.DCA:      meters.DCCurrent,
+	model103.DCV:      meters.DCVoltage,
+	model103.DCW:      meters.DCPower,
+	model103.TmpCab:   meters.HeatSinkTemp,
+	model124.ChaState: meters.ChargeState,
+	model124.InBatV:   meters.BatteryVoltage,
 }
