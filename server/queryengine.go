@@ -1,50 +1,53 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"sync"
+	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/connection"
 )
 
 const (
-	maxRetry = 3
+	maxRetry     = 3
+	errorTimeout = 100 * time.Millisecond
 )
 
 // QueryEngine executes queries on connections and attached devices
 type QueryEngine struct {
+	sync.Mutex
 	managers    map[string]connection.Manager
-	status      map[string]MeterStatus
+	status      map[meters.Device]*RuntimeInfo
 	connections []string
+	control     ControlSnipChannel
+	results     QuerySnipChannel
+	ctx         context.Context
 }
 
 // NewQueryEngine creates new query engine
-func NewQueryEngine(
-	managers map[string]connection.Manager,
-	status map[string]MeterStatus,
-) *QueryEngine {
+func NewQueryEngine(managers map[string]connection.Manager) *QueryEngine {
+	runtimeStatus := make(map[meters.Device]*RuntimeInfo)
 	return &QueryEngine{
 		managers: managers,
-		status:   status,
+		status:   runtimeStatus,
 	}
 }
 
-func (q *QueryEngine) DeviceMap() map[string]meters.Device {
-	res := make(map[string]meters.Device)
-
+func (q *QueryEngine) Connections(cb func(connection.Manager)) {
 	for _, m := range q.managers {
-		m.All(func(id uint8, dev meters.Device) {
-			uniqueID := q.UniqueID(m.Conn, id, dev)
-			res[uniqueID] = dev
-		})
+		cb(m)
 	}
-
-	return res
 }
 
 // UniqueID creates a unique id per device
 func (q *QueryEngine) UniqueID(conn connection.Connection, id uint8, dev meters.Device) string {
-	uniqueID := fmt.Sprintf("%s%d", dev.Descriptor().Manufacturer, id)
+	q.Lock()
+	defer q.Unlock()
+
+	uniqueID := fmt.Sprintf("%s:%d", dev.Descriptor().Manufacturer, id)
 
 	// add a unique connection id
 	if len(q.managers) > 1 {
@@ -73,59 +76,134 @@ func (q *QueryEngine) UniqueID(conn connection.Connection, id uint8, dev meters.
 
 // Run queries all connections and attached devices
 func (q *QueryEngine) Run(
-	controlChannel ControlSnipChannel,
-	outputChannel QuerySnipChannel,
+	ctx context.Context,
+	control ControlSnipChannel,
+	results QuerySnipChannel,
 ) {
-	defer close(outputChannel)
-	defer close(controlChannel)
+	defer close(results)
+	defer close(control)
 
+	q.control = control
+	q.results = results
+	q.ctx = ctx
+
+	// create runtime status
 	for _, m := range q.managers {
-		fmt.Println(m.Conn)
-
 		m.All(func(id uint8, dev meters.Device) {
-			uniqueID := q.UniqueID(m.Conn, id, dev)
-			fmt.Println(uniqueID)
-
-			if _, ok := q.status[uniqueID]; !ok {
-				q.status[uniqueID] = MeterStatus{}
+			ri := &RuntimeInfo{
+				Online: true,
 			}
-
-			if results, err := dev.Query(m.Conn.ModbusClient()); err != nil {
-				// send results
-				for _, r := range results {
-					snip := QuerySnip{
-						Device:            uniqueID,
-						MeasurementResult: r,
-					}
-					outputChannel <- snip
-				}
-
-				// signal error
-				controlChannel <- ControlSnip{
-					Result:  failure,
-					Device:  uniqueID,
-					Message: fmt.Sprintf("device %d did not respond.", id),
-				}
-			} else {
-				// 	for retry := 0; retry < maxRetry; retry++ {
-				// 		bytes, err = q.Query(snip)
-				// 		if err == nil {
-				// 			break
-				// 		}
-
-				// 		q.status.IncreaseReconnectCounter()
-				// 		log.Printf("Device %d failed to respond (%d/%d)",
-				// 			id, retry+1, maxRetry)
-				// 		time.Sleep(time.Duration(100) * time.Millisecond)
-				// 	}
-
-				// signal ok
-				controlChannel <- ControlSnip{
-					Result: ok,
-					Device: uniqueID,
-				}
-			}
+			q.status[dev] = ri
 		})
+	}
+
+	// run each connection manager inside separate gorouting
+	var wg sync.WaitGroup
+	for i, m := range q.managers {
+		wg.Add(1)
+		go func(m connection.Manager, i string) {
+			for {
+				if q.sleepOrCancelled(1) {
+					wg.Done()
+					return
+				}
+				q.runManager(m)
+			}
+		}(m, i)
+	}
+	wg.Wait()
+}
+
+// sleepOrCancelled waits for timeout to expire. If context is cancelled before
+// timeout expires, it will return early and indicate so by returning true.
+func (q *QueryEngine) sleepOrCancelled(timeout time.Duration) bool {
+	timer := time.After(timeout)
+	select {
+	case <-q.ctx.Done():
+		return true
+	case <-timer:
+		return false
+	}
+}
+
+func (q *QueryEngine) runManager(m connection.Manager) {
+	m.All(func(id uint8, dev meters.Device) {
+		if q.sleepOrCancelled(0) {
+			return
+		}
+
+		status := q.status[dev]
+
+		if !status.initialized {
+			if err := dev.Initialize(m.Conn.ModbusClient()); err != nil {
+				log.Printf("initializing device %d at %s failed: %v", id, m.Conn, err)
+				q.sleepOrCancelled(errorTimeout)
+				return
+			}
+
+			status.initialized = true
+		}
+
+		if queryable, wakeup := status.IsQueryable(); wakeup {
+			log.Printf("device %d at %s is offline - reactivating", id, m.Conn)
+		} else if !queryable {
+			return
+		}
+
+		q.queryDevice(m, id, dev, status)
+	})
+}
+
+func (q *QueryEngine) queryDevice(
+	m connection.Manager,
+	id uint8, dev meters.Device,
+	status *RuntimeInfo,
+) {
+	uniqueID := q.UniqueID(m.Conn, id, dev)
+	fmt.Println(uniqueID)
+
+	for retry := 0; retry < maxRetry; retry++ {
+		status.IncRequests()
+		measurements, err := dev.Query(m.Conn.ModbusClient())
+
+		if err == nil {
+			// send measurements
+			for _, r := range measurements {
+				snip := QuerySnip{
+					Device:            uniqueID,
+					MeasurementResult: r,
+				}
+				q.results <- snip
+			}
+
+			// send ok
+			status.SetOnline(true)
+			q.control <- ControlSnip{
+				Result: ok,
+				Device: uniqueID,
+			}
+
+			return
+		}
+
+		status.IncErrors()
+		log.Printf("device %d at %s did not respond (%d/%d)", id, m.Conn, retry+1, maxRetry)
+		if q.sleepOrCancelled(errorTimeout) {
+			return
+		}
+	}
+
+	log.Printf("device %d at %s is offline", id, m.Conn)
+
+	// close connection to force modbus client to reopen
+	m.Conn.Close()
+
+	// signal error
+	status.SetOnline(false)
+	q.control <- ControlSnip{
+		Result:  failure,
+		Device:  uniqueID,
+		Message: fmt.Sprintf("device %d at %s did not respond", id, m.Conn),
 	}
 }
 

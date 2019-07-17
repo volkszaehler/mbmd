@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"runtime"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -26,7 +25,10 @@ var (
 
 //go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
-func mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+type Httpd struct {
+}
+
+func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
 		log.Fatal("Failed to load embedded template: " + err.Error())
@@ -53,7 +55,7 @@ func mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	})
 }
 
-func mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		ids := mc.SortedIDs()
@@ -80,15 +82,15 @@ func mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) 
 	})
 }
 
-func mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		id, err := strconv.Atoi(vars["id"])
-		if err != nil {
+		id, ok := vars["id"]
+		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		last, err := mc.GetCurrent(byte(id))
+		last, err := mc.GetCurrent(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
@@ -101,15 +103,15 @@ func mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Reques
 	})
 }
 
-func mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		id, err := strconv.Atoi(vars["id"])
-		if err != nil {
+		id, ok := vars["id"]
+		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		avg, err := mc.GetMinuteAvg(byte(id))
+		avg, err := mc.GetMinuteAvg(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
@@ -122,7 +124,7 @@ func mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter, *http.Req
 	})
 }
 
-func mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		ids := mc.SortedIDs()
@@ -146,7 +148,7 @@ func mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *http.Reques
 	})
 }
 
-func mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		s.Update()
@@ -156,14 +158,14 @@ func mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	})
 }
 
-func mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ServeWebsocket(hub, w, r)
 	}
 }
 
 // serveJson decorates handler with required headers
-func serveJson(f http.HandlerFunc) http.HandlerFunc {
+func (h *Httpd) serveJson(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -171,7 +173,7 @@ func serveJson(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func Run_httpd(
+func (h *Httpd) Run(
 	mc *Cache,
 	hub *SocketHub,
 	s *Status,
@@ -182,7 +184,7 @@ func Run_httpd(
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static
-	router.HandleFunc("/", mkIndexHandler(mc))
+	router.HandleFunc("/", h.mkIndexHandler(mc))
 
 	// individual handlers per folder
 	for _, folder := range []string{"js", "css"} {
@@ -191,14 +193,14 @@ func Run_httpd(
 	}
 
 	// api
-	router.HandleFunc("/last", serveJson(mkLastAllValuesHandler(mc)))
-	router.HandleFunc("/last/{id:[0-9]+}", serveJson(mkLastSingleValuesHandler(mc)))
-	router.HandleFunc("/minuteavg", serveJson(mkLastMinuteAvgAllHandler(mc)))
-	router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(mkLastMinuteAvgSingleHandler(mc)))
-	router.HandleFunc("/status", serveJson(mkStatusHandler(s)))
+	// router.HandleFunc("/last", serveJson(mkLastAllValuesHandler(mc)))
+	// router.HandleFunc("/last/{id:[0-9]+}", serveJson(mkLastSingleValuesHandler(mc)))
+	// router.HandleFunc("/minuteavg", serveJson(mkLastMinuteAvgAllHandler(mc)))
+	// router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(mkLastMinuteAvgSingleHandler(mc)))
+	// router.HandleFunc("/status", serveJson(mkStatusHandler(s)))
 
 	// websocket
-	router.HandleFunc("/ws", mkSocketHandler(hub))
+	router.HandleFunc("/ws", h.mkSocketHandler(hub))
 
 	srv := http.Server{
 		Addr:         url,

@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package server
 
 import (
@@ -80,23 +76,25 @@ type SocketHub struct {
 	statusStream chan *Status
 }
 
-func NewSocketHub(status *Status) *SocketHub {
+func NewSocketHub(
+	// status *Status
+	) *SocketHub {
 	// Attach a goroutine that will push meter status information
 	// periodically
-	var statusstream = make(chan *Status)
-	go func() {
-		for {
-			time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
-			status.Update()
-			statusstream <- status
-		}
-	}()
+	// var statusstream = make(chan *Status)
+	// go func() {
+	// 	for {
+	// 		time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
+	// 		status.Update()
+	// 		statusstream <- status
+	// 	}
+	// }()
 
 	return &SocketHub{
 		register:     make(chan *SocketClient),
 		unregister:   make(chan *SocketClient),
 		clients:      make(map[*SocketClient]bool),
-		statusStream: statusstream,
+		// statusStream: statusstream,
 	}
 }
 

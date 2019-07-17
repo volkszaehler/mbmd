@@ -113,6 +113,10 @@ func (d *sunSpec) Descriptor() meters.DeviceDescriptor {
 }
 
 func (d *sunSpec) Probe(client meters.ModbusClient) (res meters.MeasurementResult, err error) {
+	if d.notInitilized() {
+		return res, errors.New("sunspec: not initialized")
+	}
+
 	for _, model := range d.models {
 		if model.Id() != 101 && model.Id() != 103 {
 			continue
@@ -147,8 +151,16 @@ func (d *sunSpec) Probe(client meters.ModbusClient) (res meters.MeasurementResul
 	return res, fmt.Errorf("sunspec: could not find model for probe snip")
 }
 
+func (d *sunSpec) notInitilized() bool {
+	return len(d.models) == 0
+}
+
 func (d *sunSpec) Query(client meters.ModbusClient) ([]meters.MeasurementResult, error) {
 	res := make([]meters.MeasurementResult, 0)
+
+	if d.notInitilized() {
+		return res, errors.New("sunspec: not initialized")
+	}
 
 	for _, model := range d.models {
 		// TODO catch panic

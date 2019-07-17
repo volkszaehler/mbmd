@@ -42,11 +42,11 @@ type QuerySnipChannel chan QuerySnip
 // QuerySnipBroadcaster acts as hub for broadcating QuerySnips
 // to multiple recipients
 type QuerySnipBroadcaster struct {
+	sync.Mutex // guard recipients
+	wg         sync.WaitGroup
 	in         QuerySnipChannel
 	recipients []QuerySnipChannel
 	done       chan bool
-	mux        sync.Mutex // guard recipients
-	wg         sync.WaitGroup
 }
 
 // NewQuerySnipBroadcaster creates QuerySnipBroadcaster
@@ -61,11 +61,11 @@ func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
 // Run executes the broadcaster
 func (b *QuerySnipBroadcaster) Run() {
 	for s := range b.in {
-		b.mux.Lock()
+		b.Lock()
 		for _, recipient := range b.recipients {
 			recipient <- s
 		}
-		b.mux.Unlock()
+		b.Unlock()
 	}
 	b.stop()
 }
@@ -77,8 +77,8 @@ func (b *QuerySnipBroadcaster) Done() <-chan bool {
 
 // stop closes broadcast receiver channels and waits for run methods to finish
 func (b *QuerySnipBroadcaster) stop() {
-	b.mux.Lock()
-	defer b.mux.Unlock()
+	b.Lock()
+	defer b.Unlock()
 	for _, recipient := range b.recipients {
 		close(recipient)
 	}
@@ -90,9 +90,9 @@ func (b *QuerySnipBroadcaster) stop() {
 func (b *QuerySnipBroadcaster) attach() QuerySnipChannel {
 	channel := make(QuerySnipChannel)
 
-	b.mux.Lock()
+	b.Lock()
 	b.recipients = append(b.recipients, channel)
-	b.mux.Unlock()
+	b.Unlock()
 
 	return channel
 }

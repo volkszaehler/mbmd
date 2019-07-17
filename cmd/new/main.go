@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
+	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/connection"
@@ -56,13 +59,17 @@ func createDevice(deviceDef string, defaultDevice string) {
 
 	meterSplit := strings.Split(meterDef, ":")
 	if len(meterSplit) != 2 {
-		log.Fatalf("Cannot parse device definition %s. See -h for help.", meterDef)
+		log.Fatalf("Cannot parse device definition: %s. See -h for help.", meterDef)
 	}
 
 	meterType, devID := meterSplit[0], meterSplit[1]
+	if len(strings.TrimSpace(meterType)) == 0 {
+		log.Fatalf("Cannot parse device definition- meter type empty: %s. See -h for help.", meterDef)
+	}
+
 	id, err := strconv.Atoi(devID)
 	if err != nil {
-		log.Fatalf("Error parsing device id %s: %s. See -h for help.", meterDef, err.Error())
+		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
 
 	var meter meters.Device
@@ -71,7 +78,7 @@ func createDevice(deviceDef string, defaultDevice string) {
 	} else {
 		meter, err = rs485.NewDevice(meterType)
 		if err != nil {
-			log.Fatalf("Error creating device %s: %s. See -h for help.", meterDef, err.Error())
+			log.Fatalf("Error creating device %s: %v. See -h for help.", meterDef, err)
 		}
 	}
 
@@ -89,64 +96,52 @@ func main() {
 		createDevice(dev, "")
 	}
 
-	println("Init...")
-	var wg sync.WaitGroup
-	for _, m := range managers {
-		wg.Add(1)
-
-		go func(m connection.Manager) {
-			m.All(func(id uint8, dev meters.Device) {
-				if err := dev.Initialize(m.Conn.ModbusClient()); err != nil {
-					log.Fatalf("initalizing %d at %s failed: %v", id, m.Conn, err)
-				}
-			})
-			wg.Done()
-		}(m)
-	}
-	wg.Wait()
-
-	println("Found...")
-	for _, m := range managers {
-		wg.Add(1)
-
-		go func(m connection.Manager) {
-			m.All(func(id uint8, dev meters.Device) {
-				desc := dev.Descriptor()
-				log.Printf("%v", desc)
-			})
-			wg.Done()
-		}(m)
-	}
-	wg.Wait()
-
-	println("Probe...")
-	for _, m := range managers {
-		wg.Add(1)
-
-		go func(m connection.Manager) {
-			m.All(func(id uint8, dev meters.Device) {
-				if val, err := dev.Probe(m.Conn.ModbusClient()); err != nil {
-					log.Fatalf("probing %d at %s failed: %v", id, m.Conn, err)
-				} else {
-					log.Printf("%v", val)
-				}
-			})
-			wg.Done()
-		}(m)
-	}
-	wg.Wait()
-
-	println("Running...")
-	// for _, m := range managers {
-	// 	m.Run()
-	// }
-
-	status := make(map[string]server.MeterStatus)
-	qe := server.NewQueryEngine(managers, status)
-
-	devmap := qe.DeviceMap()
+	// status := make(map[string]server.MeterStatus)
+	qe := server.NewQueryEngine(managers)
 
 	cc := make(chan server.ControlSnip)
 	rc := make(chan server.QuerySnip)
-	qe.Run(cc, rc)
+
+	// tee that broadcasts meter messages to multiple recipients
+	tee := server.NewQuerySnipBroadcaster(rc)
+	go tee.Run()
+
+	// websocket hub
+	hub := server.NewSocketHub() // status
+	tee.AttachRunner(hub.Run)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan bool)
+	go func() {
+		qe.Run(ctx, cc, rc)
+		println("qe done")
+		done <- true
+		return
+	}()
+
+	// send signals to exit channel
+	exit := make(chan os.Signal, 1)
+	signal.Notify(exit, os.Interrupt, os.Kill)
+
+	timer := time.After(5000 * time.Second)
+
+loop:
+	for {
+		time.Sleep(50 * time.Millisecond)
+		select {
+		case <-cc:
+		case <-rc:
+		case <-exit:
+			println("exit")
+			cancel()
+		case <-timer:
+			println("timer")
+			cancel()
+		case <-done:
+			// stop processing only if sender has closed
+			break loop
+		}
+	}
+
+	println("main loop done")
 }
