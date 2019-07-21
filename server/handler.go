@@ -63,7 +63,7 @@ func (h *Handler) Run(
 			}
 
 			d := dev.Descriptor()
-			log.Printf("initialized device %d at %s of type: %v", id, h.manager.Conn, d.Manufacturer)
+			log.Printf("initialized device %d at %s %v", id, h.manager.Conn, d)
 
 			status.initialized = true
 		}

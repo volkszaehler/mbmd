@@ -25,7 +25,7 @@ type ModbusStatus struct {
 type DeviceStatus struct {
 	Device string
 	Type   string
-	Status string
+	Online bool
 	ModbusStatus
 }
 
@@ -65,13 +65,6 @@ func NewStatus(control <-chan ControlSnip) *Status {
 		for c := range control {
 			s.Lock()
 
-			var status string
-			if c.Status.Online {
-				status = "online"
-			} else {
-				status = "offline"
-			}
-
 			minutes := s.UpTime / 60
 			mbs := ModbusStatus{
 				Requests:          c.Status.Requests,
@@ -80,19 +73,31 @@ func NewStatus(control <-chan ControlSnip) *Status {
 				RequestsPerMinute: float64(c.Status.Requests) / minutes,
 			}
 
-			ms := DeviceStatus{
+			ds := DeviceStatus{
 				Device: c.Device,
 				// Type:         dev.Descriptor().Manufacturer,
-				Status:       status,
+				Online:       c.Status.Online,
 				ModbusStatus: mbs,
 			}
-			s.meterMap[c.Device] = ms
+			s.meterMap[c.Device] = ds
 
 			s.Unlock()
 		}
 	}()
 
 	return s
+}
+
+// Online returns device's online status or false if the device does not exist
+func (s *Status) Online(device string) bool {
+	s.Lock()
+	defer s.Unlock()
+
+	if ds, ok := s.meterMap[device]; ok {
+		return ds.Online
+	}
+
+	return false
 }
 
 // Update status

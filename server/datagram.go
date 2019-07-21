@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 // It expects one %d conversion specifier,
@@ -26,17 +26,12 @@ type Readings struct {
 	TotalImport *float64
 	Export      ThreePhaseReadings
 	TotalExport *float64
-	THD         THDInfo
+	VoltageNeutral    ThreePhaseReadings
+	AvgVoltageNeutral *float64
 	Frequency   *float64
 }
 
-type THDInfo struct {
-	//	Current           ThreePhaseReadings
-	//	AvgCurrent        float64
-	VoltageNeutral    ThreePhaseReadings
-	AvgVoltageNeutral *float64
-}
-
+// ThreePhaseReadings represents the L1..L3 phases of a three phase reading
 type ThreePhaseReadings struct {
 	L1 *float64
 	L2 *float64
@@ -126,10 +121,8 @@ func (lhs *Readings) add(rhs *Readings) (*Readings, error) {
 		TotalImport: F2fp(Fp2f(lhs.TotalImport) + Fp2f(rhs.TotalImport)),
 		Export:      tpAdd(lhs.Export, rhs.Export),
 		TotalExport: F2fp(Fp2f(lhs.TotalExport) + Fp2f(rhs.TotalExport)),
-		THD: THDInfo{
-			VoltageNeutral:    tpAdd(lhs.THD.VoltageNeutral, rhs.THD.VoltageNeutral),
-			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) + Fp2f(rhs.THD.AvgVoltageNeutral)),
-		},
+		VoltageNeutral:    tpAdd(lhs.VoltageNeutral, rhs.VoltageNeutral),
+		AvgVoltageNeutral: F2fp(Fp2f(lhs.AvgVoltageNeutral) + Fp2f(rhs.AvgVoltageNeutral)),
 		Frequency: F2fp(Fp2f(lhs.Frequency) + Fp2f(rhs.Frequency)),
 	}
 
@@ -160,10 +153,8 @@ func (r *Readings) divide(scaler float64) *Readings {
 		TotalImport: F2fp(Fp2f(r.TotalImport) / scaler),
 		Export:      tpDivide(r.Export, scaler),
 		TotalExport: F2fp(Fp2f(r.TotalExport) / scaler),
-		THD: THDInfo{
-			VoltageNeutral:    tpDivide(r.THD.VoltageNeutral, scaler),
-			AvgVoltageNeutral: F2fp(Fp2f(r.THD.AvgVoltageNeutral) / scaler),
-		},
+		VoltageNeutral:    tpDivide(r.VoltageNeutral, scaler),
+		AvgVoltageNeutral: F2fp(Fp2f(r.AvgVoltageNeutral) / scaler),
 		Frequency: F2fp(Fp2f(r.Frequency) / scaler),
 	}
 	return res
@@ -175,66 +166,64 @@ func (r *Readings) MergeSnip(q QuerySnip) {
 	r.Timestamp = q.Timestamp
 	r.Unix = r.Timestamp.Unix()
 	switch q.Measurement {
-	case VoltageL1:
+	case meters.VoltageL1:
 		r.Voltage.L1 = &q.Value
-	case VoltageL2:
+	case meters.VoltageL2:
 		r.Voltage.L2 = &q.Value
-	case VoltageL3:
+	case meters.VoltageL3:
 		r.Voltage.L3 = &q.Value
-	case CurrentL1:
+	case meters.CurrentL1:
 		r.Current.L1 = &q.Value
-	case CurrentL2:
+	case meters.CurrentL2:
 		r.Current.L2 = &q.Value
-	case CurrentL3:
+	case meters.CurrentL3:
 		r.Current.L3 = &q.Value
-	case PowerL1:
+	case meters.PowerL1:
 		r.Power.L1 = &q.Value
-	case PowerL2:
+	case meters.PowerL2:
 		r.Power.L2 = &q.Value
-	case PowerL3:
+	case meters.PowerL3:
 		r.Power.L3 = &q.Value
-	case CosphiL1:
+	case meters.CosphiL1:
 		r.Cosphi.L1 = &q.Value
-	case CosphiL2:
+	case meters.CosphiL2:
 		r.Cosphi.L2 = &q.Value
-	case CosphiL3:
+	case meters.CosphiL3:
 		r.Cosphi.L3 = &q.Value
-	case ImportL1:
+	case meters.ImportL1:
 		r.Import.L1 = &q.Value
-	case ImportL2:
+	case meters.ImportL2:
 		r.Import.L2 = &q.Value
-	case ImportL3:
+	case meters.ImportL3:
 		r.Import.L3 = &q.Value
-	case Import:
+	case meters.Import:
 		r.TotalImport = &q.Value
-	case ExportL1:
+	case meters.ExportL1:
 		r.Export.L1 = &q.Value
-	case ExportL2:
+	case meters.ExportL2:
 		r.Export.L2 = &q.Value
-	case ExportL3:
+	case meters.ExportL3:
 		r.Export.L3 = &q.Value
-	case Export:
+	case meters.Export:
 		r.TotalExport = &q.Value
-		//	case L1THDCurrent
-		//		r.THD.Current.L1 = &q.Value
-		//	case L2THDCurrent
-		//		r.THD.Current.L2 = &q.Value
-		//	case L3THDCurrent
-		//		r.THD.Current.L3 = &q.Value
-		//	case THDCurrent
-		//		r.THD.AvgCurrent = &q.Value
-	case THDL1:
-		r.THD.VoltageNeutral.L1 = &q.Value
-	case THDL2:
-		r.THD.VoltageNeutral.L2 = &q.Value
-	case THDL3:
-		r.THD.VoltageNeutral.L3 = &q.Value
-	case THD:
-		r.THD.AvgVoltageNeutral = &q.Value
-	case Frequency:
+		//	case meters.L1THDCurrent
+		//		r.Current.L1 = &q.Value
+		//	case meters.L2THDCurrent
+		//		r.Current.L2 = &q.Value
+		//	case meters.L3THDCurrent
+		//		r.Current.L3 = &q.Value
+		//	case meters.THDCurrent
+		//		r.AvgCurrent = &q.Value
+	case meters.THDL1:
+		r.VoltageNeutral.L1 = &q.Value
+	case meters.THDL2:
+		r.VoltageNeutral.L2 = &q.Value
+	case meters.THDL3:
+		r.VoltageNeutral.L3 = &q.Value
+	case meters.THD:
+		r.AvgVoltageNeutral = &q.Value
+	case meters.Frequency:
 		r.Frequency = &q.Value
-	default:
-		// log.Fatalf("Cannot merge unknown IEC: %+v", q)
 	}
 }
 

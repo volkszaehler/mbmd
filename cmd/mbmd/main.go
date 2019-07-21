@@ -35,27 +35,6 @@ func checkVersion() {
 	}
 }
 
-// func createMeters(deviceslice []string) map[uint8]*Meter {
-// 	meters := make(map[uint8]*Meter)
-// 	for _, meterdef := range deviceslice {
-// 		splitdef := strings.Split(meterdef, ":")
-// 		if len(splitdef) != 2 {
-// 			log.Fatalf("cannot parse device definition %s", meterdef)
-// 		}
-// 		metertype, devid := splitdef[0], splitdef[1]
-// 		id, err := strconv.Atoi(devid)
-// 		if err != nil {
-// 			log.Fatalf("error parsing device id %s: %s", meterdef, err.Error())
-// 		}
-// 		meter, err := NewMeterByType(metertype, uint8(id))
-// 		if err != nil {
-// 			log.Fatalf("unknown meter type %s for device %d", metertype, id)
-// 		}
-// 		meters[uint8(id)] = meter
-// 	}
-// 	return meters
-// }
-
 func meterHelp() string {
 	return "FOO"
 }
@@ -86,36 +65,6 @@ func meterHelp() string {
 // 	}
 // 	return s
 // }
-
-// func logMeterDetails(meters map[uint8]*Meter, qe *QueryEngine) {
-// 	for devid, meter := range meters {
-// 		producer := meter.Producer
-// 		log.Printf("#%d: %s (%s)", devid, producer.Description(), producer.ConnectionType())
-
-// 		if sunspec, ok := producer.(SunSpecProducer); ok {
-// 			op := sunspec.GetSunSpecCommonBlock()
-// 			snip := QuerySnip{
-// 				DeviceId:  meter.DeviceId,
-// 				Operation: op,
-// 			}
-
-// 			if b, err := qe.Query(snip); err == nil {
-// 				if descriptor, err := sunspec.DecodeSunSpecCommonBlock(b); err == nil {
-// 					log.Printf("    Manufacturer: %s", descriptor.Manufacturer)
-// 					log.Printf("    Model:        %s", descriptor.Model)
-// 					log.Printf("    Options:      %s", descriptor.Options)
-// 					log.Printf("    Version:      %s", descriptor.Version)
-// 					log.Printf("    Serial:       %s", descriptor.Serial)
-// 				} else {
-// 					log.Println(err)
-// 				}
-// 			} else {
-// 				log.Println(err)
-// 			}
-// 		}
-// 	}
-// }
-
 
 func main() {
 	app := cli.NewApp()
@@ -263,7 +212,7 @@ func main() {
 		tee.AttachRunner(hub.Run)
 
 		// measurement cache for REST api
-		cache := server.NewCache(cacheDuration, c.Bool("verbose"))
+		cache := server.NewCache(cacheDuration, status, c.Bool("verbose"))
 		tee.AttachRunner(cache.Run)
 
 		httpd := &server.Httpd{}

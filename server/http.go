@@ -2,12 +2,14 @@ package server
 
 import (
 	"encoding/json"
+	"runtime/debug"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
-	"time"
+	"strings"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -51,25 +53,25 @@ func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Reques
 func (h *Httpd) mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
+
 		ids := mc.SortedIDs()
-		lasts := ReadingSlice{}
+		current := ReadingSlice{}
 		for _, id := range ids {
 			reading, err := mc.GetCurrent(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
-				//w.WriteHeader(http.StatusBadRequest)
-				//fmt.Fprintf(w, err.Error())
-				//return
 			}
-			lasts = append(lasts, *reading)
+			current = append(current, *reading)
 		}
-		if len(lasts) == 0 {
+
+		if len(current) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "all meters are inactive.")
+			fmt.Fprintf(w, "all meters are inactive")
 			return
 		}
-		if err := json.NewEncoder(w).Encode(lasts); err != nil {
+
+		if err := json.NewEncoder(w).Encode(current); err != nil {
 			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
@@ -78,17 +80,20 @@ func (h *Httpd) mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *htt
 func (h *Httpd) mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+
 		id, ok := vars["id"]
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
 		last, err := mc.GetCurrent(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
 			return
 		}
+
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(last); err != nil {
 			log.Printf("failed to create JSON representation of measurement %s", last.String())
@@ -99,17 +104,20 @@ func (h *Httpd) mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *
 func (h *Httpd) mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+
 		id, ok := vars["id"]
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		avg, err := mc.GetMinuteAvg(id)
+
+		avg, err := mc.GetAverage(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
 			return
 		}
+
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(avg); err != nil {
 			log.Printf("failed to create JSON representation of measurement %s", avg.String())
@@ -120,21 +128,24 @@ func (h *Httpd) mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter
 func (h *Httpd) mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
+
 		ids := mc.SortedIDs()
 		avgs := ReadingSlice{}
 		for _, id := range ids {
-			reading, err := mc.GetMinuteAvg(id)
+			reading, err := mc.GetAverage(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
 			}
 			avgs = append(avgs, *reading)
 		}
+
 		if len(avgs) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "all meters are inactive.")
+			fmt.Fprintf(w, "all meters are inactive")
 			return
 		}
+
 		if err := json.NewEncoder(w).Encode(avgs); err != nil {
 			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
 		}
@@ -165,6 +176,16 @@ func (h *Httpd) serveJSON(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+type debugLogger struct{}
+
+func (d debugLogger) Write(p []byte) (n int, err error) {
+	s := string(p)
+	if strings.Contains(s, "superfluous") {
+		debug.PrintStack()
+	}
+	return os.Stderr.Write(p)
+}
+
 // Run executes the http server
 func (h *Httpd) Run(
 	mc *Cache,
@@ -188,18 +209,20 @@ func (h *Httpd) Run(
 	// api
 	router.HandleFunc("/last", h.serveJSON(h.mkLastAllValuesHandler(mc)))
 	router.HandleFunc("/last/{id:[a-z@0-9]+}", h.serveJSON(h.mkLastSingleValuesHandler(mc)))
-	router.HandleFunc("/minuteavg", h.serveJSON(h.mkLastMinuteAvgAllHandler(mc)))
-	router.HandleFunc("/minuteavg/{id:[a-z@0-9]+}", h.serveJSON(h.mkLastMinuteAvgSingleHandler(mc)))
+	router.HandleFunc("/avg", h.serveJSON(h.mkLastMinuteAvgAllHandler(mc)))
+	router.HandleFunc("/avg/{id:[a-z@0-9]+}", h.serveJSON(h.mkLastMinuteAvgSingleHandler(mc)))
 	router.HandleFunc("/status", h.serveJSON(h.mkStatusHandler(s)))
 
 	// websocket
 	router.HandleFunc("/ws", h.mkSocketHandler(hub))
 
+	// debug logger
+	logger := log.New(debugLogger{}, "", 0)
+
 	srv := http.Server{
-		Addr:         url,
-		Handler:      handlers.CompressHandler(router),
-		ReadTimeout:  time.Minute,
-		WriteTimeout: time.Minute,
+		Addr:     url,
+		Handler:  handlers.CompressHandler(router),
+		ErrorLog: logger,
 	}
 
 	srv.SetKeepAlivesEnabled(true)
