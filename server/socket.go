@@ -10,8 +10,11 @@ import (
 )
 
 const (
-	// Time allowed to write a message to the peer.
+	// Time allowed to write a message to the peer
 	socketWriteWait = 10 * time.Second
+
+	// Frequency at which status updates are sent
+	statusFrequency = 1 * time.Second
 )
 
 var upgrader = websocket.Upgrader{
@@ -72,33 +75,22 @@ type SocketHub struct {
 	// Unregister requests from clients.
 	unregister chan *SocketClient
 
-	// status stream
-	statusStream chan *Status
+	// status channel
+	status *Status
 }
 
-func NewSocketHub(
-	// status *Status
-	) *SocketHub {
-	// Attach a goroutine that will push meter status information
-	// periodically
-	// var statusstream = make(chan *Status)
-	// go func() {
-	// 	for {
-	// 		time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
-	// 		status.Update()
-	// 		statusstream <- status
-	// 	}
-	// }()
-
+// NewSocketHub creates a web socket hub that distributes meter status and
+// query results for the ui or other clients
+func NewSocketHub(status *Status) *SocketHub {
 	return &SocketHub{
-		register:     make(chan *SocketClient),
-		unregister:   make(chan *SocketClient),
-		clients:      make(map[*SocketClient]bool),
-		// statusStream: statusstream,
+		register:   make(chan *SocketClient),
+		unregister: make(chan *SocketClient),
+		clients:    make(map[*SocketClient]bool),
+		status:     status,
 	}
 }
 
-func (h *SocketHub) Broadcast(i interface{}) {
+func (h *SocketHub) broadcast(i interface{}) {
 	if len(h.clients) > 0 {
 		message, err := json.Marshal(i)
 		if err != nil {
@@ -116,7 +108,17 @@ func (h *SocketHub) Broadcast(i interface{}) {
 	}
 }
 
+// Run starts data and status distribution
 func (h *SocketHub) Run(in QuerySnipChannel) {
+	// Periodically push meter status information
+	statusChannel := make(chan *Status)
+	go func() {
+		for {
+			time.Sleep(statusFrequency)
+			statusChannel <- h.status
+		}
+	}()
+
 	for {
 		select {
 		case client := <-h.register:
@@ -131,9 +133,9 @@ func (h *SocketHub) Run(in QuerySnipChannel) {
 				return // break if channel closed
 			}
 			// make sure to pass a pointer or MarshalJSON won't work
-			h.Broadcast(&obj)
-		case obj := <-h.statusStream:
-			h.Broadcast(obj)
+			h.broadcast(&obj)
+		case obj := <-statusChannel:
+			h.broadcast(obj)
 		}
 	}
 }

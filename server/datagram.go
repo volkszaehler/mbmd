@@ -15,7 +15,7 @@ import (
 
 // Readings combines readings of all measurements into one data structure
 type Readings struct {
-	DeviceID    string
+	Device      string
 	Timestamp   time.Time
 	Unix        int64
 	Power       ThreePhaseReadings
@@ -98,36 +98,39 @@ func tpAdd(lhs ThreePhaseReadings, rhs ThreePhaseReadings) ThreePhaseReadings {
 	return res
 }
 
-/*
-* Adds two readings. The individual values are added except for
-* the time: the latter of the two times is copied over to the result
- */
+func tpDivide(lhs ThreePhaseReadings, scaler float64) ThreePhaseReadings {
+	res := ThreePhaseReadings{
+		L1: F2fp(Fp2f(lhs.L1) / scaler),
+		L2: F2fp(Fp2f(lhs.L2) / scaler),
+		L3: F2fp(Fp2f(lhs.L3) / scaler),
+	}
+	return res
+}
+
+// Add two readings. The individual values are added except for
+// time- the latter of the two times is copied over to the result
 func (lhs *Readings) add(rhs *Readings) (*Readings, error) {
-	if lhs.DeviceID != rhs.DeviceID {
+	if lhs.Device != rhs.Device {
 		return &Readings{}, fmt.Errorf(
-			"Cannot add readings of different devices - got IDs %d and %d",
-			lhs.DeviceID, rhs.DeviceID)
+			"Cannot add readings of different devices - got IDs %s and %s",
+			lhs.Device, rhs.Device)
 	}
 
 	res := &Readings{
-		DeviceID: lhs.DeviceID,
-		Voltage:  tpAdd(lhs.Voltage, rhs.Voltage),
-		Current:  tpAdd(lhs.Current, rhs.Current),
-		Power:    tpAdd(lhs.Power, rhs.Power),
-		Cosphi:   tpAdd(lhs.Cosphi, rhs.Cosphi),
-		Import:   tpAdd(lhs.Import, rhs.Import),
-		TotalImport: F2fp(Fp2f(lhs.TotalImport) +
-			Fp2f(rhs.TotalImport)),
-		Export: tpAdd(lhs.Export, rhs.Export),
-		TotalExport: F2fp(Fp2f(lhs.TotalExport) +
-			Fp2f(rhs.TotalExport)),
+		Device:      lhs.Device,
+		Voltage:     tpAdd(lhs.Voltage, rhs.Voltage),
+		Current:     tpAdd(lhs.Current, rhs.Current),
+		Power:       tpAdd(lhs.Power, rhs.Power),
+		Cosphi:      tpAdd(lhs.Cosphi, rhs.Cosphi),
+		Import:      tpAdd(lhs.Import, rhs.Import),
+		TotalImport: F2fp(Fp2f(lhs.TotalImport) + Fp2f(rhs.TotalImport)),
+		Export:      tpAdd(lhs.Export, rhs.Export),
+		TotalExport: F2fp(Fp2f(lhs.TotalExport) + Fp2f(rhs.TotalExport)),
 		THD: THDInfo{
-			VoltageNeutral: tpAdd(lhs.THD.VoltageNeutral, rhs.THD.VoltageNeutral),
-			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) +
-				Fp2f(rhs.THD.AvgVoltageNeutral)),
+			VoltageNeutral:    tpAdd(lhs.THD.VoltageNeutral, rhs.THD.VoltageNeutral),
+			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) + Fp2f(rhs.THD.AvgVoltageNeutral)),
 		},
-		Frequency: F2fp(Fp2f(lhs.Frequency) +
-			Fp2f(rhs.Frequency)),
+		Frequency: F2fp(Fp2f(lhs.Frequency) + Fp2f(rhs.Frequency)),
 	}
 
 	if lhs.Timestamp.After(rhs.Timestamp) {
@@ -141,38 +144,27 @@ func (lhs *Readings) add(rhs *Readings) (*Readings, error) {
 	return res, nil
 }
 
-func tpDivide(lhs ThreePhaseReadings, scaler float64) ThreePhaseReadings {
-	res := ThreePhaseReadings{
-		L1: F2fp(Fp2f(lhs.L1) / scaler),
-		L2: F2fp(Fp2f(lhs.L2) / scaler),
-		L3: F2fp(Fp2f(lhs.L3) / scaler),
-	}
-	return res
-}
-
-/*
- * Divide a reading by an integer. The individual values are divided except
- * for the time: it is simply copied over to the result
- */
-func (lhs *Readings) divide(scaler float64) *Readings {
+// Divide a reading by an integer. The individual values are divided except
+// for time which is copied over to the result
+func (r *Readings) divide(scaler float64) *Readings {
 	res := &Readings{
-		Timestamp: lhs.Timestamp,
-		Unix:      lhs.Unix,
-		DeviceID:  lhs.DeviceID,
+		Timestamp: r.Timestamp,
+		Unix:      r.Unix,
+		Device:    r.Device,
 
-		Voltage:     tpDivide(lhs.Voltage, scaler),
-		Current:     tpDivide(lhs.Current, scaler),
-		Power:       tpDivide(lhs.Power, scaler),
-		Cosphi:      tpDivide(lhs.Cosphi, scaler),
-		Import:      tpDivide(lhs.Import, scaler),
-		TotalImport: F2fp(Fp2f(lhs.TotalImport) / scaler),
-		Export:      tpDivide(lhs.Export, scaler),
-		TotalExport: F2fp(Fp2f(lhs.TotalExport) / scaler),
+		Voltage:     tpDivide(r.Voltage, scaler),
+		Current:     tpDivide(r.Current, scaler),
+		Power:       tpDivide(r.Power, scaler),
+		Cosphi:      tpDivide(r.Cosphi, scaler),
+		Import:      tpDivide(r.Import, scaler),
+		TotalImport: F2fp(Fp2f(r.TotalImport) / scaler),
+		Export:      tpDivide(r.Export, scaler),
+		TotalExport: F2fp(Fp2f(r.TotalExport) / scaler),
 		THD: THDInfo{
-			VoltageNeutral:    tpDivide(lhs.THD.VoltageNeutral, scaler),
-			AvgVoltageNeutral: F2fp(Fp2f(lhs.THD.AvgVoltageNeutral) / scaler),
+			VoltageNeutral:    tpDivide(r.THD.VoltageNeutral, scaler),
+			AvgVoltageNeutral: F2fp(Fp2f(r.THD.AvgVoltageNeutral) / scaler),
 		},
-		Frequency: F2fp(Fp2f(lhs.Frequency) / scaler),
+		Frequency: F2fp(Fp2f(r.Frequency) / scaler),
 	}
 	return res
 }

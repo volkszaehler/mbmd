@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	SECONDS_BETWEEN_STATUSUPDATE = 1
-	devAssets                    = false
+	devAssets = false
 )
 
 var (
@@ -151,7 +150,6 @@ func (h *Httpd) mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *
 func (h *Httpd) mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		s.Update()
 		if err := json.NewEncoder(w).Encode(s); err != nil {
 			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
 		}
@@ -164,8 +162,8 @@ func (h *Httpd) mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.
 	}
 }
 
-// serveJson decorates handler with required headers
-func (h *Httpd) serveJson(f http.HandlerFunc) http.HandlerFunc {
+// serveJSON decorates handler with required headers
+func (h *Httpd) serveJSON(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -193,11 +191,11 @@ func (h *Httpd) Run(
 	}
 
 	// api
-	// router.HandleFunc("/last", serveJson(mkLastAllValuesHandler(mc)))
-	// router.HandleFunc("/last/{id:[0-9]+}", serveJson(mkLastSingleValuesHandler(mc)))
-	// router.HandleFunc("/minuteavg", serveJson(mkLastMinuteAvgAllHandler(mc)))
-	// router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(mkLastMinuteAvgSingleHandler(mc)))
-	// router.HandleFunc("/status", serveJson(mkStatusHandler(s)))
+	router.HandleFunc("/last", h.serveJSON(h.mkLastAllValuesHandler(mc)))
+	router.HandleFunc("/last/{id:[a-z@0-9]+}", h.serveJSON(h.mkLastSingleValuesHandler(mc)))
+	router.HandleFunc("/minuteavg", h.serveJSON(h.mkLastMinuteAvgAllHandler(mc)))
+	router.HandleFunc("/minuteavg/{id:[a-z@0-9]+}", h.serveJSON(h.mkLastMinuteAvgSingleHandler(mc)))
+	router.HandleFunc("/status", h.serveJSON(h.mkStatusHandler(s)))
 
 	// websocket
 	router.HandleFunc("/ws", h.mkSocketHandler(hub))

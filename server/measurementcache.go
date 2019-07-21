@@ -48,13 +48,13 @@ func (mc *Cache) Run(in QuerySnipChannel) {
 }
 
 // Purge removes accumulated data for specified device
-func (mc *Cache) Purge(deviceID string) error {
-	if meter, ok := mc.items[deviceID]; ok {
-		meter.Purge(deviceID)
+func (mc *Cache) Purge(device string) error {
+	if meter, ok := mc.items[device]; ok {
+		meter.Purge(device)
 		return nil
 	}
 
-	return fmt.Errorf("Device with id %d does not exist.", deviceID)
+	return fmt.Errorf("Device with id %d does not exist.", device)
 }
 
 func (mc *Cache) SortedIDs() []string {
@@ -66,18 +66,18 @@ func (mc *Cache) SortedIDs() []string {
 	return keys
 }
 
-func (mc *Cache) GetCurrent(deviceID string) (*Readings, error) {
-	// if meter, ok := mc.items[deviceID]; ok {
+func (mc *Cache) GetCurrent(device string) (*Readings, error) {
+	// if meter, ok := mc.items[device]; ok {
 	// 	if meter.State() == AVAILABLE {
 	// 		return &meter.Current, nil
 	// 	}
-	// 	return nil, fmt.Errorf("Device %d is not available.", deviceID)
+	// 	return nil, fmt.Errorf("Device %d is not available.", device)
 	// }
-	return nil, fmt.Errorf("Device %d does not exist.", deviceID)
+	return nil, fmt.Errorf("Device %d does not exist.", device)
 }
 
-func (mc *Cache) GetMinuteAvg(deviceID string) (*Readings, error) {
-	// if meter, ok := mc.items[deviceID]; ok {
+func (mc *Cache) GetMinuteAvg(device string) (*Readings, error) {
+	// if meter, ok := mc.items[device]; ok {
 	// 	if meter.State() == AVAILABLE {
 	// 		measurements := meter.Historic
 	// 		lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
@@ -93,9 +93,9 @@ func (mc *Cache) GetMinuteAvg(deviceID string) (*Readings, error) {
 	// 		}
 	// 		return res, nil
 	// 	}
-	// 	return nil, fmt.Errorf("Device %d is not available.", deviceID)
+	// 	return nil, fmt.Errorf("Device %d is not available.", device)
 	// }
-	return nil, fmt.Errorf("Device %d does not exist.", deviceID)
+	return nil, fmt.Errorf("Device %d does not exist.", device)
 }
 
 // ByteSlice attaches the methods of sort.Interface to []byte, sorting in increasing order.
@@ -106,42 +106,42 @@ func (s ByteSlice) Less(i, j int) bool { return s[i] < s[j] }
 func (s ByteSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 type MeterReadings struct {
+	sync.Mutex
 	Historic ReadingSlice
 	Current  Readings
-	mux      sync.Mutex
 }
 
-func NewMeterReadings(deviceID string, maxAge time.Duration) *MeterReadings {
+func NewMeterReadings(device string, maxAge time.Duration) *MeterReadings {
 	res := &MeterReadings{
 		Historic: ReadingSlice{},
 		Current: Readings{
-			DeviceID: deviceID,
+			Device: device,
 		},
 	}
 	go func(mr *MeterReadings) {
 		for {
 			time.Sleep(maxAge)
-			mr.mux.Lock()
+			mr.Lock()
 			mr.Historic = mr.Historic.NotOlderThan(time.Now().Add(-1 * maxAge))
-			mr.mux.Unlock()
+			mr.Unlock()
 		}
 	}(res)
 	return res
 }
 
-func (mr *MeterReadings) Purge(deviceID string) {
-	mr.mux.Lock()
-	defer mr.mux.Unlock()
+func (mr *MeterReadings) Purge(device string) {
+	mr.Lock()
+	defer mr.Unlock()
 
 	mr.Historic = ReadingSlice{}
 	mr.Current = Readings{
-		DeviceID: deviceID,
+		Device: device,
 	}
 }
 
 func (mr *MeterReadings) AddSnip(snip QuerySnip) {
-	mr.mux.Lock()
-	defer mr.mux.Unlock()
+	mr.Lock()
+	defer mr.Unlock()
 
 	// 1. Merge the snip to the last values.
 	reading := mr.Current

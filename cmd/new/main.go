@@ -106,9 +106,17 @@ func main() {
 	tee := server.NewQuerySnipBroadcaster(rc)
 	go tee.Run()
 
+	status := server.NewStatus(cc)
+
 	// websocket hub
-	hub := server.NewSocketHub() // status
+	hub := server.NewSocketHub(status) // status
 	tee.AttachRunner(hub.Run)
+
+	cache := server.NewCache(time.Second, true) // measurement cache
+	tee.AttachRunner(cache.Run)
+
+	httpd := &server.Httpd{}
+	go httpd.Run(cache, hub, nil, "127.1:8080")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan bool)
@@ -129,8 +137,8 @@ loop:
 	for {
 		time.Sleep(50 * time.Millisecond)
 		select {
-		case <-cc:
-		case <-rc:
+		// case <-cc:
+		// case <-rc:
 		case <-exit:
 			println("exit")
 			cancel()

@@ -1,5 +1,5 @@
-var meterapp = new Vue({
-	el: '#meters',
+var dataapp = new Vue({
+	el: '#data',
 	delimiters: ['${', '}'],
 	data: {
 		meters: {},
@@ -37,7 +37,7 @@ var statusapp = new Vue({
 	el: '#status',
 	delimiters: ['${', '}'],
 	data: {
-		meterstatus: {}
+		meters: {}
 	}
 })
 
@@ -48,7 +48,7 @@ $().ready(function () {
 	connectSocket();
 });
 
-function convert_date(unixtimestamp){
+function convertDate(unixtimestamp){
 	var date = new Date(unixtimestamp);
 	var day = "0" + date.getDate();
 	var month = "0" + date.getMonth();
@@ -56,7 +56,7 @@ function convert_date(unixtimestamp){
 	return year + '/' + month.substr(-2) + '/' + day.substr(-2);
 }
 
-function convert_time(unixtimestamp){
+function convertTime(unixtimestamp){
 	var date = new Date(unixtimestamp);
 	var hours = date.getHours();
 	var minutes = "0" + date.getMinutes();
@@ -64,56 +64,51 @@ function convert_time(unixtimestamp){
 	return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 }
 
-function statusUpdate(meter) {
-	var meterid = meter["Id"]
-	var metertype = meter["Type"]
-	var meterstatus = meter["Status"]
+function updateTime(data) {
+	timeapp.date = convertDate(data["Timestamp"])
+	timeapp.time = convertTime(data["Timestamp"])
+}
+
+function updateStatus(meter) {
+	var id = meter["Device"]
 
 	// update data table
-	var datadict = statusapp.meterstatus[meterid]
-	if (!datadict) {
-		// this is the first time we touch this meter, create an
-		// empty dict
-		var datadict = {}
-	}
-
-	datadict["Id"] = meter["Id"]
-	datadict["Type"] = meter["Type"]
-	datadict["Status"] = meter["Status"]
+	var dict = statusapp.meters[id] || {}
+	dict = Object.assign(dict, meter)
 
 	// make update reactive, see
 	// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
-	Vue.set(statusapp.meterstatus, meterid, datadict)
+	Vue.set(statusapp.meters, id, dict)
 }
 
-function meterUpdate(data) {
-	timeapp.time = convert_time(data["Timestamp"])
-	timeapp.date = convert_date(data["Timestamp"])
-
+function updateData(data) {
 	// extract the last update
-	var id = data["DeviceId"]
+	var id = data["Device"]
 	var type = data["IEC61850"]
 	var value = fixed(data["Value"])
 
-	// put into statusline
-	meterapp.message = "Received #" + id + " / " + type + ": " + si(value)
-
 	// create or update data table
-	var datadict = meterapp.meters[id] || {}
-	datadict[type] = value
+	var dict = dataapp.meters[id] || {}
+	dict[type] = value
+
+	// put into statusline
+	dataapp.message = "Received " + id + " / " + type + ": " + si(value)
+
 	// make update reactive, see
 	// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
-	Vue.set(meterapp.meters, id, datadict)
+	Vue.set(dataapp.meters, id, dict)
 }
 
 function processMessage(data) {
-	if (data.Modbus) {
-		if (data.ConfiguredMeters && data.ConfiguredMeters.length) {
-			statusUpdate(data.ConfiguredMeters[0]);
+	if (data.Meters && data.Meters.length) {
+		for (var i=0; i<data.Meters.length; i++) {
+			console.log(data)
+			updateStatus(data.Meters[i]);
 		}
 	}
-	else if (data.DeviceId) {
-		meterUpdate(data);
+	else if (data.Device) {
+		updateTime(data);
+		updateData(data);
 	}
 }
 

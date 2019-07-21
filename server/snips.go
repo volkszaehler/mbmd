@@ -8,16 +8,25 @@ import (
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
-// QuerySnip represents modbus query operations
+// ControlSnip wraps device status information
+type ControlSnip struct {
+	Device string
+	Status RuntimeInfo
+}
+
+type ControlSnipChannel chan ControlSnip
+
+// QuerySnip wraps query results
 type QuerySnip struct {
 	Device string
 	MeasurementResult
 }
 
+// type QuerySnipChannel chan QuerySnip
+
 // String representation
 func (q *QuerySnip) String() string {
-	return fmt.Sprintf("Dev: %s, IEC: %s, Value: %.3f",
-		q.Device, q.Measurement.String(), q.Value)
+	return fmt.Sprintf("Dev: %s, IEC: %s, Value: %.3f", q.Device, q.Measurement.String(), q.Value)
 }
 
 // MarshalJSON converts QuerySnip to json, replacing Timestamp with unix time representation
@@ -36,8 +45,6 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 		Timestamp:   q.Timestamp.UnixNano() / 1e6,
 	})
 }
-
-type QuerySnipChannel chan QuerySnip
 
 // QuerySnipBroadcaster acts as hub for broadcating QuerySnips
 // to multiple recipients
@@ -107,19 +114,3 @@ func (b *QuerySnipBroadcaster) AttachRunner(runner func(QuerySnipChannel)) {
 		b.wg.Done()
 	}()
 }
-
-// ControlSnip wraps control information like query success or failure.
-type ControlSnip struct {
-	Device  string
-	Result  ControlSnipType
-	Message string
-}
-
-type ControlSnipType uint8
-
-const (
-	ok ControlSnipType = iota
-	failure
-)
-
-type ControlSnipChannel chan ControlSnip
