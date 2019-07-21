@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/volkszaehler/mbmd/meters/connection"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 // QueryEngine executes queries on connections and attached devices
@@ -27,7 +27,7 @@ func sleepIsCancelled(ctx context.Context, timeout time.Duration) bool {
 }
 
 // NewQueryEngine creates new query engine
-func NewQueryEngine(managers map[string]connection.Manager) *QueryEngine {
+func NewQueryEngine(managers map[string]meters.Manager) *QueryEngine {
 	handlers := make(map[string]*Handler)
 
 	for conn, m := range managers {
@@ -43,11 +43,11 @@ func NewQueryEngine(managers map[string]connection.Manager) *QueryEngine {
 // Run queries all connections and attached devices
 func (q *QueryEngine) Run(
 	ctx context.Context,
-	control ControlSnipChannel,
-	results QuerySnipChannel,
+	control chan<- ControlSnip,
+	results chan<- QuerySnip,
 ) {
-	defer close(results)
 	defer close(control)
+	defer close(results)
 
 	// run each connection manager inside separate goroutine
 	var wg sync.WaitGroup

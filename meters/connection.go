@@ -1,17 +1,17 @@
-package connection
+package meters
 
 import (
 	"time"
 
-	"github.com/volkszaehler/mbmd/meters"
+	"github.com/grid-x/modbus"
 )
 
 // Connection encapsulates a physical modbus connection, either RTU or TCP
 type Connection interface {
 	// ModbusClient returns the underlying modbus client
-	ModbusClient() meters.ModbusClient
+	ModbusClient() modbus.Client
 
-	// Slave sets the modbus device id
+	// Slave sets the modbus device id for the following operations
 	Slave(deviceID uint8)
 
 	// Timeout sets the modbus timeout
@@ -24,6 +24,6 @@ type Connection interface {
 	// Logger sets a logging instance for physical bus operations
 	Logger(l Logger)
 
-	// String returns the bus device/address
+	// String returns the bus device (RTU) or bus connection address (TCP)
 	String() string
 }

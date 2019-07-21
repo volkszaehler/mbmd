@@ -7,19 +7,16 @@ import (
 	"time"
 )
 
+// Cache caches and aggregates meter reasings
 type Cache struct {
-	items   map[string]CacheItem
+	items   map[string]*MeterReadings
 	maxAge  time.Duration
 	verbose bool
 }
 
-type CacheItem struct {
-	// *meters.Device
-	*MeterReadings
-}
-
+// NewCache creates new meter reading cache
 func NewCache(maxAge time.Duration, verbose bool) *Cache {
-	items := make(map[string]CacheItem)
+	items := make(map[string]*MeterReadings)
 
 	cache := &Cache{
 		items:   items,
@@ -31,16 +28,14 @@ func NewCache(maxAge time.Duration, verbose bool) *Cache {
 }
 
 // Run consumes meter readings into snip cache
-func (mc *Cache) Run(in QuerySnipChannel) {
+func (mc *Cache) Run(in <-chan QuerySnip) {
 	for snip := range in {
 		uniqueID := snip.Device
 
 		ci, ok := mc.items[uniqueID]
 		// Search corresponding meter
 		if !ok {
-			ci = CacheItem{
-				NewMeterReadings(uniqueID, mc.maxAge),
-			}
+			ci = NewMeterReadings(uniqueID, mc.maxAge)
 			mc.items[uniqueID] = ci
 		}
 		ci.AddSnip(snip)
@@ -54,7 +49,7 @@ func (mc *Cache) Purge(device string) error {
 		return nil
 	}
 
-	return fmt.Errorf("Device with id %d does not exist.", device)
+	return fmt.Errorf("device with id %s does not exist", device)
 }
 
 func (mc *Cache) SortedIDs() []string {
@@ -71,9 +66,9 @@ func (mc *Cache) GetCurrent(device string) (*Readings, error) {
 	// 	if meter.State() == AVAILABLE {
 	// 		return &meter.Current, nil
 	// 	}
-	// 	return nil, fmt.Errorf("Device %d is not available.", device)
+	// 	return nil, fmt.Errorf("device %d is not available", device)
 	// }
-	return nil, fmt.Errorf("Device %d does not exist.", device)
+	return nil, fmt.Errorf("device %d does not exist", device)
 }
 
 func (mc *Cache) GetMinuteAvg(device string) (*Readings, error) {
@@ -93,9 +88,9 @@ func (mc *Cache) GetMinuteAvg(device string) (*Readings, error) {
 	// 		}
 	// 		return res, nil
 	// 	}
-	// 	return nil, fmt.Errorf("Device %d is not available.", device)
+	// 	return nil, fmt.Errorf("device %d is not available", device)
 	// }
-	return nil, fmt.Errorf("Device %d does not exist.", device)
+	return nil, fmt.Errorf("device %d does not exist", device)
 }
 
 // ByteSlice attaches the methods of sort.Interface to []byte, sorting in increasing order.

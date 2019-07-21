@@ -109,7 +109,7 @@ func (h *SocketHub) broadcast(i interface{}) {
 }
 
 // Run starts data and status distribution
-func (h *SocketHub) Run(in QuerySnipChannel) {
+func (h *SocketHub) Run(in <-chan QuerySnip) {
 	// Periodically push meter status information
 	statusChannel := make(chan *Status)
 	go func() {

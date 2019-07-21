@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 // ControlSnip wraps device status information
@@ -14,15 +14,11 @@ type ControlSnip struct {
 	Status RuntimeInfo
 }
 
-type ControlSnipChannel chan ControlSnip
-
 // QuerySnip wraps query results
 type QuerySnip struct {
 	Device string
-	MeasurementResult
+	meters.MeasurementResult
 }
-
-// type QuerySnipChannel chan QuerySnip
 
 // String representation
 func (q *QuerySnip) String() string {
@@ -51,16 +47,16 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 type QuerySnipBroadcaster struct {
 	sync.Mutex // guard recipients
 	wg         sync.WaitGroup
-	in         QuerySnipChannel
-	recipients []QuerySnipChannel
+	in         <-chan QuerySnip
+	recipients []chan QuerySnip
 	done       chan bool
 }
 
 // NewQuerySnipBroadcaster creates QuerySnipBroadcaster
-func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
+func NewQuerySnipBroadcaster(in <-chan QuerySnip) *QuerySnipBroadcaster {
 	return &QuerySnipBroadcaster{
 		in:         in,
-		recipients: make([]QuerySnipChannel, 0),
+		recipients: make([]chan QuerySnip, 0),
 		done:       make(chan bool),
 	}
 }
@@ -93,9 +89,9 @@ func (b *QuerySnipBroadcaster) stop() {
 	b.done <- true
 }
 
-// attach creates and attaches a QuerySnipChannel to the broadcaster
-func (b *QuerySnipBroadcaster) attach() QuerySnipChannel {
-	channel := make(QuerySnipChannel)
+// attach creates and attaches a chan QuerySnip to the broadcaster
+func (b *QuerySnipBroadcaster) attach() chan QuerySnip {
+	channel := make(chan QuerySnip)
 
 	b.Lock()
 	b.recipients = append(b.recipients, channel)
@@ -106,7 +102,7 @@ func (b *QuerySnipBroadcaster) attach() QuerySnipChannel {
 
 // AttachRunner attaches a Run method as broadcast receiver and adds it
 // to the waitgroup
-func (b *QuerySnipBroadcaster) AttachRunner(runner func(QuerySnipChannel)) {
+func (b *QuerySnipBroadcaster) AttachRunner(runner func(<-chan QuerySnip)) {
 	b.wg.Add(1)
 	go func() {
 		ch := b.attach()

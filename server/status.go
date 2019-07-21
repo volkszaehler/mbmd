@@ -7,11 +7,13 @@ import (
 	"time"
 )
 
+// MemoryStatus represents daemon memory allocation
 type MemoryStatus struct {
 	Alloc     uint64
 	HeapAlloc uint64
 }
 
+// ModbusStatus represents device request and error status
 type ModbusStatus struct {
 	Requests          uint64
 	RequestsPerMinute float64
@@ -19,7 +21,8 @@ type ModbusStatus struct {
 	ErrorsPerMinute   float64
 }
 
-type MeterStatus struct {
+// DeviceStatus represents a devices runtime status
+type DeviceStatus struct {
 	Device string
 	Type   string
 	Status string
@@ -35,25 +38,27 @@ func memoryStatus() MemoryStatus {
 	}
 }
 
+// Status represents the daemon and device status.
+// It is updated when marshaled to JSON
 type Status struct {
 	sync.Mutex
 	StartTime  time.Time
 	UpTime     float64
 	Goroutines int
 	Memory     MemoryStatus
-	Meters     []MeterStatus
-	meterMap   map[string]MeterStatus
+	Meters     []DeviceStatus
+	meterMap   map[string]DeviceStatus
 }
 
 // NewStatus creates status cache that collects device status from control channel.
 // It needs to be Update()d in order to refresh its data for consumption
-func NewStatus(control ControlSnipChannel) *Status {
+func NewStatus(control <-chan ControlSnip) *Status {
 	s := &Status{
 		Memory:     memoryStatus(),
 		Goroutines: runtime.NumGoroutine(),
 		StartTime:  time.Now(),
 		UpTime:     1,
-		meterMap:   make(map[string]MeterStatus),
+		meterMap:   make(map[string]DeviceStatus),
 	}
 
 	go func() {
@@ -67,14 +72,15 @@ func NewStatus(control ControlSnipChannel) *Status {
 				status = "offline"
 			}
 
+			minutes := s.UpTime / 60
 			mbs := ModbusStatus{
 				Requests:          c.Status.Requests,
 				Errors:            c.Status.Errors,
-				ErrorsPerMinute:   float64(c.Status.Errors) / (s.UpTime / 60),
-				RequestsPerMinute: float64(c.Status.Requests) / (s.UpTime / 60),
+				ErrorsPerMinute:   float64(c.Status.Errors) / minutes,
+				RequestsPerMinute: float64(c.Status.Requests) / minutes,
 			}
 
-			ms := MeterStatus{
+			ms := DeviceStatus{
 				Device: c.Device,
 				// Type:         dev.Descriptor().Manufacturer,
 				Status:       status,
@@ -95,7 +101,7 @@ func (s *Status) update() {
 	s.Goroutines = runtime.NumGoroutine()
 	s.UpTime = time.Since(s.StartTime).Seconds()
 
-	s.Meters = make([]MeterStatus, 0)
+	s.Meters = make([]DeviceStatus, 0)
 	for _, ms := range s.meterMap {
 		s.Meters = append(s.Meters, ms)
 	}

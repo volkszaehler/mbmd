@@ -7,6 +7,7 @@ import (
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
+	"github.com/grid-x/modbus"
 
 	_ "github.com/andig/gosunspec/models" // device tree parsing requires all models
 	"github.com/andig/gosunspec/models/model1"
@@ -25,7 +26,7 @@ func NewDevice() meters.Device {
 	return &sunSpec{}
 }
 
-func (d *sunSpec) Initialize(client meters.ModbusClient) error {
+func (d *sunSpec) Initialize(client modbus.Client) error {
 	in, err := sunspecbus.Open(client)
 	if err != nil {
 		return err
@@ -112,7 +113,7 @@ func (d *sunSpec) Descriptor() meters.DeviceDescriptor {
 	return d.descriptor
 }
 
-func (d *sunSpec) Probe(client meters.ModbusClient) (res meters.MeasurementResult, err error) {
+func (d *sunSpec) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
 	if d.notInitilized() {
 		return res, errors.New("sunspec: not initialized")
 	}
@@ -155,7 +156,7 @@ func (d *sunSpec) notInitilized() bool {
 	return len(d.models) == 0
 }
 
-func (d *sunSpec) Query(client meters.ModbusClient) ([]meters.MeasurementResult, error) {
+func (d *sunSpec) Query(client modbus.Client) ([]meters.MeasurementResult, error) {
 	res := make([]meters.MeasurementResult, 0)
 
 	if d.notInitilized() {

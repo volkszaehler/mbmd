@@ -109,7 +109,7 @@ type MqttRunner struct {
 }
 
 // Run MQTT client publisher
-func (m *MqttRunner) Run(in QuerySnipChannel) {
+func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	for snip := range in {
 		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.DeviceTopic(snip.Device), snip.Measurement)
 		message := fmt.Sprintf("%.3f", snip.Value)

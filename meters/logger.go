@@ -1,4 +1,4 @@
-package connection
+package meters
 
 import "log"
 

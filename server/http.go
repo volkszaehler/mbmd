@@ -13,28 +13,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	devAssets = false
-)
-
-var (
-	Version = "unknown version"
-	Commit  = "unknown commit"
-)
+const devAssets = false
 
 //go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
+// Httpd is an http server
 type Httpd struct {
 }
 
 func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
-		log.Fatal("Failed to load embedded template: " + err.Error())
+		log.Fatal("failed to load embedded template: " + err.Error())
 	}
 	t, err := template.New("mbmd").Parse(string(mainTemplate))
 	if err != nil {
-		log.Fatal("Failed to create main page template: ", err.Error())
+		log.Fatal("failed to create main page template: ", err.Error())
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +43,7 @@ func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Reques
 		}
 		err := t.Execute(w, data)
 		if err != nil {
-			log.Fatal("Failed to render main page: ", err.Error())
+			log.Fatal("failed to render main page: ", err.Error())
 		}
 	})
 }
@@ -72,11 +66,11 @@ func (h *Httpd) mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *htt
 		}
 		if len(lasts) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "All meters are inactive.")
+			fmt.Fprintf(w, "all meters are inactive.")
 			return
 		}
 		if err := json.NewEncoder(w).Encode(lasts); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
+			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
 }
@@ -97,7 +91,7 @@ func (h *Httpd) mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *
 		}
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(last); err != nil {
-			log.Printf("Failed to create JSON representation of measurement %s", last.String())
+			log.Printf("failed to create JSON representation of measurement %s", last.String())
 		}
 	})
 }
@@ -118,7 +112,7 @@ func (h *Httpd) mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter
 		}
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(avg); err != nil {
-			log.Printf("Failed to create JSON representation of measurement %s", avg.String())
+			log.Printf("failed to create JSON representation of measurement %s", avg.String())
 		}
 	})
 }
@@ -138,11 +132,11 @@ func (h *Httpd) mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *
 		}
 		if len(avgs) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "All meters are inactive.")
+			fmt.Fprintf(w, "all meters are inactive.")
 			return
 		}
 		if err := json.NewEncoder(w).Encode(avgs); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
+			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
 }
@@ -151,7 +145,7 @@ func (h *Httpd) mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Reque
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(s); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
+			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
 }
@@ -171,13 +165,14 @@ func (h *Httpd) serveJSON(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Run executes the http server
 func (h *Httpd) Run(
 	mc *Cache,
 	hub *SocketHub,
 	s *Status,
 	url string,
 ) {
-	log.Printf("Starting API at %s", url)
+	log.Printf("starting API at %s", url)
 
 	router := mux.NewRouter().StrictSlash(true)
 

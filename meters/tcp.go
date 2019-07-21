@@ -1,19 +1,19 @@
-package connection
+package meters
 
 import (
 	"time"
 
 	"github.com/grid-x/modbus"
-	"github.com/volkszaehler/mbmd/meters"
 )
 
+// TCP is a TCP modbus connection
 type TCP struct {
 	address string
-	Client  meters.ModbusClient
+	Client  modbus.Client
 	Handler *modbus.TCPClientHandler
 }
 
-// NewTCPClientHandler creates a TCO modbus handler
+// NewTCPClientHandler creates a TCP modbus handler
 func NewTCPClientHandler(device string) *modbus.TCPClientHandler {
 	handler := modbus.NewTCPClientHandler(device)
 
@@ -30,6 +30,7 @@ func NewTCPClientHandler(device string) *modbus.TCPClientHandler {
 	return handler
 }
 
+// NewTCP creates a TCP modbus client
 func NewTCP(address string) Connection {
 	handler := NewTCPClientHandler(address)
 	client := modbus.NewClient(handler)
@@ -43,22 +44,27 @@ func NewTCP(address string) Connection {
 	return b
 }
 
+// String returns the bus connection address (TCP)
 func (b *TCP) String() string {
 	return b.address
 }
 
-func (b *TCP) ModbusClient() meters.ModbusClient {
+// ModbusClient returns the TCP modbus client
+func (b *TCP) ModbusClient() modbus.Client {
 	return b.Client
 }
 
+// Logger sets a logging instance for physical bus operations
 func (b *TCP) Logger(l Logger) {
 	b.Handler.Logger = l
 }
 
+// Slave sets the modbus device id for the following operations
 func (b *TCP) Slave(deviceID uint8) {
 	b.Handler.SetSlave(deviceID)
 }
 
+// Timeout sets the modbus timeout
 func (b *TCP) Timeout(timeout time.Duration) time.Duration {
 	t := b.Handler.Timeout
 	b.Handler.Timeout = timeout
