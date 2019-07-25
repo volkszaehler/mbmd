@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	latest "github.com/tcnksm/go-latest"
@@ -251,7 +252,7 @@ func main() {
 
 		// wait for signal on exit channel and cancel context
 		exit := make(chan os.Signal, 1)
-		signal.Notify(exit, os.Interrupt, os.Kill)
+		signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
 		<-exit
 		log.Println("received signal - stopping")
 		cancel()

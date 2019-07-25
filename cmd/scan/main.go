@@ -17,10 +17,6 @@ import (
 	"github.com/grid-x/modbus"
 )
 
-const (
-	base = 40000
-)
-
 func pf(format string, v ...interface{}) {
 	format = strings.TrimSuffix(format, "\n") + "\n"
 	fmt.Printf(format, v...)
@@ -33,15 +29,6 @@ func (l *modbusLogger) Printf(format string, v ...interface{}) {
 	pf(format, v...)
 }
 
-func doModels(d sunspec.Device, cb func(m sunspec.Model)) {
-	modelIds := []sunspec.ModelId{1, 101, 103}
-	models := d.Collect(sunspec.OneOfSeveralModelIds(modelIds))
-
-	for _, model := range models {
-		cb(model)
-	}
-}
-
 func scanSunspec(client modbus.Client) {
 	in, err := bus.Open(client)
 	if err != nil {
@@ -52,10 +39,7 @@ func scanSunspec(client modbus.Client) {
 
 	in.Do(func(d sunspec.Device) {
 		d.Do(func(m sunspec.Model) {
-			// doModels(d, func(m sunspec.Model) {
 			pf("--------- Model %d %s ---------", m.Id(), modelName(m))
-			// printModel(smdx.GetModel(uint16(m.Id())))
-			// pf("-- Data --")
 
 			blocknum := 0
 			m.Do(func(b sunspec.Block) {
@@ -72,7 +56,7 @@ func scanSunspec(client modbus.Client) {
 				b.Do(func(p sunspec.Point) {
 					t := p.Type()[0:3]
 					v := p.Value()
-					if p.NotImplemented() || (t == "sunssf" && p.Int16() == int16(math.MinInt16)) {
+					if p.NotImplemented() || (p.Type() == "sunssf" && p.Int16() == int16(math.MinInt16)) {
 						v = "n/a"
 					} else if t == "int" || t == "uin" || t == "acc" {
 						v = fmt.Sprintf("%.2f", p.ScaledValue())
@@ -138,13 +122,5 @@ func main() {
 
 	handler.SetSlave(byte(deviceID))
 
-	// b, err := client.ReadHoldingRegisters(40072, 7)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// pf("% x", b)
-	// os.Exit(0)
-
 	scanSunspec(client)
-	// scanCustom(client)
 }
