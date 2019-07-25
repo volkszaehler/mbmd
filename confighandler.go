@@ -1,10 +1,10 @@
 package mbmd
 
-import(
+import (
 	"log"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/rs485"
@@ -28,7 +28,9 @@ func NewDeviceConfigHandler(defaultDevice string) *DeviceConfigHandler {
 
 // createConnection parses adapter string to create TCP or RTU connection
 func createConnection(device string) (res meters.Connection) {
-	if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
+	if device == "mock" {
+		res = meters.NewMock(device) // mocked connection
+	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
 		res = meters.NewTCP(device) // tcp connection
 	} else {
 		res = meters.NewRTU(device, 1) // serial connection
@@ -79,6 +81,7 @@ func (conf *DeviceConfigHandler) CreateDevice(deviceDef string) {
 	if _, ok := manager.Conn.(*meters.TCP); ok {
 		meter = sunspec.NewDevice()
 	} else {
+		meterType = strings.ToUpper(meterType)
 		meter, err = rs485.NewDevice(meterType)
 		if err != nil {
 			log.Fatalf("Error creating device %s: %v. See -h for help.", meterDef, err)

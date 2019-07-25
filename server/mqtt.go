@@ -8,6 +8,7 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+// MqttClient is a MQTT publisher
 type MqttClient struct {
 	client    MQTT.Client
 	mqttTopic string
@@ -15,6 +16,7 @@ type MqttClient struct {
 	verbose   bool
 }
 
+// NewMqttClient creates new publisher for MQTT
 func NewMqttClient(
 	mqttBroker string,
 	mqttTopic string,
@@ -98,17 +100,18 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 }
 
 // DeviceTopic converts meter's device id to topic string
-func (m *MqttClient) DeviceTopic(deviceId string) string {
-	// uniqueID := fmt.Sprintf(UniqueIdFormat, deviceId)
+func (m *MqttClient) DeviceTopic(deviceID string) string {
+	// uniqueID := fmt.Sprintf(UniqueIdFormat, deviceID)
 	// return strings.Replace(strings.ToLower(uniqueID), "#", "", -1)
-	return deviceId
+	return deviceID
 }
 
+// MqttRunner allows to attach an MqttClient as broadcast receiver
 type MqttRunner struct {
 	*MqttClient
 }
 
-// Run MQTT client publisher
+// Run MqttClient publisher
 func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	for snip := range in {
 		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.DeviceTopic(snip.Device), snip.Measurement)

@@ -4,8 +4,7 @@ import (
 	"sync"
 )
 
-// Broadcaster acts as hub for broadcating s
-// to multiple recipients
+// Broadcaster acts as hub for broadcating snips to multiple recipients
 type Broadcaster struct {
 	sync.Mutex // guard recipients
 	wg         sync.WaitGroup
@@ -14,8 +13,8 @@ type Broadcaster struct {
 	done       chan bool
 }
 
-// NewBroadcaster creates a Broadcaster that
-// implements a hub and spoke message replication pattern
+// NewBroadcaster creates a Broadcaster that implements
+// a hub and spoke message replication pattern
 func NewBroadcaster(in <-chan struct{}) *Broadcaster {
 	return &Broadcaster{
 		in:         in,

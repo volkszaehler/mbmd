@@ -51,7 +51,7 @@ $().ready(function () {
 function convertDate(unixtimestamp){
 	var date = new Date(unixtimestamp);
 	var day = "0" + date.getDate();
-	var month = "0" + date.getMonth();
+	var month = "0" + (date.getMonth() + 1);
 	var year = date.getFullYear();
 	return year + '/' + month.substr(-2) + '/' + day.substr(-2);
 }
@@ -69,12 +69,14 @@ function updateTime(data) {
 	timeapp.time = convertTime(data["Timestamp"])
 }
 
-function updateStatus(meter) {
-	var id = meter["Device"]
+function updateStatus(status) {
+	var id = status["Device"]
+	status["Status"] = status["Online"] ? "online" : "offline"
+	console.log(status)
 
 	// update data table
 	var dict = statusapp.meters[id] || {}
-	dict = Object.assign(dict, meter)
+	dict = Object.assign(dict, status)
 
 	// make update reactive, see
 	// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
@@ -102,7 +104,6 @@ function updateData(data) {
 function processMessage(data) {
 	if (data.Meters && data.Meters.length) {
 		for (var i=0; i<data.Meters.length; i++) {
-			console.log(data)
 			updateStatus(data.Meters[i]);
 		}
 	}

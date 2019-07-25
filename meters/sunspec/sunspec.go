@@ -182,6 +182,11 @@ func (d *sunSpec) Query(client modbus.Client) ([]meters.MeasurementResult, error
 					continue
 				}
 
+				// apply scale factor for energy
+				if div, ok := dividerMap[m]; ok {
+					v = v / div
+				}
+
 				mr := meters.MeasurementResult{
 					Measurement: m,
 					Value:       v,

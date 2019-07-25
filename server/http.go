@@ -2,14 +2,15 @@ package server
 
 import (
 	"encoding/json"
-	"runtime/debug"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -20,8 +21,7 @@ const devAssets = false
 //go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
 // Httpd is an http server
-type Httpd struct {
-}
+type Httpd struct{}
 
 func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
@@ -50,19 +50,19 @@ func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Reques
 	})
 }
 
-func (h *Httpd) mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) allDevicesHandler(mc *Cache, provider func(id string) (Readings, error)) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-
 		ids := mc.SortedIDs()
-		current := ReadingSlice{}
+		current := make([]data, 0)
 		for _, id := range ids {
-			reading, err := mc.GetCurrent(id)
+			readings, err := provider(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
 			}
-			current = append(current, *reading)
+
+			data := data{device: id, readings: readings}
+			current = append(current, data)
 		}
 
 		if len(current) == 0 {
@@ -71,13 +71,14 @@ func (h *Httpd) mkLastAllValuesHandler(mc *Cache) func(http.ResponseWriter, *htt
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(current); err != nil {
 			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
 		}
 	})
 }
 
-func (h *Httpd) mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) singleDevicesHandler(mc *Cache, provider func(id string) (Readings, error)) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
@@ -87,67 +88,18 @@ func (h *Httpd) mkLastSingleValuesHandler(mc *Cache) func(http.ResponseWriter, *
 			return
 		}
 
-		last, err := mc.GetCurrent(id)
+		readings, err := mc.Current(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(last); err != nil {
-			log.Printf("failed to create JSON representation of measurement %s", last.String())
-		}
-	})
-}
-
-func (h *Httpd) mkLastMinuteAvgSingleHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-
-		id, ok := vars["id"]
-		if !ok {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		avg, err := mc.GetAverage(id)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, err.Error())
-			return
-		}
+		data := data{device: id, readings: readings}
 
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(avg); err != nil {
-			log.Printf("failed to create JSON representation of measurement %s", avg.String())
-		}
-	})
-}
-
-func (h *Httpd) mkLastMinuteAvgAllHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-
-		ids := mc.SortedIDs()
-		avgs := ReadingSlice{}
-		for _, id := range ids {
-			reading, err := mc.GetAverage(id)
-			if err != nil {
-				// Skip this meter, it will simply not be displayed
-				continue
-			}
-			avgs = append(avgs, *reading)
-		}
-
-		if len(avgs) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "all meters are inactive")
-			return
-		}
-
-		if err := json.NewEncoder(w).Encode(avgs); err != nil {
-			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
+		if err := json.NewEncoder(w).Encode(data); err != nil {
+			log.Printf("failed to create JSON representation of measurement %s", err.Error())
 		}
 	})
 }
@@ -176,14 +128,25 @@ func (h *Httpd) serveJSON(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-type debugLogger struct{}
+type debugLogger struct {
+	pattern string
+}
 
 func (d debugLogger) Write(p []byte) (n int, err error) {
 	s := string(p)
-	if strings.Contains(s, "superfluous") {
+	if strings.Contains(s, d.pattern) {
 		debug.PrintStack()
 	}
 	return os.Stderr.Write(p)
+}
+
+// jsonHandler is a middleware that decorates responses with JSON and CORS headers
+func jsonHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		h.ServeHTTP(w, r)
+	})
 }
 
 // Run executes the http server
@@ -194,7 +157,6 @@ func (h *Httpd) Run(
 	url string,
 ) {
 	log.Printf("starting API at %s", url)
-
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static
@@ -207,22 +169,23 @@ func (h *Httpd) Run(
 	}
 
 	// api
-	router.HandleFunc("/last", h.serveJSON(h.mkLastAllValuesHandler(mc)))
-	router.HandleFunc("/last/{id:[a-z@0-9]+}", h.serveJSON(h.mkLastSingleValuesHandler(mc)))
-	router.HandleFunc("/avg", h.serveJSON(h.mkLastMinuteAvgAllHandler(mc)))
-	router.HandleFunc("/avg/{id:[a-z@0-9]+}", h.serveJSON(h.mkLastMinuteAvgSingleHandler(mc)))
-	router.HandleFunc("/status", h.serveJSON(h.mkStatusHandler(s)))
+	api := router.PathPrefix("/api").Subrouter()
+	api.HandleFunc("/last", h.allDevicesHandler(mc, mc.Current))
+	api.HandleFunc("/last/{id:[a-z@A-Z0-9:]+}", h.singleDevicesHandler(mc, mc.Current))
+	api.HandleFunc("/avg", h.allDevicesHandler(mc, mc.Average))
+	api.HandleFunc("/avg/{id:[a-z@A-Z0-9:]+}", h.singleDevicesHandler(mc, mc.Average))
+	api.HandleFunc("/status", h.mkStatusHandler(s))
+	api.Use(jsonHandler)
 
 	// websocket
 	router.HandleFunc("/ws", h.mkSocketHandler(hub))
 
-	// debug logger
-	logger := log.New(debugLogger{}, "", 0)
-
 	srv := http.Server{
-		Addr:     url,
-		Handler:  handlers.CompressHandler(router),
-		ErrorLog: logger,
+		Addr:         url,
+		Handler:      handlers.CompressHandler(jsonHandler(router)),
+		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		// ErrorLog: log.New(debugLogger{"superfluous"}, "", 0),
 	}
 
 	srv.SetKeepAlivesEnabled(true)

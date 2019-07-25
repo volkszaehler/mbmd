@@ -73,3 +73,7 @@ var opcodeMap = map[string]meters.Measurement{
 	model124.ChaState: meters.ChargeState,
 	model124.InBatV:   meters.BatteryVoltage,
 }
+
+var dividerMap = map[meters.Measurement]float64{
+	meters.Export: 1000,
+}

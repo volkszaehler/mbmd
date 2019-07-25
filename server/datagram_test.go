@@ -220,7 +220,7 @@ func TestQuerySnipMerge(t *testing.T) {
 	}
 
 	for _, test := range sniptests {
-		r.MergeSnip(test.snip)
+		r.Merge(test.snip)
 		if test.param(r) != setvalue {
 			t.Errorf("Merge of querysnip failed: Expected %.2f, got %.2f",
 				setvalue, test.param(r))

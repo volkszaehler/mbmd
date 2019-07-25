@@ -9,8 +9,53 @@ import (
 )
 
 const (
-	errorRate = 50
+	errorRate = 0
 )
+
+// Mock mocks a modbus connection
+type Mock struct {
+	address string
+	Client  modbus.Client
+}
+
+// NewMock creates a mock modbus client
+func NewMock(address string) Connection {
+	client := NewMockClient(errorRate)
+
+	b := &Mock{
+		address: address,
+		Client:  client,
+	}
+
+	return b
+}
+
+// String returns "simulate" as bus address
+func (b *Mock) String() string {
+	return "simulate"
+}
+
+// ModbusClient returns the mock modbus client
+func (b *Mock) ModbusClient() modbus.Client {
+	return b.Client
+}
+
+// Logger sets a logging instance for physical bus operations
+func (b *Mock) Logger(l Logger) {
+}
+
+// Slave sets the modbus device id for the following operations
+func (b *Mock) Slave(deviceID uint8) {
+}
+
+// Timeout sets the modbus timeout
+func (b *Mock) Timeout(timeout time.Duration) time.Duration {
+	return timeout
+}
+
+// Close closes the modbus connection.
+func (b *Mock) Close() {
+}
 
 // MockClient is a mock modbus client for testing that
 // is able to simulate devices and errors
@@ -101,49 +146,4 @@ func (c *MockClient) WriteMultipleRegisters(address, quantity uint16, value []by
 // ReadWriteMultipleRegisters implements modbus.Client
 func (c *MockClient) ReadWriteMultipleRegisters(readAddress, readQuantity, writeAddress, writeQuantity uint16, value []byte) (results []byte, err error) {
 	panic("Not implemented")
-}
-
-// Mock mocks a modbus connection
-type Mock struct {
-	address string
-	Client  modbus.Client
-}
-
-// NewMock creates a mock modbus client
-func NewMock(address string) Connection {
-	client := NewMockClient(errorRate)
-
-	b := &Mock{
-		address: address,
-		Client:  client,
-	}
-
-	return b
-}
-
-// String returns "simulate" as bus address
-func (b *Mock) String() string {
-	return "simulate"
-}
-
-// ModbusClient returns the mock modbus client
-func (b *Mock) ModbusClient() modbus.Client {
-	return b.Client
-}
-
-// Logger sets a logging instance for physical bus operations
-func (b *Mock) Logger(l Logger) {
-}
-
-// Slave sets the modbus device id for the following operations
-func (b *Mock) Slave(deviceID uint8) {
-}
-
-// Timeout sets the modbus timeout
-func (b *Mock) Timeout(timeout time.Duration) time.Duration {
-	return timeout
-}
-
-// Close closes the modbus connection.
-func (b *Mock) Close() {
 }

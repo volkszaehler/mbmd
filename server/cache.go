@@ -10,21 +10,22 @@ import (
 
 // Cache caches and aggregates meter reasings
 type Cache struct {
-	items   map[string]*MeterReadings
-	maxAge  time.Duration
-	status  *Status
-	verbose bool
+	sync.Mutex
+	readings map[string]*MeterReadings
+	maxAge   time.Duration
+	status   *Status
+	verbose  bool
 }
 
 // NewCache creates new meter reading cache
 func NewCache(maxAge time.Duration, status *Status, verbose bool) *Cache {
-	items := make(map[string]*MeterReadings)
+	readings := make(map[string]*MeterReadings)
 
 	cache := &Cache{
-		items:   items,
-		maxAge:  maxAge,
-		status:  status,
-		verbose: verbose,
+		readings: readings,
+		maxAge:   maxAge,
+		status:   status,
+		verbose:  verbose,
 	}
 
 	return cache
@@ -36,19 +37,24 @@ func (mc *Cache) Run(in <-chan QuerySnip) {
 		uniqueID := snip.Device
 
 		// Search corresponding meter
-		ci, ok := mc.items[uniqueID]
+		readings, ok := mc.readings[uniqueID]
 		if !ok {
-			ci = NewMeterReadings(uniqueID, mc.maxAge)
-			mc.items[uniqueID] = ci
+			readings = NewMeterReadings(mc.maxAge)
+			mc.Lock()
+			mc.readings[uniqueID] = readings
+			mc.Unlock()
 		}
-		ci.Add(snip)
+		readings.Add(snip)
 	}
 }
 
 // Purge removes accumulated data for specified device
 func (mc *Cache) Purge(device string) error {
-	if meter, ok := mc.items[device]; ok {
-		meter.Purge(device)
+	mc.Lock()
+	defer mc.Unlock()
+
+	if readings, ok := mc.readings[device]; ok {
+		readings.Purge()
 		return nil
 	}
 
@@ -57,85 +63,87 @@ func (mc *Cache) Purge(device string) error {
 
 // SortedIDs returns the sorted list of cache ids
 func (mc *Cache) SortedIDs() []string {
+	mc.Lock()
+	defer mc.Unlock()
+
 	var keys []string
-	for k := range mc.items {
+	for k := range mc.readings {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 	return keys
 }
 
-// GetCurrent returns the last meter reading
-func (mc *Cache) GetCurrent(device string) (*Readings, error) {
-	if readings, ok := mc.items[device]; ok {
+// Current returns the latest set of meter reading
+func (mc *Cache) Current(device string) (res Readings, err error) {
+	mc.Lock()
+	defer mc.Unlock()
+
+	if readings, ok := mc.readings[device]; ok {
 		if mc.status.Online(device) {
 			readings.Lock()
 			defer readings.Unlock()
 
 			// return a copy
-			copy := readings.Current
-			return &copy, nil
+			res := readings.Current.Clone()
+			return res, nil
 		}
 
-		return nil, fmt.Errorf("device %d is not available", device)
+		return res, fmt.Errorf("device %s is not available", device)
 	}
 
-	return nil, fmt.Errorf("device %d does not exist", device)
+	return res, fmt.Errorf("device %s does not exist", device)
 }
 
-// GetAverage returns averages meter readings
-func (mc *Cache) GetAverage(device string) (*Readings, error) {
-	if readings, ok := mc.items[device]; ok {
+// Average returns averaged sets of meter readings
+func (mc *Cache) Average(device string) (res Readings, err error) {
+	mc.Lock()
+	defer mc.Unlock()
+
+	if readings, ok := mc.readings[device]; ok {
 		readings.Lock()
 		defer readings.Unlock()
 
 		if mc.status.Online(device) {
 			measurements := readings.Historic
-			lastminute := measurements.NotOlderThan(time.Now().Add(-1 * time.Minute))
+			lastminute := measurements.After(time.Now().Add(-1 * time.Minute))
 
 			res, err := lastminute.Average()
 			if err != nil {
-				return nil, err
+				return *res, err
 			}
 
 			if mc.verbose {
 				log.Printf("averaging over %d measurements:\r\n%s\r\n", len(measurements), res.String())
 			}
-			return res, nil
+			return *res, nil
 		}
 
-		return nil, fmt.Errorf("device %d is not available", device)
+		return res, fmt.Errorf("device %s is not available", device)
 	}
 
-	return nil, fmt.Errorf("device %d does not exist", device)
+	return res, fmt.Errorf("device %s does not exist", device)
 }
 
-// ByteSlice attaches the methods of sort.Interface to []byte, sorting in increasing order.
-type ByteSlice []byte
-
-func (s ByteSlice) Len() int           { return len(s) }
-func (s ByteSlice) Less(i, j int) bool { return s[i] < s[j] }
-func (s ByteSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-
-// MeterReadings holds entire sets of current and recent meter readings
+// MeterReadings holds entire sets of current and recent meter readings for a single device
 type MeterReadings struct {
 	sync.Mutex
-	Historic ReadingSlice
 	Current  Readings
+	Historic ReadingSlice
 }
 
 // NewMeterReadings container for current and recent meter readings
-func NewMeterReadings(device string, maxAge time.Duration) *MeterReadings {
+func NewMeterReadings(maxAge time.Duration) *MeterReadings {
 	res := &MeterReadings{
 		Historic: ReadingSlice{},
-		Current: Readings{},
+		Current:  Readings{},
 	}
 
 	go func(mr *MeterReadings) {
 		for {
 			time.Sleep(maxAge)
 			mr.Lock()
-			mr.Historic = mr.Historic.NotOlderThan(time.Now().Add(-1 * maxAge))
+			mr.Historic = mr.Historic.After(time.Now().Add(-1 * maxAge))
 			mr.Unlock()
 		}
 	}(res)
@@ -143,13 +151,13 @@ func NewMeterReadings(device string, maxAge time.Duration) *MeterReadings {
 	return res
 }
 
-// Purge clears meter readings for specified device
-func (mr *MeterReadings) Purge(device string) {
+// Purge clears meter readings
+func (mr *MeterReadings) Purge() {
 	mr.Lock()
 	defer mr.Unlock()
 
-	mr.Historic = ReadingSlice{}
 	mr.Current = Readings{}
+	mr.Historic = ReadingSlice{}
 }
 
 // Add adds a meter reading for specified device
@@ -157,11 +165,6 @@ func (mr *MeterReadings) Add(snip QuerySnip) {
 	mr.Lock()
 	defer mr.Unlock()
 
-	// 1. Merge the snip to the last values.
-	reading := mr.Current
-	reading.MergeSnip(snip)
-
-	// 2. store it
-	mr.Current = reading
-	mr.Historic = append(mr.Historic, reading)
+	mr.Current.Add(snip)
+	mr.Historic = append(mr.Historic, mr.Current.Clone())
 }
