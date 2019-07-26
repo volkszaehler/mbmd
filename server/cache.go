@@ -75,7 +75,7 @@ func (mc *Cache) SortedIDs() []string {
 }
 
 // Current returns the latest set of meter reading
-func (mc *Cache) Current(device string) (res Readings, err error) {
+func (mc *Cache) Current(device string) (res *Readings, err error) {
 	mc.Lock()
 	defer mc.Unlock()
 
@@ -85,8 +85,7 @@ func (mc *Cache) Current(device string) (res Readings, err error) {
 			defer readings.Unlock()
 
 			// return a copy
-			res := readings.Current.Clone()
-			return res, nil
+			return readings.Current.Clone(), nil
 		}
 
 		return res, fmt.Errorf("device %s is not available", device)
@@ -96,7 +95,7 @@ func (mc *Cache) Current(device string) (res Readings, err error) {
 }
 
 // Average returns averaged sets of meter readings
-func (mc *Cache) Average(device string) (res Readings, err error) {
+func (mc *Cache) Average(device string) (*Readings, error) {
 	mc.Lock()
 	defer mc.Unlock()
 
@@ -110,19 +109,20 @@ func (mc *Cache) Average(device string) (res Readings, err error) {
 
 			res, err := lastminute.Average()
 			if err != nil {
-				return *res, err
+				return nil, err
 			}
 
 			if mc.verbose {
-				log.Printf("averaging over %d measurements:\r\n%s\r\n", len(measurements), res.String())
+				log.Printf("averaging over %d measurements:\r\n%s\r\n", len(lastminute), res.String())
 			}
-			return *res, nil
+
+			return res, nil
 		}
 
-		return res, fmt.Errorf("device %s is not available", device)
+		return nil, fmt.Errorf("device %s is not available", device)
 	}
 
-	return res, fmt.Errorf("device %s does not exist", device)
+	return nil, fmt.Errorf("device %s does not exist", device)
 }
 
 // MeterReadings holds entire sets of current and recent meter readings for a single device

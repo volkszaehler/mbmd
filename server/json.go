@@ -6,61 +6,19 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"sort"
 	"strings"
 )
 
-// data combines readings with associated device id for JSON encoding
+// apiData combines readings with associated device id for JSON encoding
 // using kvslice it ensured order export of the readings map
-type data struct {
+type apiData struct {
 	device   string
-	readings Readings
-}
-
-type kvslice []kv
-
-func (os kvslice) MarshalJSON() ([]byte, error) {
-	var buf bytes.Buffer
-	buf.WriteString("{")
-
-	for i, kv := range os {
-		if i != 0 {
-			buf.WriteString(",")
-		}
-		// marshal key
-		key, err := json.Marshal(kv.key)
-		if err != nil {
-			return nil, err
-		}
-		buf.Write(key)
-		buf.WriteString(":")
-		// marshal value
-		val, err := json.Marshal(kv.val)
-		if err != nil {
-			return nil, err
-		}
-		buf.Write(val)
-	}
-
-	buf.WriteString("}")
-	return buf.Bytes(), nil
-}
-
-type kv struct {
-	key string
-	val interface{}
-}
-
-func (o kv) MarshalJSON() ([]byte, error) {
-	switch o.val.(type) {
-	case float64:
-		return []byte(fmt.Sprintf("%g", o.val)), nil
-	default:
-		return json.Marshal(o.val)
-	}
+	readings *Readings
 }
 
 // MarshalJSON creates device api json for export
-func (d data) MarshalJSON() ([]byte, error) {
+func (d apiData) MarshalJSON() ([]byte, error) {
 	res := kvslice{
 		{"device", d.device},
 		{"timestamp", d.readings.Timestamp},
@@ -71,6 +29,7 @@ func (d data) MarshalJSON() ([]byte, error) {
 		return json.Marshal(res)
 	}
 
+	values := kvslice{}
 	for m, v := range d.readings.Values {
 		if math.IsNaN(v) {
 			// safeguard for NaN values - should only happen in simluation mode
@@ -78,8 +37,55 @@ func (d data) MarshalJSON() ([]byte, error) {
 			continue
 		}
 		k := strings.ToLower(m.String())
-		res = append(res, kv{k, v})
+		values = append(values, kv{k, v})
+	}
+	sort.Sort(values)
+
+	return json.Marshal(append(res, values...))
+}
+
+type kvslice []kv
+
+func (s kvslice) Len() int           { return len(s) }
+func (s kvslice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s kvslice) Less(i, j int) bool { return s[i].key < s[j].key }
+
+func (s kvslice) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	buf.WriteString("{")
+
+	for i, kv := range s {
+		if i != 0 {
+			buf.WriteString(",")
+		}
+
+		// marshal key
+		key, err := json.Marshal(kv.key)
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(key)
+		buf.WriteString(":")
+
+		// marshal value
+		var val []byte
+		switch kv.val.(type) {
+		case float64:
+			val = []byte(fmt.Sprintf("%.5g", kv.val))
+		default:
+			if val, err = json.Marshal(kv.val); err != nil {
+				return nil, err
+			}
+		}
+
+		buf.Write(val)
 	}
 
-	return json.Marshal(res)
+	buf.WriteString("}")
+	return buf.Bytes(), nil
+}
+
+type kv struct {
+	key string
+	val interface{}
 }

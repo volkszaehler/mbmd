@@ -3,7 +3,6 @@ package server
 import (
 	"errors"
 	"fmt"
-	"math"
 	"sync"
 	"time"
 
@@ -17,33 +16,34 @@ type Readings struct {
 	Values    map[meters.Measurement]float64
 }
 
-func (r *Readings) fp2f(key meters.Measurement) float64 {
+func (r *Readings) f2s(key meters.Measurement, digits int) string {
 	if v, ok := r.Values[key]; ok {
-		return v
+		format := fmt.Sprintf("%%.%df", digits)
+		return fmt.Sprintf(format, v)
 	}
-	return math.NaN()
+	return "0.0"
 }
 
 func (r *Readings) String() string {
 	fmtString := "" +
-		"L1: %.1fV %.2fA %.0fW %.2fcos | " +
-		"L2: %.1fV %.2fA %.0fW %.2fcos | " +
-		"L3: %.1fV %.2fA %.0fW %.2fcos | " +
-		"%.1fHz"
+		"L1: %sV %sA %sW %scos | " +
+		"L2: %sV %sA %sW %scos | " +
+		"L3: %sV %sA %sW %scos | " +
+		"%sHz"
 	return fmt.Sprintf(fmtString,
-		r.fp2f(meters.VoltageL1),
-		r.fp2f(meters.CurrentL1),
-		r.fp2f(meters.PowerL1),
-		r.fp2f(meters.CosphiL1),
-		r.fp2f(meters.VoltageL2),
-		r.fp2f(meters.CurrentL2),
-		r.fp2f(meters.PowerL2),
-		r.fp2f(meters.CosphiL2),
-		r.fp2f(meters.VoltageL3),
-		r.fp2f(meters.CurrentL3),
-		r.fp2f(meters.PowerL3),
-		r.fp2f(meters.CosphiL3),
-		r.fp2f(meters.Frequency),
+		r.f2s(meters.VoltageL1, 0),
+		r.f2s(meters.CurrentL1, 1),
+		r.f2s(meters.PowerL1, 0),
+		r.f2s(meters.CosphiL1, 2),
+		r.f2s(meters.VoltageL2, 0),
+		r.f2s(meters.CurrentL2, 1),
+		r.f2s(meters.PowerL2, 0),
+		r.f2s(meters.CosphiL2, 2),
+		r.f2s(meters.VoltageL3, 0),
+		r.f2s(meters.CurrentL3, 1),
+		r.f2s(meters.PowerL3, 0),
+		r.f2s(meters.CosphiL3, 2),
+		r.f2s(meters.Frequency, 0),
 	)
 }
 
@@ -53,24 +53,25 @@ func (r *Readings) After(ts time.Time) (retval bool) {
 }
 
 // Add two readings. The individual values are added except for
-// time- the latter of the two times is copied over to the result
-func (r *Readings) add(rhs *Readings) (*Readings, error) {
+// time- the latter of the two times is copied over to the result.
+// If the right-hand side value does not exist in left-hand side, it
+// is ignored, so order matters.
+func (r *Readings) add(rhs *Readings) *Readings {
 	res := &Readings{
 		Timestamp: r.Timestamp,
 		Values:    make(map[meters.Measurement]float64),
 	}
 
 	for m, rhsv := range rhs.Values {
-		if lhsv, ok := r.Values[m]; ok {
-			res.Values[m] = lhsv + rhsv
-		}
+		lhsv := r.Values[m]
+		res.Values[m] = lhsv + rhsv
 	}
 
 	if r.Timestamp.Before(rhs.Timestamp) {
 		res.Timestamp = rhs.Timestamp
 	}
 
-	return res, nil
+	return res
 }
 
 // Divide a reading by an integer. The individual values are divided except
@@ -104,7 +105,7 @@ func (r *Readings) Add(q QuerySnip) {
 }
 
 // Clone clones a Readings including its values map
-func (r *Readings) Clone() Readings {
+func (r *Readings) Clone() *Readings {
 	r.Lock()
 	defer r.Unlock()
 
@@ -117,16 +118,16 @@ func (r *Readings) Clone() Readings {
 		res.Values[k] = v
 	}
 
-	return res
+	return &res
 }
 
 // ReadingSlice is a type alias for a slice of readings.
-type ReadingSlice []Readings
+type ReadingSlice []*Readings
 
 // After creates a new ReadingSlice of latest data
-func (r ReadingSlice) After(ts time.Time) ReadingSlice {
+func (rs ReadingSlice) After(ts time.Time) ReadingSlice {
 	res := ReadingSlice{}
-	for _, reading := range r {
+	for _, reading := range rs {
 		if reading.After(ts) {
 			res = append(res, reading)
 		}
@@ -136,22 +137,21 @@ func (r ReadingSlice) After(ts time.Time) ReadingSlice {
 
 // Average calculates average across a ReadingSlice.
 // It is assumed that each set of readings is fully populated.
-func (r *ReadingSlice) Average() (avg *Readings, err error) {
-	for idx, r := range *r {
-		if idx == 0 {
-			// This is the first element - initialize our accumulator
-			avg = &r
+func (rs *ReadingSlice) Average() (avg *Readings, err error) {
+	for idx := len(*rs) - 1; idx >= 0; idx-- {
+		r := (*rs)[idx]
+
+		// This is the first element - initialize our accumulator
+		if avg == nil {
+			avg = r
 		} else {
-			avg, err = r.add(avg)
-			if err != nil {
-				return nil, err
-			}
+			avg = r.add(avg)
 		}
 	}
 
-	if len(*r) == 0 {
+	if avg == nil {
 		return nil, errors.New("readings empty")
 	}
 
-	return avg.divide(float64(len(*r))), nil
+	return avg.divide(float64(len(*rs))), nil
 }

@@ -50,35 +50,39 @@ func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Reques
 	})
 }
 
-func (h *Httpd) allDevicesHandler(mc *Cache, provider func(id string) (Readings, error)) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) allDevicesHandler(
+	mc *Cache, readingsProvider func(id string) (*Readings, error),
+) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ids := mc.SortedIDs()
-		current := make([]data, 0)
+		res := make([]apiData, 0)
 		for _, id := range ids {
-			readings, err := provider(id)
+			readings, err := readingsProvider(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
 			}
 
-			data := data{device: id, readings: readings}
-			current = append(current, data)
+			data := apiData{device: id, readings: readings}
+			res = append(res, data)
 		}
 
-		if len(current) == 0 {
+		if len(res) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "all meters are inactive")
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(current); err != nil {
-			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			log.Printf("failed to encode JSON: %s", err.Error())
 		}
 	})
 }
 
-func (h *Httpd) singleDevicesHandler(mc *Cache, provider func(id string) (Readings, error)) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) singleDeviceHandler(
+	mc *Cache, readingsProvider func(id string) (*Readings, error),
+) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
@@ -88,31 +92,33 @@ func (h *Httpd) singleDevicesHandler(mc *Cache, provider func(id string) (Readin
 			return
 		}
 
-		readings, err := mc.Current(id)
+		readings, err := readingsProvider(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
 			return
 		}
 
-		data := data{device: id, readings: readings}
+		data := apiData{device: id, readings: readings}
 
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(data); err != nil {
-			log.Printf("failed to create JSON representation of measurement %s", err.Error())
+			log.Printf("failed to encode JSON %s", err.Error())
 		}
 	})
 }
 
+// mkSocketHandler attaches status handler to uri
 func (h *Httpd) mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(s); err != nil {
-			log.Printf("failed to create JSON representation of measurements: %s", err.Error())
+			log.Printf("failed to encode JSON: %s", err.Error())
 		}
 	})
 }
 
+// mkSocketHandler attaches websocket handler to uri
 func (h *Httpd) mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ServeWebsocket(hub, w, r)
@@ -171,9 +177,9 @@ func (h *Httpd) Run(
 	// api
 	api := router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/last", h.allDevicesHandler(mc, mc.Current))
-	api.HandleFunc("/last/{id:[a-z@A-Z0-9:]+}", h.singleDevicesHandler(mc, mc.Current))
+	api.HandleFunc("/last/{id:[a-z@A-Z0-9:]+}", h.singleDeviceHandler(mc, mc.Current))
 	api.HandleFunc("/avg", h.allDevicesHandler(mc, mc.Average))
-	api.HandleFunc("/avg/{id:[a-z@A-Z0-9:]+}", h.singleDevicesHandler(mc, mc.Average))
+	api.HandleFunc("/avg/{id:[a-z@A-Z0-9:]+}", h.singleDeviceHandler(mc, mc.Average))
 	api.HandleFunc("/status", h.mkStatusHandler(s))
 	api.Use(jsonHandler)
 
