@@ -22,10 +22,11 @@ const devAssets = false
 
 // Httpd is an http server
 type Httpd struct {
+	mc *Cache
 	qe DeviceInfo
 }
 
-func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
 		log.Fatal("failed to load embedded template: " + err.Error())
@@ -53,10 +54,10 @@ func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Reques
 }
 
 func (h *Httpd) allDevicesHandler(
-	mc *Cache, readingsProvider func(id string) (*Readings, error),
+	readingsProvider func(id string) (*Readings, error),
 ) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ids := mc.SortedIDs()
+		ids := h.mc.SortedIDs()
 		res := make([]apiData, 0)
 		for _, id := range ids {
 			readings, err := readingsProvider(id)
@@ -83,7 +84,7 @@ func (h *Httpd) allDevicesHandler(
 }
 
 func (h *Httpd) singleDeviceHandler(
-	mc *Cache, readingsProvider func(id string) (*Readings, error),
+	readingsProvider func(id string) (*Readings, error),
 ) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -149,13 +150,15 @@ func jsonHandler(h http.Handler) http.Handler {
 }
 
 // NewHttpd creates HTTP daemon
-func NewHttpd(qe DeviceInfo) *Httpd {
-	return &Httpd{qe: qe}
+func NewHttpd(qe DeviceInfo, mc *Cache) *Httpd {
+	return &Httpd{
+		qe: qe,
+		mc: mc,
+	}
 }
 
 // Run executes the http server
 func (h *Httpd) Run(
-	mc *Cache,
 	hub *SocketHub,
 	s *Status,
 	url string,
@@ -164,7 +167,7 @@ func (h *Httpd) Run(
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static
-	router.HandleFunc("/", h.mkIndexHandler(mc))
+	router.HandleFunc("/", h.mkIndexHandler())
 
 	// individual handlers per folder
 	for _, folder := range []string{"js", "css"} {
@@ -174,10 +177,10 @@ func (h *Httpd) Run(
 
 	// api
 	api := router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/last", h.allDevicesHandler(mc, mc.Current))
-	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(mc, mc.Current))
-	api.HandleFunc("/avg", h.allDevicesHandler(mc, mc.Average))
-	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(mc, mc.Average))
+	api.HandleFunc("/last", h.allDevicesHandler(h.mc.Current))
+	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Current))
+	api.HandleFunc("/avg", h.allDevicesHandler(h.mc.Average))
+	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Average))
 	api.HandleFunc("/status", h.mkStatusHandler(s))
 	api.Use(jsonHandler)
 
@@ -189,7 +192,7 @@ func (h *Httpd) Run(
 
 	srv := http.Server{
 		Addr:         url,
-		Handler:      handlers.CompressHandler(jsonHandler(router)),
+		Handler:      handlers.CompressHandler(router),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 		// ErrorLog: debug,

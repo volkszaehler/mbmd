@@ -248,7 +248,7 @@ func main() {
 		go tee.Run()
 
 		// status cache
-		status := server.NewStatus(cc)
+		status := server.NewStatus(qe, cc)
 
 		// websocket hub
 		hub := server.NewSocketHub(status)
@@ -258,8 +258,8 @@ func main() {
 		cache := server.NewCache(cacheDuration, status, c.Bool("verbose"))
 		tee.AttachRunner(cache.Run)
 
-		httpd := server.NewHttpd(qe)
-		go httpd.Run(cache, hub, status, c.String("url"))
+		httpd := server.NewHttpd(qe, cache)
+		go httpd.Run(hub, status, c.String("url"))
 
 		// MQTT client
 		if c.String("broker") != "" {
@@ -277,7 +277,6 @@ func main() {
 			// homie needs to scan the bus, start it first
 			if c.String("homie") != "" {
 				homieRunner := server.NewHomieRunner(mqtt, qe, c.String("homie"))
-				// homieRunner.Register(c.String("homie"), meters, qe)
 				tee.AttachRunner(homieRunner.Run)
 			}
 

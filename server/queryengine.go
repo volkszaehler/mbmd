@@ -11,6 +11,11 @@ import (
 	"github.com/volkszaehler/mbmd/meters"
 )
 
+const (
+	// deviceIDregex is the regex pattern that identifies valid device ids
+	deviceIDregex = "\\w*(\\d+)\\.(\\d+)"
+)
+
 // DeviceInfo returns device descriptor by device id
 type DeviceInfo interface {
 	DeviceDescriptorByID(id string) meters.DeviceDescriptor
@@ -44,7 +49,7 @@ func NewQueryEngine(managers map[string]meters.Manager) *QueryEngine {
 
 	qe := &QueryEngine{
 		handlers: handlers,
-		re:       regexp.MustCompile("\\w*(\\d+)\\.(\\d+)"),
+		re:       regexp.MustCompile(deviceIDregex),
 	}
 	return qe
 }

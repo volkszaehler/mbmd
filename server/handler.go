@@ -59,6 +59,7 @@ func (h *Handler) Run(
 			}
 
 			d := dev.Descriptor()
+			uniqueID = h.uniqueID(id, dev) // update id
 			log.Printf("initialized device %s: %v", uniqueID, d)
 
 			// create status

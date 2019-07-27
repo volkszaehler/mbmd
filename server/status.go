@@ -42,6 +42,7 @@ func memoryStatus() MemoryStatus {
 // It is updated when marshaled to JSON
 type Status struct {
 	sync.Mutex
+	qe         DeviceInfo
 	StartTime  time.Time
 	UpTime     float64
 	Goroutines int
@@ -52,8 +53,9 @@ type Status struct {
 
 // NewStatus creates status cache that collects device status from control channel.
 // It needs to be Update()d in order to refresh its data for consumption
-func NewStatus(control <-chan ControlSnip) *Status {
+func NewStatus(qe DeviceInfo, control <-chan ControlSnip) *Status {
 	s := &Status{
+		qe:         qe,
 		Memory:     memoryStatus(),
 		Goroutines: runtime.NumGoroutine(),
 		StartTime:  time.Now(),
@@ -73,9 +75,10 @@ func NewStatus(control <-chan ControlSnip) *Status {
 				RequestsPerMinute: float64(c.Status.Requests) / minutes,
 			}
 
+			desc := s.qe.DeviceDescriptorByID(c.Device)
 			ds := DeviceStatus{
 				Device: c.Device,
-				// Type:         dev.Descriptor().Manufacturer,
+				Type:         desc.Manufacturer,
 				Online:       c.Status.Online,
 				ModbusStatus: mbs,
 			}
