@@ -21,7 +21,9 @@ const devAssets = false
 //go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
 // Httpd is an http server
-type Httpd struct{}
+type Httpd struct {
+	qe DeviceInfo
+}
 
 func (h *Httpd) mkIndexHandler(mc *Cache) func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
@@ -125,15 +127,6 @@ func (h *Httpd) mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.
 	}
 }
 
-// serveJSON decorates handler with required headers
-func (h *Httpd) serveJSON(f http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		f(w, r)
-	}
-}
-
 type debugLogger struct {
 	pattern string
 }
@@ -153,6 +146,11 @@ func jsonHandler(h http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		h.ServeHTTP(w, r)
 	})
+}
+
+// NewHttpd creates HTTP daemon
+func NewHttpd(qe DeviceInfo) *Httpd {
+	return &Httpd{qe: qe}
 }
 
 // Run executes the http server
@@ -177,21 +175,24 @@ func (h *Httpd) Run(
 	// api
 	api := router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/last", h.allDevicesHandler(mc, mc.Current))
-	api.HandleFunc("/last/{id:[a-z@A-Z0-9:]+}", h.singleDeviceHandler(mc, mc.Current))
+	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(mc, mc.Current))
 	api.HandleFunc("/avg", h.allDevicesHandler(mc, mc.Average))
-	api.HandleFunc("/avg/{id:[a-z@A-Z0-9:]+}", h.singleDeviceHandler(mc, mc.Average))
+	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(mc, mc.Average))
 	api.HandleFunc("/status", h.mkStatusHandler(s))
 	api.Use(jsonHandler)
 
 	// websocket
 	router.HandleFunc("/ws", h.mkSocketHandler(hub))
 
+	// debug logger
+	_ = log.New(debugLogger{"superfluous"}, "", 0)
+
 	srv := http.Server{
 		Addr:         url,
 		Handler:      handlers.CompressHandler(jsonHandler(router)),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
-		// ErrorLog: log.New(debugLogger{"superfluous"}, "", 0),
+		// ErrorLog: debug,
 	}
 
 	srv.SetKeepAlivesEnabled(true)

@@ -3,6 +3,7 @@ package mbmd
 import (
 	"log"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -11,17 +12,35 @@ import (
 	"github.com/volkszaehler/mbmd/meters/sunspec"
 )
 
+// Config desribes the entirey configuration
+type Config struct {
+	Default DefaultOptions
+	Devices []DeviceConfig
+}
+
+// DefaultOptions describe the global configuration
+type DefaultOptions struct {
+	Adapter string
+}
+
+// DeviceConfig describes a single device's configuration
+type DeviceConfig struct {
+	Type    string
+	ID      uint8
+	Name    string
+	Adapter string
+}
+
 // DeviceConfigHandler creates map of meter managers from given configuration
 type DeviceConfigHandler struct {
-	defaultDevice string
+	DefaultDevice string
 	Managers      map[string]meters.Manager
 }
 
 // NewDeviceConfigHandler creates a configuration handler
-func NewDeviceConfigHandler(defaultDevice string) *DeviceConfigHandler {
+func NewDeviceConfigHandler() *DeviceConfigHandler {
 	conf := &DeviceConfigHandler{
-		defaultDevice: defaultDevice,
-		Managers:      make(map[string]meters.Manager),
+		Managers: make(map[string]meters.Manager),
 	}
 	return conf
 }
@@ -38,15 +57,67 @@ func createConnection(device string) (res meters.Connection) {
 	return res
 }
 
-// CreateDevice creates new device and adds it to the
-func (conf *DeviceConfigHandler) CreateDevice(deviceDef string) {
+func (conf *DeviceConfigHandler) connectionManager(connSpec string) meters.Manager {
+	manager, ok := conf.Managers[connSpec]
+	if !ok {
+		conn := createConnection(connSpec)
+		manager = meters.NewManager(conn)
+		conf.Managers[connSpec] = manager
+	}
+
+	return manager
+}
+
+func (conf *DeviceConfigHandler) createDeviceForManager(
+	manager meters.Manager,
+	meterType string,
+) meters.Device {
+	var meter meters.Device
+	meterType = strings.ToUpper(meterType)
+
+	var isSunspec bool
+	sunspecTypes := []string{"KOSTAL", "SE", "SMA", "SOLAREDGE", "SUNS", "SUNSPEC"}
+	for _, t := range sunspecTypes {
+		if t == meterType {
+			isSunspec = true
+			break
+		}
+	}
+
+	sort.SearchStrings(sunspecTypes, meterType)
+	if _, ok := manager.Conn.(*meters.TCP); ok || isSunspec {
+		meter = sunspec.NewDevice(meterType)
+	} else {
+		var err error
+		meter, err = rs485.NewDevice(meterType)
+		if err != nil {
+			log.Fatalf("Error creating device %s: %v.", meterType, err)
+		}
+	}
+
+	return meter
+}
+
+// CreateDevice creates new device and adds it to the connection manager
+func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
+	manager := conf.connectionManager(devConf.Adapter)
+	meter := conf.createDeviceForManager(manager, devConf.Type)
+
+	if err := manager.Add(devConf.ID, meter); err != nil {
+		log.Fatalf("Error adding device %v: %v.", devConf, err)
+	}
+}
+
+// CreateDeviceFromSpec creates new device from specification string and adds
+// it to the connection manager
+func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 	deviceSplit := strings.Split(deviceDef, "@")
 	if len(deviceSplit) == 0 || len(deviceSplit) > 2 {
 		log.Fatalf("Cannot parse connect string %s. See -h for help.", deviceDef)
 	}
 
 	meterDef := deviceSplit[0]
-	connSpec := conf.defaultDevice
+	connSpec := conf.DefaultDevice
 	if len(deviceSplit) == 2 {
 		connSpec = deviceSplit[1]
 	}
@@ -55,13 +126,7 @@ func (conf *DeviceConfigHandler) CreateDevice(deviceDef string) {
 		log.Fatalf("Cannot parse connect string- missing physical device or connection for %s. See -h for help.", deviceDef)
 	}
 
-	manager, ok := conf.Managers[connSpec]
-	if !ok {
-		conn := createConnection(connSpec)
-		manager = meters.NewManager(conn)
-		conf.Managers[connSpec] = manager
-	}
-
+	manager := conf.connectionManager(connSpec)
 	meterSplit := strings.Split(meterDef, ":")
 	if len(meterSplit) != 2 {
 		log.Fatalf("Cannot parse device definition: %s. See -h for help.", meterDef)
@@ -77,18 +142,8 @@ func (conf *DeviceConfigHandler) CreateDevice(deviceDef string) {
 		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
 
-	var meter meters.Device
-	if _, ok := manager.Conn.(*meters.TCP); ok {
-		meter = sunspec.NewDevice()
-	} else {
-		meterType = strings.ToUpper(meterType)
-		meter, err = rs485.NewDevice(meterType)
-		if err != nil {
-			log.Fatalf("Error creating device %s: %v. See -h for help.", meterDef, err)
-		}
-	}
-
-	if err := manager.Add(uint8(id), meter); err !=nil {
+	meter := conf.createDeviceForManager(manager, meterType)
+	if err := manager.Add(uint8(id), meter); err != nil {
 		log.Fatalf("Error adding device %s: %v. See -h for help.", meterDef, err)
 	}
 }

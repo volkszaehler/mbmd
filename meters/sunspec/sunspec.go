@@ -22,8 +22,12 @@ type sunSpec struct {
 }
 
 // NewDevice creates a Sunspec device
-func NewDevice() meters.Device {
-	return &sunSpec{}
+func NewDevice(meterType string) meters.Device {
+	return &sunSpec{
+		descriptor: meters.DeviceDescriptor{
+			Manufacturer: meterType,
+		},
+	}
 }
 
 func (d *sunSpec) Initialize(client modbus.Client) error {

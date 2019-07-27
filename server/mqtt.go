@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -99,11 +100,9 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 	}
 }
 
-// DeviceTopic converts meter's device id to topic string
-func (m *MqttClient) DeviceTopic(deviceID string) string {
-	// uniqueID := fmt.Sprintf(UniqueIdFormat, deviceID)
-	// return strings.Replace(strings.ToLower(uniqueID), "#", "", -1)
-	return deviceID
+// deviceTopic converts meter's device id to topic string
+func (m *MqttClient) deviceTopic(deviceID string) string {
+	return strings.Replace(strings.ToLower(deviceID), "#", "", -1)
 }
 
 // MqttRunner allows to attach an MqttClient as broadcast receiver
@@ -114,7 +113,7 @@ type MqttRunner struct {
 // Run MqttClient publisher
 func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	for snip := range in {
-		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.DeviceTopic(snip.Device), snip.Measurement)
+		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.deviceTopic(snip.Device), snip.Measurement)
 		message := fmt.Sprintf("%.3f", snip.Value)
 		go m.Publish(topic, false, message)
 	}

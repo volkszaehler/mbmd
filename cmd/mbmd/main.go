@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/spf13/viper"
 	latest "github.com/tcnksm/go-latest"
 	cli "gopkg.in/urfave/cli.v1"
 
@@ -19,8 +20,9 @@ import (
 	"github.com/volkszaehler/mbmd/server"
 )
 
-const(
-	cacheDuration = 1*time.Minute
+const (
+	cacheDuration = 1 * time.Minute
+	defaultConfig = "mbmd.yaml"
 )
 
 func checkVersion() {
@@ -81,7 +83,7 @@ func main() {
 			Usage: "ModBus adapter - can be either serial RTU device (/dev/ttyUSB0) or TCP socket (localhost:502)",
 		},
 		cli.IntFlag{
-			Name:  "comset, c",
+			Name:  "comset",
 			Value: meters.Comset9600_8N1,
 			Usage: `Communication parameters:
 			` + strconv.Itoa(meters.Comset2400_8N1) + `:  2400 baud, 8N1
@@ -93,11 +95,17 @@ func main() {
 			`,
 		},
 		cli.StringFlag{
+			Name:  "config, c",
+			Value: defaultConfig,
+			Usage: `Configuration file`,
+		},
+		cli.StringFlag{
 			Name:  "devices, d",
-			Value: "SDM:1",
+			Value: "",
 			Usage: `MODBUS device type and ID to query, separated by comma.
+			Append device or address separated by @.
 			Valid types are:` + meterHelp() + `
-			Example: -d JANITZA:1,SDM:22,DZG:23`,
+			Example: -d SDM:22,SMA:126@localhost:502`,
 		},
 		cli.BoolFlag{
 			Name:  "detect",
@@ -117,7 +125,7 @@ func main() {
 		// http api
 		cli.StringFlag{
 			Name:  "url, u",
-			Value: "localhost:8080",
+			Value: ":8080",
 			Usage: "REST API url. Use 0.0.0.0:8080 to accept incoming connections.",
 		},
 
@@ -178,9 +186,6 @@ func main() {
 		log.Printf("mbmd %s %s", server.Version, server.Commit)
 		go checkVersion()
 
-		// Parse the devices parameter
-		// meters := createMeters(strings.Split(c.String("devices"), ","))
-
 		// rate, err := time.ParseDuration(c.String("rate"))
 		// if err != nil {
 		// 	log.Fatalf("Invalid rate %s", err)
@@ -192,14 +197,51 @@ func main() {
 		// 	return
 		// }
 
-		conf := mbmd.NewDeviceConfigHandler(c.String("adapter"))
-		for _, dev := range strings.Split(c.String("devices"), ",") {
-			conf.CreateDevice(dev)
+		var conf mbmd.Config
+		viper.SetConfigType("yaml") // or viper.SetConfigType("YAML")
+
+		if configFile := c.String("config"); configFile != defaultConfig {
+			log.Println("SetConfigFile")
+			viper.SetConfigFile(configFile)
+		} else {
+			viper.SetConfigName("mbmd")  // name of config file (without extension)
+			viper.AddConfigPath("/etc")  // path to look for the config file in
+			viper.AddConfigPath("$HOME") // call multiple times to add many search paths
+			viper.AddConfigPath(".")     // optionally look for config in the working directory
 		}
 
+		confHandler := mbmd.NewDeviceConfigHandler()
+		if err := viper.ReadInConfig(); err != nil { // handle errors reading the config file
+			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+				log.Fatal(err)
+			}
+		} else {
+			// config file found
+			log.Printf("using %s", viper.ConfigFileUsed())
+			if err := viper.Unmarshal(&conf); err != nil {
+				log.Fatalf("failed parsing config file: %v", err)
+			}
+
+			confHandler.DefaultDevice = conf.Default.Adapter
+			for _, dev := range conf.Devices {
+				confHandler.CreateDevice(dev)
+			}
+		}
+
+		// remaining command line options
+		confHandler.DefaultDevice = c.String("adapter")
+		for _, dev := range strings.Split(c.String("devices"), ",") {
+			if dev != "" {
+				confHandler.CreateDeviceFromSpec(dev)
+			}
+		}
+
+		// query engine
+		qe := server.NewQueryEngine(confHandler.Managers)
+
 		// result channels
-		cc := make(chan server.ControlSnip)
 		rc := make(chan server.QuerySnip)
+		cc := make(chan server.ControlSnip)
 
 		// tee that broadcasts meter messages to multiple recipients
 		tee := server.NewQuerySnipBroadcaster(rc)
@@ -216,37 +258,36 @@ func main() {
 		cache := server.NewCache(cacheDuration, status, c.Bool("verbose"))
 		tee.AttachRunner(cache.Run)
 
-		httpd := &server.Httpd{}
-		go httpd.Run(cache, hub, nil, c.String("url"))
-
+		httpd := server.NewHttpd(qe)
+		go httpd.Run(cache, hub, status, c.String("url"))
 
 		// MQTT client
-		// if c.String("broker") != "" {
-		// 	mqtt := NewMqttClient(
-		// 		c.String("broker"),
-		// 		c.String("topic"),
-		// 		c.String("user"),
-		// 		c.String("password"),
-		// 		c.String("clientid"),
-		// 		c.Int("qos"),
-		// 		c.Bool("clean"),
-		// 		c.Bool("verbose"))
+		if c.String("broker") != "" {
+			mqtt := server.NewMqttClient(
+				c.String("broker"),
+				c.String("topic"),
+				c.String("user"),
+				c.String("password"),
+				c.String("clientid"),
+				c.Int("qos"),
+				c.Bool("clean"),
+				c.Bool("verbose"),
+			)
 
-		// 	// homie needs to scan the bust, start it first
-		// 	if c.String("homie") != "" {
-		// 		homieRunner := HomieRunner{MqttClient: mqtt}
-		// 		homieRunner.Register(c.String("homie"), meters, qe)
-		// 		tee.AttachRunner(homieRunner.Run)
-		// 	}
+			// homie needs to scan the bus, start it first
+			if c.String("homie") != "" {
+				homieRunner := server.NewHomieRunner(mqtt, qe, c.String("homie"))
+				// homieRunner.Register(c.String("homie"), meters, qe)
+				tee.AttachRunner(homieRunner.Run)
+			}
 
-		// 	// start "normal" mqtt handler after homie setup
-		// 	if c.String("topic") != "" {
-		// 		mqttRunner := MqttRunner{MqttClient: mqtt}
-		// 		tee.AttachRunner(mqttRunner.Run)
-		// 	}
-		// }
+			// start "normal" mqtt handler after homie setup
+			if c.String("topic") != "" {
+				mqttRunner := server.MqttRunner{MqttClient: mqtt}
+				tee.AttachRunner(mqttRunner.Run)
+			}
+		}
 
-		qe := server.NewQueryEngine(conf.Managers)
 		ctx, cancel := context.WithCancel(context.Background())
 		go qe.Run(ctx, cc, rc)
 

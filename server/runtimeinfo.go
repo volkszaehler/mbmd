@@ -11,7 +11,6 @@ const (
 // RuntimeInfo represents a single modbus device status
 type RuntimeInfo struct {
 	lastFailure time.Time
-	initialized bool
 	Online      bool
 	Requests    uint64
 	Errors      uint64

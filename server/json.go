@@ -7,7 +7,6 @@ import (
 	"log"
 	"math"
 	"sort"
-	"strings"
 )
 
 // apiData combines readings with associated device id for JSON encoding
@@ -20,9 +19,9 @@ type apiData struct {
 // MarshalJSON creates device api json for export
 func (d apiData) MarshalJSON() ([]byte, error) {
 	res := kvslice{
-		{"device", d.device},
-		{"timestamp", d.readings.Timestamp},
-		{"unix", d.readings.Timestamp.Unix()},
+		{"Device", d.device},
+		{"Timestamp", d.readings.Timestamp},
+		{"Unix", d.readings.Timestamp.Unix()},
 	}
 
 	if d.readings.Values == nil {
@@ -36,19 +35,17 @@ func (d apiData) MarshalJSON() ([]byte, error) {
 			log.Printf("skipping unexpected NaN value for %s", m)
 			continue
 		}
-		k := strings.ToLower(m.String())
-		values = append(values, kv{k, v})
+		values = append(values, kv{m.String(), v})
 	}
-	sort.Sort(values)
+
+	sort.Slice(values, func(a, b int) bool {
+		return values[a].key < values[b].key
+	})
 
 	return json.Marshal(append(res, values...))
 }
 
 type kvslice []kv
-
-func (s kvslice) Len() int           { return len(s) }
-func (s kvslice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s kvslice) Less(i, j int) bool { return s[i].key < s[j].key }
 
 func (s kvslice) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer

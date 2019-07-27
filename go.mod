@@ -13,6 +13,7 @@ require (
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/mjibson/esc v0.2.0
 	github.com/pkg/errors v0.8.1
+	github.com/spf13/viper v1.4.0
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	golang.org/x/net v0.0.0-20190514140710-3ec191127204 // indirect
 	golang.org/x/tools v0.0.0-20190517183331-d88f79806bbd
