@@ -1,0 +1,11 @@
+# default configuration
+default:
+  adapter: /dev/ttyUSB0
+# list of devices
+devices:
+- type: sdm
+  id: 1
+- name: sma1
+  type: sunspec
+  id: 126
+  adapter: localhost:502
