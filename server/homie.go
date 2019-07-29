@@ -80,14 +80,6 @@ func (hr *HomieRunner) unregister() {
 	}
 }
 
-// stripSlash removes trailing slash
-func stripSlash(s string) string {
-	if s[len(s)-1:] == "/" {
-		s = s[:len(s)-1]
-	}
-	return s
-}
-
 func (hr *HomieRunner) publishMeter(meter string, descriptor meters.DeviceDescriptor) {
 	// clear retained messages
 	subTopic := hr.deviceTopic(meter)

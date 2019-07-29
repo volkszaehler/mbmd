@@ -28,7 +28,7 @@ assets:
 
 binaries:
 	@echo Version: $(VERSION) $(BUILD_DATE)
-	go build -v -ldflags '-X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"' ./cmd/mbmd
+	go build -v -ldflags '-X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"'
 
 publish-images:
 	@echo Version: $(VERSION) $(BUILD_DATE)

@@ -68,9 +68,9 @@ Only applicable if the default adapter is an RTU device`,
 	)
 
 	// bind command line options
-	viper.BindPFlag("adapter", rootCmd.PersistentFlags().Lookup("adapter"))
-	viper.BindPFlag("baudrate", rootCmd.PersistentFlags().Lookup("baudrate"))
-	viper.BindPFlag("comset", rootCmd.PersistentFlags().Lookup("comset"))
+	_ = viper.BindPFlag("adapter", rootCmd.PersistentFlags().Lookup("adapter"))
+	_ = viper.BindPFlag("baudrate", rootCmd.PersistentFlags().Lookup("baudrate"))
+	_ = viper.BindPFlag("comset", rootCmd.PersistentFlags().Lookup("comset"))
 }
 
 // initConfig reads in config file and ENV variables if set

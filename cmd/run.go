@@ -100,17 +100,17 @@ any type is considered valid.
 		if flag.Name == "devices" { // don't bind this key
 			return
 		}
-		viper.BindPFlag(flag.Name, flag)
+		_ = viper.BindPFlag(flag.Name, flag)
 	})
 
-	viper.BindPFlag("mqtt.broker", runCmd.PersistentFlags().Lookup("mqtt"))
+	_ = viper.BindPFlag("mqtt.broker", runCmd.PersistentFlags().Lookup("mqtt"))
 	mqtt := []string{"topic", "user", "password", "clientid", "clean", "qos", "homie"}
 	for _, f := range mqtt {
 		flag := runCmd.PersistentFlags().Lookup(f)
 		if flag == nil {
 			panic("pfllag lookup failed for " + f)
 		}
-		viper.BindPFlag("mqtt."+f, flag)
+		_ = viper.BindPFlag("mqtt."+f, flag)
 	}
 }
 
@@ -150,7 +150,7 @@ func meterHelp() string {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	log.Printf("mbmd %s %s", server.Version, server.Commit)
+	log.Printf("mbmd %s (%s)", server.Version, server.Commit)
 	go checkVersion()
 
 	confHandler := NewDeviceConfigHandler()

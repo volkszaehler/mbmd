@@ -67,7 +67,7 @@ func scan(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	deviceList := make(map[int]meters.Device, 0)
+	deviceList := make(map[int]meters.Device)
 	log.Printf("starting bus scan on %s", adapter)
 
 SCAN:
