@@ -1,0 +1,29 @@
+# REST api, use 127.0.0.1 to restrict to localhost
+api: 0.0.0.0:8080
+
+# mqtt config
+mqtt:
+  broker: localhost:1883
+  topic: mbmd
+  user:
+  password:
+  clientid: mbmd
+  qos: 0
+  clean: true
+  homie: homie
+
+# adapters are referenced by device
+adapters:
+- device: /dev/ttyUSB0
+  baudrate: 9600
+  comset: 8N1
+
+# list of devices
+devices:
+- type: sdm
+  id: 1
+  adapter: /dev/ttyUSB0
+- name: sma1
+  type: sunspec
+  id: 126
+  adapter: 192.168.0.40:502

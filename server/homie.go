@@ -10,7 +10,7 @@ import (
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 
-	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 const (
@@ -19,153 +19,125 @@ const (
 	timeout     = 500 * time.Millisecond
 )
 
+// HomieRunner publishes query results as homie mqtt topics
 type HomieRunner struct {
 	*MqttClient
+	qe        DeviceInfo
 	rootTopic string
-	meters    map[uint8]*Meter
+	meters    map[string]map[meters.Measurement]bool
+}
+
+// NewHomieRunner create new runner for homie IoT spec
+func NewHomieRunner(mqttClient *MqttClient, qe DeviceInfo, rootTopic string) *HomieRunner {
+	hr := &HomieRunner{
+		MqttClient: mqttClient,
+		qe:         qe,
+		rootTopic:  rootTopic,
+		meters:     make(map[string]map[meters.Measurement]bool),
+	}
+
+	return hr
 }
 
 // Run MQTT client publisher
-func (m *HomieRunner) Run(in QuerySnipChannel) {
-	defer m.unregister() // cleanup topics
+func (hr *HomieRunner) Run(in <-chan QuerySnip) {
+	defer hr.unregister() // cleanup topics
 
 	for snip := range in {
+		// publish meter
+		if _, ok := hr.meters[snip.Device]; !ok {
+			hr.meters[snip.Device] = make(map[meters.Measurement]bool)
+			d := hr.qe.DeviceDescriptorByID(snip.Device)
+			hr.publishMeter(snip.Device, d)
+		}
+
+		// publish properties
+		if _, ok := hr.meters[snip.Device][snip.Measurement]; !ok {
+			hr.meters[snip.Device][snip.Measurement] = true
+			hr.publishProperties(snip.Device)
+		}
+
+		// publish data
 		topic := fmt.Sprintf("%s/%s/%s/%s",
-			m.rootTopic,
-			m.DeviceTopic(snip.DeviceId),
+			hr.rootTopic,
+			hr.deviceTopic(snip.Device),
 			nodeTopic,
-			strings.ToLower(snip.IEC61850.String()))
+			strings.ToLower(snip.Measurement.String()),
+		)
 
 		message := fmt.Sprintf("%.3f", snip.Value)
-		go m.Publish(topic, false, message)
+		go hr.Publish(topic, false, message)
 	}
 }
 
-// Register subcribes GoSDM as discoverable device
-func (m *HomieRunner) Register(rootTopic string, meters map[uint8]*Meter, qe *ModbusEngine) {
-	// mqttOpts.SetWill(m.homieTopic("$state"), "lost", byte(m.mqttQos), true)
-	m.rootTopic = stripSlash(rootTopic)
-	m.meters = meters
-
+// unregister unpublishes device information
+func (hr *HomieRunner) unregister() {
 	// devices
-	for _, meter := range meters {
-		m.publishMeter(meter, qe)
-	}
-}
-
-// Register subcribes GoSDM as discoverable device
-func (m *HomieRunner) unregister() {
-	// devices
-	for _, meter := range m.meters {
+	for meter := range hr.meters {
 		// clear retained messages
-		subTopic := m.DeviceTopic(meter.DeviceId)
-		m.unpublish(subTopic)
+		subTopic := hr.deviceTopic(meter)
+		hr.unpublish(subTopic)
 	}
 }
 
-// stripSlash removes trailing slash
-func stripSlash(s string) string {
-	if s[len(s)-1:] == "/" {
-		s = s[:len(s)-1]
-	}
-	return s
-}
-
-func (m *HomieRunner) publishMeter(meter *Meter, qe *ModbusEngine) {
-	descriptor := m.deviceDescriptor(meter, qe)
-
+func (hr *HomieRunner) publishMeter(meter string, descriptor meters.DeviceDescriptor) {
 	// clear retained messages
-	subTopic := m.DeviceTopic(meter.DeviceId)
-	m.unpublish(subTopic)
+	subTopic := hr.deviceTopic(meter)
+	hr.unpublish(subTopic)
 
 	// device
-	m.publish(subTopic+"/$homie", specVersion)
-	m.publish(subTopic+"/$name", "GoSDM")
-	m.publish(subTopic+"/$state", "ready")
-	// m.publish(subTopic+"/$implementation", "GoSDM")
+	hr.publish(subTopic+"/$homie", specVersion)
+	hr.publish(subTopic+"/$name", "MBMD")
+	hr.publish(subTopic+"/$state", "ready")
 
 	// node
-	m.publish(subTopic+"/$nodes", nodeTopic)
+	hr.publish(subTopic+"/$nodes", nodeTopic)
 
 	subTopic = fmt.Sprintf("%s/%s", subTopic, nodeTopic)
-	m.publish(subTopic+"/$name", descriptor.Manufacturer)
-	m.publish(subTopic+"/$type", descriptor.Model)
-
-	// properties
-	m.publishProperties(subTopic, meter, qe)
+	hr.publish(subTopic+"/$name", descriptor.Manufacturer)
+	hr.publish(subTopic+"/$type", descriptor.Model)
 }
 
-func (m *HomieRunner) deviceDescriptor(meter *Meter, qe *ModbusEngine) SunSpecDeviceDescriptor {
-	descriptor := SunSpecDeviceDescriptor{
-		Manufacturer: meter.Producer.Type(),
-		Model:        nodeTopic,
-	}
+func (hr *HomieRunner) publishProperties(meter string) {
+	subtopic := hr.deviceTopic(meter)
 
-	if sunspec, ok := meter.Producer.(SunSpecProducer); ok {
-		op := sunspec.GetSunSpecCommonBlock()
-		snip := QuerySnip{
-			DeviceId:  meter.DeviceId,
-			Operation: op,
-		}
-		if b, err := qe.Query(snip); err == nil {
-			if descriptor, err = sunspec.DecodeSunSpecCommonBlock(b); err != nil {
-				log.Println(err)
-			}
-		} else {
-			log.Println(err)
-		}
-	}
-
-	return descriptor
-}
-
-func (m *HomieRunner) publishProperties(subtopic string, meter *Meter, qe *ModbusEngine) {
-	meterOps := meter.Producer.Produce()
-
-	// read from device to split block operations
-	// TODO refactor transformation code into queryengine
-	snips := make([]QuerySnip, 0)
-	for _, op := range meterOps {
-		snip := QuerySnip{
-			DeviceId:  meter.DeviceId,
-			Operation: op,
-		}
-		if b, err := qe.Query(snip); err == nil {
-			snips = append(snips, qe.Transform(snip, b)...)
-		}
+	measurements := make([]meters.Measurement, 0)
+	for k := range hr.meters[meter] {
+		measurements = append(measurements, k)
 	}
 
 	// sort by measurement type
-	sort.Slice(snips, func(a, b int) bool {
-		return snips[a].IEC61850.String() < snips[b].IEC61850.String()
+	sort.Slice(measurements, func(a, b int) bool {
+		return measurements[a].String() < measurements[b].String()
 	})
 
-	properties := make([]string, len(snips))
+	properties := make([]string, len(measurements))
 
-	for i, operation := range snips {
-		property := strings.ToLower(operation.IEC61850.String())
+	for i, m := range measurements {
+		property := strings.ToLower(m.String())
 		properties[i] = property
 
-		description, unit := operation.IEC61850.DescriptionAndUnit()
+		description, unit := m.DescriptionAndUnit()
 
 		propertySubtopic := fmt.Sprintf("%s/%s", subtopic, property)
-		m.publish(propertySubtopic+"/$name", description)
+		hr.publish(propertySubtopic+"/$name", description)
 
-		m.publish(propertySubtopic+"/$unit", unit)
-		m.publish(propertySubtopic+"/$datatype", "float")
+		hr.publish(propertySubtopic+"/$unit", unit)
+		hr.publish(propertySubtopic+"/$datatype", "float")
 	}
-	m.publish(subtopic+"/$properties", strings.Join(properties[:], ","))
+
+	hr.publish(subtopic+"/$properties", strings.Join(properties[:], ","))
 }
 
-func (m *HomieRunner) publish(subtopic string, message string) {
-	topic := m.rootTopic + "/" + subtopic
-	m.Publish(topic, true, message)
+func (hr *HomieRunner) publish(subtopic string, message string) {
+	topic := hr.rootTopic + "/" + subtopic
+	hr.Publish(topic, true, message)
 }
 
 // unpublish retained message hierarchy
-func (m *HomieRunner) unpublish(subtopic string) {
-	topic := fmt.Sprintf("%s/%s/#", m.rootTopic, subtopic)
-	if m.verbose {
+func (hr *HomieRunner) unpublish(subtopic string) {
+	topic := fmt.Sprintf("%s/%s/#", hr.rootTopic, subtopic)
+	if hr.verbose {
 		log.Printf("MQTT: unpublish %s", topic)
 	}
 
@@ -173,14 +145,13 @@ func (m *HomieRunner) unpublish(subtopic string) {
 	tokens := make([]MQTT.Token, 0)
 
 	mux.Lock()
-	tokens = append(tokens, m.client.Subscribe(topic, byte(m.mqttQos), func(c MQTT.Client, msg MQTT.Message) {
-		// we'll also receive the unpublish messages here so ignore these
+	tokens = append(tokens, hr.client.Subscribe(topic, byte(hr.mqttQos), func(c MQTT.Client, msg MQTT.Message) {
 		if len(msg.Payload()) == 0 {
-			return // exit on unpublish message
+			return // ignore received unpublish messages
 		}
 
 		topic := msg.Topic()
-		token := m.client.Publish(topic, byte(m.mqttQos), true, []byte{})
+		token := hr.client.Publish(topic, byte(hr.mqttQos), true, []byte{})
 
 		mux.Lock()
 		defer mux.Unlock()
@@ -194,10 +165,10 @@ func (m *HomieRunner) unpublish(subtopic string) {
 	defer mux.Unlock()
 
 	// stop listening
-	m.client.Unsubscribe(topic)
+	hr.client.Unsubscribe(topic)
 
 	// wait for tokens
 	for _, token := range tokens {
-		m.WaitForToken(token)
+		hr.WaitForToken(token)
 	}
 }

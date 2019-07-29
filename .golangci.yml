@@ -1,5 +1,7 @@
 issues:
   exclude:
   - "`sunspecModelID` is unused"
+  - "`printModel` is unused"
+  - "U1000: func `..sunSpec..sanitizeModels` is unused"
   - "U1000: func `..SunSpecCore..snip16int` is unused"
   - "U1000: func `..SunSpecCore..snip32` is unused"

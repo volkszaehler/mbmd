@@ -7,7 +7,7 @@ before:
 builds:
 - id: mbmd
   # Path to main.go file or main package.
-  main: ./cmd/mbmd/main.go
+  main: main.go
   ldflags:
   - -X github.com/volkszaehler/mbmd.Version={{.Version}} -X github.com/volkszaehler/mbmd.Commit={{.ShortCommit}}
   env:

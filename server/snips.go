@@ -3,70 +3,60 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"sync"
-	"time"
 
-	. "github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
-// QuerySnip represents modbus query operations
-type QuerySnip struct {
-	DeviceId      uint8
-	Operation     `json:"-"`
-	Value         float64
-	ReadTimestamp time.Time
+// ControlSnip wraps device status information
+type ControlSnip struct {
+	Device string
+	Status RuntimeInfo
 }
 
-func NewQuerySnip(deviceId uint8, operation Operation) QuerySnip {
-	snip := QuerySnip{
-		DeviceId:  deviceId,
-		Operation: operation,
-		Value:     math.NaN(),
-	}
-	return snip
+// QuerySnip wraps query results
+type QuerySnip struct {
+	Device string
+	meters.MeasurementResult
 }
 
 // String representation
 func (q *QuerySnip) String() string {
-	return fmt.Sprintf("DevID: %d, FunCode: %d, Opcode: %x, IEC: %s, Value: %.3f",
-		q.DeviceId, q.FuncCode, q.OpCode, q.IEC61850, q.Value)
+	return fmt.Sprintf("Dev: %s, IEC: %s, Value: %.3f", q.Device, q.Measurement.String(), q.Value)
 }
 
-// MarshalJSON converts QuerySnip to json, replacing ReadTimestamp with unix time representation
+// MarshalJSON converts QuerySnip to json, replacing Timestamp with unix time representation
 func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		DeviceId    uint8
+		Device      string
 		Value       float64
 		IEC61850    string
 		Description string
 		Timestamp   int64
 	}{
-		DeviceId:    q.DeviceId,
+		Device:      q.Device,
 		Value:       q.Value,
-		IEC61850:    q.IEC61850.String(),
-		Description: q.IEC61850.Description(),
-		Timestamp:   q.ReadTimestamp.UnixNano() / 1e6,
+		IEC61850:    q.Measurement.String(),
+		Description: q.Measurement.Description(),
+		Timestamp:   q.Timestamp.UnixNano() / 1e6,
 	})
 }
-
-type QuerySnipChannel chan QuerySnip
 
 // QuerySnipBroadcaster acts as hub for broadcating QuerySnips
 // to multiple recipients
 type QuerySnipBroadcaster struct {
-	in         QuerySnipChannel
-	recipients []QuerySnipChannel
-	done       chan bool
-	mux        sync.Mutex // guard recipients
+	sync.Mutex // guard recipients
 	wg         sync.WaitGroup
+	in         <-chan QuerySnip
+	recipients []chan QuerySnip
+	done       chan bool
 }
 
 // NewQuerySnipBroadcaster creates QuerySnipBroadcaster
-func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
+func NewQuerySnipBroadcaster(in <-chan QuerySnip) *QuerySnipBroadcaster {
 	return &QuerySnipBroadcaster{
 		in:         in,
-		recipients: make([]QuerySnipChannel, 0),
+		recipients: make([]chan QuerySnip, 0),
 		done:       make(chan bool),
 	}
 }
@@ -74,11 +64,11 @@ func NewQuerySnipBroadcaster(in QuerySnipChannel) *QuerySnipBroadcaster {
 // Run executes the broadcaster
 func (b *QuerySnipBroadcaster) Run() {
 	for s := range b.in {
-		b.mux.Lock()
+		b.Lock()
 		for _, recipient := range b.recipients {
 			recipient <- s
 		}
-		b.mux.Unlock()
+		b.Unlock()
 	}
 	b.stop()
 }
@@ -90,8 +80,8 @@ func (b *QuerySnipBroadcaster) Done() <-chan bool {
 
 // stop closes broadcast receiver channels and waits for run methods to finish
 func (b *QuerySnipBroadcaster) stop() {
-	b.mux.Lock()
-	defer b.mux.Unlock()
+	b.Lock()
+	defer b.Unlock()
 	for _, recipient := range b.recipients {
 		close(recipient)
 	}
@@ -99,20 +89,20 @@ func (b *QuerySnipBroadcaster) stop() {
 	b.done <- true
 }
 
-// attach creates and attaches a QuerySnipChannel to the broadcaster
-func (b *QuerySnipBroadcaster) attach() QuerySnipChannel {
-	channel := make(QuerySnipChannel)
+// attach creates and attaches a chan QuerySnip to the broadcaster
+func (b *QuerySnipBroadcaster) attach() chan QuerySnip {
+	channel := make(chan QuerySnip)
 
-	b.mux.Lock()
+	b.Lock()
 	b.recipients = append(b.recipients, channel)
-	b.mux.Unlock()
+	b.Unlock()
 
 	return channel
 }
 
 // AttachRunner attaches a Run method as broadcast receiver and adds it
 // to the waitgroup
-func (b *QuerySnipBroadcaster) AttachRunner(runner func(QuerySnipChannel)) {
+func (b *QuerySnipBroadcaster) AttachRunner(runner func(<-chan QuerySnip)) {
 	b.wg.Add(1)
 	go func() {
 		ch := b.attach()
@@ -120,19 +110,3 @@ func (b *QuerySnipBroadcaster) AttachRunner(runner func(QuerySnipChannel)) {
 		b.wg.Done()
 	}()
 }
-
-// ControlSnip wraps control information like query success or failure.
-type ControlSnip struct {
-	Type     ControlSnipType
-	Message  string
-	DeviceId uint8
-}
-
-type ControlSnipType uint8
-
-const (
-	CONTROLSNIP_OK ControlSnipType = iota
-	CONTROLSNIP_ERROR
-)
-
-type ControlSnipChannel chan ControlSnip

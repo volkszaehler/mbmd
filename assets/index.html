@@ -39,13 +39,13 @@
 
 	<div class="container">
 		<div id="realtime">
-			<h1>Realtime measurements</h1>
-			<div id="meters">
+			<h1>Measurements</h1>
+			<div id="data">
 				<p>${ message }</p>
 				<table class="metertable table table-striped" v-for="(m, idx) in meters">
 					<thead class="thead-dark">
 						<tr class="d-flex">
-							<th class="col-3">Meter ${ idx }</th>
+							<th class="col-3">${ idx }</th>
 							<th class="col-2">L1</th>
 							<th class="col-2">L2</th>
 							<th class="col-2">L3</th>
@@ -227,19 +227,19 @@
 			</div>
 		</div>
 		<div id="status">
-			<h1>Current Meter Status</h1>
+			<h1>Status</h1>
 			<div id="status">
 				<table class="metertable table table-striped">
 					<thead class="thead-dark">
 						<tr>
-							<th>Meter ID</th>
+							<th>Meter</th>
 							<th>Type</th>
 							<th>Status</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(m, idx) in meterstatus">
-							<td>${ m.Id }</td>
+						<tr v-for="(m, idx) in meters">
+							<td>${ idx }</td>
 							<td>${ m.Type }</td>
 							<td>${ m.Status }</td>
 						</tr>

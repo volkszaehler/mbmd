@@ -9,6 +9,7 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+// MqttClient is a MQTT publisher
 type MqttClient struct {
 	client    MQTT.Client
 	mqttTopic string
@@ -16,6 +17,7 @@ type MqttClient struct {
 	verbose   bool
 }
 
+// NewMqttClient creates new publisher for MQTT
 func NewMqttClient(
 	mqttBroker string,
 	mqttTopic string,
@@ -38,12 +40,14 @@ func NewMqttClient(
 	message := fmt.Sprintf("disconnected")
 	mqttOpts.SetWill(topic, message, byte(mqttQos), true)
 
-	log.Printf("Connecting MQTT at %s", mqttBroker)
+	log.Printf("MQTT: connecting at %s", mqttBroker)
 	if verbose {
 		log.Printf("\tclientid:     %s\n", mqttClientID)
-		log.Printf("\tuser:         %s\n", mqttUser)
-		if mqttPassword != "" {
-			log.Printf("\tpassword:     ****\n")
+		if mqttUser != "" {
+			log.Printf("\tuser:         %s\n", mqttUser)
+			if mqttPassword != "" {
+				log.Printf("\tpassword:     ****\n")
+			}
 		}
 		log.Printf("\ttopic:        %s\n", mqttTopic)
 		log.Printf("\tqos:          %d\n", mqttQos)
@@ -98,20 +102,20 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 	}
 }
 
-// DeviceTopic converts meter's device id to topic string
-func (m *MqttClient) DeviceTopic(deviceId uint8) string {
-	uniqueID := fmt.Sprintf(UniqueIdFormat, deviceId)
-	return strings.Replace(strings.ToLower(uniqueID), "#", "", -1)
+// deviceTopic converts meter's device id to topic string
+func (m *MqttClient) deviceTopic(deviceID string) string {
+	return strings.Replace(strings.ToLower(deviceID), "#", "", -1)
 }
 
+// MqttRunner allows to attach an MqttClient as broadcast receiver
 type MqttRunner struct {
 	*MqttClient
 }
 
-// Run MQTT client publisher
-func (m *MqttRunner) Run(in QuerySnipChannel) {
+// Run MqttClient publisher
+func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	for snip := range in {
-		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.DeviceTopic(snip.DeviceId), snip.IEC61850)
+		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.deviceTopic(snip.Device), snip.Measurement)
 		message := fmt.Sprintf("%.3f", snip.Value)
 		go m.Publish(topic, false, message)
 	}

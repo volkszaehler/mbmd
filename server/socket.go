@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package server
 
 import (
@@ -14,8 +10,11 @@ import (
 )
 
 const (
-	// Time allowed to write a message to the peer.
+	// Time allowed to write a message to the peer
 	socketWriteWait = 10 * time.Second
+
+	// Frequency at which status updates are sent
+	statusFrequency = 1 * time.Second
 )
 
 var upgrader = websocket.Upgrader{
@@ -23,8 +22,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// Client is a middleman between the websocket connection and the hub.
-type Client struct {
+// SocketClient is a middleman between the websocket connection and the hub.
+type SocketClient struct {
 	hub *SocketHub
 
 	// The websocket connection.
@@ -35,7 +34,7 @@ type Client struct {
 }
 
 // writePump pumps messages from the hub to the websocket connection.
-func (c *Client) writePump() {
+func (c *SocketClient) writePump() {
 	defer func() {
 		c.conn.Close()
 	}()
@@ -57,7 +56,7 @@ func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &SocketClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
 	// run writing to client in goroutine
@@ -68,39 +67,30 @@ func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 // clients.
 type SocketHub struct {
 	// Registered clients.
-	clients map[*Client]bool
+	clients map[*SocketClient]bool
 
 	// Register requests from the clients.
-	register chan *Client
+	register chan *SocketClient
 
 	// Unregister requests from clients.
-	unregister chan *Client
+	unregister chan *SocketClient
 
-	// status stream
-	statusStream chan *Status
+	// status channel
+	status *Status
 }
 
+// NewSocketHub creates a web socket hub that distributes meter status and
+// query results for the ui or other clients
 func NewSocketHub(status *Status) *SocketHub {
-	// Attach a goroutine that will push meter status information
-	// periodically
-	var statusstream = make(chan *Status)
-	go func() {
-		for {
-			time.Sleep(SECONDS_BETWEEN_STATUSUPDATE * time.Second)
-			status.Update()
-			statusstream <- status
-		}
-	}()
-
 	return &SocketHub{
-		register:     make(chan *Client),
-		unregister:   make(chan *Client),
-		clients:      make(map[*Client]bool),
-		statusStream: statusstream,
+		register:   make(chan *SocketClient),
+		unregister: make(chan *SocketClient),
+		clients:    make(map[*SocketClient]bool),
+		status:     status,
 	}
 }
 
-func (h *SocketHub) Broadcast(i interface{}) {
+func (h *SocketHub) broadcast(i interface{}) {
 	if len(h.clients) > 0 {
 		message, err := json.Marshal(i)
 		if err != nil {
@@ -118,7 +108,17 @@ func (h *SocketHub) Broadcast(i interface{}) {
 	}
 }
 
-func (h *SocketHub) Run(in QuerySnipChannel) {
+// Run starts data and status distribution
+func (h *SocketHub) Run(in <-chan QuerySnip) {
+	// Periodically push meter status information
+	statusChannel := make(chan *Status)
+	go func() {
+		for {
+			time.Sleep(statusFrequency)
+			statusChannel <- h.status
+		}
+	}()
+
 	for {
 		select {
 		case client := <-h.register:
@@ -133,9 +133,9 @@ func (h *SocketHub) Run(in QuerySnipChannel) {
 				return // break if channel closed
 			}
 			// make sure to pass a pointer or MarshalJSON won't work
-			h.Broadcast(&obj)
-		case obj := <-h.statusStream:
-			h.Broadcast(obj)
+			h.broadcast(&obj)
+		case obj := <-statusChannel:
+			h.broadcast(obj)
 		}
 	}
 }

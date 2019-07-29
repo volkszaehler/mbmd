@@ -6,34 +6,34 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
-	"strconv"
+	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
-const (
-	SECONDS_BETWEEN_STATUSUPDATE = 1
-	devAssets                    = false
-)
-
-var (
-	Version = "unknown version"
-	Commit  = "unknown commit"
-)
+const devAssets = false
 
 //go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
-func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+// Httpd is an http server
+type Httpd struct {
+	mc *Cache
+	qe DeviceInfo
+}
+
+func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
-		log.Fatal("Failed to load embedded template: " + err.Error())
+		log.Fatal("failed to load embedded template: " + err.Error())
 	}
 	t, err := template.New("mbmd").Parse(string(mainTemplate))
 	if err != nil {
-		log.Fatal("Failed to create main page template: ", err.Error())
+		log.Fatal("failed to create main page template: ", err.Error())
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -48,141 +48,126 @@ func mkIndexHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Reques
 		}
 		err := t.Execute(w, data)
 		if err != nil {
-			log.Fatal("Failed to render main page: ", err.Error())
+			log.Fatal("failed to render main page: ", err.Error())
 		}
 	})
 }
 
-func mkLastAllValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) allDevicesHandler(
+	readingsProvider func(id string) (*Readings, error),
+) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		ids := mc.GetSortedIDs()
-		lasts := ReadingSlice{}
+		ids := h.mc.SortedIDs()
+		res := make([]apiData, 0)
 		for _, id := range ids {
-			reading, err := mc.GetCurrent(id)
+			readings, err := readingsProvider(id)
 			if err != nil {
 				// Skip this meter, it will simply not be displayed
 				continue
-				//w.WriteHeader(http.StatusBadRequest)
-				//fmt.Fprintf(w, err.Error())
-				//return
 			}
-			lasts = append(lasts, *reading)
+
+			data := apiData{device: id, readings: readings}
+			res = append(res, data)
 		}
-		if len(lasts) == 0 {
+
+		if len(res) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "All meters are inactive.")
+			fmt.Fprintf(w, "all meters are inactive")
 			return
 		}
-		if err := json.NewEncoder(w).Encode(lasts); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
+
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			log.Printf("failed to encode JSON: %s", err.Error())
 		}
 	})
 }
 
-func mkLastSingleValuesHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+func (h *Httpd) singleDeviceHandler(
+	readingsProvider func(id string) (*Readings, error),
+) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		id, err := strconv.Atoi(vars["id"])
-		if err != nil {
+
+		id, ok := vars["id"]
+		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		last, err := mc.GetCurrent(byte(id))
+
+		readings, err := readingsProvider(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, err.Error())
 			return
 		}
+
+		data := apiData{device: id, readings: readings}
+
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(last); err != nil {
-			log.Printf("Failed to create JSON representation of measurement %s", last.String())
+		if err := json.NewEncoder(w).Encode(data); err != nil {
+			log.Printf("failed to encode JSON %s", err.Error())
 		}
 	})
 }
 
-func mkLastMinuteAvgSingleHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		id, err := strconv.Atoi(vars["id"])
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		avg, err := mc.GetMinuteAvg(byte(id))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, err.Error())
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(avg); err != nil {
-			log.Printf("Failed to create JSON representation of measurement %s", avg.String())
-		}
-	})
-}
-
-func mkLastMinuteAvgAllHandler(mc *MeasurementCache) func(http.ResponseWriter, *http.Request) {
+// mkSocketHandler attaches status handler to uri
+func (h *Httpd) mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		ids := mc.GetSortedIDs()
-		avgs := ReadingSlice{}
-		for _, id := range ids {
-			reading, err := mc.GetMinuteAvg(id)
-			if err != nil {
-				// Skip this meter, it will simply not be displayed
-				continue
-			}
-			avgs = append(avgs, *reading)
-		}
-		if len(avgs) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "All meters are inactive.")
-			return
-		}
-		if err := json.NewEncoder(w).Encode(avgs); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
-		}
-	})
-}
-
-func mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		s.Update()
 		if err := json.NewEncoder(w).Encode(s); err != nil {
-			log.Printf("Failed to create JSON representation of measurements: %s", err.Error())
+			log.Printf("failed to encode JSON: %s", err.Error())
 		}
 	})
 }
 
-func mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
+// mkSocketHandler attaches websocket handler to uri
+func (h *Httpd) mkSocketHandler(hub *SocketHub) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ServeWebsocket(hub, w, r)
 	}
 }
 
-// serveJson decorates handler with required headers
-func serveJson(f http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+type debugLogger struct {
+	pattern string
+}
+
+func (d debugLogger) Write(p []byte) (n int, err error) {
+	s := string(p)
+	if strings.Contains(s, d.pattern) {
+		debug.PrintStack()
+	}
+	return os.Stderr.Write(p)
+}
+
+// jsonHandler is a middleware that decorates responses with JSON and CORS headers
+func jsonHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		f(w, r)
+		h.ServeHTTP(w, r)
+	})
+}
+
+// NewHttpd creates HTTP daemon
+func NewHttpd(qe DeviceInfo, mc *Cache) *Httpd {
+	return &Httpd{
+		qe: qe,
+		mc: mc,
 	}
 }
 
-func Run_httpd(
-	mc *MeasurementCache,
+// Run executes the http server
+func (h *Httpd) Run(
 	hub *SocketHub,
 	s *Status,
 	url string,
 ) {
-	log.Printf("Starting API at %s", url)
-
+	log.Printf("starting API at %s", url)
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static
-	router.HandleFunc("/", mkIndexHandler(mc))
+	router.HandleFunc("/", h.mkIndexHandler())
 
 	// individual handlers per folder
 	for _, folder := range []string{"js", "css"} {
@@ -191,20 +176,26 @@ func Run_httpd(
 	}
 
 	// api
-	router.HandleFunc("/last", serveJson(mkLastAllValuesHandler(mc)))
-	router.HandleFunc("/last/{id:[0-9]+}", serveJson(mkLastSingleValuesHandler(mc)))
-	router.HandleFunc("/minuteavg", serveJson(mkLastMinuteAvgAllHandler(mc)))
-	router.HandleFunc("/minuteavg/{id:[0-9]+}", serveJson(mkLastMinuteAvgSingleHandler(mc)))
-	router.HandleFunc("/status", serveJson(mkStatusHandler(s)))
+	api := router.PathPrefix("/api").Subrouter()
+	api.HandleFunc("/last", h.allDevicesHandler(h.mc.Current))
+	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Current))
+	api.HandleFunc("/avg", h.allDevicesHandler(h.mc.Average))
+	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Average))
+	api.HandleFunc("/status", h.mkStatusHandler(s))
+	api.Use(jsonHandler)
 
 	// websocket
-	router.HandleFunc("/ws", mkSocketHandler(hub))
+	router.HandleFunc("/ws", h.mkSocketHandler(hub))
+
+	// debug logger
+	_ = log.New(debugLogger{"superfluous"}, "", 0)
 
 	srv := http.Server{
 		Addr:         url,
 		Handler:      handlers.CompressHandler(router),
-		ReadTimeout:  time.Minute,
-		WriteTimeout: time.Minute,
+		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		// ErrorLog: debug,
 	}
 
 	srv.SetKeepAlivesEnabled(true)

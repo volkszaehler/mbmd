@@ -142,83 +142,14 @@ device IDs and reports which one replied correctly:
 
 ## Rest API
 
-`mbmd` provides a convenient REST API. Supported endpoints are:
+`mbmd` provides a convenient REST API. Supported endpoints under `/api` are:
 
-* `/last/{ID}` current data for device
-* `/minuteavg/{ID}` averaged data for device
+* `/last/{ID}` latest data for device
+* `/minuteavg/{ID}` averaged data over last minute
 * `/status` daemon status
 
 Both device APIs can also be called without the device id to return data for all connected devices.
 
-The "GET /last/{ID}"-call simply returns the last measurements of the device with
-the Modbus ID {ID}:
-
-````
-$ curl localhost:8080/last/11
-{
-  "Timestamp": "2017-03-27T15:15:09.243729874+02:00",
-  "Unix": 1490620509,
-  "ModbusDeviceId": 11,
-  "Power": {
-    "L1": 0,
-    "L2": -45.28234100341797,
-    "L3": 0
-  },
-  "Voltage": {
-    "L1": 233.1257781982422,
-    "L2": 233.12904357910156,
-    "L3": 0
-  },
-  "Current": {
-    "L1": 0,
-    "L2": 0.19502629339694977,
-    "L3": 0
-  },
-  "Cosphi": {
-    "L1": 1,
-    "L2": -0.9995147585868835,
-    "L3": 1
-  },
-  "Import": {
-    "L1": 0.16599999368190765,
-    "L2": 0.10999999940395355,
-    "L3": 0.0010000000474974513
-  },
-  "TotalImport": 0.2770000100135803,
-  "Export": {
-    "L1": 0,
-    "L2": 0.3019999861717224,
-    "L3": 0
-  },
-  "TotalExport": 0.3019999861717224,
-  "THD": {
-    "VoltageNeutral": {
-      "L1": 0,
-      "L2": 0,
-      "L3": 0
-    },
-    "AvgVoltageNeutral": 0
-  }
-}
-````
-
-The "GET /minuteavg"-call returns the average measurements over the last
-minute:
-
-````
-$ curl localhost:8080/minuteavg/11
-{
-  "Timestamp": "2017-03-27T15:19:06.470316939+02:00",
-  "Unix": 1490620746,
-  "ModbusDeviceId": 11,
-  "Power": {
-    "L1": 0,
-    "L2": -45.333974165794174,
-    "L3": 0
-  },
-  ...
-}
-````
 
 ### Monitoring
 
@@ -226,8 +157,8 @@ The `/status` endpoint provides the following information:
 
     $ curl http://localhost:8080/status
     {
-      "Starttime": "2017-01-25T16:35:50.839829945+01:00",
-      "UptimeSeconds": 65587.177092186,
+      "StartTime": "2017-01-25T16:35:50.839829945+01:00",
+      "UpTime": 65587.177092186,
       "Goroutines": 11,
       "Memory": {
         "Alloc": 1568344,

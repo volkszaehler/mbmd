@@ -5,15 +5,15 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	. "github.com/volkszaehler/mbmd/meters"
 )
 
+// MemoryStatus represents daemon memory allocation
 type MemoryStatus struct {
 	Alloc     uint64
 	HeapAlloc uint64
 }
 
+// ModbusStatus represents device request and error status
 type ModbusStatus struct {
 	Requests          uint64
 	RequestsPerMinute float64
@@ -21,7 +21,15 @@ type ModbusStatus struct {
 	ErrorsPerMinute   float64
 }
 
-func CurrentMemoryStatus() MemoryStatus {
+// DeviceStatus represents a devices runtime status
+type DeviceStatus struct {
+	Device string
+	Type   string
+	Online bool
+	ModbusStatus
+}
+
+func memoryStatus() MemoryStatus {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	return MemoryStatus{
@@ -30,80 +38,90 @@ func CurrentMemoryStatus() MemoryStatus {
 	}
 }
 
+// Status represents the daemon and device status.
+// It is updated when marshaled to JSON
 type Status struct {
-	Starttime        time.Time
-	UptimeSeconds    float64
-	Goroutines       int
-	Memory           MemoryStatus
-	Modbus           ModbusStatus
-	ConfiguredMeters []MeterStatus
-	metermap         map[uint8]*Meter
-	mux              sync.RWMutex
+	sync.Mutex
+	qe         DeviceInfo
+	StartTime  time.Time
+	UpTime     float64
+	Goroutines int
+	Memory     MemoryStatus
+	Meters     []DeviceStatus
+	meterMap   map[string]DeviceStatus
 }
 
-type MeterStatus struct {
-	Id     uint8
-	Type   string
-	Status string
-}
-
-func NewStatus(metermap map[uint8]*Meter) *Status {
-	return &Status{
-		Memory:        CurrentMemoryStatus(),
-		Starttime:     time.Now(),
-		Goroutines:    runtime.NumGoroutine(),
-		UptimeSeconds: 1,
-		Modbus: ModbusStatus{
-			Requests:          0,
-			RequestsPerMinute: 0,
-			Errors:            0,
-			ErrorsPerMinute:   0,
-		},
-		ConfiguredMeters: nil,
-		metermap:         metermap,
+// NewStatus creates status cache that collects device status from control channel.
+// It needs to be Update()d in order to refresh its data for consumption
+func NewStatus(qe DeviceInfo, control <-chan ControlSnip) *Status {
+	s := &Status{
+		qe:         qe,
+		Memory:     memoryStatus(),
+		Goroutines: runtime.NumGoroutine(),
+		StartTime:  time.Now(),
+		UpTime:     1,
+		meterMap:   make(map[string]DeviceStatus),
 	}
-}
 
-func (s *Status) IncreaseRequestCounter() {
-	s.mux.Lock()
-	defer s.mux.Unlock()
-	s.Modbus.Requests++
-}
+	go func() {
+		for c := range control {
+			s.Lock()
 
-func (s *Status) IncreaseReconnectCounter() {
-	s.mux.Lock()
-	defer s.mux.Unlock()
-	s.Modbus.Errors++
-}
+			minutes := s.UpTime / 60
+			mbs := ModbusStatus{
+				Requests:          c.Status.Requests,
+				Errors:            c.Status.Errors,
+				ErrorsPerMinute:   float64(c.Status.Errors) / minutes,
+				RequestsPerMinute: float64(c.Status.Requests) / minutes,
+			}
 
-func (s *Status) Update() {
-	s.mux.Lock()
-	defer s.mux.Unlock()
+			desc := s.qe.DeviceDescriptorByID(c.Device)
+			ds := DeviceStatus{
+				Device: c.Device,
+				Type:         desc.Manufacturer,
+				Online:       c.Status.Online,
+				ModbusStatus: mbs,
+			}
+			s.meterMap[c.Device] = ds
 
-	s.Memory = CurrentMemoryStatus()
-	s.Goroutines = runtime.NumGoroutine()
-	s.UptimeSeconds = time.Since(s.Starttime).Seconds()
-	s.Modbus.ErrorsPerMinute = float64(s.Modbus.Errors) / (s.UptimeSeconds / 60)
-	s.Modbus.RequestsPerMinute = float64(s.Modbus.Requests) / (s.UptimeSeconds / 60)
-
-	var confmeters []MeterStatus
-	for id, meter := range s.metermap {
-		ms := MeterStatus{
-			Id:     id,
-			Type:   meter.Producer.Type(),
-			Status: meter.State().String(),
+			s.Unlock()
 		}
+	}()
 
-		confmeters = append(confmeters, ms)
+	return s
+}
+
+// Online returns device's online status or false if the device does not exist
+func (s *Status) Online(device string) bool {
+	s.Lock()
+	defer s.Unlock()
+
+	if ds, ok := s.meterMap[device]; ok {
+		return ds.Online
 	}
-	s.ConfiguredMeters = confmeters
+
+	return false
+}
+
+// Update status
+func (s *Status) update() {
+	s.Memory = memoryStatus()
+	s.Goroutines = runtime.NumGoroutine()
+	s.UpTime = time.Since(s.StartTime).Seconds()
+
+	s.Meters = make([]DeviceStatus, 0)
+	for _, ms := range s.meterMap {
+		s.Meters = append(s.Meters, ms)
+	}
 }
 
 // MarshalJSON will syncronize access to the status object
 // see http://choly.ca/post/go-json-marshalling/ for avoiding infinite loop
 func (s *Status) MarshalJSON() ([]byte, error) {
-	s.mux.RLock()
-	defer s.mux.RUnlock()
+	s.Lock()
+	defer s.Unlock()
+
+	s.update()
 
 	type Alias Status
 	return json.Marshal(&struct{ *Alias }{Alias: (*Alias)(s)})

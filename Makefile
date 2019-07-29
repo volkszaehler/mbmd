@@ -1,4 +1,4 @@
-.PHONY: default clean checks test build assets binaries publish-images test-release
+.PHONY: default clean checks lint test build assets binaries publish-images test-release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
@@ -11,7 +11,9 @@ default: clean checks test build
 clean:
 	rm -rf dist/ *.zip
 
-checks: assets
+checks: assets lint
+
+lint:
 	golangci-lint run
 
 test:
@@ -26,7 +28,7 @@ assets:
 
 binaries:
 	@echo Version: $(VERSION) $(BUILD_DATE)
-	go build -v -ldflags '-X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"' ./cmd/mbmd
+	go build -v -ldflags '-X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"'
 
 publish-images:
 	@echo Version: $(VERSION) $(BUILD_DATE)
