@@ -40,12 +40,14 @@ func NewMqttClient(
 	message := fmt.Sprintf("disconnected")
 	mqttOpts.SetWill(topic, message, byte(mqttQos), true)
 
-	log.Printf("Connecting MQTT at %s", mqttBroker)
+	log.Printf("MQTT: connecting at %s", mqttBroker)
 	if verbose {
 		log.Printf("\tclientid:     %s\n", mqttClientID)
-		log.Printf("\tuser:         %s\n", mqttUser)
-		if mqttPassword != "" {
-			log.Printf("\tpassword:     ****\n")
+		if mqttUser != "" {
+			log.Printf("\tuser:         %s\n", mqttUser)
+			if mqttPassword != "" {
+				log.Printf("\tpassword:     ****\n")
+			}
 		}
 		log.Printf("\ttopic:        %s\n", mqttTopic)
 		log.Printf("\tqos:          %d\n", mqttQos)

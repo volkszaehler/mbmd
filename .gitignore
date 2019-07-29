@@ -49,3 +49,4 @@ sdm
 manifest.json
 linux-*.Dockerfile
 mbmd
+mbmd.yaml

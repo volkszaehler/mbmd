@@ -2,25 +2,10 @@ package meters
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	"github.com/grid-x/modbus"
-)
-
-const (
-	_ = iota
-	// Comset2400_8N1 is a 2400baud 8bit uneven parity connection with 1 stop bit
-	Comset2400_8N1
-	// Comset9600_8N1 is a 9600baud 8bit uneven parity connection with 1 stop bit
-	Comset9600_8N1
-	// Comset19200_8N1 is a 19200baud 8bit uneven parity connection with 1 stop bit
-	Comset19200_8N1
-	// Comset2400_8E1 is a 2400baud 8bit even parity connection with 1 stop bit
-	Comset2400_8E1
-	// Comset9600_8E1 is a 9600baud 8bit even parity connection with 1 stop bit
-	Comset9600_8E1
-	// Comset19200_8E1 is a 19200baud 8bit even parity connection with 1 stop bit
-	Comset19200_8E1
 )
 
 // RTU is an RTU modbus connection
@@ -32,31 +17,20 @@ type RTU struct {
 }
 
 // NewClientHandler creates a serial line RTU modbus handler
-func NewClientHandler(device string, comset int) *modbus.RTUClientHandler {
+func NewClientHandler(device string, baudrate int, comset string) *modbus.RTUClientHandler {
 	handler := modbus.NewRTUClientHandler(device)
 
-	handler.Parity = "N"
+	handler.BaudRate = baudrate
 	handler.DataBits = 8
 	handler.StopBits = 1
 
-	switch comset {
-	case Comset2400_8N1:
-		handler.BaudRate = 2400
-	case Comset9600_8N1:
-		handler.BaudRate = 9600
-	case Comset19200_8N1:
-		handler.BaudRate = 19200
-	case Comset2400_8E1:
-		handler.BaudRate = 2400
-		handler.Parity = "E"
-	case Comset9600_8E1:
-		handler.BaudRate = 9600
-		handler.Parity = "E"
-	case Comset19200_8E1:
-		handler.BaudRate = 19200
+	switch strings.ToUpper(comset) {
+	case "8N1":
+		handler.Parity = "N"
+	case "8E1":
 		handler.Parity = "E"
 	default:
-		log.Fatal("Invalid communication set specified. See -h for help.")
+		log.Fatalf("Invalid communication set specified: %s. See -h for help.", comset)
 	}
 
 	handler.Timeout = 300 * time.Millisecond
@@ -73,8 +47,8 @@ func NewClientHandler(device string, comset int) *modbus.RTUClientHandler {
 }
 
 // NewRTU creates a RTU modbus client
-func NewRTU(device string, comset int) Connection {
-	handler := NewClientHandler(device, comset)
+func NewRTU(device string, baudrate int, comset string) Connection {
+	handler := NewClientHandler(device, baudrate, comset)
 	client := modbus.NewClient(handler)
 
 	b := &RTU{

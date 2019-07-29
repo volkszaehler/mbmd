@@ -1,4 +1,4 @@
-package mbmd
+package cmd
 
 import (
 	"log"
@@ -12,15 +12,31 @@ import (
 	"github.com/volkszaehler/mbmd/meters/sunspec"
 )
 
-// Config desribes the entirey configuration
+// Config describes the entirey configuration
 type Config struct {
-	Default DefaultOptions
-	Devices []DeviceConfig
+	API      string
+	Adapters []AdapterConfig
+	Devices  []DeviceConfig
+	Mqtt     MqttConfig
 }
 
-// DefaultOptions describe the global configuration
-type DefaultOptions struct {
-	Adapter string
+// AdapterConfig describes device communication paramters
+type AdapterConfig struct {
+	Device   string
+	Baudrate int
+	Comset   string
+}
+
+// MqttConfig describes the mqtt broker configuration
+type MqttConfig struct {
+	Broker   string
+	Topic    string
+	User     string
+	Password string
+	ClientID string
+	Qos      int
+	Clean    bool
+	Homie    string
 }
 
 // DeviceConfig describes a single device's configuration
@@ -46,21 +62,34 @@ func NewDeviceConfigHandler() *DeviceConfigHandler {
 }
 
 // createConnection parses adapter string to create TCP or RTU connection
-func createConnection(device string) (res meters.Connection) {
+func createConnection(device string, baudrate int, comset string) (res meters.Connection) {
 	if device == "mock" {
 		res = meters.NewMock(device) // mocked connection
 	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
 		res = meters.NewTCP(device) // tcp connection
 	} else {
-		res = meters.NewRTU(device, 1) // serial connection
+		res = meters.NewRTU(device, baudrate, comset) // serial connection
 	}
 	return res
+}
+
+// CreateAdapter creates a connection handler for given adapter configuration.
+// While connectionManager does the same it is not able to configure the connection.
+func (conf *DeviceConfigHandler) CreateAdapter(connSpec string, baudrate int, comset string) meters.Manager {
+	manager, ok := conf.Managers[connSpec]
+	if !ok {
+		conn := createConnection(connSpec, baudrate, comset)
+		manager = meters.NewManager(conn)
+		conf.Managers[connSpec] = manager
+	}
+
+	return manager
 }
 
 func (conf *DeviceConfigHandler) connectionManager(connSpec string) meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
-		conn := createConnection(connSpec)
+		conn := createConnection(connSpec, 0, "")
 		manager = meters.NewManager(conn)
 		conf.Managers[connSpec] = manager
 	}

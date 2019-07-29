@@ -62,7 +62,7 @@ func (p *IneproProducer) Type() string {
 }
 
 func (p *IneproProducer) Description() string {
-	return "Inepro Metering Pro 380 (experimental)"
+	return "Inepro Metering Pro 380"
 }
 
 func (p *IneproProducer) snip(iec Measurement) Operation {

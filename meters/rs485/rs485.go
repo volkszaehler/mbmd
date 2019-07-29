@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/grid-x/modbus"
 	"github.com/pkg/errors"
 	"github.com/volkszaehler/mbmd/meters"
-	"github.com/grid-x/modbus"
 )
 
 const (
@@ -20,7 +20,7 @@ type rs485 struct {
 
 // NewDevice creates a device who's type must exist in the producer registry
 func NewDevice(typeid string) (meters.Device, error) {
-	if factory, ok := producers[typeid]; ok {
+	if factory, ok := Producers[typeid]; ok {
 		device := &rs485{
 			producer: factory(),
 		}

@@ -5,16 +5,17 @@ import (
 	"strings"
 )
 
-var producers = make(map[string]func() Producer)
+// Producers is the registry of Producer factory functions
+var Producers = make(map[string]func() Producer)
 
 // Register registers a producer implementation
 func Register(factory func() Producer) {
 	p := factory()
 	meterType := strings.ToUpper(p.Type())
 
-	if _, ok := producers[meterType]; ok {
+	if _, ok := Producers[meterType]; ok {
 		log.Fatalf("Cannot register duplicate meter type %s", meterType)
 	}
 
-	producers[meterType] = factory
+	Producers[meterType] = factory
 }
