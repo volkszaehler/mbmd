@@ -2,7 +2,6 @@ module github.com/volkszaehler/mbmd
 
 require (
 	github.com/andig/gosunspec v0.0.0-20190706122846-bec48dbbc589
-	github.com/crabmusket/gosunspec v0.0.0-20190717025443-02e6f121cb71 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -20,5 +19,4 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	golang.org/x/tools v0.0.0-20190517183331-d88f79806bbd
-	gopkg.in/urfave/cli.v1 v1.20.0
 )
