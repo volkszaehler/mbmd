@@ -15,16 +15,9 @@ import (
 // Config describes the entirey configuration
 type Config struct {
 	API      string
+	Mqtt     MqttConfig
 	Adapters []AdapterConfig
 	Devices  []DeviceConfig
-	Mqtt     MqttConfig
-}
-
-// AdapterConfig describes device communication paramters
-type AdapterConfig struct {
-	Device   string
-	Baudrate int
-	Comset   string
 }
 
 // MqttConfig describes the mqtt broker configuration
@@ -37,6 +30,13 @@ type MqttConfig struct {
 	Qos      int
 	Clean    bool
 	Homie    string
+}
+
+// AdapterConfig describes device communication paramters
+type AdapterConfig struct {
+	Device   string
+	Baudrate int
+	Comset   string
 }
 
 // DeviceConfig describes a single device's configuration

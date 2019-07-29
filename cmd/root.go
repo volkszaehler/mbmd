@@ -16,10 +16,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "mbmd",
 	Short: "ModBus Measurement Daemon",
-	//   Long: `A longer description that spans multiple lines and likely contains
-	// Cobra is a CLI library for Go that empowers applications.
-	// This application is a tool to generate the needed files
-	// to quickly create a Cobra application.`,
+	Long:  "Easily read and distribute data from ModBus meters and grid inverters",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		run(cmd, args)
