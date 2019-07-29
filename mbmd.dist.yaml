@@ -1,12 +1,6 @@
 # REST api, use 127.0.0.1 to restrict to localhost
 api: 0.0.0.0:8080
 
-# adapters are referenced by device
-adapters:
-- device: /dev/ttyUSB0
-  baudrate: 9600
-  comset: 8N1
-
 # mqtt config
 mqtt:
   broker: localhost:1883
@@ -17,6 +11,12 @@ mqtt:
   qos: 0
   clean: true
   homie: homie
+
+# adapters are referenced by device
+adapters:
+- device: /dev/ttyUSB0
+  baudrate: 9600
+  comset: 8N1
 
 # list of devices
 devices:
