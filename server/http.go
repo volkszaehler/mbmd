@@ -18,7 +18,7 @@ import (
 
 const devAssets = false
 
-//go:generate go run github.com/mjibson/esc -private -o assets.go -pkg server -prefix ../assets ../assets
+//go:generate esc -private -o assets.go -pkg server -prefix ../assets ../assets
 
 // Httpd is an http server
 type Httpd struct {

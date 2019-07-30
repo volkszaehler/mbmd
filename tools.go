@@ -1,6 +1,6 @@
 // +build tools
 
-package mbmd
+package main
 
 import (
 	_ "github.com/mjibson/esc"
