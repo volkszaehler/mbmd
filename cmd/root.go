@@ -17,10 +17,6 @@ var rootCmd = &cobra.Command{
 	Use:   "mbmd",
 	Short: "ModBus Measurement Daemon",
 	Long:  "Easily read and distribute data from ModBus meters and grid inverters",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		run(cmd, args)
-	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -59,15 +55,18 @@ The default adapter can be overridden per device`,
 Only applicable if the default adapter is an RTU device`,
 	)
 	rootCmd.PersistentFlags().BoolP(
+		"help", "h",
+		false,
+		"Help for "+rootCmd.Name(),
+	)
+	rootCmd.PersistentFlags().BoolP(
 		"verbose", "v",
 		false,
 		"Verbose mode",
 	)
 
 	// bind command line options
-	_ = viper.BindPFlag("adapter", rootCmd.PersistentFlags().Lookup("adapter"))
-	_ = viper.BindPFlag("baudrate", rootCmd.PersistentFlags().Lookup("baudrate"))
-	_ = viper.BindPFlag("comset", rootCmd.PersistentFlags().Lookup("comset"))
+	_ = viper.BindPFlags(rootCmd.PersistentFlags())
 }
 
 // initConfig reads in config file and ENV variables if set

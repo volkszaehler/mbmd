@@ -66,7 +66,7 @@ func (q *QueryEngine) DeviceDescriptorByID(id string) (res meters.DeviceDescript
 
 	for _, h := range q.handlers {
 		if h.ID == handlerID {
-			h.Manager.All(false, func(id uint8, dev meters.Device) {
+			h.Manager.All(func(id uint8, dev meters.Device) {
 				if id == uint8(deviceID) {
 					res = dev.Descriptor()
 				}

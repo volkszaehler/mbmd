@@ -29,9 +29,19 @@ var runCmd = &cobra.Command{
 	Short: "Read and publish measurements from all configured devices",
 	// 	Long: `A longer description that spans multiple lines and likely contains examples
 	// and usage of using your command. For example:`,
-	Run: func(cmd *cobra.Command, args []string) {
-		run(cmd, args)
-	},
+	Run: run,
+}
+
+// bindPflagsWithExceptions binds all pflags exception for exceptions
+func bindPflagsWithExceptions(flags *pflag.FlagSet, exceptions ...string) {
+	flags.VisitAll(func(flag *pflag.Flag) {
+		for _, f := range exceptions {
+			if flag.Name == f { // don't bind this key
+				return
+			}
+		}
+		_ = viper.BindPFlag(flag.Name, flag)
+	})
 }
 
 func init() {
@@ -40,13 +50,13 @@ func init() {
 	runCmd.PersistentFlags().StringSliceP(
 		"devices", "d",
 		[]string{},
-		`MODBUS device type and ID to query, separated by comma.
-  Example: -d SDM:22,DZG:1.
+		`MODBUS device type and ID to query, multiple devices separated by comma or by repeating the flag.
+  Example: -d SDM:1,SDM:2 -d DZG:1.
 Valid types are:`+meterHelp()+`
 To use an adapter different from default, append RTU device or TCP address separated by @.
 If the adapter is a TCP connection (identified by :port), the device type (SUNS) is ignored and
 any type is considered valid.
-  Example: -d SDM:22@/dev/USB1,SMA:126@localhost:502.`,
+  Example: -d SDM:1@/dev/USB11 -d SMA:126@localhost:502`,
 	)
 	runCmd.PersistentFlags().StringP(
 		"api", "",
@@ -94,13 +104,8 @@ any type is considered valid.
 		"MQTT Homie IoT discovery base topic (homieiot.github.io). Set empty to disable.",
 	)
 
-	// bind command line options to viper wit exceptions
-	runCmd.PersistentFlags().VisitAll(func(flag *pflag.Flag) {
-		if flag.Name == "devices" { // don't bind this key
-			return
-		}
-		_ = viper.BindPFlag(flag.Name, flag)
-	})
+	// bind command line options to viper with exceptions
+	bindPflagsWithExceptions(runCmd.PersistentFlags(), "devices")
 
 	_ = viper.BindPFlag("mqtt.broker", runCmd.PersistentFlags().Lookup("mqtt"))
 	mqtt := []string{"topic", "user", "password", "clientid", "clean", "qos", "homie"}

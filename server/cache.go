@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"sync"
 	"time"
@@ -43,7 +44,11 @@ func (mc *Cache) Run(in <-chan QuerySnip) {
 			mc.readings[uniqueID] = readings
 			mc.Unlock()
 		}
+
 		readings.Add(snip)
+		if mc.verbose {
+			log.Printf("device %s %s", uniqueID, readings.Current.String())
+		}
 	}
 }
 

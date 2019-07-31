@@ -24,9 +24,7 @@ for TCP devices it tries to read the SunSpec common block.
 If successful the detected device type and device id are displayed.
 
 Scan will ignore the config file and requires adapter configuration using command line.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		scan(cmd, args)
-	},
+	Run: scan,
 }
 
 func init() {
