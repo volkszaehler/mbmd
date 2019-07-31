@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"sort"
-	"strings"
 	"syscall"
 	"time"
 
@@ -38,9 +37,9 @@ var runCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(runCmd)
 
-	runCmd.PersistentFlags().StringP(
+	runCmd.PersistentFlags().StringSliceP(
 		"devices", "d",
-		"",
+		[]string{},
 		`MODBUS device type and ID to query, separated by comma.
   Example: -d SDM:22,DZG:1.
 Valid types are:`+meterHelp()+`
@@ -181,9 +180,9 @@ func run(cmd *cobra.Command, args []string) {
 		confHandler.CreateAdapter(defaultDevice, viper.GetInt("baudrate"), viper.GetString("comset"))
 	}
 
-	// create remaining devices
-	devices := viper.GetString("devices")
-	for _, dev := range strings.Split(devices, ",") {
+	// create remaining devices from command line
+	devices, _ := cmd.PersistentFlags().GetStringSlice("devices")
+	for _, dev := range devices {
 		if dev != "" {
 			confHandler.CreateDeviceFromSpec(dev)
 		}
