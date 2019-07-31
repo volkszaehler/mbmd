@@ -12,6 +12,7 @@ import (
 const (
 	maxRetry   = 3
 	retryDelay = 1 * time.Second
+	initDelay  = 3 * time.Second
 )
 
 // Handler is responsible for querying a single connection
@@ -44,43 +45,64 @@ func (h *Handler) Run(
 	control chan<- ControlSnip,
 	results chan<- QuerySnip,
 ) {
-	h.Manager.All(true, func(id uint8, dev meters.Device) {
+	h.Manager.All(func(id uint8, dev meters.Device) {
 		if sleepIsCancelled(ctx, 0) {
 			return
 		}
 
-		uniqueID := h.uniqueID(id, dev)
+		// select device
+		h.Manager.Conn.Slave(id)
+
+		// initialize device
 		status, ok := h.status[id]
 		if !ok {
-			if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
-				log.Printf("initializing device %s failed: %v", uniqueID, err)
-				sleepIsCancelled(ctx, retryDelay)
+			var err error
+			if status, err = h.initializeDevice(ctx, control, id, dev); err != nil {
 				return
 			}
-
-			d := dev.Descriptor()
-			uniqueID = h.uniqueID(id, dev) // update id
-			log.Printf("initialized device %s: %v", uniqueID, d)
-
-			// create status
-			status = &RuntimeInfo{Online: true}
 			h.status[id] = status
-
-			// signal device online
-			control <- ControlSnip{
-				Device: uniqueID,
-				Status: *status,
-			}
 		}
 
+		uniqueID := h.uniqueID(id, dev)
 		if queryable, wakeup := status.IsQueryable(); wakeup {
 			log.Printf("device %s is offline - reactivating", uniqueID)
 		} else if !queryable {
 			return
 		}
 
+		// query device
 		h.queryDevice(ctx, control, results, id, dev)
 	})
+}
+
+func (h *Handler) initializeDevice(
+	ctx context.Context,
+	control chan<- ControlSnip,
+	id uint8,
+	dev meters.Device,
+) (*RuntimeInfo, error) {
+	uniqueID := h.uniqueID(id, dev)
+
+	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
+		log.Printf("initializing device %s failed: %v", uniqueID, err)
+		sleepIsCancelled(ctx, initDelay)
+		return nil, err
+	}
+
+	d := dev.Descriptor()
+	uniqueID = h.uniqueID(id, dev) // update id
+	log.Printf("initialized device %s: %v", uniqueID, d)
+
+	// create status
+	status := &RuntimeInfo{Online: true}
+
+	// signal device online
+	control <- ControlSnip{
+		Device: uniqueID,
+		Status: *status,
+	}
+
+	return status, nil
 }
 
 func (h *Handler) queryDevice(

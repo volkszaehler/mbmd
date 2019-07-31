@@ -31,11 +31,8 @@ func (m *Manager) Add(id uint8, device Device) error {
 
 // All iterates over all devices and executes the callback per device.
 // Before the callback, the slave id is set on the underlying connection if access is true.
-func (m *Manager) All(access bool, cb func(uint8, Device)) {
+func (m *Manager) All(cb func(uint8, Device)) {
 	for id, device := range m.devices {
-		if access {
-			m.Conn.Slave(id)
-		}
 		cb(id, device)
 	}
 }

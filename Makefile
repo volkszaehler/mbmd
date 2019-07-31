@@ -1,4 +1,4 @@
-.PHONY: default clean checks lint test build assets binaries publish-images test-release
+.PHONY: default clean install checks lint test build assets binaries publish-images test-release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
@@ -6,10 +6,14 @@ VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
 BUILD_DATE := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
-default: clean checks test build
+default: clean install checks test build
 
 clean:
 	rm -rf dist/ *.zip
+
+install:
+	go install golang.org/x/tools/cmd/stringer
+	go install github.com/mjibson/esc
 
 checks: assets lint
 
