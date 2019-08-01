@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/viper"
 	"github.com/volkszaehler/mbmd/meters"
 
-	sunspec "github.com/andig/gosunspec"
-	bus "github.com/andig/gosunspec/modbus"
-	_ "github.com/andig/gosunspec/models" // import models
-	"github.com/andig/gosunspec/smdx"
+	sunspec "github.com/crabmusket/gosunspec"
+	bus "github.com/crabmusket/gosunspec/modbus"
+	_ "github.com/crabmusket/gosunspec/models" // import models
+	"github.com/crabmusket/gosunspec/smdx"
 )
 
 // inspectCmd represents the inspect command
@@ -51,7 +51,10 @@ func pf(format string, v ...interface{}) {
 func scanSunspec(client modbus.Client) {
 	in, err := bus.Open(client)
 	if err != nil {
-		log.Fatal(err)
+		if in == nil {
+			log.Fatal(err)
+		}
+		log.Printf("warning: device opened with partial result: %v", err)
 	}
 
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
@@ -69,7 +72,8 @@ func scanSunspec(client modbus.Client) {
 
 				err = b.Read()
 				if err != nil {
-					log.Fatal(err)
+					log.Printf("skipping due to read error: %v", err)
+					return
 				}
 
 				b.Do(func(p sunspec.Point) {
@@ -142,6 +146,10 @@ func inspect(cmd *cobra.Command, args []string) {
 	}
 
 	for _, m := range confHandler.Managers {
+		if viper.GetBool("verbose") {
+			m.Conn.Logger(&meters.LogLogger{})
+		}
+
 		m.All(func(id uint8, dev meters.Device) {
 			m.Conn.Slave(id)
 			scanSunspec(m.Conn.ModbusClient())

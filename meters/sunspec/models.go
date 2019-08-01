@@ -1,9 +1,9 @@
 package sunspec
 
 import (
-	"github.com/andig/gosunspec/models/model101"
-	"github.com/andig/gosunspec/models/model103"
-	"github.com/andig/gosunspec/models/model124"
+	"github.com/crabmusket/gosunspec/models/model101"
+	"github.com/crabmusket/gosunspec/models/model103"
+	"github.com/crabmusket/gosunspec/models/model124"
 
 	"github.com/volkszaehler/mbmd/meters"
 )
