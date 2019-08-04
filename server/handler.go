@@ -84,9 +84,12 @@ func (h *Handler) initializeDevice(
 	uniqueID := h.uniqueID(id, dev)
 
 	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
-		log.Printf("initializing device %s failed: %v", uniqueID, err)
-		sleepIsCancelled(ctx, initDelay)
-		return nil, err
+		if _, partial := err.(meters.SunSpecPartiallyInitialized); !partial {
+			log.Printf("initializing device %s failed: %v", uniqueID, err)
+			sleepIsCancelled(ctx, initDelay)
+			return nil, err
+		}
+		log.Println(err) // log error but continue
 	}
 
 	d := dev.Descriptor()

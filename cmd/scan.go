@@ -77,9 +77,11 @@ SCAN:
 		conn.Slave(uint8(deviceID))
 
 		for _, dev := range devices {
-			err := dev.Initialize(client)
-			if err != nil {
-				continue // devices
+			if err := dev.Initialize(client); err != nil {
+				if _, partial := err.(meters.SunSpecPartiallyInitialized); !partial {
+					continue // devices
+				}
+				log.Println(err) // log error but continue
 			}
 
 			mr, err := dev.Probe(client)
