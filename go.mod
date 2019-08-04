@@ -1,8 +1,10 @@
 module github.com/volkszaehler/mbmd
 
 require (
-	github.com/andig/gosunspec v0.0.0-20190706122846-bec48dbbc589
+	github.com/crabmusket/gosunspec v0.0.0-20190717025443-02e6f121cb71
 	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/goburrow/modbus v0.1.0 // indirect
+	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
@@ -20,3 +22,5 @@ require (
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	golang.org/x/tools v0.0.0-20190517183331-d88f79806bbd
 )
+
+replace github.com/crabmusket/gosunspec => github.com/andig/gosunspec v0.0.0-20190802074646-9596f4c956e3

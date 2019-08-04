@@ -158,6 +158,22 @@ func run(cmd *cobra.Command, args []string) {
 	go checkVersion()
 
 	confHandler := NewDeviceConfigHandler()
+
+	// create default adapter from configuration
+	defaultDevice := viper.GetString("adapter")
+	if defaultDevice != "" {
+		confHandler.DefaultDevice = defaultDevice
+		confHandler.CreateAdapter(defaultDevice, viper.GetInt("baudrate"), viper.GetString("comset"))
+	}
+
+	// create devices from command line
+	devices, _ := cmd.PersistentFlags().GetStringSlice("devices")
+	for _, dev := range devices {
+		if dev != "" {
+			confHandler.CreateDeviceFromSpec(dev)
+		}
+	}
+
 	if cfgFile != "" {
 		// config file found
 		log.Printf("using %s", viper.ConfigFileUsed())
@@ -167,29 +183,17 @@ func run(cmd *cobra.Command, args []string) {
 			log.Fatalf("failed parsing config file: %v", err)
 		}
 
-		// add adapters from configuration
-		for _, a := range conf.Adapters {
-			confHandler.CreateAdapter(a.Device, a.Baudrate, a.Comset)
-		}
+		// create devices from config file only if not overridden on command line
+		if len(devices) == 0 {
+			// add adapters from configuration
+			for _, a := range conf.Adapters {
+				confHandler.CreateAdapter(a.Device, a.Baudrate, a.Comset)
+			}
 
-		// add devices from configuration
-		for _, dev := range conf.Devices {
-			confHandler.CreateDevice(dev)
-		}
-	}
-
-	// create default adapter from configuration
-	defaultDevice := viper.GetString("adapter")
-	if defaultDevice != "" {
-		confHandler.DefaultDevice = defaultDevice
-		confHandler.CreateAdapter(defaultDevice, viper.GetInt("baudrate"), viper.GetString("comset"))
-	}
-
-	// create remaining devices from command line
-	devices, _ := cmd.PersistentFlags().GetStringSlice("devices")
-	for _, dev := range devices {
-		if dev != "" {
-			confHandler.CreateDeviceFromSpec(dev)
+			// add devices from configuration
+			for _, dev := range conf.Devices {
+				confHandler.CreateDevice(dev)
+			}
 		}
 	}
 
