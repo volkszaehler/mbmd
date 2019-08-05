@@ -39,17 +39,14 @@ Precompiled release packages are [available](https://github.com/volkszaehler/mbm
 
 ### Building from source
 
-`mbmd` is developed in [Go](http://golang.org) and requires >1.11. To build from source use `make build` which creates `./mbmd`.
+`mbmd` is developed in [Go](http://golang.org) and requires >1.11. To build from source two steps are needed:
+
+- use `make install` to install the build tools (make sure `$GOPATH/bin` is part of the path to make the installed tools accessible for the next step)
+- then run `make build` which creates the `./mbmd` binary
 
 To cross-build for a different archtecture (e.g. Raspberry Pi), use
 
     GOOS=linux GOARCH=arm GOARM=5 make build
-
-### Using Docker
-
-Docker images are provided as well:
-
-	docker run -p 8080:8080 --device=/dev/ttyUSB0 volkszaehler/mbmd -a /dev/ttyUSB0 -u 0.0.0.0:8080 -d sdm:1
 
 ### Running
 
@@ -73,6 +70,13 @@ modbus traffic and the current readings on the command line.  At
 web page that updates itself with the latest values:
 
 ![realtime view of incoming measurements](img/realtimeview.png)
+
+
+### Run using Docker
+
+Alternatively run `mbmd` using the Docker image:
+
+	docker run -p 8080:8080 --device=/dev/ttyUSB0 volkszaehler/mbmd -a /dev/ttyUSB0 -u 0.0.0.0:8080 -d sdm:1
 
 
 ## Raspberry Pi
@@ -219,11 +223,11 @@ manuals for definitive guidance):
 | DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
 | SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
 | ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
+| BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
 
  * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project. You can use e.g.
  [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
- * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and
- button.
+ * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and button.
  * SDM530: Very big (7TE) - takes up a lot of space, but all connections are
  on the underside of the meter.
  * SDM630 v1 and v2, both MID and non-MID. Compact (4TE) and with lots
@@ -234,14 +238,14 @@ manuals for definitive guidance):
  * DZG DVH4013: This meter does not provide raw phase power measurements
  and only aggregated import/export measurements. The meter is only
  partially implemented and not recommended. If you want to use it: By
- default, the meter communicates using 9600 8E1 (comset 5). The meter ID
+ default, the meter communicates using 9600 8E1. The meter ID
  is derived from the serial number: take the last two numbers of the
  serial number (top right of the device), e.g. 23, and add one (24).
  Assume this is a hexadecimal number and convert it to decimal (36). Use
  this as the meter ID.
  * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
- two tariffs, both import and export depending on meter version and compact (4TE).
- It's often used with Viessmann heat pumps.
+ two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
+ * BE MPM3PM: Compact (4TE) three phase meter.
 
  ## Modbus TCP Grid Inverters
 
