@@ -2,7 +2,6 @@ package sunspec
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"time"
 
@@ -22,6 +21,21 @@ type sunSpec struct {
 	descriptor meters.DeviceDescriptor
 }
 
+// partialError can be behaviour-checked for SunSpecPartiallyInitialized()
+// to indicate initialization error
+type partialError struct {
+	error
+	cause error
+}
+
+// Cause implements errors.Causer()
+func (e partialError) Cause() error {
+	return e.cause
+}
+
+// PartiallyInitialized implements SunSpecPartiallyInitialized()
+func (e partialError) PartiallyInitialized() {}
+
 // NewDevice creates a Sunspec device
 func NewDevice(meterType string) meters.Device {
 	return &sunSpec{
@@ -33,11 +47,13 @@ func NewDevice(meterType string) meters.Device {
 
 func (d *sunSpec) Initialize(client modbus.Client) error {
 	in, err := sunspecbus.Open(client)
-	if err != nil {
-		if in == nil {
-			return err
+	if err != nil && in == nil {
+		return err
+	} else if err != nil {
+		err = partialError{
+			error: errors.New("sunspec: device opened partially"),
+			cause: err,
 		}
-		log.Printf("sunspec: device opened partially: %v", err)
 	}
 
 	devices := in.Collect(sunspec.AllDevices)
@@ -60,7 +76,7 @@ func (d *sunSpec) Initialize(client modbus.Client) error {
 		return err
 	}
 
-	return nil
+	return err
 }
 
 func (d *sunSpec) readCommonBlock(device sunspec.Device) error {

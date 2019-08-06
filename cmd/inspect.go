@@ -50,11 +50,10 @@ func pf(format string, v ...interface{}) {
 
 func scanSunspec(client modbus.Client) {
 	in, err := bus.Open(client)
-	if err != nil {
-		if in == nil {
-			log.Fatal(err)
-		}
-		log.Printf("warning: device opened with partial result: %v", err)
+	if err != nil && in == nil {
+		log.Fatal(err)
+	} else if err != nil {
+		log.Printf("warning: device opened with partial result: %v", err) // log error but continue
 	}
 
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
