@@ -39,7 +39,8 @@ func (d *rs485) Initialize(client modbus.Client) error {
 // during initilization.
 func (d *rs485) Descriptor() meters.DeviceDescriptor {
 	return meters.DeviceDescriptor{
-		Manufacturer: d.producer.Description(),
+		Manufacturer: d.producer.Type(),
+		Model:        d.producer.Description(),
 	}
 }
 
