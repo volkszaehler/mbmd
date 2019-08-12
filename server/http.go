@@ -29,11 +29,11 @@ type Httpd struct {
 func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
 	mainTemplate, err := _escFSString(devAssets, "/index.html")
 	if err != nil {
-		log.Fatal("failed to load embedded template: " + err.Error())
+		log.Fatal("httpd: failed to load embedded template: " + err.Error())
 	}
 	t, err := template.New("mbmd").Parse(string(mainTemplate))
 	if err != nil {
-		log.Fatal("failed to create main page template: ", err.Error())
+		log.Fatal("httpd: failed to create main page template: ", err.Error())
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +48,7 @@ func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
 		}
 		err := t.Execute(w, data)
 		if err != nil {
-			log.Fatal("failed to render main page: ", err.Error())
+			log.Fatal("httpd: failed to render main page: ", err.Error())
 		}
 	})
 }
@@ -78,7 +78,7 @@ func (h *Httpd) allDevicesHandler(
 
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(res); err != nil {
-			log.Printf("failed to encode JSON: %s", err.Error())
+			log.Printf("httpd: failed to encode JSON: %s", err.Error())
 		}
 	})
 }
@@ -106,7 +106,7 @@ func (h *Httpd) singleDeviceHandler(
 
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(data); err != nil {
-			log.Printf("failed to encode JSON %s", err.Error())
+			log.Printf("httpd: failed to encode JSON %s", err.Error())
 		}
 	})
 }
@@ -116,7 +116,7 @@ func (h *Httpd) mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Reque
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(s); err != nil {
-			log.Printf("failed to encode JSON: %s", err.Error())
+			log.Printf("httpd: failed to encode JSON: %s", err.Error())
 		}
 	})
 }
@@ -163,7 +163,7 @@ func (h *Httpd) Run(
 	s *Status,
 	url string,
 ) {
-	log.Printf("starting API at %s", url)
+	log.Printf("httpd: starting api at %s", url)
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static

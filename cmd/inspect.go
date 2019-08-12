@@ -23,6 +23,7 @@ var inspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "Inspect SunSpec device models and implemented values",
 	Long: `Inspect will iterate across the SunSpec model definition for the specified device and print details about defined models and data points.
+Devices are expected to be specified on command line- config file is being ignored.
 Limited to SunSpec TCP devices (EXPERIMENTAL).`,
 	Run: inspect,
 }
@@ -136,7 +137,8 @@ func inspect(cmd *cobra.Command, args []string) {
 	// create devices from command line
 	devices, _ := cmd.PersistentFlags().GetStringSlice("devices")
 	if len(devices) == 0 {
-		fmt.Fprint(os.Stderr, "Missing device definition")
+		fmt.Fprint(os.Stderr, "config: no devices found - terminiating")
+		os.Exit(1)
 	}
 	for _, dev := range devices {
 		if dev != "" {
@@ -144,11 +146,12 @@ func inspect(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	for _, m := range confHandler.Managers {
-		if viper.GetBool("verbose") {
-			m.Conn.Logger(&meters.LogLogger{})
-		}
+	// raw log
+	if viper.GetBool("raw") {
+		setLogger(confHandler.Managers, log.New(os.Stderr, "", 0))
+	}
 
+	for _, m := range confHandler.Managers {
 		m.All(func(id uint8, dev meters.Device) {
 			m.Conn.Slave(id)
 			scanSunspec(m.Conn.ModbusClient())

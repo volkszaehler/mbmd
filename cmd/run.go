@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"sort"
 	"syscall"
 	"time"
 
@@ -15,7 +13,6 @@ import (
 	"github.com/spf13/viper"
 	latest "github.com/tcnksm/go-latest"
 
-	"github.com/volkszaehler/mbmd/meters/rs485"
 	"github.com/volkszaehler/mbmd/server"
 )
 
@@ -132,27 +129,6 @@ func checkVersion() {
 	}
 }
 
-// meterHelp output list of supported devices
-func meterHelp() string {
-	s := fmt.Sprintf("\n  %s", "RTU")
-	types := make([]string, 0)
-	for t := range rs485.Producers {
-		types = append(types, t)
-	}
-
-	sort.Strings(types)
-
-	for _, t := range types {
-		p := rs485.Producers[t]()
-		s += fmt.Sprintf("\n    %-9s%s", t, p.Description())
-	}
-
-	s += fmt.Sprintf("\n  %s", "TCP")
-	s += fmt.Sprintf("\n    %-9s%s", "SUNS", "Sunspec-compatible MODBUS TCP device (SMA, SolarEdge, KOSTAL, etc)")
-
-	return s
-}
-
 func run(cmd *cobra.Command, args []string) {
 	log.Printf("mbmd %s (%s)", server.Version, server.Commit)
 	go checkVersion()
@@ -176,7 +152,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	if cfgFile != "" {
 		// config file found
-		log.Printf("using %s", viper.ConfigFileUsed())
+		log.Printf("config: using %s", viper.ConfigFileUsed())
 
 		var conf Config
 		if err := viper.Unmarshal(&conf); err != nil {
@@ -195,6 +171,15 @@ func run(cmd *cobra.Command, args []string) {
 				confHandler.CreateDevice(dev)
 			}
 		}
+	}
+
+	if countDevices(confHandler.Managers) == 0 {
+		log.Fatal("config: no devices found - terminiating")
+	}
+
+	// raw log
+	if viper.GetBool("raw") {
+		setLogger(confHandler.Managers, log.New(os.Stderr, "", log.LstdFlags))
 	}
 
 	// query engine

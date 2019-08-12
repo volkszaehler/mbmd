@@ -40,7 +40,7 @@ func NewMqttClient(
 	message := fmt.Sprintf("disconnected")
 	mqttOpts.SetWill(topic, message, byte(mqttQos), true)
 
-	log.Printf("MQTT: connecting at %s", mqttBroker)
+	log.Printf("mqtt: connecting at %s", mqttBroker)
 	if verbose {
 		log.Printf("\tclientid:     %s\n", mqttClientID)
 		if mqttUser != "" {
@@ -56,20 +56,20 @@ func NewMqttClient(
 
 	mqttClient := MQTT.NewClient(mqttOpts)
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatalf("MQTT: error connecting: %s", token.Error())
+		log.Fatalf("mqtt: error connecting: %s", token.Error())
 	}
 	if verbose {
-		log.Println("MQTT: connected")
+		log.Println("mqtt: connected")
 	}
 
 	// notify connection
-	message = fmt.Sprintf("connected")
+	message = fmt.Sprintf("mqtt: connected")
 	token := mqttClient.Publish(topic, byte(mqttQos), true, message)
 	if verbose {
-		log.Printf("MQTT: publish %s, message: %s", topic, message)
+		log.Printf("mqtt: publish %s, message: %s", topic, message)
 	}
 	if token.Wait() && token.Error() != nil {
-		log.Fatal("MQTT: error connecting, trying to reconnect: ", token.Error())
+		log.Fatal("mqtt: error connecting, trying to reconnect: ", token.Error())
 	}
 
 	return &MqttClient{
@@ -84,7 +84,7 @@ func NewMqttClient(
 func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
 	token := m.client.Publish(topic, byte(m.mqttQos), retained, message)
 	if m.verbose {
-		log.Printf("MQTT: publish %s, message: %s", topic, message)
+		log.Printf("mqtt: publish %s, message: %s", topic, message)
 	}
 	m.WaitForToken(token)
 }
@@ -93,11 +93,11 @@ func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
 func (m *MqttClient) WaitForToken(token MQTT.Token) {
 	if token.WaitTimeout(2000 * time.Millisecond) {
 		if token.Error() != nil {
-			log.Printf("MQTT: error: %s", token.Error())
+			log.Printf("mqtt: error: %s", token.Error())
 		}
 	} else {
 		if m.verbose {
-			log.Printf("MQTT: timeout")
+			log.Printf("mqtt: timeout")
 		}
 	}
 }
