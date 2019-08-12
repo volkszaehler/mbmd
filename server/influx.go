@@ -100,26 +100,34 @@ func (m *Influx) writeBatchPoints() {
 	}
 }
 
-// Run Influx publisher
-func (m *Influx) Run(in <-chan QuerySnip) {
-	done := make(chan bool)
-	writeComplete := make(chan bool)
+// asyncWriter periodically calls writeBatchPoints
+func (m *Influx) asyncWriter(exit <-chan bool) <-chan bool {
+	done := make(chan bool) // signal writer stopped
 
 	// async batch writer
-	go func(m *Influx) {
+	go func() {
 		ticker := time.NewTicker(m.interval)
 		for {
 			select {
 			case <-ticker.C:
 				m.writeBatchPoints()
-			case <-done:
+			case <-exit:
 				ticker.Stop()
 				m.writeBatchPoints()
-				writeComplete <- true
+				done <- true
 				return
 			}
 		}
-	}(m)
+	}()
+
+	return done
+}
+
+// Run Influx publisher
+func (m *Influx) Run(in <-chan QuerySnip) {
+	// run async writer
+	exit := make(chan bool)     // exit signals to stop writer
+	done := m.asyncWriter(exit) // done signals writer stopped
 
 	for snip := range in {
 		p, err := influxdb.NewPoint(
@@ -142,8 +150,8 @@ func (m *Influx) Run(in <-chan QuerySnip) {
 	}
 
 	// close write loop
-	done <- true
-	<-writeComplete
+	exit <- true
+	<-done
 
 	m.client.Close()
 }
