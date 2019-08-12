@@ -41,6 +41,16 @@ func bindPflagsWithExceptions(flags *pflag.FlagSet, exceptions ...string) {
 	})
 }
 
+func bindPFlagsWithPrefix(flags *pflag.FlagSet, prefix string, names ...string) {
+	for _, f := range names {
+		flag := flags.Lookup(prefix + "-" + f)
+		if flag == nil {
+			panic("pflag lookup failed for " + f)
+		}
+		_ = viper.BindPFlag(prefix+"."+f, flag)
+	}
+}
+
 func init() {
 	rootCmd.AddCommand(runCmd)
 
@@ -55,8 +65,8 @@ If the adapter is a TCP connection (identified by :port), the device type (SUNS)
 any type is considered valid.
   Example: -d SDM:1@/dev/USB11 -d SMA:126@localhost:502`,
 	)
-	runCmd.PersistentFlags().StringP(
-		"api", "",
+	runCmd.PersistentFlags().String(
+		"api",
 		"0.0.0.0:8080",
 		"REST API url. Use 127.0.0.1:8080 to limit to localhost.",
 	)
@@ -65,54 +75,94 @@ any type is considered valid.
 		"",
 		"MQTT broker URI. ex: tcp://10.10.1.1:1883",
 	)
-	runCmd.PersistentFlags().StringP(
-		"topic", "t",
+	runCmd.PersistentFlags().String(
+		"mqtt-topic",
 		"mbmd",
 		"MQTT root topic. Set empty to disable publishing.",
 	)
-	runCmd.PersistentFlags().StringP(
-		"user", "u",
+	runCmd.PersistentFlags().String(
+		"mqtt-user",
 		"",
 		"MQTT user (optional)",
 	)
-	runCmd.PersistentFlags().StringP(
-		"password", "p",
+	runCmd.PersistentFlags().String(
+		"mqtt-password",
 		"",
 		"MQTT password (optional)",
 	)
-	runCmd.PersistentFlags().StringP(
-		"clientid", "i",
+	runCmd.PersistentFlags().String(
+		"mqtt-clientid",
 		"mbmd",
 		"MQTT client id",
 	)
 	runCmd.PersistentFlags().Bool(
-		"clean",
+		"mqtt-clean",
 		false,
 		"MQTT clean Session",
 	)
-	runCmd.PersistentFlags().IntP(
-		"qos", "q",
+	runCmd.PersistentFlags().Int(
+		"mqtt-qos",
 		0,
-		"MQTT quality of service 0,1,2",
+		"MQTT quality of service 0,1,2 (default 0)",
 	)
 	runCmd.PersistentFlags().String(
-		"homie",
+		"mqtt-homie",
 		"homie",
 		"MQTT Homie IoT discovery base topic (homieiot.github.io). Set empty to disable.",
 	)
+	runCmd.PersistentFlags().StringP(
+		"influx", "i",
+		"",
+		"InfluxDB URL. ex: http://10.10.1.1:8086",
+	)
+	runCmd.PersistentFlags().String(
+		"influx-database",
+		"",
+		"InfluxDB database",
+	)
+	runCmd.PersistentFlags().String(
+		"influx-measurement",
+		"data",
+		"InfluxDB measurement",
+	)
+	runCmd.PersistentFlags().String(
+		"influx-precision",
+		"s",
+		"InfluxDB precision",
+	)
+	runCmd.PersistentFlags().String(
+		"influx-consistency",
+		"",
+		"InfluxDB consistency",
+	)
+	runCmd.PersistentFlags().Duration(
+		"influx-interval",
+		30*time.Second,
+		"InfluxDB write interval",
+	)
+	runCmd.PersistentFlags().String(
+		"influx-user",
+		"",
+		"InfluxDB user (optional)",
+	)
+	runCmd.PersistentFlags().String(
+		"influx-password",
+		"",
+		"InfluxDB password (optional)",
+	)
+
+	pflags := runCmd.PersistentFlags()
 
 	// bind command line options to viper with exceptions
-	bindPflagsWithExceptions(runCmd.PersistentFlags(), "devices")
+	bindPflagsWithExceptions(pflags, "devices")
 
-	_ = viper.BindPFlag("mqtt.broker", runCmd.PersistentFlags().Lookup("mqtt"))
-	mqtt := []string{"topic", "user", "password", "clientid", "clean", "qos", "homie"}
-	for _, f := range mqtt {
-		flag := runCmd.PersistentFlags().Lookup(f)
-		if flag == nil {
-			panic("pfllag lookup failed for " + f)
-		}
-		_ = viper.BindPFlag("mqtt."+f, flag)
-	}
+	// mqtt
+	_ = viper.BindPFlag("mqtt.broker", pflags.Lookup("mqtt"))
+	bindPFlagsWithPrefix(pflags, "mqtt", "topic", "user", "password", "clientid", "clean", "qos", "homie")
+
+	// influx
+	_ = viper.BindPFlag("influx.url", pflags.Lookup("influx"))
+	bindPFlagsWithPrefix(pflags, "influx", "database", "measurement", "interval", "user", "password")
 }
 
 // checkVersion validates if updates are available
@@ -193,19 +243,23 @@ func run(cmd *cobra.Command, args []string) {
 	tee := server.NewQuerySnipBroadcaster(rc)
 	go tee.Run()
 
-	// status cache
+	// status cache (always needed to consume control messages)
 	status := server.NewStatus(qe, cc)
 
-	// websocket hub
-	hub := server.NewSocketHub(status)
-	tee.AttachRunner(hub.Run)
+	// web server
+	if viper.GetString("api") != "" {
+		// measurement cache for REST api
+		cache := server.NewCache(cacheDuration, status, viper.GetBool("verbose"))
+		tee.AttachRunner(cache.Run)
 
-	// measurement cache for REST api
-	cache := server.NewCache(cacheDuration, status, viper.GetBool("verbose"))
-	tee.AttachRunner(cache.Run)
+		// websocket hub
+		hub := server.NewSocketHub(status)
+		tee.AttachRunner(hub.Run)
 
-	httpd := server.NewHttpd(qe, cache)
-	go httpd.Run(hub, status, viper.GetString("api"))
+		// http daemon
+		httpd := server.NewHttpd(qe, cache)
+		go httpd.Run(hub, status, viper.GetString("api"))
+	}
 
 	// MQTT client
 	if viper.GetString("mqtt.broker") != "" {
@@ -231,6 +285,23 @@ func run(cmd *cobra.Command, args []string) {
 			mqttRunner := server.MqttRunner{MqttClient: mqtt}
 			tee.AttachRunner(mqttRunner.Run)
 		}
+	}
+
+	// InfluxDB client
+	if viper.GetString("influx.url") != "" {
+		influx := server.NewInfluxClient(
+			viper.GetString("influx.url"),
+			viper.GetString("influx.database"),
+			viper.GetString("influx.measurement"),
+			viper.GetString("influx.precision"),
+			viper.GetString("influx.consistency"),
+			viper.GetDuration("influx.interval"),
+			viper.GetString("influx.user"),
+			viper.GetString("influx.password"),
+			viper.GetBool("verbose"),
+		)
+
+		tee.AttachRunner(influx.Run)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
