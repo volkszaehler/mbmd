@@ -88,9 +88,9 @@ func (q *QueryEngine) Run(
 
 	// run each connection manager inside separate goroutine
 	var wg sync.WaitGroup
-	for i, h := range q.handlers {
+	for _, h := range q.handlers {
 		wg.Add(1)
-		go func(h *Handler, i string) {
+		go func(h *Handler) {
 			for {
 				h.Run(ctx, control, results)
 				if sleepIsCancelled(ctx, time.Second) {
@@ -98,7 +98,7 @@ func (q *QueryEngine) Run(
 					return
 				}
 			}
-		}(h, i)
+		}(h)
 	}
 	wg.Wait()
 }
