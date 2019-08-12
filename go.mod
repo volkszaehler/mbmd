@@ -13,6 +13,7 @@ require (
 	github.com/grid-x/modbus v0.0.0-20190318150248-46005d8da8d6
 	github.com/grid-x/serial v0.0.0-20171015094157-98648473d6ff // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
+	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mjibson/esc v0.2.0
 	github.com/pkg/errors v0.8.1
