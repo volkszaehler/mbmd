@@ -17,10 +17,12 @@ RUN adduser -D -g '' appuser
 WORKDIR /build
 
 ENV GO111MODULE on
+ENV GOPROXY https://proxy.golang.org
 COPY go.* ./
 RUN go mod download
 
 COPY . .
+RUN make install
 RUN make build
 
 #############################
@@ -42,4 +44,4 @@ USER appuser
 EXPOSE 8080
 
 # Run the binary.
-CMD /go/bin/mbmd --url 0.0.0.0:8080
+CMD /go/bin/mbmd

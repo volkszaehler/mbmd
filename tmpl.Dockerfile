@@ -17,10 +17,12 @@ RUN adduser -D -g '' appuser
 WORKDIR /build
 
 ENV GO111MODULE on
+ENV GOPROXY https://proxy.golang.org
 COPY go.* ./
 RUN go mod download
 
 COPY . .
+RUN make install
 RUN GOARCH={{ .GoARCH }} GOARM={{ .GoARM }} make build
 
 #############################
@@ -33,7 +35,7 @@ COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 
-# Copy our static executable
+# Copy our static executable.
 COPY --from=builder /build/mbmd /go/bin/mbmd
 
 # Use an unprivileged user.
