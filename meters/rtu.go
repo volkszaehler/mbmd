@@ -35,14 +35,6 @@ func NewClientHandler(device string, baudrate int, comset string) *modbus.RTUCli
 
 	handler.Timeout = 300 * time.Millisecond
 
-	// if verbose {
-	// 	logger := &ModbusLogger{}
-	// 	handler.Logger = logger
-	// 	log.Printf("Connecting to RTU via %s, %d %d%s%d\r\n", device,
-	// 		handler.BaudRate, handler.DataBits, handler.Parity,
-	// 		handler.StopBits)
-	// }
-
 	return handler
 }
 

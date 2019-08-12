@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -49,6 +50,11 @@ func scan(cmd *cobra.Command, args []string) {
 
 	conn := createConnection(adapter, viper.GetInt("baudrate"), viper.GetString("comset"))
 	client := conn.ModbusClient()
+
+	// raw log
+	if viper.GetBool("raw") {
+		conn.Logger(log.New(os.Stderr, "", log.LstdFlags))
+	}
 
 	// create devices
 	devices := make([]meters.Device, 0)

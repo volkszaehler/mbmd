@@ -64,6 +64,11 @@ Only applicable if the default adapter is an RTU device`,
 		false,
 		"Verbose mode",
 	)
+	rootCmd.PersistentFlags().Bool(
+		"raw",
+		false,
+		"Log raw device data",
+	)
 
 	// bind command line options
 	_ = viper.BindPFlags(rootCmd.PersistentFlags())

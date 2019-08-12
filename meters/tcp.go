@@ -22,11 +22,6 @@ func NewTCPClientHandler(device string) *modbus.TCPClientHandler {
 	handler.ProtocolRecoveryTimeout = 10 * time.Second
 	handler.LinkRecoveryTimeout = 15 * time.Second
 
-	// if verbose {
-	// 	logger := &ModbusLogger{}
-	// 	handler.Logger = logger
-	// }
-
 	return handler
 }
 
