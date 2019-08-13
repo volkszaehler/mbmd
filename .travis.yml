@@ -27,7 +27,11 @@ before_install:
   - make install
 
 script:
-  - make
+  - ls /home/travis/gopath || true
+  - ls /home/travis/gopath/src || true
+  - ls /home/travis/gopath/src/github.com/volkszaehler/mbmd || true
+  - cat /home/travis/gopath/src/github.com/volkszaehler/mbmd/cmd/run.go || true
+  - ls github.com/volkszaehler/mbmd || true
 
 before_deploy:
   - curl -sfL https://raw.githubusercontent.com/ldez/seihon/master/godownloader.sh | bash -s -- -b $GOPATH/bin
