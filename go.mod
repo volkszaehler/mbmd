@@ -7,7 +7,7 @@ require (
 	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
-	github.com/gorilla/handlers v1.4.0
+	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.0
 	github.com/grid-x/modbus v0.0.0-20190318150248-46005d8da8d6
