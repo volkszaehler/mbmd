@@ -7,7 +7,8 @@ go:
 go_import_path: github.com/volkszaehler/mbmd
 cache:
   directories:
-    - /home/travis/gopath/
+    - $HOME/.cache/go-build
+    - $HOME/gopath/pkg/mod
 
 notifications:
   email:
@@ -18,7 +19,7 @@ env:
   global:
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
-    - PATH=/home/travis/gopath/bin:$PATH
+    - PATH=$HOME/gopath/bin:$PATH
 
 before_install:
   # Install linters and misspell
