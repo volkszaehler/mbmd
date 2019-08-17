@@ -29,7 +29,6 @@ func NewInfluxClient(
 	database string,
 	measurement string,
 	precision string,
-	consistency string,
 	interval time.Duration,
 	user string,
 	password string,
@@ -55,9 +54,8 @@ func NewInfluxClient(
 	return &Influx{
 		client: client,
 		pointsConf: influxdb.BatchPointsConfig{
-			Database:         database,
-			Precision:        precision,
-			WriteConsistency: consistency,
+			Database:  database,
+			Precision: precision,
 		},
 		interval:    interval,
 		measurement: measurement,
