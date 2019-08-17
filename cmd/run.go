@@ -130,11 +130,6 @@ any type is considered valid.
 		"s",
 		"InfluxDB precision",
 	)
-	runCmd.PersistentFlags().String(
-		"influx-consistency",
-		"",
-		"InfluxDB consistency",
-	)
 	runCmd.PersistentFlags().Duration(
 		"influx-interval",
 		30*time.Second,
@@ -162,7 +157,7 @@ any type is considered valid.
 
 	// influx
 	_ = viper.BindPFlag("influx.url", pflags.Lookup("influx"))
-	bindPFlagsWithPrefix(pflags, "influx", "database", "measurement", "interval", "user", "password")
+	bindPFlagsWithPrefix(pflags, "influx", "database", "measurement", "precision", "interval", "user", "password")
 }
 
 // checkVersion validates if updates are available
@@ -294,7 +289,6 @@ func run(cmd *cobra.Command, args []string) {
 			viper.GetString("influx.database"),
 			viper.GetString("influx.measurement"),
 			viper.GetString("influx.precision"),
-			viper.GetString("influx.consistency"),
 			viper.GetDuration("influx.interval"),
 			viper.GetString("influx.user"),
 			viper.GetString("influx.password"),
