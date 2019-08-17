@@ -31,7 +31,7 @@ func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
 	if err != nil {
 		log.Fatal("httpd: failed to load embedded template: " + err.Error())
 	}
-	t, err := template.New("mbmd").Parse(string(mainTemplate))
+	t, err := template.New("mbmd").Parse(mainTemplate)
 	if err != nil {
 		log.Fatal("httpd: failed to create main page template: ", err.Error())
 	}

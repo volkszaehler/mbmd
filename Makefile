@@ -18,7 +18,7 @@ install:
 checks: assets lint
 
 lint:
-	golangci-lint run
+	golangci-lint run -E misspell -E unparam -E gocritic -E unconvert
 
 test:
 	@echo "Running testsuite"

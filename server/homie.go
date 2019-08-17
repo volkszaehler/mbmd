@@ -126,7 +126,7 @@ func (hr *HomieRunner) publishProperties(meter string) {
 		hr.publish(propertySubtopic+"/$datatype", "float")
 	}
 
-	hr.publish(subtopic+"/$properties", strings.Join(properties[:], ","))
+	hr.publish(subtopic+"/$properties", strings.Join(properties, ","))
 }
 
 func (hr *HomieRunner) publish(subtopic string, message string) {

@@ -23,7 +23,7 @@ type Producer interface {
 	Probe() Operation
 }
 
-// Opcodes map measurements to phyiscal registers
+// Opcodes map measurements to physical registers
 type Opcodes map[meters.Measurement]uint16
 
 // Opcode returns physical register for measurement type

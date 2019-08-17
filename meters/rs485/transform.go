@@ -50,6 +50,6 @@ func MakeScaledTransform(transform RTUTransform, scaler float64) RTUTransform {
 	return RTUTransform(func(b []byte) float64 {
 		unscaled := transform(b)
 		f := unscaled / scaler
-		return float64(f)
+		return f
 	})
 }
