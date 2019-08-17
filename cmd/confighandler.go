@@ -12,7 +12,7 @@ import (
 	"github.com/volkszaehler/mbmd/meters/sunspec"
 )
 
-// Config describes the entirey configuration
+// Config describes the entire configuration
 type Config struct {
 	API      string
 	Mqtt     MqttConfig
@@ -32,7 +32,7 @@ type MqttConfig struct {
 	Homie    string
 }
 
-// AdapterConfig describes device communication paramters
+// AdapterConfig describes device communication parameters
 type AdapterConfig struct {
 	Device   string
 	Baudrate int
