@@ -54,6 +54,7 @@ To get help on the various command line options run
 
 	mbmd -h
 
+The full documentation is available in the [docs](docs/mbmd.md) folder.
 A typical invocation looks like this:
 
     $ ./bin/mbmd -a /dev/ttyUSB0 -d janitza:26,sdm:1

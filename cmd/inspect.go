@@ -62,6 +62,9 @@ func scanSunspec(client modbus.Client) {
 	in.Do(func(d sunspec.Device) {
 		d.Do(func(m sunspec.Model) {
 			pf("--------- Model %d %s ---------", m.Id(), modelName(m))
+			// if m.Id() != 113 && m.Id() != 103 {
+			// 	return
+			// }
 
 			blocknum := 0
 			m.Do(func(b sunspec.Block) {
