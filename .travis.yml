@@ -28,7 +28,10 @@ before_install:
   - make install
 
 script:
+  # build
   - make
+  # ensure all changes are committed
+  - test -z "$(git status --porcelain)" || (git status; git diff; false)
 
 before_deploy:
   - curl -sfL https://raw.githubusercontent.com/ldez/seihon/master/godownloader.sh | bash -s -- -b $GOPATH/bin
