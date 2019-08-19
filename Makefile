@@ -1,4 +1,4 @@
-.PHONY: default clean install checks lint test build assets binaries publish-images test-release
+.PHONY: default clean install lint test build binaries publish-images test-release release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
@@ -6,16 +6,14 @@ VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
 BUILD_DATE := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
-default: clean install checks test build
+default: clean install assets lint test build
 
 clean:
-	rm -rf dist/ *.zip
+	rm -rf dist/
 
 install:
 	go install golang.org/x/tools/cmd/stringer
 	go install github.com/mjibson/esc
-
-checks: assets lint
 
 lint:
 	golangci-lint run -E misspell -E unparam -E gocritic -E unconvert
@@ -24,13 +22,11 @@ test:
 	@echo "Running testsuite"
 	go test ./...
 
-build: assets binaries
-
 assets:
 	@echo "Generating embedded assets"
 	go generate ./...
 
-binaries:
+build:
 	@echo Version: $(VERSION) $(BUILD_DATE)
 	go build -v -ldflags '-X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"'
 
@@ -40,3 +36,6 @@ publish-images:
 
 test-release:
 	goreleaser --snapshot --skip-publish --rm-dist
+
+release:
+	goreleaser --rm-dist
