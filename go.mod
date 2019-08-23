@@ -15,7 +15,6 @@ require (
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/magiconair/properties v1.8.1 // indirect
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mjibson/esc v0.2.0
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.8.1
