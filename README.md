@@ -39,7 +39,7 @@ Precompiled release packages are [available](https://github.com/volkszaehler/mbm
 
 ### Building from source
 
-`mbmd` is developed in [Go](http://golang.org) and requires >1.11. To build from source two steps are needed:
+`mbmd` is developed in [Go](http://golang.org) and requires >=1.12. To build from source two steps are needed:
 
 - use `make install` to install the build tools (make sure `$GOPATH/bin` is part of the path to make the installed tools accessible for the next step)
 - then run `make build` which creates the `./mbmd` binary
