@@ -16,6 +16,8 @@ const (
 
 type rs485 struct {
 	producer Producer
+	ops      chan Operation
+	inflight Operation
 }
 
 // NewDevice creates a device who's type must exist in the producer registry
@@ -23,7 +25,18 @@ func NewDevice(typeid string) (meters.Device, error) {
 	if factory, ok := Producers[typeid]; ok {
 		device := &rs485{
 			producer: factory(),
+			ops:      make(chan Operation),
 		}
+
+		// ringbuffer of device operations
+		go func(d *rs485) {
+			for {
+				for _, op := range d.producer.Produce() {
+					d.ops <- op
+				}
+			}
+		}(device)
+
 		return device, nil
 	}
 
@@ -77,7 +90,7 @@ func (d *rs485) query(client modbus.Client, op Operation) (res meters.Measuremen
 	return res, nil
 }
 
-// Probe is called by the BusManager after preparing the bus by setting the device id and waiting for rate limit
+// Probe is called by the handler after preparing the bus by setting the device id
 func (d *rs485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
 	op := d.producer.Probe()
 
@@ -89,15 +102,29 @@ func (d *rs485) Probe(client modbus.Client) (res meters.MeasurementResult, err e
 	return res, nil
 }
 
-// Query is called by the BusManager after preparing the bus by setting the device id and waiting for rate limit
+// Query is called by the handler after preparing the bus by setting the device id and waiting for rate limit
 func (d *rs485) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
 	res = make([]meters.MeasurementResult, 0)
 
-	for _, op := range d.producer.Produce() {
-		m, err := d.query(client, op)
+	// Query loop will try to read all operations in a single run. It will
+	// always start with the current inflight operation. If an error is encountered,
+	// the partial results are returned. The loop is terminated after as many
+	// operations have been executed as the producer provides in a single run.
+	// In case of a flakey connection this guarantees that all registers are
+	// read at an equal rate.
+	for range d.producer.Produce() {
+		// get next inflight
+		if d.inflight.FuncCode == 0 {
+			d.inflight = <-d.ops
+		}
+
+		m, err := d.query(client, d.inflight)
 		if err != nil {
 			return res, err
 		}
+
+		// mark inflight operation as completed
+		d.inflight.FuncCode = 0
 
 		res = append(res, m)
 	}

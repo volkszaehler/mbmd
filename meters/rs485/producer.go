@@ -6,6 +6,7 @@ import (
 	"github.com/volkszaehler/mbmd/meters"
 )
 
+// Operation describes a physical bus operation and its result
 type Operation struct {
 	FuncCode  uint8
 	OpCode    uint16
