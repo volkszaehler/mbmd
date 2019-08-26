@@ -1,6 +1,7 @@
 package rs485
 
 import (
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -144,4 +145,23 @@ func (d *rs485) Query(client modbus.Client) (res []meters.MeasurementResult, err
 	}
 
 	return res, nil
+}
+
+// MID meters initialization method used by Janitza and ABB
+func initializeMID(client modbus.Client, descriptor *meters.DeviceDescriptor) error {
+	// serial
+	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
+		descriptor.Serial = fmt.Sprintf("%4x", binary.BigEndian.Uint32(bytes))
+	}
+	// firmware
+	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
+		descriptor.Version = string(bytes)
+	}
+	// type
+	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
+		descriptor.Model = string(bytes)
+	}
+
+	// assume success
+	return nil
 }

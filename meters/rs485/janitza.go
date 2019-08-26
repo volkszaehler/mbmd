@@ -1,9 +1,6 @@
 package rs485
 
 import (
-	"encoding/binary"
-	"fmt"
-
 	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
@@ -61,21 +58,7 @@ func (p *JanitzaProducer) Description() string {
 }
 
 func (p *JanitzaProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
-	// serial
-	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
-		descriptor.Serial = fmt.Sprintf("%4d", binary.BigEndian.Uint32(bytes))
-	}
-	// firmware
-	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
-		descriptor.Version = string(bytes)
-	}
-	// type
-	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
-		descriptor.Model = string(bytes)
-	}
-
-	// assume success
-	return nil
+	return initializeMID(client, descriptor)
 }
 
 func (p *JanitzaProducer) snip(iec Measurement) Operation {
