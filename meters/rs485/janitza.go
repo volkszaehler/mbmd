@@ -1,7 +1,6 @@
 package rs485
 
 import (
-	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -57,7 +56,7 @@ func (p *JanitzaProducer) Description() string {
 	return "Janitza MID B-Series meters"
 }
 
-func (p *JanitzaProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
+func (p *JanitzaProducer) Initialize(client modbusClient, descriptor *DeviceDescriptor) error {
 	return initializeMID(client, descriptor)
 }
 

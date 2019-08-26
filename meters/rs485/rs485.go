@@ -16,10 +16,37 @@ const (
 	readInputReg   = 4
 )
 
+// modbusClient is the minimal interface that is usable by the initializer interface.
+// It is used to keep the producers free of modbus implementation dependencies.
+type modbusClient interface {
+	ReadHoldingRegisters(address, quantity uint16) (results []byte, err error)
+	ReadInputRegisters(address, quantity uint16) (results []byte, err error)
+}
+
+// initializer can be implemented by producers to perform bus operations for device discovery
 type initializer interface {
 	// Initialize prepares the device for usage. Any setup or initialization should be done here.
 	// It requires that the client has the correct device id applied.
-	Initialize(client modbus.Client, descriptor *meters.DeviceDescriptor) error
+	Initialize(client modbusClient, descriptor *meters.DeviceDescriptor) error
+}
+
+// MID meters initialization method used by Janitza and ABB
+func initializeMID(client modbusClient, descriptor *meters.DeviceDescriptor) error {
+	// serial
+	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
+		descriptor.Serial = fmt.Sprintf("%4x", binary.BigEndian.Uint32(bytes))
+	}
+	// firmware
+	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
+		descriptor.Version = string(bytes)
+	}
+	// type
+	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
+		descriptor.Model = string(bytes)
+	}
+
+	// assume success
+	return nil
 }
 
 type rs485 struct {
@@ -145,23 +172,4 @@ func (d *rs485) Query(client modbus.Client) (res []meters.MeasurementResult, err
 	}
 
 	return res, nil
-}
-
-// MID meters initialization method used by Janitza and ABB
-func initializeMID(client modbus.Client, descriptor *meters.DeviceDescriptor) error {
-	// serial
-	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
-		descriptor.Serial = fmt.Sprintf("%4x", binary.BigEndian.Uint32(bytes))
-	}
-	// firmware
-	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
-		descriptor.Version = string(bytes)
-	}
-	// type
-	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
-		descriptor.Model = string(bytes)
-	}
-
-	// assume success
-	return nil
 }

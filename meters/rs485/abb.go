@@ -3,7 +3,6 @@ package rs485
 import (
 	"math"
 
-	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -71,7 +70,7 @@ func (p *ABBProducer) Description() string {
 	return "ABB A/B-Series meters"
 }
 
-func (p *ABBProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
+func (p *ABBProducer) Initialize(client modbusClient, descriptor *DeviceDescriptor) error {
 	return initializeMID(client, descriptor)
 }
 
