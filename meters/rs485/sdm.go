@@ -75,7 +75,7 @@ func (p *SDMProducer) Description() string {
 
 func (p *SDMProducer) snip(iec Measurement) Operation {
 	operation := Operation{
-		FuncCode:  ReadInputReg,
+		FuncCode:  readInputReg,
 		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,

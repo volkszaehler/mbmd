@@ -1,6 +1,12 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"encoding/binary"
+	"fmt"
+
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register(NewJanitzaProducer)
@@ -51,12 +57,30 @@ func (p *JanitzaProducer) Type() string {
 
 // Description implements Producer interface
 func (p *JanitzaProducer) Description() string {
-	return "Janitza B-Series meters"
+	return "Janitza MID B-Series meters"
+}
+
+func (p *JanitzaProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
+	// serial
+	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
+		descriptor.Serial = fmt.Sprintf("%4d", binary.BigEndian.Uint32(bytes))
+	}
+	// firmware
+	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
+		descriptor.Version = string(bytes)
+	}
+	// type
+	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
+		descriptor.Model = string(bytes)
+	}
+
+	// assume success
+	return nil
 }
 
 func (p *JanitzaProducer) snip(iec Measurement) Operation {
 	snip := Operation{
-		FuncCode:  ReadHoldingReg,
+		FuncCode:  readHoldingReg,
 		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,

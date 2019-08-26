@@ -69,7 +69,7 @@ func (p *DZGProducer) snip(iec Measurement, scaler ...float64) Operation {
 	}
 
 	snip := Operation{
-		FuncCode:  ReadHoldingReg,
+		FuncCode:  readHoldingReg,
 		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,

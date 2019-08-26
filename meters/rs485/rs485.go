@@ -10,9 +10,16 @@ import (
 )
 
 const (
-	ReadHoldingReg = 3
-	ReadInputReg   = 4
+	// modbus operation types
+	readHoldingReg = 3
+	readInputReg   = 4
 )
+
+type initializer interface {
+	// Initialize prepares the device for usage. Any setup or initialization should be done here.
+	// It requires that the client has the correct device id applied.
+	Initialize(client modbus.Client, descriptor *meters.DeviceDescriptor) error
+}
 
 type rs485 struct {
 	producer Producer
@@ -43,18 +50,25 @@ func NewDevice(typeid string) (meters.Device, error) {
 	return nil, fmt.Errorf("unknown meter type %s", typeid)
 }
 
-// Initialize prepares the device for usage. Any setup or initilization should be done here.
+// Initialize prepares the device for usage. Any setup or initialization should be done here.
 func (d *rs485) Initialize(client modbus.Client) error {
+	d.descriptor = meters.DeviceDescriptor{
+		Manufacturer: d.producer.Type(),
+		Model:        d.producer.Description(),
+	}
+
+	// does device support initializing itself?
+	if p, ok := d.producer.(initializer); ok {
+		return p.Initialize(client, &d.descriptor)
+	}
+
 	return nil
 }
 
 // Descriptor returns the device descriptor. Since this method doe not have bus access the descriptor should be preared
-// during initilization.
+// during initialization.
 func (d *rs485) Descriptor() meters.DeviceDescriptor {
-	return meters.DeviceDescriptor{
-		Manufacturer: d.producer.Type(),
-		Model:        d.producer.Description(),
-	}
+	return d.descriptor
 }
 
 func (d *rs485) query(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
@@ -69,9 +83,9 @@ func (d *rs485) query(client modbus.Client, op Operation) (res meters.Measuremen
 	}
 
 	switch op.FuncCode {
-	case ReadHoldingReg:
+	case readHoldingReg:
 		bytes, err = client.ReadHoldingRegisters(op.OpCode, op.ReadLen)
-	case ReadInputReg:
+	case readInputReg:
 		bytes, err = client.ReadInputRegisters(op.OpCode, op.ReadLen)
 	default:
 		return res, fmt.Errorf("unknown function code %d", op.FuncCode)

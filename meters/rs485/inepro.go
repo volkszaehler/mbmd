@@ -1,6 +1,12 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"encoding/binary"
+	"fmt"
+
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register(NewIneproProducer)
@@ -102,9 +108,27 @@ func (p *IneproProducer) Description() string {
 	return "Inepro Metering Pro 380"
 }
 
+func (p *JanitzaProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
+	// serial
+	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
+		descriptor.Serial = fmt.Sprintf("%4d", binary.BigEndian.Uint32(bytes))
+	}
+	// firmware
+	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
+		descriptor.Version = string(bytes)
+	}
+	// type
+	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
+		descriptor.Model = string(bytes)
+	}
+
+	// assume success
+	return nil
+}
+
 func (p *IneproProducer) snip(iec Measurement, scaler ...float64) Operation {
 	snip := Operation{
-		FuncCode:  ReadHoldingReg,
+		FuncCode:  readHoldingReg,
 		OpCode:    p.Opcodes[iec],
 		ReadLen:   2,
 		IEC61850:  iec,

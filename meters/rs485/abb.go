@@ -95,7 +95,7 @@ func (p *ABBProducer) snip(iec Measurement, readlen uint16, sign signedness, tra
 	nanAwareTransform := wrapTransform(2*readlen, sign, transform)
 
 	snip := Operation{
-		FuncCode:  ReadHoldingReg,
+		FuncCode:  readHoldingReg,
 		OpCode:    p.Opcodes[iec],
 		ReadLen:   readlen,
 		Transform: nanAwareTransform,
