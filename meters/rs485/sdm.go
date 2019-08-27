@@ -28,6 +28,7 @@ func NewSDMProducer() Producer {
 		CurrentL1: 0x0006,
 		CurrentL2: 0x0008,
 		CurrentL3: 0x000A,
+		Power:     0x0034,
 		PowerL1:   0x000C,
 		PowerL2:   0x000E,
 		PowerL3:   0x0010,
