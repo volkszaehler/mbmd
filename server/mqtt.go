@@ -104,7 +104,8 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 
 // deviceTopic converts meter's device id to topic string
 func (m *MqttClient) deviceTopic(deviceID string) string {
-	return strings.Replace(strings.ToLower(deviceID), "#", "", -1)
+	topic := strings.Replace(strings.ToLower(deviceID), "#", "", -1)
+	return strings.Replace(topic, ".", "-", -1)
 }
 
 // MqttRunner allows to attach an MqttClient as broadcast receiver
