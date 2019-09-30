@@ -99,7 +99,7 @@ func (hr *HomieRunner) publishMeter(meter string, descriptor meters.DeviceDescri
 }
 
 func (hr *HomieRunner) publishProperties(meter string) {
-	subtopic := hr.deviceTopic(meter)
+	subtopic := fmt.Sprintf("%s/%s", hr.deviceTopic(meter), nodeTopic)
 
 	measurements := make([]meters.Measurement, 0)
 	for k := range hr.meters[meter] {
@@ -121,7 +121,6 @@ func (hr *HomieRunner) publishProperties(meter string) {
 
 		propertySubtopic := fmt.Sprintf("%s/%s", subtopic, property)
 		hr.publish(propertySubtopic+"/$name", description)
-
 		hr.publish(propertySubtopic+"/$unit", unit)
 		hr.publish(propertySubtopic+"/$datatype", "float")
 	}
