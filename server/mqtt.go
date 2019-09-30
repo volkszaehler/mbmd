@@ -9,80 +9,77 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+const (
+	publishTimeout = 2000 * time.Millisecond
+)
+
 // MqttClient is a MQTT publisher
 type MqttClient struct {
-	client    MQTT.Client
-	mqttTopic string
-	mqttQos   int
-	verbose   bool
+	Client  MQTT.Client
+	qos     byte
+	verbose bool
+}
+
+// NewMqttOptions creates MQTT client options
+func NewMqttOptions(
+	broker string,
+	user string,
+	password string,
+	clientID string,
+	cleanSession bool,
+) *MQTT.ClientOptions {
+	opt := MQTT.NewClientOptions()
+	opt.AddBroker(broker)
+	opt.SetUsername(user)
+	opt.SetPassword(password)
+	opt.SetClientID(clientID)
+	opt.SetCleanSession(cleanSession)
+	opt.SetAutoReconnect(true)
+	return opt
+}
+
+func MqttSetWill(opt *MQTT.ClientOptions, topic string, qos byte) {
+	lastWillTopic := fmt.Sprintf("%s/status", topic)
+	opt.SetWill(lastWillTopic, "disconnected", qos, true)
 }
 
 // NewMqttClient creates new publisher for MQTT
 func NewMqttClient(
-	mqttBroker string,
-	mqttTopic string,
-	mqttUser string,
-	mqttPassword string,
-	mqttClientID string,
-	mqttQos int,
-	mqttCleanSession bool,
+	options *MQTT.ClientOptions,
+	qos byte,
 	verbose bool,
 ) *MqttClient {
-	mqttOpts := MQTT.NewClientOptions()
-	mqttOpts.AddBroker(mqttBroker)
-	mqttOpts.SetUsername(mqttUser)
-	mqttOpts.SetPassword(mqttPassword)
-	mqttOpts.SetClientID(mqttClientID)
-	mqttOpts.SetCleanSession(mqttCleanSession)
-	mqttOpts.SetAutoReconnect(true)
-
-	topic := fmt.Sprintf("%s/status", mqttTopic)
-	message := fmt.Sprintf("disconnected")
-	mqttOpts.SetWill(topic, message, byte(mqttQos), true)
-
-	log.Printf("mqtt: connecting at %s", mqttBroker)
+	log.Printf("mqtt: connecting at %s", options.Servers)
 	if verbose {
-		log.Printf("\tclientid:     %s\n", mqttClientID)
-		if mqttUser != "" {
-			log.Printf("\tuser:         %s\n", mqttUser)
-			if mqttPassword != "" {
+		log.Printf("\tclientid:     %s\n", options.ClientID)
+		if options.Username != "" {
+			log.Printf("\tuser:         %s\n", options.Username)
+			if options.Password != "" {
 				log.Printf("\tpassword:     ****\n")
 			}
 		}
-		log.Printf("\ttopic:        %s\n", mqttTopic)
-		log.Printf("\tqos:          %d\n", mqttQos)
-		log.Printf("\tcleansession: %v\n", mqttCleanSession)
+		log.Printf("\tcleansession: %v\n", options.CleanSession)
+		log.Printf("\tqos:          %d\n", qos)
 	}
 
-	mqttClient := MQTT.NewClient(mqttOpts)
-	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+	client := MQTT.NewClient(options)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatalf("mqtt: error connecting: %s", token.Error())
 	}
 	if verbose {
 		log.Println("mqtt: connected")
 	}
 
-	// notify connection
-	message = fmt.Sprintf("mqtt: connected")
-	token := mqttClient.Publish(topic, byte(mqttQos), true, message)
-	if verbose {
-		log.Printf("mqtt: publish %s, message: %s", topic, message)
-	}
-	if token.Wait() && token.Error() != nil {
-		log.Fatal("mqtt: error connecting, trying to reconnect: ", token.Error())
-	}
-
 	return &MqttClient{
-		client:    mqttClient,
-		mqttTopic: mqttTopic,
-		mqttQos:   mqttQos,
-		verbose:   verbose,
+		Client:  client,
+		qos:     qos,
+		verbose: verbose,
 	}
 }
 
 // Publish MQTT message with error handling
 func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
-	token := m.client.Publish(topic, byte(m.mqttQos), retained, message)
+	token := m.Client.Publish(topic, byte(m.qos), retained, message)
 	if m.verbose {
 		log.Printf("mqtt: publish %s, message: %s", topic, message)
 	}
@@ -91,14 +88,12 @@ func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
 
 // WaitForToken synchronously waits until token operation completed
 func (m *MqttClient) WaitForToken(token MQTT.Token) {
-	if token.WaitTimeout(2000 * time.Millisecond) {
+	if token.WaitTimeout(publishTimeout) {
 		if token.Error() != nil {
 			log.Printf("mqtt: error: %s", token.Error())
 		}
-	} else {
-		if m.verbose {
-			log.Printf("mqtt: timeout")
-		}
+	} else if m.verbose {
+		log.Println("mqtt: timeout")
 	}
 }
 
@@ -111,12 +106,24 @@ func (m *MqttClient) deviceTopic(deviceID string) string {
 // MqttRunner allows to attach an MqttClient as broadcast receiver
 type MqttRunner struct {
 	*MqttClient
+	topic string
+}
+
+// NewMqttRunner create a new runer for plain MQTT
+func NewMqttRunner(client *MqttClient, topic string) *MqttRunner {
+	return &MqttRunner{
+		MqttClient: client,
+		topic:      topic,
+	}
 }
 
 // Run MqttClient publisher
 func (m *MqttRunner) Run(in <-chan QuerySnip) {
+	// notify connection and override will
+	m.MqttClient.Publish(fmt.Sprintf("%s/status", m.topic), true, "connected")
+
 	for snip := range in {
-		topic := fmt.Sprintf("%s/%s/%s", m.mqttTopic, m.deviceTopic(snip.Device), snip.Measurement)
+		topic := fmt.Sprintf("%s/%s/%s", m.topic, m.deviceTopic(snip.Device), snip.Measurement)
 		message := fmt.Sprintf("%.3f", snip.Value)
 		go m.Publish(topic, false, message)
 	}
