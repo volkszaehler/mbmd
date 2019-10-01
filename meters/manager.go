@@ -29,6 +29,11 @@ func (m *Manager) Add(id uint8, device Device) error {
 	return nil
 }
 
+// Count returns the number of devices attached to the connection
+func (m *Manager) Count() int {
+	return len(m.devices)
+}
+
 // All iterates over all devices and executes the callback per device.
 // Before the callback, the slave id is set on the underlying connection if access is true.
 func (m *Manager) All(cb func(uint8, Device)) {

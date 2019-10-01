@@ -44,6 +44,11 @@ func NewQueryEngine(managers map[string]meters.Manager) *QueryEngine {
 	handlers := make(map[string]*Handler)
 
 	for conn, m := range managers {
+		if m.Count() == 0 {
+			// don't give ids to empty connections
+			continue
+		}
+
 		handlers[conn] = NewHandler(len(handlers)+1, m)
 	}
 
