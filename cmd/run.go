@@ -258,27 +258,33 @@ func run(cmd *cobra.Command, args []string) {
 
 	// MQTT client
 	if viper.GetString("mqtt.broker") != "" {
-		mqtt := server.NewMqttClient(
-			viper.GetString("mqtt.broker"),
-			viper.GetString("mqtt.topic"),
-			viper.GetString("mqtt.user"),
-			viper.GetString("mqtt.password"),
-			viper.GetString("mqtt.clientid"),
-			viper.GetInt("mqtt.qos"),
-			viper.GetBool("mqtt.clean"),
-			viper.GetBool("verbose"),
-		)
+		qos := byte(viper.GetInt("mqtt.qos"))
+		verbose := viper.GetBool("verbose")
 
-		// homie needs to scan the bus, start it first
-		if viper.GetString("mqtt.homie") != "" {
-			homieRunner := server.NewHomieRunner(mqtt, qe, viper.GetString("mqtt.homie"))
-			tee.AttachRunner(homieRunner.Run)
+		// default mqtt runner
+		if topic := viper.GetString("mqtt.topic"); topic != "" {
+			options := server.NewMqttOptions(
+				viper.GetString("mqtt.broker"),
+				viper.GetString("mqtt.user"),
+				viper.GetString("mqtt.password"),
+				viper.GetString("mqtt.clientid"),
+				viper.GetBool("mqtt.clean"),
+			)
+			mqttRunner := server.NewMqttRunner(options, qos, topic, verbose)
+			tee.AttachRunner(mqttRunner.Run)
 		}
 
-		// start "normal" mqtt handler after homie setup
-		if viper.GetString("mqtt.topic") != "" {
-			mqttRunner := server.MqttRunner{MqttClient: mqtt}
-			tee.AttachRunner(mqttRunner.Run)
+		// homie runner
+		if viper.GetString("mqtt.homie") != "" {
+			options := server.NewMqttOptions(
+				viper.GetString("mqtt.broker"),
+				viper.GetString("mqtt.user"),
+				viper.GetString("mqtt.password"),
+				viper.GetString("mqtt.clientid"),
+				viper.GetBool("mqtt.clean"),
+			)
+			homieRunner := server.NewHomieRunner(options, qos, qe, viper.GetString("mqtt.homie"), verbose)
+			tee.AttachRunner(homieRunner.Run)
 		}
 	}
 

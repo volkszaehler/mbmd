@@ -98,7 +98,7 @@ func (h *Httpd) singleDeviceHandler(
 		readings, err := readingsProvider(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, err.Error())
+			fmt.Fprint(w, err.Error())
 			return
 		}
 

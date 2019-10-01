@@ -60,7 +60,7 @@ func (d *rs485) Descriptor() meters.DeviceDescriptor {
 func (d *rs485) query(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
 	var bytes []byte
 
-	if op.ReadLen <= 0 {
+	if op.ReadLen == 0 {
 		return res, fmt.Errorf("invalid meter operation %v", op)
 	}
 
