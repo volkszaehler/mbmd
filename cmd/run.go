@@ -262,7 +262,7 @@ func run(cmd *cobra.Command, args []string) {
 		verbose := viper.GetBool("verbose")
 
 		// default mqtt runner
-		if viper.GetString("mqtt.topic") != "" {
+		if topic := viper.GetString("mqtt.topic"); topic != "" {
 			options := server.NewMqttOptions(
 				viper.GetString("mqtt.broker"),
 				viper.GetString("mqtt.user"),
@@ -270,13 +270,7 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetString("mqtt.clientid"),
 				viper.GetBool("mqtt.clean"),
 			)
-			server.MqttSetWill(
-				options,
-				viper.GetString("mqtt.topic"),
-				qos,
-			)
-			mqtt := server.NewMqttClient(options, qos, verbose)
-			mqttRunner := server.NewMqttRunner(mqtt, viper.GetString("mqtt.topic"))
+			mqttRunner := server.NewMqttRunner(options, qos, topic, verbose)
 			tee.AttachRunner(mqttRunner.Run)
 		}
 
@@ -289,8 +283,7 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetString("mqtt.clientid"),
 				viper.GetBool("mqtt.clean"),
 			)
-			mqtt := server.NewMqttClient(options, qos, verbose)
-			homieRunner := server.NewHomieRunner(mqtt, qe, viper.GetString("mqtt.homie"))
+			homieRunner := server.NewHomieRunner(options, qos, qe, viper.GetString("mqtt.homie"), verbose)
 			tee.AttachRunner(homieRunner.Run)
 		}
 	}

@@ -14,29 +14,57 @@ import (
 )
 
 const (
-	specVersion = "3.0.1"
+	specVersion = "4.0"
 	nodeTopic   = "meter"
 	timeout     = 500 * time.Millisecond
 )
 
 // HomieRunner publishes query results as homie mqtt topics
 type HomieRunner struct {
-	*MqttClient
-	qe        DeviceInfo
+	options   *MQTT.ClientOptions
+	qos       byte
+	verbose   bool
 	rootTopic string
-	meters    map[string]map[meters.Measurement]bool
+	qe        DeviceInfo
+	meters    map[string]*homieMeter
+}
+
+type homieMeter struct {
+	*MqttClient
+	rootTopic string
+	meter     string
+	observed  map[meters.Measurement]bool
 }
 
 // NewHomieRunner create new runner for homie IoT spec
-func NewHomieRunner(mqttClient *MqttClient, qe DeviceInfo, rootTopic string) *HomieRunner {
+func NewHomieRunner(options *MQTT.ClientOptions, qos byte, qe DeviceInfo, rootTopic string, verbose bool) *HomieRunner {
 	hr := &HomieRunner{
-		MqttClient: mqttClient,
-		qe:         qe,
-		rootTopic:  rootTopic,
-		meters:     make(map[string]map[meters.Measurement]bool),
+		options:   options,
+		qos:       qos,
+		verbose:   verbose,
+		rootTopic: rootTopic,
+		qe:        qe,
+		meters:    make(map[string]*homieMeter),
 	}
 
 	return hr
+}
+
+// cloneOptions creates a copy of the relevant mqtt options
+func (hr *HomieRunner) cloneOptions() *MQTT.ClientOptions {
+	opt := MQTT.NewClientOptions()
+
+	opt.SetUsername(hr.options.Username)
+	opt.SetPassword(hr.options.Password)
+	opt.SetClientID(hr.options.ClientID)
+	opt.SetCleanSession(hr.options.CleanSession)
+	opt.SetAutoReconnect(true)
+
+	for _, b := range hr.options.Servers {
+		opt.AddBroker(b.String())
+	}
+
+	return opt
 }
 
 // Run MQTT client publisher
@@ -44,46 +72,58 @@ func (hr *HomieRunner) Run(in <-chan QuerySnip) {
 	defer hr.unregister() // cleanup topics
 
 	for snip := range in {
-		// publish meter
-		if _, ok := hr.meters[snip.Device]; !ok {
-			hr.meters[snip.Device] = make(map[meters.Measurement]bool)
+		meter, ok := hr.meters[snip.Device]
+
+		// first time - publish meter
+		if !ok {
+			// new client with unique id
+			options := hr.cloneOptions()
+			clientID := fmt.Sprintf("%s-%s", options.ClientID, mqttDeviceTopic(snip.Device))
+			options.SetClientID(clientID)
+
+			lwt := fmt.Sprintf("%s/%s/$state", hr.rootTopic, mqttDeviceTopic(snip.Device))
+			options.SetWill(lwt, "lost", hr.qos, true)
+
+			client := NewMqttClient(options, hr.qos, hr.verbose)
+
+			// add meter and publish
+			meter = newHomieMeter(client, hr.rootTopic, snip.Device)
+			hr.meters[snip.Device] = meter
+
 			d := hr.qe.DeviceDescriptorByID(snip.Device)
-			hr.publishMeter(snip.Device, d)
+			meter.publishMeter(d)
 		}
 
-		// publish properties
-		if _, ok := hr.meters[snip.Device][snip.Measurement]; !ok {
-			hr.meters[snip.Device][snip.Measurement] = true
-			hr.publishProperties(snip.Device)
-		}
-
-		// publish data
-		topic := fmt.Sprintf("%s/%s/%s/%s",
-			hr.rootTopic,
-			hr.deviceTopic(snip.Device),
-			nodeTopic,
-			strings.ToLower(snip.Measurement.String()),
-		)
-
-		message := fmt.Sprintf("%.3f", snip.Value)
-		go hr.Publish(topic, false, message)
+		// publish actual message
+		meter.publishMessage(snip)
 	}
 }
 
 // unregister unpublishes device information
 func (hr *HomieRunner) unregister() {
-	// devices
-	for meter := range hr.meters {
-		// clear retained messages
-		subTopic := hr.deviceTopic(meter)
-		hr.unpublish(subTopic)
+	for _, meter := range hr.meters {
+		meter.unregister()
 	}
 }
 
-func (hr *HomieRunner) publishMeter(meter string, descriptor meters.DeviceDescriptor) {
-	// clear retained messages
-	subTopic := hr.deviceTopic(meter)
-	hr.unpublish(subTopic)
+func newHomieMeter(client *MqttClient, rootTopic string, meter string) *homieMeter {
+	hm := &homieMeter{
+		MqttClient: client,
+		rootTopic:  rootTopic,
+		meter:      meter,
+		observed:   make(map[meters.Measurement]bool),
+	}
+	return hm
+}
+
+// unregister clears meter's retained messages
+func (hr *homieMeter) unregister() {
+	subTopic := mqttDeviceTopic(hr.meter)
+	hr.publish(subTopic+"/$state", "disconnected")
+}
+
+func (hr *homieMeter) publishMeter(descriptor meters.DeviceDescriptor) {
+	subTopic := mqttDeviceTopic(hr.meter)
 
 	// device
 	hr.publish(subTopic+"/$homie", specVersion)
@@ -92,17 +132,37 @@ func (hr *HomieRunner) publishMeter(meter string, descriptor meters.DeviceDescri
 
 	// node
 	hr.publish(subTopic+"/$nodes", nodeTopic)
+	hr.unpublish(subTopic, nodeTopic, "$homie", "$name", "$state", "$nodes")
 
 	subTopic = fmt.Sprintf("%s/%s", subTopic, nodeTopic)
 	hr.publish(subTopic+"/$name", descriptor.Manufacturer)
 	hr.publish(subTopic+"/$type", descriptor.Model)
 }
 
-func (hr *HomieRunner) publishProperties(meter string) {
-	subtopic := fmt.Sprintf("%s/%s", hr.deviceTopic(meter), nodeTopic)
+func (hr *homieMeter) publishMessage(snip QuerySnip) {
+	// make sure property is published before publishing data
+	if _, ok := hr.observed[snip.Measurement]; !ok {
+		hr.observed[snip.Measurement] = true
+		hr.publishProperties()
+	}
+
+	// publish data
+	topic := fmt.Sprintf("%s/%s/%s/%s",
+		hr.rootTopic,
+		mqttDeviceTopic(snip.Device),
+		nodeTopic,
+		strings.ToLower(snip.Measurement.String()),
+	)
+
+	message := fmt.Sprintf("%.3f", snip.Value)
+	go hr.Publish(topic, false, message)
+}
+
+func (hr *homieMeter) publishProperties() {
+	subtopic := fmt.Sprintf("%s/%s", mqttDeviceTopic(hr.meter), nodeTopic)
 
 	measurements := make([]meters.Measurement, 0)
-	for k := range hr.meters[meter] {
+	for k := range hr.observed {
 		measurements = append(measurements, k)
 	}
 
@@ -126,31 +186,47 @@ func (hr *HomieRunner) publishProperties(meter string) {
 	}
 
 	hr.publish(subtopic+"/$properties", strings.Join(properties, ","))
+
+	// unpublish remains attributes if any
+	exceptions := []string{"$name", "$unit", "$datatype", "$properties"}
+	exceptions = append(exceptions, properties...)
+	hr.unpublish(subtopic, exceptions...)
 }
 
-func (hr *HomieRunner) publish(subtopic string, message string) {
+func (hr *homieMeter) publish(subtopic string, message string) {
 	topic := hr.rootTopic + "/" + subtopic
 	hr.Publish(topic, true, message)
 }
 
 // unpublish retained message hierarchy
-func (hr *HomieRunner) unpublish(subtopic string) {
+func (hr *homieMeter) unpublish(subtopic string, exceptions ...string) {
 	topic := fmt.Sprintf("%s/%s/#", hr.rootTopic, subtopic)
 	if hr.verbose {
-		log.Printf("MQTT: unpublish %s", topic)
+		log.Printf("mqtt: unpublish %s", topic)
 	}
 
 	var mux sync.Mutex
 	tokens := make([]MQTT.Token, 0)
 
 	mux.Lock()
-	tokens = append(tokens, hr.client.Subscribe(topic, byte(hr.mqttQos), func(c MQTT.Client, msg MQTT.Message) {
+	tokens = append(tokens, hr.Client.Subscribe(topic, hr.qos, func(c MQTT.Client, msg MQTT.Message) {
 		if len(msg.Payload()) == 0 {
 			return // ignore received unpublish messages
 		}
 
 		topic := msg.Topic()
-		token := hr.client.Publish(topic, byte(hr.mqttQos), true, []byte{})
+
+		// don't unpublish if in exception list
+		for _, exception := range exceptions {
+			exceptionTopic := fmt.Sprintf("%s/%s/%s", hr.rootTopic, subtopic, exception)
+			if topic == exceptionTopic || strings.HasPrefix(topic, exceptionTopic+"/") {
+				// log.Printf("unpublish %s -> retain (%s)", topic, exception)
+				return
+			}
+		}
+
+		// log.Printf("unpublish %s", topic)
+		token := hr.Client.Publish(topic, hr.qos, true, []byte{})
 
 		mux.Lock()
 		defer mux.Unlock()
@@ -164,7 +240,7 @@ func (hr *HomieRunner) unpublish(subtopic string) {
 	defer mux.Unlock()
 
 	// stop listening
-	hr.client.Unsubscribe(topic)
+	hr.Client.Unsubscribe(topic)
 
 	// wait for tokens
 	for _, token := range tokens {
