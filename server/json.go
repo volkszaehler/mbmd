@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
-	"math"
 	"sort"
 )
 
@@ -30,11 +28,6 @@ func (d apiData) MarshalJSON() ([]byte, error) {
 
 	values := kvslice{}
 	for m, v := range d.readings.Values {
-		if math.IsNaN(v) {
-			// safeguard for NaN values - should only happen in simulation mode
-			log.Printf("skipping unexpected NaN value for %s", m)
-			continue
-		}
 		values = append(values, kv{m.String(), v})
 	}
 
