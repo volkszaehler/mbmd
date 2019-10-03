@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
@@ -125,6 +126,11 @@ func (h *Handler) queryDevice(
 		if err == nil {
 			// send measurements
 			for _, r := range measurements {
+				if math.IsNaN(r.Value) {
+					log.Printf("device %s skipping NaN for %s", uniqueID, r.Measurement.String())
+					continue
+				}
+
 				snip := QuerySnip{
 					Device:            uniqueID,
 					MeasurementResult: r,
