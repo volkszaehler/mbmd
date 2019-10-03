@@ -37,7 +37,7 @@ type homieMeter struct {
 }
 
 // NewHomieRunner create new runner for homie IoT spec
-func NewHomieRunner(options *MQTT.ClientOptions, qos byte, qe DeviceInfo, rootTopic string, verbose bool) *HomieRunner {
+func NewHomieRunner(qe DeviceInfo, options *MQTT.ClientOptions, qos byte, rootTopic string, verbose bool) *HomieRunner {
 	hr := &HomieRunner{
 		options:   options,
 		qos:       qos,
