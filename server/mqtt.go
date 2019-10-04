@@ -67,7 +67,7 @@ func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
 	if m.verbose {
 		log.Printf("mqtt: publish %s, message: %s", topic, message)
 	}
-	m.WaitForToken(token)
+	go m.WaitForToken(token)
 }
 
 // WaitForToken synchronously waits until token operation completed
