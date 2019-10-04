@@ -230,26 +230,30 @@ func run(cmd *cobra.Command, args []string) {
 	// query engine
 	qe := server.NewQueryEngine(confHandler.Managers)
 
-	// result channels
+	// results- and control channels
 	rc := make(chan server.QuerySnip)
 	cc := make(chan server.ControlSnip)
 
 	// tee that broadcasts meter messages to multiple recipients
-	tee := server.NewQuerySnipBroadcaster(rc)
+	tee := server.NewBroadcaster(server.FromSnipChannel(rc))
 	go tee.Run()
 
+	// tee that broadcasts control messages to multiple recipients
+	teeC := server.NewBroadcaster(server.FromControlChannel(cc))
+	go teeC.Run()
+
 	// status cache (always needed to consume control messages)
-	status := server.NewStatus(qe, cc)
+	status := server.NewStatus(qe, server.ToControlChannel(teeC.Attach()))
 
 	// web server
 	if viper.GetString("api") != "" {
 		// measurement cache for REST api
 		cache := server.NewCache(cacheDuration, status, viper.GetBool("verbose"))
-		tee.AttachRunner(cache.Run)
+		tee.AttachRunner(server.NewSnipRunner(cache.Run))
 
 		// websocket hub
 		hub := server.NewSocketHub(status)
-		tee.AttachRunner(hub.Run)
+		tee.AttachRunner(server.NewSnipRunner(hub.Run))
 
 		// http daemon
 		httpd := server.NewHttpd(qe, cache)
@@ -271,11 +275,11 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetBool("mqtt.clean"),
 			)
 			mqttRunner := server.NewMqttRunner(options, qos, topic, verbose)
-			tee.AttachRunner(mqttRunner.Run)
+			tee.AttachRunner(server.NewSnipRunner(mqttRunner.Run))
 		}
 
 		// homie runner
-		if viper.GetString("mqtt.homie") != "" {
+		if topic := viper.GetString("mqtt.homie"); topic != "" {
 			options := server.NewMqttOptions(
 				viper.GetString("mqtt.broker"),
 				viper.GetString("mqtt.user"),
@@ -283,8 +287,9 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetString("mqtt.clientid"),
 				viper.GetBool("mqtt.clean"),
 			)
-			homieRunner := server.NewHomieRunner(options, qos, qe, viper.GetString("mqtt.homie"), verbose)
-			tee.AttachRunner(homieRunner.Run)
+			cc := server.ToControlChannel(teeC.Attach())
+			homieRunner := server.NewHomieRunner(qe, cc, options, qos, topic, verbose)
+			tee.AttachRunner(server.NewSnipRunner(homieRunner.Run))
 		}
 	}
 
@@ -301,7 +306,7 @@ func run(cmd *cobra.Command, args []string) {
 			viper.GetBool("verbose"),
 		)
 
-		tee.AttachRunner(influx.Run)
+		tee.AttachRunner(server.NewSnipRunner(influx.Run))
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

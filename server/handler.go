@@ -124,6 +124,13 @@ func (h *Handler) queryDevice(
 		measurements, err := dev.Query(h.Manager.Conn.ModbusClient())
 
 		if err == nil {
+			// send ok status
+			status.Available(true)
+			control <- ControlSnip{
+				Device: uniqueID,
+				Status: *status,
+			}
+
 			// send measurements
 			for _, r := range measurements {
 				if math.IsNaN(r.Value) {
@@ -136,14 +143,6 @@ func (h *Handler) queryDevice(
 					MeasurementResult: r,
 				}
 				results <- snip
-			}
-
-			// send ok
-			status.Available(true)
-
-			control <- ControlSnip{
-				Device: uniqueID,
-				Status: *status,
 			}
 
 			return
@@ -160,6 +159,8 @@ func (h *Handler) queryDevice(
 
 	// close connection to force modbus client to reopen
 	h.Manager.Conn.Close()
+
+	// send error status
 	status.Available(false)
 	control <- ControlSnip{
 		Device: uniqueID,

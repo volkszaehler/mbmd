@@ -8,17 +8,17 @@ import (
 type Broadcaster struct {
 	sync.Mutex // guard recipients
 	wg         sync.WaitGroup
-	in         <-chan struct{}
-	recipients []chan struct{}
+	in         <-chan interface{}
+	recipients []chan<- interface{}
 	done       chan bool
 }
 
 // NewBroadcaster creates a Broadcaster that implements
 // a hub and spoke message replication pattern
-func NewBroadcaster(in <-chan struct{}) *Broadcaster {
+func NewBroadcaster(in <-chan interface{}) *Broadcaster {
 	return &Broadcaster{
 		in:         in,
-		recipients: make([]chan struct{}, 0),
+		recipients: make([]chan<- interface{}, 0),
 		done:       make(chan bool),
 	}
 }
@@ -51,9 +51,9 @@ func (b *Broadcaster) stop() {
 	b.done <- true
 }
 
-// attach creates and attaches a channel to the broadcaster
-func (b *Broadcaster) attach() chan struct{} {
-	channel := make(chan struct{})
+// Attach creates and attaches a channel to the broadcaster
+func (b *Broadcaster) Attach() <-chan interface{} {
+	channel := make(chan interface{})
 
 	b.Lock()
 	b.recipients = append(b.recipients, channel)
@@ -64,10 +64,10 @@ func (b *Broadcaster) attach() chan struct{} {
 
 // AttachRunner attaches a Run method as broadcast receiver and adds it
 // to the waitgroup
-func (b *Broadcaster) AttachRunner(runner func(<-chan struct{})) {
+func (b *Broadcaster) AttachRunner(runner func(<-chan interface{})) {
 	b.wg.Add(1)
 	go func() {
-		ch := b.attach()
+		ch := b.Attach()
 		runner(ch)
 		b.wg.Done()
 	}()

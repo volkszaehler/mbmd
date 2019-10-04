@@ -42,71 +42,100 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// QuerySnipBroadcaster acts as hub for broadcating QuerySnips
-// to multiple recipients
-type QuerySnipBroadcaster struct {
-	sync.Mutex // guard recipients
-	wg         sync.WaitGroup
-	in         <-chan QuerySnip
-	recipients []chan QuerySnip
-	done       chan bool
-}
+// NewSnipRunner adapts a chan QuerySnip to chan interface
+func NewSnipRunner(run func(c <-chan QuerySnip)) func(c <-chan interface{}) {
+	return func(c <-chan interface{}) {
+		out := make(chan QuerySnip)
 
-// NewQuerySnipBroadcaster creates QuerySnipBroadcaster
-func NewQuerySnipBroadcaster(in <-chan QuerySnip) *QuerySnipBroadcaster {
-	return &QuerySnipBroadcaster{
-		in:         in,
-		recipients: make([]chan QuerySnip, 0),
-		done:       make(chan bool),
-	}
-}
+		var wg sync.WaitGroup
+		wg.Add(1)
 
-// Run executes the broadcaster
-func (b *QuerySnipBroadcaster) Run() {
-	for s := range b.in {
-		b.Lock()
-		for _, recipient := range b.recipients {
-			recipient <- s
+		go func() {
+			run(out)
+			wg.Done()
+		}()
+
+		for x := range c {
+			if snip, ok := x.(QuerySnip); ok {
+				out <- snip
+			} else {
+				panic("runner: unexpected type")
+			}
 		}
-		b.Unlock()
+
+		close(out)
+		wg.Wait()
 	}
-	b.stop()
 }
 
-// Done returns a channel signalling when broadcasting has stopped
-func (b *QuerySnipBroadcaster) Done() <-chan bool {
-	return b.done
-}
+// NewControlRunner adapts a chan ControlSnip to chan interface
+func NewControlRunner(run func(c <-chan ControlSnip)) func(c <-chan interface{}) {
+	return func(c <-chan interface{}) {
+		out := make(chan ControlSnip)
 
-// stop closes broadcast receiver channels and waits for run methods to finish
-func (b *QuerySnipBroadcaster) stop() {
-	b.Lock()
-	defer b.Unlock()
-	for _, recipient := range b.recipients {
-		close(recipient)
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		go func() {
+			run(out)
+			wg.Done()
+		}()
+
+		for x := range c {
+			if snip, ok := x.(ControlSnip); ok {
+				out <- snip
+			} else {
+				panic("runner: unexpected type")
+			}
+		}
+
+		close(out)
+		wg.Wait()
 	}
-	b.wg.Wait()
-	b.done <- true
 }
 
-// attach creates and attaches a chan QuerySnip to the broadcaster
-func (b *QuerySnipBroadcaster) attach() chan QuerySnip {
-	channel := make(chan QuerySnip)
+// FromSnipChannel adapts a chan QuerySnip to chan interface
+func FromSnipChannel(in <-chan QuerySnip) <-chan interface{} {
+	out := make(chan interface{})
 
-	b.Lock()
-	b.recipients = append(b.recipients, channel)
-	b.Unlock()
+	go func(in <-chan QuerySnip, out chan<- interface{}) {
+		for snip := range in {
+			out <- snip
+		}
+		close(out)
+	}(in, out)
 
-	return channel
+	return out
 }
 
-// AttachRunner attaches a Run method as broadcast receiver and adds it
-// to the waitgroup
-func (b *QuerySnipBroadcaster) AttachRunner(runner func(<-chan QuerySnip)) {
-	b.wg.Add(1)
-	go func() {
-		ch := b.attach()
-		runner(ch)
-		b.wg.Done()
-	}()
+// FromControlChannel adapts a chan ControlSnip to chan interface
+func FromControlChannel(in <-chan ControlSnip) <-chan interface{} {
+	out := make(chan interface{})
+
+	go func(in <-chan ControlSnip, out chan<- interface{}) {
+		for snip := range in {
+			out <- snip
+		}
+		close(out)
+	}(in, out)
+
+	return out
+}
+
+// ToControlChannel adapts a chan interface to chan ControlSnip
+func ToControlChannel(in <-chan interface{}) <-chan ControlSnip {
+	out := make(chan ControlSnip)
+
+	go func(in <-chan interface{}, out chan<- ControlSnip) {
+		for x := range in {
+			if snip, ok := x.(ControlSnip); ok {
+				out <- snip
+			} else {
+				panic("runner: unexpected type")
+			}
+		}
+		close(out)
+	}(in, out)
+
+	return out
 }
