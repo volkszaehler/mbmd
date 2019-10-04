@@ -26,6 +26,7 @@ type HomieRunner struct {
 	verbose   bool
 	rootTopic string
 	qe        DeviceInfo
+	cc        <-chan ControlSnip
 	meters    map[string]*homieMeter
 }
 
@@ -33,17 +34,19 @@ type homieMeter struct {
 	*MqttClient
 	rootTopic string
 	meter     string
+	online    bool
 	observed  map[meters.Measurement]bool
 }
 
 // NewHomieRunner create new runner for homie IoT spec
-func NewHomieRunner(qe DeviceInfo, options *MQTT.ClientOptions, qos byte, rootTopic string, verbose bool) *HomieRunner {
+func NewHomieRunner(qe DeviceInfo, cc <-chan ControlSnip, options *MQTT.ClientOptions, qos byte, rootTopic string, verbose bool) *HomieRunner {
 	hr := &HomieRunner{
 		options:   options,
 		qos:       qos,
 		verbose:   verbose,
 		rootTopic: rootTopic,
 		qe:        qe,
+		cc:        cc,
 		meters:    make(map[string]*homieMeter),
 	}
 
@@ -71,32 +74,47 @@ func (hr *HomieRunner) cloneOptions() *MQTT.ClientOptions {
 func (hr *HomieRunner) Run(in <-chan QuerySnip) {
 	defer hr.unregister() // cleanup topics
 
-	for snip := range in {
-		meter, ok := hr.meters[snip.Device]
-
-		// first time - publish meter
-		if !ok {
-			// new client with unique id
-			options := hr.cloneOptions()
-			clientID := fmt.Sprintf("%s-%s", options.ClientID, mqttDeviceTopic(snip.Device))
-			options.SetClientID(clientID)
-
-			lwt := fmt.Sprintf("%s/%s/$state", hr.rootTopic, mqttDeviceTopic(snip.Device))
-			options.SetWill(lwt, "lost", hr.qos, true)
-
-			client := NewMqttClient(options, hr.qos, hr.verbose)
-
-			// add meter and publish
-			meter = newHomieMeter(client, hr.rootTopic, snip.Device)
-			hr.meters[snip.Device] = meter
-
-			d := hr.qe.DeviceDescriptorByID(snip.Device)
-			meter.publishMeter(d)
+	for {
+		select {
+		case snip, ok := <-in:
+			if !ok {
+				return // channel closed
+			}
+			hr.publish(snip)
+		case snip := <-hr.cc:
+			if meter, ok := hr.meters[snip.Device]; ok {
+				meter.status(snip.Status.Online)
+			}
 		}
-
-		// publish actual message
-		meter.publishMessage(snip)
 	}
+}
+
+// unregister unpublishes device information
+func (hr *HomieRunner) publish(snip QuerySnip) {
+	meter, ok := hr.meters[snip.Device]
+
+	// first time - publish meter
+	if !ok {
+		// new client with unique id
+		options := hr.cloneOptions()
+		clientID := fmt.Sprintf("%s-%s", options.ClientID, mqttDeviceTopic(snip.Device))
+		options.SetClientID(clientID)
+
+		lwt := fmt.Sprintf("%s/%s/$state", hr.rootTopic, mqttDeviceTopic(snip.Device))
+		options.SetWill(lwt, "lost", hr.qos, true)
+
+		client := NewMqttClient(options, hr.qos, hr.verbose)
+
+		// add meter and publish
+		meter = newHomieMeter(client, hr.rootTopic, snip.Device)
+		hr.meters[snip.Device] = meter
+
+		d := hr.qe.DeviceDescriptorByID(snip.Device)
+		meter.publishMeter(d)
+	}
+
+	// publish actual message
+	meter.publishMessage(snip)
 }
 
 // unregister unpublishes device information
@@ -106,6 +124,7 @@ func (hr *HomieRunner) unregister() {
 	}
 }
 
+// newHomieMeter creates meter on given mqtt client
 func newHomieMeter(client *MqttClient, rootTopic string, meter string) *homieMeter {
 	hm := &homieMeter{
 		MqttClient: client,
@@ -120,6 +139,7 @@ func newHomieMeter(client *MqttClient, rootTopic string, meter string) *homieMet
 func (hr *homieMeter) unregister() {
 	subTopic := mqttDeviceTopic(hr.meter)
 	hr.publish(subTopic+"/$state", "disconnected")
+	hr.MqttClient.Client.Disconnect(uint(timeout.Milliseconds()))
 }
 
 func (hr *homieMeter) publishMeter(descriptor meters.DeviceDescriptor) {
@@ -128,7 +148,7 @@ func (hr *homieMeter) publishMeter(descriptor meters.DeviceDescriptor) {
 	// device
 	hr.publish(subTopic+"/$homie", specVersion)
 	hr.publish(subTopic+"/$name", "MBMD")
-	hr.publish(subTopic+"/$state", "ready")
+	hr.publish(subTopic+"/$state", "init")
 
 	// node
 	hr.publish(subTopic+"/$nodes", nodeTopic)
@@ -137,6 +157,19 @@ func (hr *homieMeter) publishMeter(descriptor meters.DeviceDescriptor) {
 	subTopic = fmt.Sprintf("%s/%s", subTopic, nodeTopic)
 	hr.publish(subTopic+"/$name", descriptor.Manufacturer)
 	hr.publish(subTopic+"/$type", descriptor.Model)
+}
+
+// status updates a meter's $state attibute when its online status changes
+func (hr *homieMeter) status(online bool) {
+	if hr.online != online {
+		subTopic := mqttDeviceTopic(hr.meter)
+		msg := "alert"
+		if online {
+			msg = "ready"
+		}
+		hr.publish(subTopic+"/$state", msg)
+		hr.online = online
+	}
 }
 
 func (hr *homieMeter) publishMessage(snip QuerySnip) {

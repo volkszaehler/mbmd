@@ -287,8 +287,8 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetString("mqtt.clientid"),
 				viper.GetBool("mqtt.clean"),
 			)
-			// _ = server.ToControlChannel(teeC.Attach())
-			homieRunner := server.NewHomieRunner(qe, options, qos, topic, verbose)
+			cc := server.ToControlChannel(teeC.Attach())
+			homieRunner := server.NewHomieRunner(qe, cc, options, qos, topic, verbose)
 			tee.AttachRunner(server.NewSnipRunner(homieRunner.Run))
 		}
 	}
