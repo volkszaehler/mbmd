@@ -32,3 +32,5 @@ require (
 )
 
 replace github.com/crabmusket/gosunspec => github.com/andig/gosunspec v0.0.0-20190812065825-447c0884e0a9
+
+go 1.13
