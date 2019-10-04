@@ -76,11 +76,16 @@ func (hr *HomieRunner) Run(in <-chan QuerySnip) {
 
 	for {
 		select {
-		case snip, ok := <-in:
-			if !ok {
+		case snip, chanOpen := <-in:
+			if !chanOpen {
 				return // channel closed
 			}
-			hr.publish(snip)
+			meter, ok := hr.meters[snip.Device]
+			if !ok {
+				meter = hr.createMeter(snip)
+			}
+			// publish actual message
+			meter.publishMessage(snip)
 		case snip := <-hr.cc:
 			if meter, ok := hr.meters[snip.Device]; ok {
 				meter.status(snip.Status.Online)
@@ -89,32 +94,26 @@ func (hr *HomieRunner) Run(in <-chan QuerySnip) {
 	}
 }
 
-// unregister unpublishes device information
-func (hr *HomieRunner) publish(snip QuerySnip) {
-	meter, ok := hr.meters[snip.Device]
+// createMeter creates new homie device
+func (hr *HomieRunner) createMeter(snip QuerySnip) *homieMeter {
+	// new client with unique id
+	options := hr.cloneOptions()
+	clientID := fmt.Sprintf("%s-%s", options.ClientID, mqttDeviceTopic(snip.Device))
+	options.SetClientID(clientID)
 
-	// first time - publish meter
-	if !ok {
-		// new client with unique id
-		options := hr.cloneOptions()
-		clientID := fmt.Sprintf("%s-%s", options.ClientID, mqttDeviceTopic(snip.Device))
-		options.SetClientID(clientID)
+	lwt := fmt.Sprintf("%s/%s/$state", hr.rootTopic, mqttDeviceTopic(snip.Device))
+	options.SetWill(lwt, "lost", hr.qos, true)
 
-		lwt := fmt.Sprintf("%s/%s/$state", hr.rootTopic, mqttDeviceTopic(snip.Device))
-		options.SetWill(lwt, "lost", hr.qos, true)
+	client := NewMqttClient(options, hr.qos, hr.verbose)
 
-		client := NewMqttClient(options, hr.qos, hr.verbose)
+	// add meter and publish
+	meter := newHomieMeter(client, hr.rootTopic, snip.Device)
+	hr.meters[snip.Device] = meter
 
-		// add meter and publish
-		meter = newHomieMeter(client, hr.rootTopic, snip.Device)
-		hr.meters[snip.Device] = meter
+	d := hr.qe.DeviceDescriptorByID(snip.Device)
+	meter.publishMeter(d)
 
-		d := hr.qe.DeviceDescriptorByID(snip.Device)
-		meter.publishMeter(d)
-	}
-
-	// publish actual message
-	meter.publishMessage(snip)
+	return meter
 }
 
 // unregister unpublishes device information
@@ -147,8 +146,9 @@ func (hr *homieMeter) publishMeter(descriptor meters.DeviceDescriptor) {
 
 	// device
 	hr.publish(subTopic+"/$homie", specVersion)
-	hr.publish(subTopic+"/$name", "MBMD")
+	hr.publish(subTopic+"/$name", hr.meter)
 	hr.publish(subTopic+"/$state", "init")
+	hr.publish(subTopic+"/$implementation", "MBMD")
 
 	// node
 	hr.publish(subTopic+"/$nodes", nodeTopic)
