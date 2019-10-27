@@ -21,6 +21,7 @@ type Config struct {
 	Rate        time.Duration
 	Mqtt        MqttConfig
 	Influx      InfluxConfig
+	Influx2     Influx2Config
 	Adapters    []AdapterConfig
 	Devices     []DeviceConfig
 }
@@ -28,29 +29,36 @@ type Config struct {
 // commandLine areguments are embedded into Config to allow validating
 // surplus keys in config file
 type commandLine struct {
-	Adapter           interface{} `mapstructure:"adapter"`
-	Baudrate          interface{} `mapstructure:"baudrate"`
-	Comset            interface{} `mapstructure:"comset"`
-	Config            interface{} `mapstructure:"config"`
-	Help              interface{} `mapstructure:"help"`
-	InfluxDatabase    interface{} `mapstructure:"influx-database"`
-	InfluxInterval    interface{} `mapstructure:"influx-interval"`
-	InfluxMeasurement interface{} `mapstructure:"influx-measurement"`
-	InfluxPassword    interface{} `mapstructure:"influx-password"`
-	InfluxPrecision   interface{} `mapstructure:"influx-precision"`
-	InfluxURL         interface{} `mapstructure:"influx-url"`
-	InfluxUser        interface{} `mapstructure:"influx-user"`
-	MqttBroker        interface{} `mapstructure:"mqtt-broker"`
-	MqttClean         interface{} `mapstructure:"mqtt-clean"`
-	MqttClientID      interface{} `mapstructure:"mqtt-clientid"`
-	MqttHomie         interface{} `mapstructure:"mqtt-homie"`
-	MqttPassword      interface{} `mapstructure:"mqtt-password"`
-	MqttQos           interface{} `mapstructure:"mqtt-qos"`
-	MqttTopic         interface{} `mapstructure:"mqtt-topic"`
-	MqttUser          interface{} `mapstructure:"mqtt-user"`
-	Raw               interface{} `mapstructure:"raw"`
-	RTU               interface{} `mapstructure:"rtu"`
-	Verbose           interface{} `mapstructure:"verbose"`
+	Adapter            interface{} `mapstructure:"adapter"`
+	Baudrate           interface{} `mapstructure:"baudrate"`
+	Comset             interface{} `mapstructure:"comset"`
+	Config             interface{} `mapstructure:"config"`
+	Help               interface{} `mapstructure:"help"`
+	InfluxDatabase     interface{} `mapstructure:"influx-database"`
+	InfluxInterval     interface{} `mapstructure:"influx-interval"`
+	InfluxMeasurement  interface{} `mapstructure:"influx-measurement"`
+	InfluxPassword     interface{} `mapstructure:"influx-password"`
+	InfluxPrecision    interface{} `mapstructure:"influx-precision"`
+	InfluxURL          interface{} `mapstructure:"influx-url"`
+	InfluxUser         interface{} `mapstructure:"influx-user"`
+	Influx2Bucket      interface{} `mapstructure:"influx2-bucket"`
+	Influx2Interval    interface{} `mapstructure:"influx2-interval"`
+	Influx2Measurement interface{} `mapstructure:"influx2-measurement"`
+	Influx2Org         interface{} `mapstructure:"influx2-org"`
+	Influx2Password    interface{} `mapstructure:"influx2-password"`
+	Influx2Token       interface{} `mapstructure:"influx2-token"`
+	Influx2URL         interface{} `mapstructure:"influx2-url"`
+	Influx2User        interface{} `mapstructure:"influx2-user"`
+	MqttBroker         interface{} `mapstructure:"mqtt-broker"`
+	MqttClean          interface{} `mapstructure:"mqtt-clean"`
+	MqttClientID       interface{} `mapstructure:"mqtt-clientid"`
+	MqttHomie          interface{} `mapstructure:"mqtt-homie"`
+	MqttPassword       interface{} `mapstructure:"mqtt-password"`
+	MqttQos            interface{} `mapstructure:"mqtt-qos"`
+	MqttTopic          interface{} `mapstructure:"mqtt-topic"`
+	MqttUser           interface{} `mapstructure:"mqtt-user"`
+	Raw                interface{} `mapstructure:"raw"`
+	Verbose            interface{} `mapstructure:"verbose"`
 }
 
 // MqttConfig describes the mqtt broker configuration
@@ -72,6 +80,19 @@ type InfluxConfig struct {
 	Measurement string
 	Password    string
 	Precision   string
+	URL         string
+	User        string
+}
+
+// Influx2Config describes the InfluxDB v2 configuration
+type Influx2Config struct {
+	Bucket      string
+	Interval    time.Duration
+	Measurement string
+	Org         string
+	Password    string
+	Precision   string
+	Token       string
 	URL         string
 	User        string
 }

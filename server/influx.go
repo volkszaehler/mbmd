@@ -12,7 +12,7 @@ const (
 	writeTimeout = 30 * time.Second
 )
 
-// Influx is a influx publisher
+// Influx is an InfluxDB publisher
 type Influx struct {
 	sync.Mutex
 	client      influxdb.Client
@@ -20,7 +20,6 @@ type Influx struct {
 	pointsConf  influxdb.BatchPointsConfig
 	interval    time.Duration
 	measurement string
-	verbose     bool
 }
 
 // NewInfluxClient creates new publisher for influx
@@ -32,7 +31,6 @@ func NewInfluxClient(
 	interval time.Duration,
 	user string,
 	password string,
-	verbose bool,
 ) *Influx {
 	client, err := influxdb.NewHTTPClient(influxdb.HTTPConfig{
 		Addr:     url,
@@ -66,7 +64,6 @@ func NewInfluxClient(
 		},
 		interval:    interval,
 		measurement: measurement,
-		verbose:     verbose,
 	}
 }
 

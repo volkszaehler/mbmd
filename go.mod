@@ -3,14 +3,13 @@ module github.com/volkszaehler/mbmd
 require (
 	github.com/andig/gosunspec v0.0.0-20200108222136-fbcd239096dd
 	github.com/eclipse/paho.mqtt.golang v1.2.0
-	github.com/google/go-github v17.0.0+incompatible // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.1
 	github.com/grid-x/modbus v0.0.0-20200107204205-6fc73f7037b9
 	github.com/grid-x/serial v0.0.0-20191104121038-e24bc9bf6f08 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
+	github.com/influxdata/influxdb-client-go v0.1.3
 	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/mjibson/esc v0.2.0
 	github.com/pelletier/go-toml v1.6.0 // indirect
