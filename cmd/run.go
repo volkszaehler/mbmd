@@ -147,6 +147,46 @@ any type is considered valid.
 		"",
 		"InfluxDB password (optional)",
 	)
+	runCmd.PersistentFlags().String(
+		"influx2-url",
+		"",
+		"InfluxDB v2 URL. ex: http://10.10.1.1:8086",
+	)
+	runCmd.PersistentFlags().String(
+		"influx2-bucket",
+		"",
+		"InfluxDB v2 bucket",
+	)
+	runCmd.PersistentFlags().String(
+		"influx2-org",
+		"",
+		"InfluxDB v2 org",
+	)
+	runCmd.PersistentFlags().String(
+		"influx2-measurement",
+		"data",
+		"InfluxDB v2 measurement",
+	)
+	runCmd.PersistentFlags().Duration(
+		"influx2-interval",
+		30*time.Second,
+		"InfluxDB v2 write interval",
+	)
+	runCmd.PersistentFlags().String(
+		"influx2-token",
+		"",
+		"InfluxDB v2 token (optional)",
+	)
+	runCmd.PersistentFlags().String(
+		"influx2-user",
+		"",
+		"InfluxDB v2 user (optional)",
+	)
+	runCmd.PersistentFlags().String(
+		"influx2-password",
+		"",
+		"InfluxDB v2 password (optional)",
+	)
 
 	pflags := runCmd.PersistentFlags()
 
@@ -158,6 +198,9 @@ any type is considered valid.
 
 	// influx
 	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "precision", "interval", "user", "password")
+
+	// influx2
+	bindPFlagsWithPrefix(pflags, "influx2", "url", "bucket", "org", "measurement", "interval", "token", "user", "password")
 }
 
 // checkVersion validates if updates are available
@@ -304,7 +347,22 @@ func run(cmd *cobra.Command, args []string) {
 			viper.GetDuration("influx.interval"),
 			viper.GetString("influx.user"),
 			viper.GetString("influx.password"),
-			viper.GetBool("verbose"),
+		)
+
+		tee.AttachRunner(server.NewSnipRunner(influx.Run))
+	}
+
+	// InfluxDB v2 client
+	if viper.GetString("influx2.url") != "" {
+		influx := server.NewInflux2Client(
+			viper.GetString("influx2.url"),
+			viper.GetString("influx2.bucket"),
+			viper.GetString("influx2.org"),
+			viper.GetString("influx2.measurement"),
+			viper.GetDuration("influx2.interval"),
+			viper.GetString("influx2.token"),
+			viper.GetString("influx2.user"),
+			viper.GetString("influx2.password"),
 		)
 
 		tee.AttachRunner(server.NewSnipRunner(influx.Run))
