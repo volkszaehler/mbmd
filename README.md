@@ -57,7 +57,7 @@ To get help on the various command line options run
 The full documentation is available in the [docs](docs/mbmd.md) folder.
 A typical invocation looks like this:
 
-    $ ./bin/mbmd -a /dev/ttyUSB0 -d janitza:26,sdm:1
+    $ ./bin/mbmd run -a /dev/ttyUSB0 -d janitza:26,sdm:1
     2017/01/25 16:34:26 Connecting to RTU via /dev/ttyUSB0
     2017/01/25 16:34:26 Starting API at :8080
 
@@ -90,7 +90,7 @@ start `mbmd` as service (put this into ``/etc/systemd/system``):
     Description=mbmd
     After=syslog.target
     [Service]
-    ExecStart=/usr/local/bin/mbmd -d /dev/ttyAMA0
+    ExecStart=/usr/local/bin/mbmd run -a /dev/ttyAMA0
     Restart=always
     [Install]
     WantedBy=multi-user.target
@@ -192,7 +192,8 @@ around. With proper cabling the error rate should be lower, though.
 
 ## Websocket API
 
-Data read from the meters can be observed by clients in realtime using the Websocket API. As soon as new readings are available, they are pushed to connected websocket clients.
+Data read from the meters can be observed by clients in realtime using the Websocket API. 
+As soon as new readings are available, they are pushed to connected websocket clients.
 
 The websocket API is available on `/ws`. All connected clients receive status and
 meter updates for all connected meters without further subscription.
@@ -226,7 +227,8 @@ manuals for definitive guidance):
 | ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
 | BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
 
- * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project. You can use e.g.
+ * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS, 
+ which is currently not supported by this project. You can use e.g.
  [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
  * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and button.
  * SDM530: Very big (7TE) - takes up a lot of space, but all connections are
@@ -245,7 +247,8 @@ manuals for definitive guidance):
  Assume this is a hexadecimal number and convert it to decimal (36). Use
  this as the meter ID.
  * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
- two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
+ two tariffs, both import and export depending on meter version and compact (4TE). 
+ It's often used with Viessmann heat pumps.
  * BE MPM3PM: Compact (4TE) three phase meter.
 
  ## Modbus TCP Grid Inverters
@@ -259,7 +262,7 @@ manuals for definitive guidance):
 
  In case of TCP connection, the adapter paramter becomes the hostname and port:
 
-	./mbmd -a 192.168.0.44:502 -d SMA:23
+	./mbmd run -a 192.168.0.44:502 -d SMA:23
 
 
 # Changelog
