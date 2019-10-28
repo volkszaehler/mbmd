@@ -120,11 +120,11 @@ USB1.1 by adding the following parameter to `/boot/cmdline.txt`:
 
 MODBUS/RTU does not provide a mechanism to discover devices. There is no
 reliable way to detect all attached devices.
-As workaround `mbmd -detect` attempts to read the L1 voltage from all
-device IDs and reports which one replied correctly:
+As workaround `mbmd scan` attempts to read the L1 voltage from all
+device IDs and reports which one replied correctly (i.e. 110/230V +/-10%):
 
 ````
-./mbmd -detect
+./mbmd scan -a /dev/ttyUSB0
 2017/06/21 10:22:34 Starting bus scan
 2017/06/21 10:22:35 Device 1: n/a
 ...
