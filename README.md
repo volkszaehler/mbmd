@@ -228,6 +228,7 @@ manuals for definitive guidance):
 | SDM120/220 | 1 | + | + | + | + | + | + | - | - |
 | SDM530 | 3 | + | + | + | + | + | + | - | - |
 | SDM630 | 3 | + | + | + | + | + | + | + | + |
+| Inepro380 | 3 | + | + | + | + | + | + | + | - |
 | Janitza B23-312 | 3 | + | + | + | + | + | + | - | - |
 | DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
 | SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
@@ -243,6 +244,7 @@ manuals for definitive guidance):
  * SDM630 v1 and v2, both MID and non-MID. Compact (4TE) and with lots
  of features. Can be configured for 1P2 (single phase with neutral), 3P3
  (three phase without neutral) and 3P4 (three phase with neutral) systems.
+ * Inepro PRO380: Compact (4TE) MID meter with extensive features. Can be connected 3P4W, 3P3W and 1P2W. Includes per-direction and per-tariff energy (re)active consumption.
  * Janitza B23-312: These meters have a higher update rate than the Eastron
  devices, but they are more expensive. The -312 variant is the one with a MODBUS interface.
  * DZG DVH4013: This meter does not provide raw phase power measurements
