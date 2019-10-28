@@ -192,7 +192,7 @@ around. With proper cabling the error rate should be lower, though.
 
 ## Websocket API
 
-Data read from the meters can be observed by clients in realtime using the Websocket API. 
+Data read from the meters can be observed by clients in realtime using the Websocket API.
 As soon as new readings are available, they are pushed to connected websocket clients.
 
 The websocket API is available on `/ws`. All connected clients receive status and
@@ -203,6 +203,13 @@ meter updates for all connected meters without further subscription.
 
 Another option for receiving client updates is by using the built-in MQTT publisher.
 By default, readings are published at `/mbmd/<unique id>/<reading>`. Rate limiting is possible.
+
+
+## Homie API
+
+[Homie](https://homieiot.github.io) is an MQTT convention for IoT/M2M. `mbmd` publishes all devices and readings using the Homie protocol. This allows systems like e.g. OpenHAB to auto-discover devices operated by `mbmd`:
+
+![auto-discovery of thinks in OpenHAB](img/openhab.png)
 
 
 # Supported Devices
@@ -227,7 +234,7 @@ manuals for definitive guidance):
 | ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
 | BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
 
- * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS, 
+ * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS,
  which is currently not supported by this project. You can use e.g.
  [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
  * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and button.
@@ -247,7 +254,7 @@ manuals for definitive guidance):
  Assume this is a hexadecimal number and convert it to decimal (36). Use
  this as the meter ID.
  * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
- two tariffs, both import and export depending on meter version and compact (4TE). 
+ two tariffs, both import and export depending on meter version and compact (4TE).
  It's often used with Viessmann heat pumps.
  * BE MPM3PM: Compact (4TE) three phase meter.
 
