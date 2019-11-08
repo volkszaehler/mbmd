@@ -16,7 +16,7 @@ install:
 	go install github.com/mjibson/esc
 
 lint:
-	golangci-lint run -E misspell -E unparam -E gocritic -E unconvert
+	golangci-lint run
 
 test:
 	@echo "Running testsuite"
