@@ -10,7 +10,6 @@ func init() {
 	Register(NewABBProducer)
 }
 
-
 type signedness int
 
 const (

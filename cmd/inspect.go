@@ -155,6 +155,7 @@ func inspect(cmd *cobra.Command, args []string) {
 	}
 
 	for _, m := range confHandler.Managers {
+		m := m // pin!
 		m.All(func(id uint8, dev meters.Device) {
 			m.Conn.Slave(id)
 			scanSunspec(m.Conn.ModbusClient())

@@ -14,7 +14,6 @@ type DZGProducer struct {
 	Opcodes
 }
 
-
 func NewDZGProducer() Producer {
 	/**
 	 * Opcodes for DZG DVH4014.

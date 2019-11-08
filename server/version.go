@@ -4,5 +4,5 @@ var (
 	// Version of executable
 	Version = "unknown version"
 	// Commit of executable
-	Commit  = "unknown commit"
+	Commit = "unknown commit"
 )

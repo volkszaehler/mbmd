@@ -40,7 +40,7 @@ func NewDevice(typeid string) (meters.Device, error) {
 		return device, nil
 	}
 
-	return nil, fmt.Errorf("Unknown meter type %s", typeid)
+	return nil, fmt.Errorf("unknown meter type %s", typeid)
 }
 
 // Initialize prepares the device for usage. Any setup or initilization should be done here.

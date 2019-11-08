@@ -57,7 +57,7 @@ func (mc *Cache) SortedIDs() []string {
 	mc.Lock()
 	defer mc.Unlock()
 
-	var keys []string
+	keys := make([]string, 0, len(mc.readings))
 	for k := range mc.readings {
 		keys = append(keys, k)
 	}
