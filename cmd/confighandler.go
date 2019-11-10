@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -66,8 +67,13 @@ func createConnection(device string, baudrate int, comset string) (res meters.Co
 	if device == "mock" {
 		res = meters.NewMock(device) // mocked connection
 	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
+		log.Printf("creating TCP connection for %s", device)
 		res = meters.NewTCP(device) // tcp connection
 	} else {
+		log.Printf("creating RTU connection for %s (%dbaud, %s)", device, baudrate, comset)
+		if _, err := os.Stat(device); err != nil {
+			log.Fatal(err)
+		}
 		res = meters.NewRTU(device, baudrate, comset) // serial connection
 	}
 	return res
