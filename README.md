@@ -235,41 +235,40 @@ manuals for definitive guidance):
 | ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
 | BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
 
- * SDM120: Cheap and small (1TE), but communication parameters can only be set over MODBUS,
- which is currently not supported by this project. You can use e.g.
- [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
- * SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and button.
- * SDM530: Very big (7TE) - takes up a lot of space, but all connections are
- on the underside of the meter.
- * SDM630 v1 and v2, both MID and non-MID. Compact (4TE) and with lots
- of features. Can be configured for 1P2 (single phase with neutral), 3P3
- (three phase without neutral) and 3P4 (three phase with neutral) systems.
- * Inepro PRO380: Compact (4TE) MID meter with extensive features. Can be connected 3P4W, 3P3W and 1P2W. Includes per-direction and per-tariff energy (re)active consumption.
- * Janitza B23-312: These meters have a higher update rate than the Eastron
- devices, but they are more expensive. The -312 variant is the one with a MODBUS interface.
- * DZG DVH4013: This meter does not provide raw phase power measurements
- and only aggregated import/export measurements. The meter is only
- partially implemented and not recommended. If you want to use it: By
- default, the meter communicates using 9600 8E1. The meter ID
- is derived from the serial number: take the last two numbers of the
- serial number (top right of the device), e.g. 23, and add one (24).
- Assume this is a hexadecimal number and convert it to decimal (36). Use
- this as the meter ID.
- * SBC ALE3: This compact Saia Burgess Controls meter is comparable to the SDM630:
- two tariffs, both import and export depending on meter version and compact (4TE).
- It's often used with Viessmann heat pumps.
- * BE MPM3PM: Compact (4TE) three phase meter.
+- **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
+You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
+- SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and button.
+- **SDM530**: Very big (7TE) - takes up a lot of space, but all connections are
+on the underside of the meter.
+- **SDM630**: v1 and v2, both MID and non-MID. Compact (4TE) and with lots
+of features. Can be configured for 1P2 (single phase with neutral), 3P3
+(three phase without neutral) and 3P4 (three phase with neutral) systems.
+- **Inepro PRO380**: Compact (4TE) MID meter with extensive features.
+Can be connected 3P4W, 3P3W and 1P2W. Includes per-direction and per-tariff energy active/reactive consumption.
+- **Janitza B23-312**: These meters have a higher update rate than the Eastron
+devices, but they are more expensive. The -312 variant is the one with a MODBUS interface.
+- **DZG DVH4013**: This meter does not provide raw phase power measurements
+and only aggregated import/export measurements. The meter is only
+partially implemented and not recommended.
+By default, the meter communicates using 9600 8E1. The meter ID
+is derived from the serial number taking the last two numbers of the
+serial number (top right of the device), e.g. 23, and add one (24).
+Assume this is a hexadecimal number and convert it to decimal (36). Use
+this as the meter ID.
+- **SBC ALE3**: This compact Saia Burgess Controls meter is comparable to the SDM630.
+It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
+- **BE MPM3PM**: Compact (4TE) three phase meter.
 
- ## Modbus TCP Grid Inverters
+## Modbus TCP Grid Inverters
 
- Apart from meters, SunSpec-compatible grid inverters connected over TCP
- are supported, too. SunSpec defines a default register layout for accessing
- the devices.
+Apart from meters, SunSpec-compatible grid inverters connected over TCP
+are supported, too. SunSpec defines a default register layout for accessing
+the devices.
 
- Supported inverters include popular devices from SolarEdge (SE3000, SE9000)
- and SMA (Sunny Boy and Sunny Tripower).
+Supported inverters include popular devices from SolarEdge (SE3000, SE9000)
+and SMA (Sunny Boy and Sunny Tripower).
 
- In case of TCP connection, the adapter paramter becomes the hostname and port:
+In case of TCP connection, the adapter paramter becomes the hostname and port:
 
 	./mbmd run -a 192.168.0.44:502 -d SMA:23
 

@@ -1,4 +1,4 @@
-.PHONY: default clean install lint test build binaries publish-images test-release release
+.PHONY: default clean install lint test assets build binaries publish-images test-release release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
