@@ -71,7 +71,7 @@ any type is considered valid.
 		"REST API url. Use 127.0.0.1:8080 to limit to localhost.",
 	)
 	runCmd.PersistentFlags().StringP(
-		"mqtt", "m",
+		"mqtt-broker", "m",
 		"",
 		"MQTT broker URI. ex: tcp://10.10.1.1:1883",
 	)
@@ -111,7 +111,7 @@ any type is considered valid.
 		"MQTT Homie IoT discovery base topic (homieiot.github.io). Set empty to disable.",
 	)
 	runCmd.PersistentFlags().StringP(
-		"influx", "i",
+		"influx-url", "i",
 		"",
 		"InfluxDB URL. ex: http://10.10.1.1:8086",
 	)
@@ -152,12 +152,10 @@ any type is considered valid.
 	bindPflagsWithExceptions(pflags, "devices")
 
 	// mqtt
-	_ = viper.BindPFlag("mqtt.broker", pflags.Lookup("mqtt"))
-	bindPFlagsWithPrefix(pflags, "mqtt", "topic", "user", "password", "clientid", "clean", "qos", "homie")
+	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "clean", "qos", "homie")
 
 	// influx
-	_ = viper.BindPFlag("influx.url", pflags.Lookup("influx"))
-	bindPFlagsWithPrefix(pflags, "influx", "database", "measurement", "precision", "interval", "user", "password")
+	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "precision", "interval", "user", "password")
 }
 
 // checkVersion validates if updates are available
