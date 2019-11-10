@@ -36,7 +36,7 @@ func init() {
 	)
 	rootCmd.PersistentFlags().StringP(
 		"adapter", "a",
-		"/dev/ttyUSB0",
+		"",
 		`Default MODBUS adapter. This option can be used if all devices are attached to a single adapter.
 Can be either an RTU device (/dev/ttyUSB0) or TCP socket (localhost:502).
 The default adapter can be overridden per device`,
