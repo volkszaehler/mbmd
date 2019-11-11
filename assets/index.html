@@ -94,8 +94,7 @@
 							<td class="col-2" v-if="populated(m.CurrentL3)">${ m.CurrentL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.Current)">${ m.Current }</td>
-							<td class="col-3" v-else>${ ((val(m.CurrentL1) + val(m.CurrentL2) +
-								val(m.CurrentL3))).toFixed(2) }</td>
+							<td class="col-3" v-else>${ (val(m.CurrentL1) + val(m.CurrentL2) + val(m.CurrentL3)).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex" v-if="populated(m.PowerL1, m.PowerL2, m.PowerL3, m.Power)">
 							<td class="col-3">Power (W)</td>
@@ -106,25 +105,11 @@
 							<td class="col-2" v-if="populated(m.PowerL3)">${ m.PowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.Power)">${ m.Power }</td>
-							<td class="col-3" v-else>${ ((val(m.PowerL1) + val(m.PowerL2) + val(m.PowerL3))).toFixed(2) }
-							</td>
+							<td class="col-3" v-else>${ (val(m.PowerL1) + val(m.PowerL2) + val(m.PowerL3)).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex"
-							v-if="populated(m.ActivePowerL1, m.ActivePowerL2, m.ActivePowerL3, m.ActivePower)">
-							<td class="col-3">Active Power (W)</td>
-							<td class="col-2" v-if="populated(m.ActivePowerL1)">${ m.ActivePowerL1 }</td>
-							<td class="col-2" v-else>&mdash;</td>
-							<td class="col-2" v-if="populated(m.ActivePowerL2)">${ m.ActivePowerL2 }</td>
-							<td class="col-2" v-else>&mdash;</td>
-							<td class="col-2" v-if="populated(m.ActivePowerL3)">${ m.ActivePowerL3 }</td>
-							<td class="col-2" v-else>&mdash;</td>
-							<td class="col-3" v-if="populated(m.ActivePower)">${ m.ActivePower }</td>
-							<td class="col-3" v-else>${ ((val(m.ActivePowerL1) + val(m.ActivePowerL2) +
-								val(m.ActivePowerL3))).toFixed(2) }</td>
-							</tr>
-						<tr class="d-flex"
 							v-if="populated(m.ReactivePowerL1, m.ReactivePowerL2, m.ReactivePowerL3, m.ReactivePower)">
-							<td class="col-3">Reactive Power (W)</td>
+							<td class="col-3">Reactive Power (var)</td>
 							<td class="col-2" v-if="populated(m.ReactivePowerL1)">${ m.ReactivePowerL1 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-2" v-if="populated(m.ReactivePowerL2)">${ m.ReactivePowerL2 }</td>
@@ -132,12 +117,23 @@
 							<td class="col-2" v-if="populated(m.ReactivePowerL3)">${ m.ReactivePowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.ReactivePower)">${ m.ReactivePower }</td>
-							<td class="col-3" v-else>${ ((val(m.ReactivePowerL1) + val(m.ReactivePowerL2) +
-								val(m.ReactivePowerL3))).toFixed(2)
-								}</td>
+							<td class="col-3" v-else>${ (val(m.ReactivePowerL1) + val(m.ReactivePowerL2) +
+								val(m.ReactivePowerL3)).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex"
-							v-if="populated(m.ImportPowerL1, m.ImportPowerL2, m.ImportPowerL3, m.ImportPower)">
+							v-if="populated(m.ApparentPowerL1, m.ApparentPowerL2, m.ApparentPowerL3, m.ApparentPower)">
+							<td class="col-3">Apparent Power (VA)</td>
+							<td class="col-2" v-if="populated(m.ApparentPowerL1)">${ m.ApparentPowerL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentPowerL2)">${ m.ApparentPowerL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentPowerL3)">${ m.ApparentPowerL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.ApparentPower)">${ m.ApparentPower }</td>
+							<td class="col-3" v-else>${ (val(m.ApparentPowerL1) + val(m.ApparentPowerL2) +
+								val(m.ApparentPowerL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex" v-if="populated(m.ImportPowerL1, m.ImportPowerL2, m.ImportPowerL3, m.ImportPower)">
 							<td class="col-3">Import Power (W)</td>
 							<td class="col-2" v-if="populated(m.ImportPowerL1)">${ m.ImportPowerL1 }</td>
 							<td class="col-2" v-else>&mdash;</td>
@@ -146,11 +142,10 @@
 							<td class="col-2" v-if="populated(m.ImportPowerL3)">${ m.ImportPowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.ImportPower)">${ m.ImportPower }</td>
-							<td class="col-3" v-else>${ ((val(m.ImportPowerL1) + val(m.ImportPowerL2) +
-								val(m.ImportPowerL3))).toFixed(2) }
+							<td class="col-3" v-else>${ (val(m.ImportPowerL1) + val(m.ImportPowerL2) +
+								val(m.ImportPowerL3)).toFixed(2) }
 						</tr>
-						<tr class="d-flex"
-							v-if="populated(m.ExportPowerL1, m.ExportPowerL2, m.ExportPowerL3, m.ExportPower)">
+						<tr class="d-flex" v-if="populated(m.ExportPowerL1, m.ExportPowerL2, m.ExportPowerL3, m.ExportPower)">
 							<td class="col-3">Export Power (W)</td>
 							<td class="col-2" v-if="populated(m.ExportPowerL1)">${ m.ExportPowerL1 }</td>
 							<td class="col-2" v-else>&mdash;</td>
@@ -159,8 +154,19 @@
 							<td class="col-2" v-if="populated(m.ExportPowerL3)">${ m.ExportPowerL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.ExportPower)">${ m.ExportPower }</td>
-							<td class="col-3" v-else>${ ((val(m.ExportPowerL1) + val(m.ExportPowerL2) +
-								val(m.ExportPowerL3))).toFixed(2) }</td>
+							<td class="col-3" v-else>${ (val(m.ExportPowerL1) + val(m.ExportPowerL2) +
+								val(m.ExportPowerL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex" v-if="populated(m.SumL1, m.SumL2, m.SumL3, m.Sum)">
+							<td class="col-3">Sum (kWh)</td>
+							<td class="col-2" v-if="populated(m.SumL1)">${ m.SumL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.SumL2)">${ m.SumL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.SumL3)">${ m.SumL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.Sum)">${ m.Sum }</td>
+							<td class="col-3" v-else>${ (val(m.SumL1) + val(m.SumL2) + val(m.SumL3)).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex" v-if="populated(m.ImportL1, m.ImportL2, m.ImportL3, m.Import)">
 							<td class="col-3">Import (kWh)</td>
@@ -171,8 +177,7 @@
 							<td class="col-2" v-if="populated(m.ImportL3)">${ m.ImportL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.Import)">${ m.Import }</td>
-							<td class="col-3" v-else>${ ((val(m.ImportL1) + val(m.ImportL2) + val(m.ImportL3))).toFixed(2)
-								}</td>
+							<td class="col-3" v-else>${ (val(m.ImportL1) + val(m.ImportL2) + val(m.ImportL3)).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex" v-if="populated(m.ExportL1, m.ExportL2, m.ExportL3, m.Export)">
 							<td class="col-3">Export (kWh)</td>
@@ -183,8 +188,81 @@
 							<td class="col-2" v-if="populated(m.ExportL3)">${ m.ExportL3 }</td>
 							<td class="col-2" v-else>&mdash;</td>
 							<td class="col-3" v-if="populated(m.Export)">${ m.Export }</td>
-							<td class="col-3" v-else>${ ((val(m.ExportL1) + val(m.ExportL2) +
-								val(m.ExportL3))).toFixed(2) }</td>
+							<td class="col-3" v-else>${ (val(m.ExportL1) + val(m.ExportL2) + val(m.ExportL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex" v-if="populated(m.ReactiveL1, m.ReactiveL2, m.ReactiveL3, m.Reactive)">
+							<td class="col-3">Reactive (kvarh)</td>
+							<td class="col-2" v-if="populated(m.ReactiveL1)">${ m.ReactiveL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ReactiveL2)">${ m.ReactiveL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ReactiveL3)">${ m.ReactiveL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.Reactive)">${ m.Reactive }</td>
+							<td class="col-3" v-else>${ (val(m.ReactiveL1) + val(m.ReactiveL2) + val(m.ReactiveL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex"
+							v-if="populated(m.ReactiveImportL1, m.ReactiveImportL2, m.ReactiveImportL3, m.ReactiveImport)">
+							<td class="col-3">Reactive Import (kvarh)</td>
+							<td class="col-2" v-if="populated(m.ReactiveImportL1)">${ m.ReactiveImportL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ReactiveImportL2)">${ m.ReactiveImportL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ReactiveImportL3)">${ m.ReactiveImportL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.ReactiveImport)">${ m.ReactiveImport }</td>
+							<td class="col-3" v-else>${ (val(m.ReactiveImportL1) + val(m.ReactiveImportL2) +
+								val(m.ReactiveImportL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex"
+							v-if="populated(m.ReactiveExportL1, m.ReactiveExportL2, m.ReactiveExportL3, m.ReactiveExport)">
+							<td class="col-3">Reactive Export (kvarh)</td>
+							<td class="col-2" v-if="populated(m.ReactiveExportL1)">${ m.ReactiveExportL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ReactiveExportL2)">${ m.ReactiveExportL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ReactiveExportL3)">${ m.ReactiveExportL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.ReactiveExport)">${ m.ReactiveExport }</td>
+							<td class="col-3" v-else>${ (val(m.ReactiveExportL1) + val(m.ReactiveExportL2) +
+								val(m.ReactiveExportL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex" v-if="populated(m.ApparentL1, m.ApparentL2, m.ApparentL3, m.Apparent)">
+							<td class="col-3">Apparent (kVAh)</td>
+							<td class="col-2" v-if="populated(m.ApparentL1)">${ m.ApparentL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentL2)">${ m.ApparentL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentL3)">${ m.ApparentL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.Apparent)">${ m.Apparent }</td>
+							<td class="col-3" v-else>${ (val(m.ApparentL1) + val(m.ApparentL2) + val(m.ApparentL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex"
+							v-if="populated(m.ApparentImportL1, m.ApparentImportL2, m.ApparentImportL3, m.ApparentImport)">
+							<td class="col-3">Apparent Import (kVAh)</td>
+							<td class="col-2" v-if="populated(m.ApparentImportL1)">${ m.ApparentImportL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentImportL2)">${ m.ApparentImportL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentImportL3)">${ m.ApparentImportL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.ApparentImport)">${ m.ApparentImport }</td>
+							<td class="col-3" v-else>${ (val(m.ApparentImportL1) + val(m.ApparentImportL2) +
+								val(m.ApparentImportL3)).toFixed(2) }</td>
+						</tr>
+						<tr class="d-flex"
+							v-if="populated(m.ApparentExportL1, m.ApparentExportL2, m.ApparentExportL3, m.ApparentExport)">
+							<td class="col-3">Apparent Export (kVAh)</td>
+							<td class="col-2" v-if="populated(m.ApparentExportL1)">${ m.ApparentExportL1 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentExportL2)">${ m.ApparentExportL2 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.ApparentExportL3)">${ m.ApparentExportL3 }</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.ApparentExport)">${ m.ApparentExport }</td>
+							<td class="col-3" v-else>${ (val(m.ApparentExportL1) + val(m.ApparentExportL2) +
+								val(m.ApparentExportL3)).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex" v-if="populated(m.CosphiL1, m.CosphiL2, m.CosphiL3, m.Cosphi)">
 							<td class="col-3">Power Factor (cos 𝜑)</td>

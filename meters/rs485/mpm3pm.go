@@ -21,9 +21,9 @@ func NewMPM3MPProducer() Producer {
 	 * http://www.qrck.info/MPM3PModBus.pdf
 	 */
 	ops := Opcodes{
-		Active: 0x00,
-		// ImportActive : 0x02,
-		// ExportActive : 0x04,
+		Sum:             0x00,
+		Import:          0x02,
+		Export:          0x04,
 		Reactive:        0x06,
 		VoltageL1:       0x08,
 		VoltageL2:       0x0A,
@@ -41,7 +41,7 @@ func NewMPM3MPProducer() Producer {
 		CosphiL1:        0x20,
 		CosphiL2:        0x22,
 		CosphiL3:        0x24,
-		ActivePower:     0x26,
+		Power:           0x26,
 		ReactivePower:   0x28,
 		Frequency:       0x2C,
 	}
@@ -95,15 +95,15 @@ func (p *MPM3MPProducer) Produce() (res []Operation) {
 
 	for _, op := range []Measurement{
 		CurrentL1, CurrentL2, CurrentL3,
-		Active, Reactive, Frequency,
+		Import, Export, Reactive, Frequency,
 	} {
 		res = append(res, p.snip32u(op, 100))
 	}
 
 	for _, op := range []Measurement{
-		PowerL1, PowerL2, PowerL3,
-		ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
-		ReactivePower, ActivePower,
+		Sum,
+		Power, PowerL1, PowerL2, PowerL3,
+		ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
 	} {
 		res = append(res, p.snip32i(op, 100))
 	}
