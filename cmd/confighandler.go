@@ -71,6 +71,9 @@ func createConnection(device string, baudrate int, comset string) (res meters.Co
 		res = meters.NewTCP(device) // tcp connection
 	} else {
 		log.Printf("config: creating RTU connection for %s (%dbaud, %s)", device, baudrate, comset)
+		if baudrate == 0 || comset == "" {
+			log.Fatal("Missing comset configuration. See -h for help.")
+		}
 		if _, err := os.Stat(device); err != nil {
 			log.Fatal(err)
 		}
