@@ -37,7 +37,7 @@ const (
 	VoltageL2
 	VoltageL3
 
-	Power
+	Power // synonymous ActivePower
 	PowerL1
 	PowerL2
 	PowerL3
@@ -51,11 +51,6 @@ const (
 	ExportPowerL1
 	ExportPowerL2
 	ExportPowerL3
-
-	ActivePower
-	ActivePowerL1
-	ActivePowerL2
-	ActivePowerL3
 
 	ReactivePower
 	ReactivePowerL1
@@ -78,44 +73,47 @@ const (
 	THDL3
 
 	// energy
-	Net
-	NetL1
-	NetL2
-	NetL3
-
-	Active
-	ActiveNet
-	ActiveNetL1
-	ActiveNetL2
-	ActiveNetL3
-
-	Reactive
-	ReactiveNet
-	ReactiveNetL1
-	ReactiveNetL2
-	ReactiveNetL3
+	Sum // synonymous ActiveEnergy
+	SumT1
+	SumT2
+	SumL1
+	SumL2
+	SumL3
 
 	Import
+	ImportT1
+	ImportT2
 	ImportL1
 	ImportL2
 	ImportL3
 
 	Export
+	ExportT1
+	ExportT2
 	ExportL1
 	ExportL2
 	ExportL3
 
-	ActiveImportT1
-	ActiveImportT2
+	ReactiveSum
+	ReactiveSumT1
+	ReactiveSumT2
+	ReactiveSumL1
+	ReactiveSumL2
+	ReactiveSumL3
 
+	ReactiveImport
 	ReactiveImportT1
 	ReactiveImportT2
+	ReactiveImportL1
+	ReactiveImportL2
+	ReactiveImportL3
 
-	ActiveExportT1
-	ActiveExportT2
-
+	ReactiveExport
 	ReactiveExportT1
 	ReactiveExportT2
+	ReactiveExportL1
+	ReactiveExportL2
+	ReactiveExportL3
 
 	// DC
 	DCCurrent
@@ -150,18 +148,14 @@ var iec = map[Measurement][]string{
 	ExportPowerL1:    {"L1 Export Power", "W"},
 	ExportPowerL2:    {"L2 Export Power", "W"},
 	ExportPowerL3:    {"L3 Export Power", "W"},
-	ActivePower:      {"Active Power", "W"},
-	ActivePowerL1:    {"L1 Active Power", "W"},
-	ActivePowerL2:    {"L2 Active Power", "W"},
-	ActivePowerL3:    {"L3 Active Power", "W"},
-	ReactivePower:    {"Reactive Power", "W"},
-	ReactivePowerL1:  {"L1 Reactive Power", "W"},
-	ReactivePowerL2:  {"L2 Reactive Power", "W"},
-	ReactivePowerL3:  {"L3 Reactive Power", "W"},
-	ApparentPower:    {"Apparent Power", "W"},
-	ApparentPowerL1:  {"L1 Apparent Power", "W"},
-	ApparentPowerL2:  {"L2 Apparent Power", "W"},
-	ApparentPowerL3:  {"L3 Apparent Power", "W"},
+	ReactivePower:    {"Reactive Power", "var"},
+	ReactivePowerL1:  {"L1 Reactive Power", "var"},
+	ReactivePowerL2:  {"L2 Reactive Power", "var"},
+	ReactivePowerL3:  {"L3 Reactive Power", "var"},
+	ApparentPower:    {"Apparent Power", "VA"},
+	ApparentPowerL1:  {"L1 Apparent Power", "VA"},
+	ApparentPowerL2:  {"L2 Apparent Power", "VA"},
+	ApparentPowerL3:  {"L3 Apparent Power", "VA"},
 	Cosphi:           {"Cosphi"},
 	CosphiL1:         {"L1 Cosphi"},
 	CosphiL2:         {"L2 Cosphi"},
@@ -170,36 +164,42 @@ var iec = map[Measurement][]string{
 	THDL1:            {"L1 Voltage to neutral THD", "%"},
 	THDL2:            {"L2 Voltage to neutral THD", "%"},
 	THDL3:            {"L3 Voltage to neutral THD", "%"},
+	Sum:              {"Total Sum", "kWh"},
+	SumT1:            {"Tariff 1 Sum", "kWh"},
+	SumT2:            {"Tariff 2 Sum", "kWh"},
+	SumL1:            {"L1 Sum", "kWh"},
+	SumL2:            {"L2 Sum", "kWh"},
+	SumL3:            {"L3 Sum", "kWh"},
 	Import:           {"Total Import", "kWh"},
+	ImportT1:         {"Tariff 1 Import", "kWh"},
+	ImportT2:         {"Tariff 2 Import", "kWh"},
 	ImportL1:         {"L1 Import", "kWh"},
 	ImportL2:         {"L2 Import", "kWh"},
 	ImportL3:         {"L3 Import", "kWh"},
 	Export:           {"Total Export", "kWh"},
+	ExportT1:         {"Tariff 1 Export", "kWh"},
+	ExportT2:         {"Tariff 2 Export", "kWh"},
 	ExportL1:         {"L1 Export", "kWh"},
 	ExportL2:         {"L2 Export", "kWh"},
 	ExportL3:         {"L3 Export", "kWh"},
-	Net:              {"Total  Net", "kWh"},
-	NetL1:            {"L1 Net", "kWh"},
-	NetL2:            {"L2 Net", "kWh"},
-	NetL3:            {"L3 Net", "kWh"},
-	Active:           {"Total Active", "kWh"},
-	ActiveNet:        {"Total Active Net", "kWh"},
-	ActiveNetL1:      {"L1 Active Net", "kWh"},
-	ActiveNetL2:      {"L2 Active Net", "kWh"},
-	ActiveNetL3:      {"L3 Active Net", "kWh"},
-	Reactive:         {"Total Reactive", "kWh"},
-	ReactiveNet:      {"Reactive Net", "kWh"},
-	ReactiveNetL1:    {"L1 Reactive Net", "kWh"},
-	ReactiveNetL2:    {"L2 Reactive Net", "kWh"},
-	ReactiveNetL3:    {"L3 Reactive Net", "kWh"},
-	ActiveImportT1:   {"Tariff 1 Active Import", "kWh"},
-	ActiveImportT2:   {"Tariff 2 Active Import", "kWh"},
-	ReactiveImportT1: {"Tariff 1 Reactive Import", "kWh"},
-	ReactiveImportT2: {"Tariff 2 Reactive Import", "kWh"},
-	ActiveExportT1:   {"Tariff 1 Active Export", "kWh"},
-	ActiveExportT2:   {"Tariff 2 Active Export", "kWh"},
-	ReactiveExportT1: {"Tariff 1 Reactive Export", "kWh"},
-	ReactiveExportT2: {"Tariff 2 Reactive Export", "kWh"},
+	ReactiveSum:      {"Total Reactive", "kvarh"},
+	ReactiveSumT1:    {"Tariff 1 Reactive", "kvarh"},
+	ReactiveSumT2:    {"Tariff 2 Reactive", "kvarh"},
+	ReactiveSumL1:    {"L1 Reactive", "kvarh"},
+	ReactiveSumL2:    {"L2 Reactive", "kvarh"},
+	ReactiveSumL3:    {"L3 Reactive", "kvarh"},
+	ReactiveImport:   {"Reactive Import", "kvarh"},
+	ReactiveImportT1: {"Tariff 1 Reactive Import", "kvarh"},
+	ReactiveImportT2: {"Tariff 2 Reactive Import", "kvarh"},
+	ReactiveImportL1: {"L1 Reactive Import", "kvarh"},
+	ReactiveImportL2: {"L2 Reactive Import", "kvarh"},
+	ReactiveImportL3: {"L3 Reactive Import", "kvarh"},
+	ReactiveExport:   {"Reactive Export", "kvarh"},
+	ReactiveExportT1: {"Tariff 1 Reactive Export", "kvarh"},
+	ReactiveExportT2: {"Tariff 2 Reactive Export", "kvarh"},
+	ReactiveExportL1: {"L1 Reactive Export", "kvarh"},
+	ReactiveExportL2: {"L2 Reactive Export", "kvarh"},
+	ReactiveExportL3: {"L3 Reactive Export", "kvarh"},
 	DCCurrent:        {"DC Current", "A"},
 	DCVoltage:        {"DC Voltage", "V"},
 	DCPower:          {"DC Power", "W"},

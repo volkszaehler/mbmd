@@ -67,10 +67,13 @@ func createConnection(device string, baudrate int, comset string) (res meters.Co
 	if device == "mock" {
 		res = meters.NewMock(device) // mocked connection
 	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
-		log.Printf("creating TCP connection for %s", device)
+		log.Printf("config: creating TCP connection for %s", device)
 		res = meters.NewTCP(device) // tcp connection
 	} else {
-		log.Printf("creating RTU connection for %s (%dbaud, %s)", device, baudrate, comset)
+		log.Printf("config: creating RTU connection for %s (%dbaud, %s)", device, baudrate, comset)
+		if baudrate == 0 || comset == "" {
+			log.Fatal("Missing comset configuration. See -h for help.")
+		}
 		if _, err := os.Stat(device); err != nil {
 			log.Fatal(err)
 		}
@@ -135,6 +138,18 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 
 // CreateDevice creates new device and adds it to the connection manager
 func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
+	if devConf.Adapter == "" {
+		// find default adapter
+		if len(conf.Managers) == 1 {
+			for a := range conf.Managers {
+				log.Printf("config: using default adapter %s for device %v", a, devConf)
+				devConf.Adapter = a
+			}
+		} else {
+			log.Fatalf("Missing adapter configuration for device %v", devConf)
+		}
+	}
+
 	manager := conf.connectionManager(devConf.Adapter)
 	meter := conf.createDeviceForManager(manager, devConf.Type)
 

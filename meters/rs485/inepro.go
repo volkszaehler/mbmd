@@ -31,10 +31,10 @@ func NewIneproProducer() Producer {
 		CurrentL2: 0x500E,
 		CurrentL3: 0x5010,
 
-		ActivePower:   0x5012,
-		ActivePowerL1: 0x5014,
-		ActivePowerL2: 0x5016,
-		ActivePowerL3: 0x5018,
+		Power:   0x5012,
+		PowerL1: 0x5014,
+		PowerL2: 0x5016,
+		PowerL3: 0x5018,
 
 		ReactivePower:   0x501A,
 		ReactivePowerL1: 0x501C,
@@ -51,8 +51,43 @@ func NewIneproProducer() Producer {
 		CosphiL2: 0x502E,
 		CosphiL3: 0x5030,
 
-		Active:   0x6000,
-		Reactive: 0x6024,
+		Sum:      0x6000,
+		SumT1:    0x6002,
+		SumT2:    0x6004,
+		SumL1:    0x6006,
+		SumL2:    0x6008,
+		SumL3:    0x600A,
+		Import:   0x600C,
+		ImportT1: 0x600E,
+		ImportT2: 0x6010,
+		ImportL1: 0x6012,
+		ImportL2: 0x6014,
+		ImportL3: 0x6016,
+		Export:   0x6018,
+		ExportT1: 0x601A,
+		ExportT2: 0x601C,
+		ExportL1: 0x601E,
+		ExportL2: 0x6020,
+		ExportL3: 0x6022,
+
+		ReactiveSum:      0x6024,
+		ReactiveSumT1:    0x6026,
+		ReactiveSumT2:    0x6028,
+		ReactiveSumL1:    0x602A,
+		ReactiveSumL2:    0x602C,
+		ReactiveSumL3:    0x602E,
+		ReactiveImport:   0x6030,
+		ReactiveImportT1: 0x6032,
+		ReactiveImportT2: 0x6034,
+		ReactiveImportL1: 0x6036,
+		ReactiveImportL2: 0x6038,
+		ReactiveImportL3: 0x603A,
+		ReactiveExport:   0x603C,
+		ReactiveExportT1: 0x603E,
+		ReactiveExportT2: 0x6040,
+		ReactiveExportL1: 0x6042,
+		ReactiveExportL2: 0x6044,
+		ReactiveExportL3: 0x6046,
 	}
 	return &IneproProducer{Opcodes: ops}
 }
@@ -65,15 +100,20 @@ func (p *IneproProducer) Description() string {
 	return "Inepro Metering Pro 380"
 }
 
-func (p *IneproProducer) snip(iec Measurement) Operation {
-	opcode := p.Opcodes[iec]
-	return Operation{
+func (p *IneproProducer) snip(iec Measurement, scaler ...float64) Operation {
+	snip := Operation{
 		FuncCode:  ReadHoldingReg,
-		OpCode:    opcode,
+		OpCode:    p.Opcodes[iec],
 		ReadLen:   2,
 		IEC61850:  iec,
 		Transform: RTUIeee754ToFloat64,
 	}
+
+	if len(scaler) > 0 {
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
+	}
+
+	return snip
 }
 
 func (p *IneproProducer) Probe() Operation {
@@ -82,7 +122,14 @@ func (p *IneproProducer) Probe() Operation {
 
 func (p *IneproProducer) Produce() (res []Operation) {
 	for op := range p.Opcodes {
-		res = append(res, p.snip(op))
+		switch op {
+		case Power, PowerL1, PowerL2, PowerL3,
+			ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
+			ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3:
+			res = append(res, p.snip(op, 0.001))
+		default:
+			res = append(res, p.snip(op))
+		}
 	}
 
 	return res
