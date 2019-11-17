@@ -51,19 +51,43 @@ func NewIneproProducer() Producer {
 		CosphiL2: 0x502E,
 		CosphiL3: 0x5030,
 
-		Sum:    0x6000,
-		SumL1:  0x6006,
-		SumL2:  0x6008,
-		SumL3:  0x600A,
-		Import: 0x600C,
-		Export: 0x6018,
+		Sum:      0x6000,
+		SumT1:    0x6002,
+		SumT2:    0x6004,
+		SumL1:    0x6006,
+		SumL2:    0x6008,
+		SumL3:    0x600A,
+		Import:   0x600C,
+		ImportT1: 0x600E,
+		ImportT2: 0x6010,
+		ImportL1: 0x6012,
+		ImportL2: 0x6014,
+		ImportL3: 0x6016,
+		Export:   0x6018,
+		ExportT1: 0x601A,
+		ExportT2: 0x601C,
+		ExportL1: 0x601E,
+		ExportL2: 0x6020,
+		ExportL3: 0x6022,
 
-		Reactive:       0x6024,
-		ReactiveL1:     0x602A,
-		ReactiveL2:     0x602C,
-		ReactiveL3:     0x602E,
-		ReactiveImport: 0x6030,
-		ReactiveExport: 0x603C,
+		ReactiveSum:      0x6024,
+		ReactiveSumT1:    0x6026,
+		ReactiveSumT2:    0x6028,
+		ReactiveSumL1:    0x602A,
+		ReactiveSumL2:    0x602C,
+		ReactiveSumL3:    0x602E,
+		ReactiveImport:   0x6030,
+		ReactiveImportT1: 0x6032,
+		ReactiveImportT2: 0x6034,
+		ReactiveImportL1: 0x6036,
+		ReactiveImportL2: 0x6038,
+		ReactiveImportL3: 0x603A,
+		ReactiveExport:   0x603C,
+		ReactiveExportT1: 0x603E,
+		ReactiveExportT2: 0x6040,
+		ReactiveExportL1: 0x6042,
+		ReactiveExportL2: 0x6044,
+		ReactiveExportL3: 0x6046,
 	}
 	return &IneproProducer{Opcodes: ops}
 }
@@ -102,7 +126,7 @@ func (p *IneproProducer) Produce() (res []Operation) {
 		case Power, PowerL1, PowerL2, PowerL3,
 			ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
 			ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3:
-			res = append(res, p.snip(op, 1000))
+			res = append(res, p.snip(op, 0.001))
 		default:
 			res = append(res, p.snip(op))
 		}

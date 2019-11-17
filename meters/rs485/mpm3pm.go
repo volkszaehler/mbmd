@@ -24,7 +24,7 @@ func NewMPM3MPProducer() Producer {
 		Sum:             0x00,
 		Import:          0x02,
 		Export:          0x04,
-		Reactive:        0x06,
+		ReactiveSum:     0x06,
 		VoltageL1:       0x08,
 		VoltageL2:       0x0A,
 		VoltageL3:       0x0C,
@@ -95,7 +95,7 @@ func (p *MPM3MPProducer) Produce() (res []Operation) {
 
 	for _, op := range []Measurement{
 		CurrentL1, CurrentL2, CurrentL3,
-		Import, Export, Reactive, Frequency,
+		Import, Export, ReactiveSum, Frequency,
 	} {
 		res = append(res, p.snip32u(op, 100))
 	}
