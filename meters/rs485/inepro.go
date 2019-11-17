@@ -3,6 +3,7 @@ package rs485
 import (
 	"encoding/binary"
 	"fmt"
+	"strconv"
 
 	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
@@ -108,18 +109,18 @@ func (p *IneproProducer) Description() string {
 	return "Inepro Metering Pro 380"
 }
 
-func (p *JanitzaProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
+func (p *IneproProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
 	// serial
-	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
+	if bytes, err := client.ReadHoldingRegisters(0x4000, 2); err == nil {
 		descriptor.Serial = fmt.Sprintf("%4d", binary.BigEndian.Uint32(bytes))
 	}
 	// firmware
-	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
-		descriptor.Version = string(bytes)
+	if bytes, err := client.ReadHoldingRegisters(0x4007, 2); err == nil {
+		descriptor.Version = strconv.FormatFloat(RTUIeee754ToFloat64(bytes), 'f', -1, 64)
 	}
 	// type
-	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
-		descriptor.Model = string(bytes)
+	if bytes, err := client.ReadHoldingRegisters(0x4002, 1); err == nil {
+		descriptor.Model = fmt.Sprintf("%2d", binary.BigEndian.Uint16(bytes))
 	}
 
 	// assume success

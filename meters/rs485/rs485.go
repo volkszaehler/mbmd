@@ -50,9 +50,10 @@ func initializeMID(client modbusClient, descriptor *meters.DeviceDescriptor) err
 }
 
 type rs485 struct {
-	producer Producer
-	ops      chan Operation
-	inflight Operation
+	producer   Producer
+	descriptor meters.DeviceDescriptor
+	ops        chan Operation
+	inflight   Operation
 }
 
 // NewDevice creates a device who's type must exist in the producer registry
