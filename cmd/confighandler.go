@@ -15,10 +15,39 @@ import (
 
 // Config describes the entire configuration
 type Config struct {
-	API      string
-	Mqtt     MqttConfig
-	Adapters []AdapterConfig
-	Devices  []DeviceConfig
+	commandLine `mapstructure:",squash"` // for completeness
+	API         string
+	Mqtt        MqttConfig
+	Adapters    []AdapterConfig
+	Devices     []DeviceConfig
+}
+
+// commandLine areguments are embedded into Config to allow validating
+// surplus keys in config file
+type commandLine struct {
+	Adapter           interface{} `mapstructure:"adapter"`
+	Baudrate          interface{} `mapstructure:"baudrate"`
+	Comset            interface{} `mapstructure:"comset"`
+	Config            interface{} `mapstructure:"config"`
+	Help              interface{} `mapstructure:"help"`
+	Influx            interface{} `mapstructure:"influx"`
+	InfluxDatabase    interface{} `mapstructure:"influx-database"`
+	InfluxInterval    interface{} `mapstructure:"influx-interval"`
+	InfluxMeasurement interface{} `mapstructure:"influx-measurement"`
+	InfluxPassword    interface{} `mapstructure:"influx-password"`
+	InfluxPrecision   interface{} `mapstructure:"influx-precision"`
+	InfluxURL         interface{} `mapstructure:"influx-url"`
+	InfluxUser        interface{} `mapstructure:"influx-user"`
+	MqttBroker        interface{} `mapstructure:"mqtt-broker"`
+	MqttClean         interface{} `mapstructure:"mqtt-clean"`
+	MqttClientID      interface{} `mapstructure:"mqtt-clientid"`
+	MqttHomie         interface{} `mapstructure:"mqtt-homie"`
+	MqttPassword      interface{} `mapstructure:"mqtt-password"`
+	MqttQos           interface{} `mapstructure:"mqtt-qos"`
+	MqttTopic         interface{} `mapstructure:"mqtt-topic"`
+	MqttUser          interface{} `mapstructure:"mqtt-user"`
+	Raw               interface{} `mapstructure:"raw"`
+	Verbose           interface{} `mapstructure:"verbose"`
 }
 
 // MqttConfig describes the mqtt broker configuration
