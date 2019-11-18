@@ -198,8 +198,8 @@ func run(cmd *cobra.Command, args []string) {
 		log.Printf("config: using %s", viper.ConfigFileUsed())
 
 		var conf Config
-		if err := viper.Unmarshal(&conf); err != nil {
-			log.Fatalf("failed parsing config file: %v", err)
+		if err := viper.GetViper().UnmarshalExact(&conf); err != nil {
+			log.Fatalf("config: failed parsing config file %s: %v", cfgFile, err)
 		}
 
 		// create devices from config file only if not overridden on command line
