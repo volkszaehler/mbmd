@@ -117,10 +117,6 @@ func (p *IneproProducer) Initialize(client modbusClient, descriptor *DeviceDescr
 	if bytes, err := client.ReadHoldingRegisters(0x4007, 2); err == nil {
 		descriptor.Version = strconv.FormatFloat(RTUIeee754ToFloat64(bytes), 'f', 2, 64)
 	}
-	// type
-	if bytes, err := client.ReadHoldingRegisters(0x4002, 1); err == nil {
-		descriptor.Model = fmt.Sprintf("%4x", binary.BigEndian.Uint16(bytes))
-	}
 	// hardware
 	if bytes, err := client.ReadHoldingRegisters(0x4009, 2); err == nil {
 		descriptor.Options += fmt.Sprintf("HW %.2f", RTUIeee754ToFloat64(bytes))
