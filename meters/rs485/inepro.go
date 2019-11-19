@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -109,18 +108,26 @@ func (p *IneproProducer) Description() string {
 	return "Inepro Metering Pro 380"
 }
 
-func (p *IneproProducer) Initialize(client modbus.Client, descriptor *DeviceDescriptor) error {
+func (p *IneproProducer) Initialize(client modbusClient, descriptor *DeviceDescriptor) error {
 	// serial
 	if bytes, err := client.ReadHoldingRegisters(0x4000, 2); err == nil {
-		descriptor.Serial = fmt.Sprintf("%4d", binary.BigEndian.Uint32(bytes))
+		descriptor.Serial = fmt.Sprintf("%d", binary.BigEndian.Uint32(bytes))
 	}
 	// firmware
 	if bytes, err := client.ReadHoldingRegisters(0x4007, 2); err == nil {
-		descriptor.Version = strconv.FormatFloat(RTUIeee754ToFloat64(bytes), 'f', -1, 64)
+		descriptor.Version = strconv.FormatFloat(RTUIeee754ToFloat64(bytes), 'f', 2, 64)
 	}
 	// type
 	if bytes, err := client.ReadHoldingRegisters(0x4002, 1); err == nil {
-		descriptor.Model = fmt.Sprintf("%2d", binary.BigEndian.Uint16(bytes))
+		descriptor.Model = fmt.Sprintf("%4x", binary.BigEndian.Uint16(bytes))
+	}
+	// hardware
+	if bytes, err := client.ReadHoldingRegisters(0x4007, 2); err == nil {
+		descriptor.Options += fmt.Sprintf("HW %.2f", RTUIeee754ToFloat64(bytes))
+	}
+	// current rating
+	if bytes, err := client.ReadHoldingRegisters(0x400B, 1); err == nil {
+		descriptor.Options += fmt.Sprintf(" %dA", binary.BigEndian.Uint16(bytes))
 	}
 
 	// assume success
