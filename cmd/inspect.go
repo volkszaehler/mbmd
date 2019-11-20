@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/viper"
 	"github.com/volkszaehler/mbmd/meters"
 
-	sunspec "github.com/crabmusket/gosunspec"
-	bus "github.com/crabmusket/gosunspec/modbus"
-	_ "github.com/crabmusket/gosunspec/models" // import models
-	"github.com/crabmusket/gosunspec/smdx"
+	sunspec "github.com/andig/gosunspec"
+	bus "github.com/andig/gosunspec/modbus"
+	_ "github.com/andig/gosunspec/models" // import models
+	"github.com/andig/gosunspec/smdx"
 )
 
 // inspectCmd represents the inspect command

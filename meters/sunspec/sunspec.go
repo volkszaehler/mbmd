@@ -5,13 +5,13 @@ import (
 	"math"
 	"time"
 
-	sunspec "github.com/crabmusket/gosunspec"
-	sunspecbus "github.com/crabmusket/gosunspec/modbus"
+	sunspec "github.com/andig/gosunspec"
+	sunspecbus "github.com/andig/gosunspec/modbus"
 	"github.com/grid-x/modbus"
 
-	_ "github.com/crabmusket/gosunspec/models" // device tree parsing requires all models
-	"github.com/crabmusket/gosunspec/models/model1"
-	"github.com/crabmusket/gosunspec/models/model101"
+	_ "github.com/andig/gosunspec/models" // device tree parsing requires all models
+	"github.com/andig/gosunspec/models/model1"
+	"github.com/andig/gosunspec/models/model101"
 	"github.com/pkg/errors"
 	"github.com/volkszaehler/mbmd/meters"
 )
