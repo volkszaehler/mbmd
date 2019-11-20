@@ -3,7 +3,6 @@ package rs485
 import (
 	"encoding/binary"
 	"fmt"
-	"strconv"
 
 	. "github.com/volkszaehler/mbmd/meters"
 )
@@ -115,7 +114,7 @@ func (p *IneproProducer) Initialize(client modbusClient, descriptor *DeviceDescr
 	}
 	// firmware
 	if bytes, err := client.ReadHoldingRegisters(0x4007, 2); err == nil {
-		descriptor.Version = strconv.FormatFloat(RTUIeee754ToFloat64(bytes), 'f', 2, 64)
+		descriptor.Version = fmt.Sprintf("%.2f", RTUIeee754ToFloat64(bytes))
 	}
 	// hardware
 	if bytes, err := client.ReadHoldingRegisters(0x4009, 2); err == nil {
