@@ -12,6 +12,14 @@ mqtt:
   clean: true
   homie: homie
 
+# influxdb config
+influx:
+  url: http://localhost:8086
+  database: data
+  measurement: mbmd
+  user:
+  password:
+
 # adapters are referenced by device
 adapters:
 - device: /dev/ttyUSB0

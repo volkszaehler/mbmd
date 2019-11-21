@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/rs485"
@@ -18,6 +19,7 @@ type Config struct {
 	commandLine `mapstructure:",squash"` // for completeness
 	API         string
 	Mqtt        MqttConfig
+	Influx      InfluxConfig
 	Adapters    []AdapterConfig
 	Devices     []DeviceConfig
 }
@@ -30,7 +32,6 @@ type commandLine struct {
 	Comset            interface{} `mapstructure:"comset"`
 	Config            interface{} `mapstructure:"config"`
 	Help              interface{} `mapstructure:"help"`
-	Influx            interface{} `mapstructure:"influx"`
 	InfluxDatabase    interface{} `mapstructure:"influx-database"`
 	InfluxInterval    interface{} `mapstructure:"influx-interval"`
 	InfluxMeasurement interface{} `mapstructure:"influx-measurement"`
@@ -60,6 +61,17 @@ type MqttConfig struct {
 	Qos      int
 	Clean    bool
 	Homie    string
+}
+
+// InfluxConfig describes the InfluxDB configuration
+type InfluxConfig struct {
+	Database    string
+	Interval    time.Duration
+	Measurement string
+	Password    string
+	Precision   string
+	URL         string
+	User        string
 }
 
 // AdapterConfig describes device communication parameters
