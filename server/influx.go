@@ -51,6 +51,13 @@ func NewInfluxClient(
 		log.Fatal("influx: missing measurement")
 	}
 
+	// check connection
+	go func(client influxdb.Client) {
+		if _, _, err := client.Ping(writeTimeout); err != nil {
+			log.Fatalf("influx: %s", err)
+		}
+	}(client)
+
 	return &Influx{
 		client: client,
 		pointsConf: influxdb.BatchPointsConfig{
