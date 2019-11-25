@@ -6,7 +6,17 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/volkszaehler/mbmd/meters"
 )
+
+// all these measurements are logged in verbose mode
+var verboseLoggable = []meters.Measurement{
+	meters.VoltageL1, meters.CurrentL1, meters.PowerL1, meters.CosphiL1,
+	meters.VoltageL2, meters.CurrentL2, meters.PowerL2, meters.CosphiL2,
+	meters.VoltageL3, meters.CurrentL3, meters.PowerL3, meters.CosphiL3,
+	meters.Frequency,
+}
 
 // Cache caches and aggregates meter reasings
 type Cache struct {
@@ -47,7 +57,12 @@ func (mc *Cache) Run(in <-chan QuerySnip) {
 
 		readings.Add(snip)
 		if mc.verbose {
-			log.Printf("device %s %s", uniqueID, readings.Current.String())
+			for _, m := range verboseLoggable {
+				if snip.Measurement == m {
+					log.Printf("device %s %s", uniqueID, readings.Current.String())
+					break
+				}
+			}
 		}
 	}
 }
