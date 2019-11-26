@@ -150,7 +150,7 @@ device IDs and reports which one replied correctly (i.e. 110/230V +/-10%):
 `mbmd` provides a convenient REST API. Supported endpoints under `/api` are:
 
 * `/last/{ID}` latest data for device
-* `/minuteavg/{ID}` averaged data over last minute
+* `/avg/{ID}` averaged data over last minute
 * `/status` daemon status
 
 Both device APIs can also be called without the device id to return data for all connected devices.
