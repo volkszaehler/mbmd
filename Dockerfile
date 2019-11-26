@@ -11,9 +11,6 @@ FROM golang:alpine as builder
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk && update-ca-certificates
 
-# Create appuser
-RUN adduser -D -g '' appuser
-
 WORKDIR /build
 
 ENV GO111MODULE on
@@ -37,9 +34,6 @@ COPY --from=builder /etc/passwd /etc/passwd
 
 # Copy our static executable
 COPY --from=builder /build/mbmd /go/bin/mbmd
-
-# Use an unprivileged user.
-USER appuser
 
 EXPOSE 8080
 
