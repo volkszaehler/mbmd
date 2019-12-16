@@ -61,7 +61,7 @@ func (hr *HomieRunner) cloneOptions() *MQTT.ClientOptions {
 	opt.SetPassword(hr.options.Password)
 	opt.SetClientID(hr.options.ClientID)
 	opt.SetCleanSession(hr.options.CleanSession)
-	opt.SetAutoReconnect(true)
+	opt.SetAutoReconnect(hr.options.AutoReconnect)
 
 	for _, b := range hr.options.Servers {
 		opt.AddBroker(b.String())
