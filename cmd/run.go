@@ -181,6 +181,9 @@ func checkVersion() {
 
 func run(cmd *cobra.Command, args []string) {
 	log.Printf("mbmd %s (%s)", server.Version, server.Commit)
+	if len(args) > 0 {
+		log.Fatalf("excess arguments, aborting: %v", args)
+	}
 	go checkVersion()
 
 	confHandler := NewDeviceConfigHandler()
@@ -189,7 +192,7 @@ func run(cmd *cobra.Command, args []string) {
 	defaultDevice := viper.GetString("adapter")
 	if defaultDevice != "" {
 		confHandler.DefaultDevice = defaultDevice
-		confHandler.CreateAdapter(defaultDevice, viper.GetInt("baudrate"), viper.GetString("comset"))
+		confHandler.ConnectionManager(defaultDevice, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"))
 	}
 
 	// create devices from command line
@@ -213,7 +216,7 @@ func run(cmd *cobra.Command, args []string) {
 		if len(devices) == 0 {
 			// add adapters from configuration
 			for _, a := range conf.Adapters {
-				confHandler.CreateAdapter(a.Device, a.Baudrate, a.Comset)
+				confHandler.ConnectionManager(a.Device, a.RTU, a.Baudrate, a.Comset)
 			}
 
 			// add devices from configuration

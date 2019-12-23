@@ -25,12 +25,19 @@ adapters:
 - device: /dev/ttyUSB0
   baudrate: 9600
   comset: 8N1 # "8E1" needs be quoted as string or will error
+- device: 192.168.0.7:23
+  rtu: true # Modbus RS485 to Ethernet converter uses RTU over TCP
 
 # list of devices
 devices:
-- type: sdm
+- name: sdm1
+  type: sdm
   id: 1
   adapter: /dev/ttyUSB0
+- name: sdm2
+  type: sdm
+  id: 1
+  adapter: 192.168.0.7:23
 - name: sma1
   type: sunspec
   id: 126
