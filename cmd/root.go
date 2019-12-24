@@ -53,6 +53,13 @@ The default adapter can be overridden per device`,
 		`Communication parameters for default adapter, either 8N1 or 8E1.
 Only applicable if the default adapter is an RTU device`,
 	)
+	rootCmd.PersistentFlags().Bool(
+		"rtu",
+		false,
+		`Use RTU over TCP for default adapter.
+Typically used with RS485 to Ethernet adapters that don't perform protocol conversion (e.g. USR-TCP232).
+Only applicable if the default adapter is a TCP connection`,
+	)
 	rootCmd.PersistentFlags().BoolP(
 		"help", "h",
 		false,
