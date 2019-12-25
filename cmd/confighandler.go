@@ -18,6 +18,7 @@ import (
 type Config struct {
 	commandLine `mapstructure:",squash"` // for completeness
 	API         string
+	Rate        time.Duration
 	Mqtt        MqttConfig
 	Influx      InfluxConfig
 	Adapters    []AdapterConfig
@@ -48,6 +49,7 @@ type commandLine struct {
 	MqttTopic         interface{} `mapstructure:"mqtt-topic"`
 	MqttUser          interface{} `mapstructure:"mqtt-user"`
 	Raw               interface{} `mapstructure:"raw"`
+	RTU               interface{} `mapstructure:"rtu"`
 	Verbose           interface{} `mapstructure:"verbose"`
 }
 
