@@ -42,7 +42,7 @@ var statusapp = new Vue({
 })
 
 var fixed = d3.format(".2f")
-var si = d3.format("~s")
+var si = d3.format(".3~s")
 
 $().ready(function () {
 	connectSocket();
