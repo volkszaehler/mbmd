@@ -85,18 +85,17 @@ func (q *QueryEngine) Run(
 	for _, h := range q.handlers {
 		wg.Add(1)
 		go func(h *Handler) {
-			ticker := time.NewTicker(rate)
-			defer ticker.Stop()
+			for {
+				// run handlers
+				h.Run(ctx, control, results)
 
-			for range ticker.C {
+				// wait for rate limit
 				select {
 				case <-ctx.Done():
 					// abort if context is cancelled
 					wg.Done()
 					return
-				default:
-					// run handlers
-					h.Run(ctx, control, results)
+				case <-time.After(rate):
 				}
 			}
 		}(h)
