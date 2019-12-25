@@ -29,4 +29,6 @@ require (
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 )
 
+replace github.com/grid-x/modbus v0.0.0-20191105145357-867898f52408 => github.com/andig/gridx-modbus v0.0.0-20191223181555-ff0a69a1ad97
+
 go 1.13

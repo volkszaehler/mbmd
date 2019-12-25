@@ -128,13 +128,17 @@ func printModel(m *smdx.ModelElement) {
 }
 
 func inspect(cmd *cobra.Command, args []string) {
+	if len(args) > 0 {
+		log.Fatalf("excess arguments, aborting: %v", args)
+	}
+
 	confHandler := NewDeviceConfigHandler()
 
 	// create default adapter from configuration
 	defaultDevice := viper.GetString("adapter")
 	if defaultDevice != "" {
 		confHandler.DefaultDevice = defaultDevice
-		confHandler.CreateAdapter(defaultDevice, viper.GetInt("baudrate"), viper.GetString("comset"))
+		confHandler.ConnectionManager(defaultDevice, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"))
 	}
 
 	// create devices from command line
