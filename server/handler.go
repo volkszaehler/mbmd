@@ -47,8 +47,11 @@ func (h *Handler) Run(
 	results chan<- QuerySnip,
 ) {
 	h.Manager.All(func(id uint8, dev meters.Device) {
-		if sleepIsCancelled(ctx, 0) {
+		// abort if context is cancelled
+		select {
+		case <-ctx.Done():
 			return
+		default:
 		}
 
 		// select device
@@ -87,7 +90,12 @@ func (h *Handler) initializeDevice(
 	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
 		if _, partial := err.(meters.SunSpecPartiallyInitialized); !partial {
 			log.Printf("initializing device %s failed: %v", uniqueID, err)
-			sleepIsCancelled(ctx, initDelay)
+
+			// wait for error to settle
+			ctx, cancel := context.WithTimeout(ctx, initDelay)
+			defer cancel()
+			<-ctx.Done()
+
 			return nil, err
 		}
 		log.Println(err) // log error but continue
@@ -150,8 +158,12 @@ func (h *Handler) queryDevice(
 
 		status.Errors++
 		log.Printf("device %s did not respond (%d/%d)", uniqueID, retry+1, maxRetry)
-		if sleepIsCancelled(ctx, retryDelay) {
+
+		// wait for device to settle after error
+		select {
+		case <-ctx.Done():
 			return
+		case <-time.After(retryDelay):
 		}
 	}
 
