@@ -3,8 +3,7 @@
 ############################
 # STEP 1 build executable binary
 ############################
-# golang alpine 1.11.5
-FROM golang:alpine as builder
+FROM golang:1.13-alpine as builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -12,11 +11,6 @@ FROM golang:alpine as builder
 RUN apk update && apk add --no-cache git ca-certificates tzdata alpine-sdk && update-ca-certificates
 
 WORKDIR /build
-
-ENV GO111MODULE on
-ENV GOPROXY https://proxy.golang.org
-COPY go.* ./
-RUN go mod download
 
 COPY . .
 RUN make install
@@ -37,5 +31,5 @@ COPY --from=builder /build/mbmd /go/bin/mbmd
 
 EXPOSE 8080
 
-# Run the binary.
-CMD /go/bin/mbmd
+# Run the binary
+ENTRYPOINT ["/go/bin/mbmd"]

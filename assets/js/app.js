@@ -5,6 +5,18 @@ var dataapp = new Vue({
 		meters: {},
 		message: 'Loading...'
 	},
+	computed: {
+		// return meters sorted by name
+		sortedMeters: function() {
+			var devs = Object.keys(this.meters);
+			devs.sort();
+			var res = {};
+			devs.forEach(function(key) {
+				res[key] = this.meters[key];
+			}, this);
+			return res;
+		}
+	},
 	methods: {
 		// populated returns true if it was called with any non-null argumnt
 		populated: function () {
@@ -42,7 +54,7 @@ var statusapp = new Vue({
 })
 
 var fixed = d3.format(".2f")
-var si = d3.format("~s")
+var si = d3.format(".3~s")
 
 $().ready(function () {
 	connectSocket();
@@ -72,7 +84,6 @@ function updateTime(data) {
 function updateStatus(status) {
 	var id = status["Device"]
 	status["Status"] = status["Online"] ? "online" : "offline"
-	console.log(status)
 
 	// update data table
 	var dict = statusapp.meters[id] || {}

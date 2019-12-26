@@ -37,7 +37,9 @@ func bindPflagsWithExceptions(flags *pflag.FlagSet, exceptions ...string) {
 				return
 			}
 		}
-		_ = viper.BindPFlag(flag.Name, flag)
+		if err := viper.BindPFlag(flag.Name, flag); err != nil {
+			log.Fatal(err)
+		}
 	})
 }
 
@@ -64,6 +66,11 @@ To use an adapter different from default, append RTU device or TCP address separ
 If the adapter is a TCP connection (identified by :port), the device type (SUNS) is ignored and
 any type is considered valid.
   Example: -d SDM:1@/dev/USB11 -d SMA:126@localhost:502`,
+	)
+	runCmd.PersistentFlags().DurationP(
+		"rate", "r",
+		time.Second,
+		"Rate limit. Devices will not be queried more often than rate limit.",
 	)
 	runCmd.PersistentFlags().String(
 		"api",
@@ -174,6 +181,9 @@ func checkVersion() {
 
 func run(cmd *cobra.Command, args []string) {
 	log.Printf("mbmd %s (%s)", server.Version, server.Commit)
+	if len(args) > 0 {
+		log.Fatalf("excess arguments, aborting: %v", args)
+	}
 	go checkVersion()
 
 	confHandler := NewDeviceConfigHandler()
@@ -182,7 +192,7 @@ func run(cmd *cobra.Command, args []string) {
 	defaultDevice := viper.GetString("adapter")
 	if defaultDevice != "" {
 		confHandler.DefaultDevice = defaultDevice
-		confHandler.CreateAdapter(defaultDevice, viper.GetInt("baudrate"), viper.GetString("comset"))
+		confHandler.ConnectionManager(defaultDevice, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"))
 	}
 
 	// create devices from command line
@@ -206,7 +216,7 @@ func run(cmd *cobra.Command, args []string) {
 		if len(devices) == 0 {
 			// add adapters from configuration
 			for _, a := range conf.Adapters {
-				confHandler.CreateAdapter(a.Device, a.Baudrate, a.Comset)
+				confHandler.ConnectionManager(a.Device, a.RTU, a.Baudrate, a.Comset)
 			}
 
 			// add devices from configuration
@@ -308,7 +318,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	go qe.Run(ctx, cc, rc)
+	go qe.Run(ctx, viper.GetDuration("rate"), cc, rc)
 
 	// wait for signal on exit channel and cancel context
 	exit := make(chan os.Signal, 1)

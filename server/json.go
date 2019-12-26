@@ -7,17 +7,15 @@ import (
 	"sort"
 )
 
-// apiData combines readings with associated device id for JSON encoding
-// using kvslice it ensured order export of the readings map
+// apiData combines readings with timestamps and uses
+// kvslice to ensure ordered export of the readings map
 type apiData struct {
-	device   string
 	readings *Readings
 }
 
 // MarshalJSON creates device api json for export
 func (d apiData) MarshalJSON() ([]byte, error) {
 	res := kvslice{
-		{"Device", d.device},
 		{"Timestamp", d.readings.Timestamp},
 		{"Unix", d.readings.Timestamp.Unix()},
 	}

@@ -27,18 +27,6 @@ type QueryEngine struct {
 	re       *regexp.Regexp
 }
 
-// sleepIsCancelled waits for timeout to expire. If context is cancelled before
-// timeout expires, it will return early and indicate so by returning true.
-func sleepIsCancelled(ctx context.Context, timeout time.Duration) bool {
-	timer := time.After(timeout)
-	select {
-	case <-ctx.Done():
-		return true
-	case <-timer:
-		return false
-	}
-}
-
 // NewQueryEngine creates new query engine
 func NewQueryEngine(managers map[string]meters.Manager) *QueryEngine {
 	handlers := make(map[string]*Handler)
@@ -85,6 +73,7 @@ func (q *QueryEngine) DeviceDescriptorByID(id string) (res meters.DeviceDescript
 // Run executes the query engine to produce measurement results
 func (q *QueryEngine) Run(
 	ctx context.Context,
+	rate time.Duration,
 	control chan<- ControlSnip,
 	results chan<- QuerySnip,
 ) {
@@ -97,10 +86,16 @@ func (q *QueryEngine) Run(
 		wg.Add(1)
 		go func(h *Handler) {
 			for {
+				// run handlers
 				h.Run(ctx, control, results)
-				if sleepIsCancelled(ctx, time.Second) {
+
+				// wait for rate limit
+				select {
+				case <-ctx.Done():
+					// abort if context is cancelled
 					wg.Done()
 					return
+				case <-time.After(rate):
 				}
 			}
 		}(h)

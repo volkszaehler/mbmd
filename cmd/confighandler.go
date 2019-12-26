@@ -18,6 +18,7 @@ import (
 type Config struct {
 	commandLine `mapstructure:",squash"` // for completeness
 	API         string
+	Rate        time.Duration
 	Mqtt        MqttConfig
 	Influx      InfluxConfig
 	Adapters    []AdapterConfig
@@ -48,6 +49,7 @@ type commandLine struct {
 	MqttTopic         interface{} `mapstructure:"mqtt-topic"`
 	MqttUser          interface{} `mapstructure:"mqtt-user"`
 	Raw               interface{} `mapstructure:"raw"`
+	RTU               interface{} `mapstructure:"rtu"`
 	Verbose           interface{} `mapstructure:"verbose"`
 }
 
@@ -77,6 +79,7 @@ type InfluxConfig struct {
 // AdapterConfig describes device communication parameters
 type AdapterConfig struct {
 	Device   string
+	RTU      bool
 	Baudrate int
 	Comset   string
 }
@@ -104,12 +107,18 @@ func NewDeviceConfigHandler() *DeviceConfigHandler {
 }
 
 // createConnection parses adapter string to create TCP or RTU connection
-func createConnection(device string, baudrate int, comset string) (res meters.Connection) {
+func createConnection(device string, rtu bool, baudrate int, comset string) (res meters.Connection) {
 	if device == "mock" {
 		res = meters.NewMock(device) // mocked connection
 	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
-		log.Printf("config: creating TCP connection for %s", device)
-		res = meters.NewTCP(device) // tcp connection
+		if rtu {
+			// special case: RTU over TCP
+			log.Printf("config: creating RTU over TCP connection for %s", device)
+			res = meters.NewRTUOverTCP(device) // tcp connection
+		} else {
+			log.Printf("config: creating TCP connection for %s", device)
+			res = meters.NewTCP(device) // tcp connection
+		}
 	} else {
 		log.Printf("config: creating RTU connection for %s (%dbaud, %s)", device, baudrate, comset)
 		if baudrate == 0 || comset == "" {
@@ -123,23 +132,10 @@ func createConnection(device string, baudrate int, comset string) (res meters.Co
 	return res
 }
 
-// CreateAdapter creates a connection handler for given adapter configuration.
-// While connectionManager does the same it is not able to configure the connection.
-func (conf *DeviceConfigHandler) CreateAdapter(connSpec string, baudrate int, comset string) meters.Manager {
+func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
-		conn := createConnection(connSpec, baudrate, comset)
-		manager = meters.NewManager(conn)
-		conf.Managers[connSpec] = manager
-	}
-
-	return manager
-}
-
-func (conf *DeviceConfigHandler) connectionManager(connSpec string) meters.Manager {
-	manager, ok := conf.Managers[connSpec]
-	if !ok {
-		conn := createConnection(connSpec, 0, "")
+		conn := createConnection(connSpec, rtu, baudrate, comset)
 		manager = meters.NewManager(conn)
 		conf.Managers[connSpec] = manager
 	}
@@ -155,7 +151,7 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 	meterType = strings.ToUpper(meterType)
 
 	var isSunspec bool
-	sunspecTypes := []string{"KOSTAL", "SE", "SMA", "SOLAREDGE", "SUNS", "SUNSPEC"}
+	sunspecTypes := []string{"FRONIUS", "KOSTAL", "KACO", "SE", "SMA", "SOLAREDGE", "SUNS", "SUNSPEC"}
 	for _, t := range sunspecTypes {
 		if t == meterType {
 			isSunspec = true
@@ -177,6 +173,12 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 	return meter
 }
 
+// isRTUDevice checks if type is a known RTU device type
+func (conf *DeviceConfigHandler) isRTUDevice(meterType string) bool {
+	_, ok := rs485.Producers[strings.ToUpper(meterType)]
+	return ok
+}
+
 // CreateDevice creates new device and adds it to the connection manager
 func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 	if devConf.Adapter == "" {
@@ -191,7 +193,10 @@ func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 		}
 	}
 
-	manager := conf.connectionManager(devConf.Adapter)
+	manager, ok := conf.Managers[devConf.Adapter]
+	if !ok {
+		log.Fatalf("Missing adapter configuration for device %v", devConf)
+	}
 	meter := conf.createDeviceForManager(manager, devConf.Type)
 
 	if err := manager.Add(devConf.ID, meter); err != nil {
@@ -217,7 +222,6 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 		log.Fatalf("Cannot parse connect string- missing physical device or connection for %s. See -h for help.", deviceDef)
 	}
 
-	manager := conf.connectionManager(connSpec)
 	meterSplit := strings.Split(meterDef, ":")
 	if len(meterSplit) != 2 {
 		log.Fatalf("Cannot parse device definition: %s. See -h for help.", meterDef)
@@ -232,6 +236,11 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 	if err != nil {
 		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
+
+	// RTU flag is inferred if the device is of RTU type.
+	// It is used to implicitly create an RTUOverTCP instead of a TCP connection
+	rtu := conf.isRTUDevice(meterType)
+	manager := conf.ConnectionManager(connSpec, rtu, 0, "")
 
 	meter := conf.createDeviceForManager(manager, meterType)
 	if err := manager.Add(uint8(id), meter); err != nil {

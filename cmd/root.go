@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -52,6 +53,13 @@ The default adapter can be overridden per device`,
 		`Communication parameters for default adapter, either 8N1 or 8E1.
 Only applicable if the default adapter is an RTU device`,
 	)
+	rootCmd.PersistentFlags().Bool(
+		"rtu",
+		false,
+		`Use RTU over TCP for default adapter.
+Typically used with RS485 to Ethernet adapters that don't perform protocol conversion (e.g. USR-TCP232).
+Only applicable if the default adapter is a TCP connection`,
+	)
 	rootCmd.PersistentFlags().BoolP(
 		"help", "h",
 		false,
@@ -69,7 +77,9 @@ Only applicable if the default adapter is an RTU device`,
 	)
 
 	// bind command line options
-	_ = viper.BindPFlags(rootCmd.PersistentFlags())
+	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set

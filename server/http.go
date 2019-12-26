@@ -58,7 +58,8 @@ func (h *Httpd) allDevicesHandler(
 ) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ids := h.mc.SortedIDs()
-		res := make([]apiData, 0)
+		res := make(map[string]apiData)
+
 		for _, id := range ids {
 			readings, err := readingsProvider(id)
 			if err != nil {
@@ -66,8 +67,8 @@ func (h *Httpd) allDevicesHandler(
 				continue
 			}
 
-			data := apiData{device: id, readings: readings}
-			res = append(res, data)
+			data := apiData{readings: readings}
+			res[id] = data
 		}
 
 		if len(res) == 0 {
@@ -102,7 +103,7 @@ func (h *Httpd) singleDeviceHandler(
 			return
 		}
 
-		data := apiData{device: id, readings: readings}
+		data := apiData{readings: readings}
 
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(data); err != nil {

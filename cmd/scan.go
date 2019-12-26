@@ -57,13 +57,17 @@ func (v validator) check(f float64) bool {
 }
 
 func scan(cmd *cobra.Command, args []string) {
+	if len(args) > 0 {
+		log.Fatalf("excess arguments, aborting: %v", args)
+	}
+
 	// create connection
 	adapter := viper.GetString("adapter")
 	if adapter == "" {
-		log.Fatal("Missing adapter configuration")
+		log.Fatal("missing adapter configuration")
 	}
 
-	conn := createConnection(adapter, viper.GetInt("baudrate"), viper.GetString("comset"))
+	conn := createConnection(adapter, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"))
 	client := conn.ModbusClient()
 
 	// raw log
