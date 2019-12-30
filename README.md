@@ -236,7 +236,7 @@ manuals for definitive guidance):
 | SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
 | ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
 | BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
-| KOSTAL Smart Ene | 3 | + | + | + | + | - | - | - | - |
+| KOSTAL Smart Energy Meter | 3 | + | + | + | + | - | - | - | - |
 
 - **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
 You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
