@@ -19,6 +19,7 @@ func NewTCPClientHandler(device string) *modbus.TCPClientHandler {
 
 	// set default timings
 	handler.Timeout = 1 * time.Second
+	handler.IdleTimeout = 5 * time.Second
 	handler.ProtocolRecoveryTimeout = 10 * time.Second
 	handler.LinkRecoveryTimeout = 15 * time.Second
 
