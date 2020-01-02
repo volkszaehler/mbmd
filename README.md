@@ -262,7 +262,7 @@ this as the meter ID.
 - **SBC ALE3**: This compact Saia Burgess Controls meter is comparable to the SDM630.
 It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
 - **BE MPM3PM**: Compact (4TE) three phase meter.
-- **KOSTAL Smart Energy Meter**: Import Export of total apparent energy is currently not implemented.
+- **KOSTAL Smart Energy Meter**: Slave device for Kostal grid inverters. Known [bug](https://github.com/volkszaehler/mbmd/pull/61#issuecomment-570081618) in inverter firmware with Total Export Energy.
 
 ## Modbus TCP Grid Inverters
 
