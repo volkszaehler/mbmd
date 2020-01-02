@@ -29,6 +29,7 @@ Modbus communication is possible over RS485 connections as well as TCP sockets.
 You'll need:
 * A supported Modbus/RTU smart meter OR an supported Modbus/TCP SunSpec-compatible grid inverter.
 * In case of Modbus/RTU: A USB RS485 adapter. See [USB-ISO-RS485 project](https://github.com/gonium/usb-iso-rs485) for a home-grown adapter.
+* Optionally an RS485 to Ethernet converter (see [SO discussion](https://stackoverflow.com/questions/59459877/is-rtu-over-tcp-a-spec-conforming-modbus-application))
 
 
 ## Installation
@@ -58,12 +59,20 @@ The full documentation is available in the [docs](docs/mbmd.md) folder.
 A typical invocation looks like this:
 
     $ ./bin/mbmd run -a /dev/ttyUSB0 -d janitza:26,sdm:1
-    2017/01/25 16:34:26 Connecting to RTU via /dev/ttyUSB0
-    2017/01/25 16:34:26 Starting API at :8080
+    2017/01/25 16:34:26 config: creating RTU connection via /dev/ttyUSB0 (9600baud, 8N1)
+    2017/01/25 16:34:26 httpd: starting api at :8080
 
 This call queries a Janitza B23 meter with ID 26 and an Eastron SDM
 meter at ID 1. Not all devices are by default configured to use ID 1.
 The default device IDs depend on the meter type and documented in the meter's manual.
+
+To use RTU devices with RS485/Ethernet adapters, add the `--rtu` switch to configure `mbmd` to use the TCP connection with RTU data format:
+
+	❯ ./bin/mbmd run -a rs485.fritz.box:23 --rtu -d sdm:1
+	2020/01/02 10:43:53 mbmd unknown version (unknown commit)
+	2020/01/02 10:43:53 config: creating RTU over TCP connection for rs485.fritz.box:23
+	2020/01/02 10:43:53 initialized device SDM1.1: {SDM Eastron SDM meters   }
+	2020/01/02 10:43:53 httpd: starting api at :8080
 
 If you use the ``-v`` commandline switch you can see
 modbus traffic and the current readings on the command line.  At
