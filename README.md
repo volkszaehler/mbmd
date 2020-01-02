@@ -236,6 +236,7 @@ manuals for definitive guidance):
 | SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
 | ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
 | BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
+| KOSTAL Smart Energy Meter | 3 | + | + | + | + | + | + | + | - |
 
 - **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
 You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
@@ -261,6 +262,7 @@ this as the meter ID.
 - **SBC ALE3**: This compact Saia Burgess Controls meter is comparable to the SDM630.
 It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
 - **BE MPM3PM**: Compact (4TE) three phase meter.
+- **KOSTAL Smart Energy Meter**: Import Export of total apparent energy is currently not implemented.
 
 ## Modbus TCP Grid Inverters
 
