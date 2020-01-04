@@ -58,8 +58,8 @@ func (s kvslice) MarshalJSON() ([]byte, error) {
 		// marshal value
 		var val []byte
 		switch kv.val.(type) {
-		case float64:
-			val = []byte(fmt.Sprintf("%.5g", kv.val))
+		case float32,float64:
+			val = []byte(fmt.Sprintf("%f", kv.val))
 		default:
 			if val, err = json.Marshal(kv.val); err != nil {
 				return nil, err
