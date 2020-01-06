@@ -121,6 +121,16 @@ const (
 	DCPower
 	HeatSinkTemp
 
+	// Strings
+	String1DCCurrent
+	String1DCVoltage
+	String1DCPower
+	String1DCEnergy
+	String2DCCurrent
+	String2DCVoltage
+	String2DCPower
+	String2DCEnergy
+
 	// Battery
 	ChargeState
 	BatteryVoltage
