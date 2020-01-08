@@ -122,14 +122,18 @@ const (
 	HeatSinkTemp
 
 	// Strings
-	String1DCCurrent
-	String1DCVoltage
-	String1DCPower
-	String1DCEnergy
-	String2DCCurrent
-	String2DCVoltage
-	String2DCPower
-	String2DCEnergy
+	String1Current
+	String1Voltage
+	String1Power
+	String1Energy
+	String2Current
+	String2Voltage
+	String2Power
+	String2Energy
+	String3Current
+	String3Voltage
+	String3Power
+	String3Energy
 
 	// Battery
 	ChargeState
@@ -214,6 +218,18 @@ var iec = map[Measurement][]string{
 	DCVoltage:        {"DC Voltage", "V"},
 	DCPower:          {"DC Power", "W"},
 	HeatSinkTemp:     {"Heat Sink Temperature", "°C"},
+	String1Current:   {"String 1 Current", "A"},
+	String1Voltage:   {"String 1 Voltage", "V"},
+	String1Power:     {"String 1 Power", "W"},
+	String1Energy:    {"String 1 Energy", "kWh"},
+	String2Current:   {"String 2 Current", "A"},
+	String2Voltage:   {"String 2 Voltage", "V"},
+	String2Power:     {"String 2 Power", "W"},
+	String2Energy:    {"String 2 Energy", "kWh"},
+	String3Current:   {"String 3 Current", "A"},
+	String3Voltage:   {"String 3 Voltage", "V"},
+	String3Power:     {"String 3 Power", "W"},
+	String3Energy:    {"String 3 Energy", "kWh"},
 	ChargeState:      {"Charge State", "%"},
 	BatteryVoltage:   {"Battery Voltage", "V"},
 }

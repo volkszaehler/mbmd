@@ -1,7 +1,7 @@
 module github.com/volkszaehler/mbmd
 
 require (
-	github.com/andig/gosunspec v0.0.0-20191120114235-802a74abaa2d
+	github.com/andig/gosunspec v0.0.0-20200108222136-fbcd239096dd
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect

@@ -85,13 +85,25 @@ func _() {
 	_ = x[DCVoltage-75]
 	_ = x[DCPower-76]
 	_ = x[HeatSinkTemp-77]
-	_ = x[ChargeState-78]
-	_ = x[BatteryVoltage-79]
+	_ = x[String1Current-78]
+	_ = x[String1Voltage-79]
+	_ = x[String1Power-80]
+	_ = x[String1Energy-81]
+	_ = x[String2Current-82]
+	_ = x[String2Voltage-83]
+	_ = x[String2Power-84]
+	_ = x[String2Energy-85]
+	_ = x[String3Current-86]
+	_ = x[String3Voltage-87]
+	_ = x[String3Power-88]
+	_ = x[String3Energy-89]
+	_ = x[ChargeState-90]
+	_ = x[BatteryVoltage-91]
 }
 
-const _Measurement_name = "FrequencyCurrentCurrentL1CurrentL2CurrentL3VoltageVoltageL1VoltageL2VoltageL3PowerPowerL1PowerL2PowerL3ImportPowerImportPowerL1ImportPowerL2ImportPowerL3ExportPowerExportPowerL1ExportPowerL2ExportPowerL3ReactivePowerReactivePowerL1ReactivePowerL2ReactivePowerL3ApparentPowerApparentPowerL1ApparentPowerL2ApparentPowerL3CosphiCosphiL1CosphiL2CosphiL3THDTHDL1THDL2THDL3SumSumT1SumT2SumL1SumL2SumL3ImportImportT1ImportT2ImportL1ImportL2ImportL3ExportExportT1ExportT2ExportL1ExportL2ExportL3ReactiveSumReactiveSumT1ReactiveSumT2ReactiveSumL1ReactiveSumL2ReactiveSumL3ReactiveImportReactiveImportT1ReactiveImportT2ReactiveImportL1ReactiveImportL2ReactiveImportL3ReactiveExportReactiveExportT1ReactiveExportT2ReactiveExportL1ReactiveExportL2ReactiveExportL3DCCurrentDCVoltageDCPowerHeatSinkTempChargeStateBatteryVoltage"
+const _Measurement_name = "FrequencyCurrentCurrentL1CurrentL2CurrentL3VoltageVoltageL1VoltageL2VoltageL3PowerPowerL1PowerL2PowerL3ImportPowerImportPowerL1ImportPowerL2ImportPowerL3ExportPowerExportPowerL1ExportPowerL2ExportPowerL3ReactivePowerReactivePowerL1ReactivePowerL2ReactivePowerL3ApparentPowerApparentPowerL1ApparentPowerL2ApparentPowerL3CosphiCosphiL1CosphiL2CosphiL3THDTHDL1THDL2THDL3SumSumT1SumT2SumL1SumL2SumL3ImportImportT1ImportT2ImportL1ImportL2ImportL3ExportExportT1ExportT2ExportL1ExportL2ExportL3ReactiveSumReactiveSumT1ReactiveSumT2ReactiveSumL1ReactiveSumL2ReactiveSumL3ReactiveImportReactiveImportT1ReactiveImportT2ReactiveImportL1ReactiveImportL2ReactiveImportL3ReactiveExportReactiveExportT1ReactiveExportT2ReactiveExportL1ReactiveExportL2ReactiveExportL3DCCurrentDCVoltageDCPowerHeatSinkTempString1CurrentString1VoltageString1PowerString1EnergyString2CurrentString2VoltageString2PowerString2EnergyString3CurrentString3VoltageString3PowerString3EnergyChargeStateBatteryVoltage"
 
-var _Measurement_index = [...]uint16{0, 9, 16, 25, 34, 43, 50, 59, 68, 77, 82, 89, 96, 103, 114, 127, 140, 153, 164, 177, 190, 203, 216, 231, 246, 261, 274, 289, 304, 319, 325, 333, 341, 349, 352, 357, 362, 367, 370, 375, 380, 385, 390, 395, 401, 409, 417, 425, 433, 441, 447, 455, 463, 471, 479, 487, 498, 511, 524, 537, 550, 563, 577, 593, 609, 625, 641, 657, 671, 687, 703, 719, 735, 751, 760, 769, 776, 788, 799, 813}
+var _Measurement_index = [...]uint16{0, 9, 16, 25, 34, 43, 50, 59, 68, 77, 82, 89, 96, 103, 114, 127, 140, 153, 164, 177, 190, 203, 216, 231, 246, 261, 274, 289, 304, 319, 325, 333, 341, 349, 352, 357, 362, 367, 370, 375, 380, 385, 390, 395, 401, 409, 417, 425, 433, 441, 447, 455, 463, 471, 479, 487, 498, 511, 524, 537, 550, 563, 577, 593, 609, 625, 641, 657, 671, 687, 703, 719, 735, 751, 760, 769, 776, 788, 802, 816, 828, 841, 855, 869, 881, 894, 908, 922, 934, 947, 958, 972}
 
 func (i Measurement) String() string {
 	i -= 1

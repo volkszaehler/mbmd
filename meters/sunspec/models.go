@@ -120,7 +120,7 @@ var opcodeMap = map[string]meters.Measurement{
 	// model160.DCA:      meters.String1DCCurrent,
 	// model160.DCV:      meters.String1DCVoltage,
 	// model160.DCW:      meters.String1DCPower,
-	model160.DCWH: meters.String1DCEnergy,
+	model160.DCWH: meters.String1Energy,
 	// model160.DCA:         meters.String2DCCurrent,
 	// model160.DCV:         meters.String2DCVoltage,
 	// model160.DCW:         meters.String2DCPower,
