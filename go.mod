@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.1
-	github.com/grid-x/modbus v0.0.0-20191105145357-867898f52408
+	github.com/grid-x/modbus v0.0.0-20200107204205-6fc73f7037b9
 	github.com/grid-x/serial v0.0.0-20191104121038-e24bc9bf6f08 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
@@ -28,7 +28,5 @@ require (
 	golang.org/x/tools v0.0.0-20191120143758-e97fc272220f
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 )
-
-replace github.com/grid-x/modbus v0.0.0-20191105145357-867898f52408 => github.com/andig/gridx-modbus v0.0.0-20191223181555-ff0a69a1ad97
 
 go 1.13
