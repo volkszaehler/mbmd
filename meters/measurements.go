@@ -122,18 +122,18 @@ const (
 	HeatSinkTemp
 
 	// Strings
-	String1Current
-	String1Voltage
-	String1Power
-	String1Energy
-	String2Current
-	String2Voltage
-	String2Power
-	String2Energy
-	String3Current
-	String3Voltage
-	String3Power
-	String3Energy
+	DCCurrentS1
+	DCVoltageS1
+	DCPowerS1
+	DCEnergyS1
+	DCCurrentS2
+	DCVoltageS2
+	DCPowerS2
+	DCEnergyS2
+	DCCurrentS3
+	DCVoltageS3
+	DCPowerS3
+	DCEnergyS3
 
 	// Battery
 	ChargeState
@@ -218,18 +218,18 @@ var iec = map[Measurement][]string{
 	DCVoltage:        {"DC Voltage", "V"},
 	DCPower:          {"DC Power", "W"},
 	HeatSinkTemp:     {"Heat Sink Temperature", "°C"},
-	String1Current:   {"String 1 Current", "A"},
-	String1Voltage:   {"String 1 Voltage", "V"},
-	String1Power:     {"String 1 Power", "W"},
-	String1Energy:    {"String 1 Energy", "kWh"},
-	String2Current:   {"String 2 Current", "A"},
-	String2Voltage:   {"String 2 Voltage", "V"},
-	String2Power:     {"String 2 Power", "W"},
-	String2Energy:    {"String 2 Energy", "kWh"},
-	String3Current:   {"String 3 Current", "A"},
-	String3Voltage:   {"String 3 Voltage", "V"},
-	String3Power:     {"String 3 Power", "W"},
-	String3Energy:    {"String 3 Energy", "kWh"},
+	DCCurrentS1:      {"String 1 Current", "A"},
+	DCVoltageS1:      {"String 1 Voltage", "V"},
+	DCPowerS1:        {"String 1 Power", "W"},
+	DCEnergyS1:       {"String 1 Generation", "kWh"},
+	DCCurrentS2:      {"String 2 Current", "A"},
+	DCVoltageS2:      {"String 2 Voltage", "V"},
+	DCPowerS2:        {"String 2 Power", "W"},
+	DCEnergyS2:       {"String 2 Generation", "kWh"},
+	DCCurrentS3:      {"String 3 Current", "A"},
+	DCVoltageS3:      {"String 3 Voltage", "V"},
+	DCPowerS3:        {"String 3 Power", "W"},
+	DCEnergyS3:       {"String 3 Generation", "kWh"},
 	ChargeState:      {"Charge State", "%"},
 	BatteryVoltage:   {"Battery Voltage", "V"},
 }

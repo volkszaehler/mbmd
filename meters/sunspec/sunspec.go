@@ -111,8 +111,8 @@ func (d *sunSpec) collectModels(device sunspec.Device) error {
 }
 
 func (d *sunSpec) relevantModelIds() []sunspec.ModelId {
-	modelIds := make([]sunspec.ModelId, 0, len(modelPoints))
-	for k := range modelPoints {
+	modelIds := make([]sunspec.ModelId, 0, len(modelMap))
+	for k := range modelMap {
 		modelIds = append(modelIds, sunspec.ModelId(k))
 	}
 
@@ -155,22 +155,18 @@ func (d *sunSpec) Probe(client modbus.Client) (res meters.MeasurementResult, err
 		pointID := model101.PhVphA
 		p := b.MustPoint(pointID)
 
-		if m, ok := opcodeMap[pointID]; !ok {
-			panic("sunspec: no measurement for point id " + pointID)
-		} else {
-			v := p.ScaledValue()
-			if math.IsNaN(v) {
-				return res, errors.Wrapf(err, "sunspec: could not read probe snip")
-			}
-
-			mr := meters.MeasurementResult{
-				Measurement: m,
-				Value:       v,
-				Timestamp:   time.Now(),
-			}
-
-			return mr, nil
+		v := p.ScaledValue()
+		if math.IsNaN(v) {
+			return res, errors.Wrapf(err, "sunspec: could not read probe snip")
 		}
+
+		mr := meters.MeasurementResult{
+			Measurement: meters.Current,
+			Value:       v,
+			Timestamp:   time.Now(),
+		}
+
+		return mr, nil
 	}
 
 	return res, fmt.Errorf("sunspec: could not find model for probe snip")
@@ -180,46 +176,51 @@ func (d *sunSpec) notInitilized() bool {
 	return len(d.models) == 0
 }
 
-func (d *sunSpec) Query(client modbus.Client) ([]meters.MeasurementResult, error) {
-	res := make([]meters.MeasurementResult, 0)
+func (d *sunSpec) convertPoint(b sunspec.Block, blockID int, pointID string, m meters.Measurement) (meters.MeasurementResult, error) {
+	p := b.MustPoint(pointID)
+	v := p.ScaledValue()
 
+	if math.IsNaN(v) {
+		return meters.MeasurementResult{}, errors.New("NaN value")
+	}
+
+	// apply scale factor for energy
+	if div, ok := dividerMap[m]; ok {
+		v /= div
+	}
+
+	mr := meters.MeasurementResult{
+		Measurement: m,
+		Value:       v,
+		Timestamp:   time.Now(),
+	}
+
+	return mr, nil
+}
+
+func (d *sunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
 	if d.notInitilized() {
 		return res, errors.New("sunspec: not initialized")
 	}
 
 	for _, model := range d.models {
-		// TODO catch panic
-		b := model.MustBlock(0)
-		if err := b.Read(); err != nil {
-			return res, err
-		}
+		blockID := 0
 
-		for _, pointID := range modelPoints[int(model.Id())] {
-			// TODO catch panic
-			p := b.MustPoint(pointID)
+		model.Do(func(b sunspec.Block) {
+			defer func() { blockID++ }()
 
-			if m, ok := opcodeMap[pointID]; !ok {
-				panic("sunspec: no measurement for point id " + pointID)
-			} else {
-				v := p.ScaledValue()
-				if math.IsNaN(v) {
-					continue
-				}
-
-				// apply scale factor for energy
-				if div, ok := dividerMap[m]; ok {
-					v /= div
-				}
-
-				mr := meters.MeasurementResult{
-					Measurement: m,
-					Value:       v,
-					Timestamp:   time.Now(),
-				}
-
-				res = append(res, mr)
+			if err = b.Read(); err != nil {
+				return
 			}
-		}
+
+			if blockPoints, ok := modelMap[model.Id()][blockID]; ok {
+				for pointID, m := range blockPoints {
+					if mr, err := d.convertPoint(b, blockID, pointID, m); err == nil {
+						res = append(res, mr)
+					}
+				}
+			}
+		})
 	}
 
 	return res, nil
