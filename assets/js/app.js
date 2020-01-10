@@ -1,5 +1,5 @@
 var dataapp = new Vue({
-	el: '#data',
+	el: '#realtime',
 	delimiters: ['${', '}'],
 	data: {
 		meters: {},
@@ -18,9 +18,9 @@ var dataapp = new Vue({
 		}
 	},
 	methods: {
-		// populated returns true if it was called with any non-null argumnt
-		populated: function () {
-			for(var i = 0; i<arguments.length; i++) {
+		// pop returns true if it was called with any non-null argumnt
+		pop: function () {
+			for(var i=0; i<arguments.length; i++) {
 				if (arguments[i] !== undefined && arguments[i] !== null && arguments[i] !== "") {
 					return true;
 				}
