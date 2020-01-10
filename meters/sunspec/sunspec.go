@@ -213,8 +213,8 @@ func (d *sunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 				return
 			}
 
-			if blockPoints, ok := modelMap[model.Id()][blockID]; ok {
-				for pointID, m := range blockPoints {
+			if bps, ok := modelMap[model.Id()][blockID]; ok {
+				for pointID, m := range bps {
 					if mr, err := d.convertPoint(b, blockID, pointID, m); err == nil {
 						res = append(res, mr)
 					}

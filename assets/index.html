@@ -53,26 +53,38 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr class="d-flex" v-if="populated(m.DCVoltage)">
+						<tr class="d-flex" v-if="populated(m.DCVoltageS1, m.DCVoltageS2, m.DCVoltageS3, m.DCVoltage)">
 							<td class="col-3">DC Voltage (V)</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-3">${ m.DCVoltage }</td>
+							<td class="col-2" v-if="populated(m.DCVoltageS1)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.DCVoltageS2)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.DCVoltageS3)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.DCVoltage)">${ m.DCVoltage }</td>
+							<td class="col-2" v-else>&mdash;</td>
 						</tr>
-						<tr class="d-flex" v-if="populated(m.DCCurrent)">
+						<tr class="d-flex" v-if="populated(m.DCCurrentS1, m.DCCurrentS2, m.DCCurrentS3, m.DCCurrent)">
 							<td class="col-3">DC Current (A)</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-3">${ m.DCCurrent }</td>
+							<td class="col-2" v-if="populated(m.DCCurrentS1)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.DCCurrentS2)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.DCCurrentS3)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.DCCurrent)">${ m.DCCurrent }</td>
+							<td class="col-3" v-else>${ (val(m.DCCurrentS1) + val(m.DCCurrentS2) + val(m.DCCurrentS3)).toFixed(2) }</td>
 						</tr>
-						<tr class="d-flex" v-if="populated(m.DCPower)">
+						<tr class="d-flex" v-if="populated(m.DCPowerS1, m.DCPowerS2, m.DCPowerS3, m.DCPower)">
 							<td class="col-3">DC Power (W)</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-2">&mdash;</td>
-							<td class="col-3">${ m.DCPower }</td>
+							<td class="col-2" v-if="populated(m.DCPowerS1)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.DCPowerS2)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-2" v-if="populated(m.DCPowerS3)">&mdash;</td>
+							<td class="col-2" v-else>&mdash;</td>
+							<td class="col-3" v-if="populated(m.DCPower)">${ m.DCPower }</td>
+							<td class="col-3" v-else>${ (val(m.DCPowerS1) + val(m.DCPowerS2) + val(m.DCPowerS3)).toFixed(2) }</td>
 						</tr>
 						<tr class="d-flex" v-if="populated(m.VoltageL1, m.VoltageL2, m.VoltageL3, m.Voltage)">
 							<td class="col-3">Voltage (V)</td>
