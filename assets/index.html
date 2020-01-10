@@ -85,6 +85,20 @@
 						<td class="col-3" v-if="pop(m.DCPower)">${ m.DCPower }</td>
 						<td class="col-3" v-else>${ (val(m.DCPowerS1) + val(m.DCPowerS2) + val(m.DCPowerS3)).toFixed(2) }</td>
 					</tr>
+					<tr class="d-flex" v-if="pop(m.ChargeState)">
+						<td class="col-3">Charge State (%)</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-3">${ m.ChargeState }</td>
+					</tr>
+					<tr class="d-flex" v-if="pop(m.BatteryVoltage)">
+						<td class="col-3">Battery Voltage (V)</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-3">${ m.BatteryVoltage }</td>
+					</tr>
 					<tr class="d-flex" v-if="pop(m.VoltageL1, m.VoltageL2, m.VoltageL3, m.Voltage)">
 						<td class="col-3">Voltage (V)</td>
 						<td class="col-2" v-if="pop(m.VoltageL1)">${ m.VoltageL1 }</td>
