@@ -72,7 +72,7 @@
 						<td class="col-2" v-if="pop(m.DCCurrentS3)">${ m.DCCurrentS3 }</td>
 						<td class="col-2" v-else>&mdash;</td>
 						<td class="col-3" v-if="pop(m.DCCurrent)">${ m.DCCurrent }</td>
-						<td class="col-3" v-else>${ (val(m.DCCurrentS1) + val(m.DCCurrentS2) + val(m.DCCurrentS3)).toFixed(2) }</td>
+						<td class="col-3" v-else>&mdash;</td>
 					</tr>
 					<tr class="d-flex" v-if="pop(m.DCPowerS1, m.DCPowerS2, m.DCPowerS3, m.DCPower)">
 						<td class="col-3">DC Power (W)</td>
@@ -83,7 +83,7 @@
 						<td class="col-2" v-if="pop(m.DCPowerS3)">${ m.DCPowerS3 }</td>
 						<td class="col-2" v-else>&mdash;</td>
 						<td class="col-3" v-if="pop(m.DCPower)">${ m.DCPower }</td>
-						<td class="col-3" v-else>${ (val(m.DCPowerS1) + val(m.DCPowerS2) + val(m.DCPowerS3)).toFixed(2) }</td>
+						<td class="col-3" v-else>&mdash;</td>
 					</tr>
 					<tr class="d-flex" v-if="pop(m.ChargeState)">
 						<td class="col-3">Charge State (%)</td>
