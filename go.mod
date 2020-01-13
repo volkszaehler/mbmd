@@ -14,7 +14,7 @@ require (
 	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/mjibson/esc v0.2.0
 	github.com/pelletier/go-toml v1.6.0 // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.0
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.6-0.20191019221741-77e4d5aecc4d
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
