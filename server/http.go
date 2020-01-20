@@ -18,7 +18,7 @@ import (
 
 const devAssets = false
 
-//go:generate esc -private -o assets.go -pkg server -modtime 1566640112 -prefix ../assets ../assets
+//go:generate esc -private -o assets.go -pkg server -modtime 1566640112 -ignore .DS_Store -prefix ../assets ../assets
 
 // Httpd is an http server
 type Httpd struct {
