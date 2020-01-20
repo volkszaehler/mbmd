@@ -52,10 +52,12 @@ func NewDZGProducer() Producer {
 	return &DZGProducer{Opcodes: ops}
 }
 
+// Type implements Producer interface
 func (p *DZGProducer) Type() string {
 	return METERTYPE_DZG
 }
 
+// Description implements Producer interface
 func (p *DZGProducer) Description() string {
 	return "DZG Metering GmbH DVH4013 meters"
 }
@@ -76,10 +78,12 @@ func (p *DZGProducer) snip(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
+// Probe implements Producer interface
 func (p *DZGProducer) Probe() Operation {
 	return p.snip(VoltageL1, 100)
 }
 
+// Produce implements Producer interface
 func (p *DZGProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,

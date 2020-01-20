@@ -60,10 +60,12 @@ func NewABBProducer() Producer {
 	return &ABBProducer{Opcodes: ops}
 }
 
+// Type implements Producer interface
 func (p *ABBProducer) Type() string {
 	return METERTYPE_ABB
 }
 
+// Description implements Producer interface
 func (p *ABBProducer) Description() string {
 	return "ABB A/B-Series meters"
 }
@@ -132,10 +134,12 @@ func (p *ABBProducer) snip64u(iec Measurement, scaler ...float64) Operation {
 	return p.snip(iec, 4, unsigned, RTUUint64ToFloat64, scaler...)
 }
 
+// Probe implements Producer interface
 func (p *ABBProducer) Probe() Operation {
 	return p.snip32u(VoltageL1, 10)
 }
 
+// Produce implements Producer interface
 func (p *ABBProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,

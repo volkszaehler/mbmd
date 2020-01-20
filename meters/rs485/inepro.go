@@ -92,10 +92,12 @@ func NewIneproProducer() Producer {
 	return &IneproProducer{Opcodes: ops}
 }
 
+// Type implements Producer interface
 func (p *IneproProducer) Type() string {
 	return METERTYPE_INEPRO
 }
 
+// Description implements Producer interface
 func (p *IneproProducer) Description() string {
 	return "Inepro Metering Pro 380"
 }
@@ -116,10 +118,12 @@ func (p *IneproProducer) snip(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
+// Probe implements Producer interface
 func (p *IneproProducer) Probe() Operation {
 	return p.snip(VoltageL1)
 }
 
+// Produce implements Producer interface
 func (p *IneproProducer) Produce() (res []Operation) {
 	for op := range p.Opcodes {
 		switch op {
