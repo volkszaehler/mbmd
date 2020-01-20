@@ -44,10 +44,12 @@ func NewJanitzaProducer() Producer {
 	return &JanitzaProducer{Opcodes: ops}
 }
 
+// Type implements Producer interface
 func (p *JanitzaProducer) Type() string {
 	return METERTYPE_JANITZA
 }
 
+// Description implements Producer interface
 func (p *JanitzaProducer) Description() string {
 	return "Janitza B-Series meters"
 }
@@ -63,10 +65,12 @@ func (p *JanitzaProducer) snip(iec Measurement) Operation {
 	return snip
 }
 
+// Probe implements Producer interface
 func (p *JanitzaProducer) Probe() Operation {
 	return p.snip(VoltageL1)
 }
 
+// Produce implements Producer interface
 func (p *JanitzaProducer) Produce() (res []Operation) {
 	for op := range p.Opcodes {
 		res = append(res, p.snip(op))

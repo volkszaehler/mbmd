@@ -48,10 +48,12 @@ func NewMPM3MPProducer() Producer {
 	return &MPM3MPProducer{Opcodes: ops}
 }
 
+// Type implements Producer interface
 func (p *MPM3MPProducer) Type() string {
 	return METERTYPE_BE
 }
 
+// Description implements Producer interface
 func (p *MPM3MPProducer) Description() string {
 	return "Bernecker Engineering MPM3PM meters"
 }
@@ -82,10 +84,12 @@ func (p *MPM3MPProducer) snip32i(iec Measurement, scaler ...float64) Operation {
 	return p.snip(iec, 2, RTUInt32ToFloat64, scaler...)
 }
 
+// Probe implements Producer interface
 func (p *MPM3MPProducer) Probe() Operation {
 	return p.snip32u(VoltageL1, 10)
 }
 
+// Produce implements Producer interface
 func (p *MPM3MPProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,

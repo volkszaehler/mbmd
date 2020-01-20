@@ -49,14 +49,17 @@ func NewSBCProducer() Producer {
 	return &SBCProducer{Opcodes: ops}
 }
 
+// Type implements Producer interface
 func (p *SBCProducer) Type() string {
 	return METERTYPE_SBC
 }
 
+// Description implements Producer interface
 func (p *SBCProducer) Description() string {
 	return "Saia Burgess Controls ALE3 meters"
 }
 
+// snip creates modbus operation
 func (p *SBCProducer) snip(iec Measurement, readlen uint16) Operation {
 	return Operation{
 		FuncCode: ReadHoldingReg,
@@ -94,6 +97,7 @@ func (p *SBCProducer) Probe() Operation {
 	return p.snip16(VoltageL1)
 }
 
+// Produce implements Producer interface
 func (p *SBCProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,
