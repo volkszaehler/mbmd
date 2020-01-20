@@ -32,6 +32,11 @@ type Producer interface {
 	Probe() Operation
 }
 
+// Identificator implements device recognition logic
+type Identificator interface {
+	Identify(bytes []byte) bool
+}
+
 // Opcodes map measurements to physical registers
 type Opcodes map[meters.Measurement]uint16
 

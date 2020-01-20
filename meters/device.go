@@ -31,7 +31,7 @@ type Device interface {
 
 	// Probe tests if a basic register, typically VoltageL1, can be read.
 	// It requires that the client has the correct device id applied.
-	Probe(client modbus.Client) (MeasurementResult, error)
+	Probe(client modbus.Client) (bool, error)
 
 	// Query retrieves all registers that the device supports.
 	// It requires that the client has the correct device id applied.

@@ -17,6 +17,7 @@ type SBCProducer struct {
 func NewSBCProducer() Producer {
 	/**
 	 * Opcodes for Saia Burgess ALE3
+	 * https://www.sbc-support.com/uploads/tx_srcproducts/26-527_ENG_DS_EnergyMeter-ALE3-with-Modbus_01.pdf
 	 * http://datenblatt.stark-elektronik.de/saia_burgess/DE_DS_Energymeter-ALE3-with-Modbus.pdf
 	 */
 	ops := Opcodes{
@@ -93,8 +94,23 @@ func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
+// Identify implements Identifier interface
+func (p *SBCProducer) Identify(bytes []byte) bool {
+	const b = "ALD1" // single phase
+	const b = "ALE3" // three phase direct
+	const b = "AWE3" // three phase converter
+	"D5"             // oneway
+	"W5"             // twoway
+}
+
+// Probe implements Producer interface
 func (p *SBCProducer) Probe() Operation {
-	return p.snip16(VoltageL1)
+	// return p.snip16(VoltageL1)
+	return Operation{
+		FuncCode: ReadHoldingReg,
+		OpCode:   6,
+		ReadLen:  4,
+	}
 }
 
 // Produce implements Producer interface
