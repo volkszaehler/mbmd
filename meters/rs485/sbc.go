@@ -1,6 +1,12 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"encoding/binary"
+	"errors"
+	"fmt"
+
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register(NewSBCProducer)
@@ -11,12 +17,14 @@ const (
 )
 
 type SBCProducer struct {
+	typ string
 	Opcodes
 }
 
 func NewSBCProducer() Producer {
 	/**
 	 * Opcodes for Saia Burgess ALE3
+	 * https://www.sbc-support.com/uploads/tx_srcproducts/26-527_ENG_DS_EnergyMeter-ALE3-with-Modbus_01.pdf
 	 * http://datenblatt.stark-elektronik.de/saia_burgess/DE_DS_Energymeter-ALE3-with-Modbus.pdf
 	 */
 	ops := Opcodes{
@@ -46,7 +54,10 @@ func NewSBCProducer() Producer {
 		Power:         51, // scaler 100
 		ReactivePower: 52, // scaler 100
 	}
-	return &SBCProducer{Opcodes: ops}
+	return &SBCProducer{
+		typ:     "ALE3", // assume ALE3
+		Opcodes: ops,
+	}
 }
 
 // Type implements Producer interface
@@ -56,13 +67,46 @@ func (p *SBCProducer) Type() string {
 
 // Description implements Producer interface
 func (p *SBCProducer) Description() string {
-	return "Saia Burgess Controls ALE3 meters"
+	return "Saia Burgess " + p.typ
+}
+
+func (p *SBCProducer) initialize(client modbusClient, descriptor *DeviceDescriptor) error {
+	// model
+	op := p.Probe()
+	b, err := client.ReadHoldingRegisters(op.OpCode, op.ReadLen)
+	if err != nil {
+		return err
+	}
+
+	if !p.identify(b) {
+		return errors.New("could not recognize configured SBC device")
+	}
+
+	descriptor.Model = p.Description()
+
+	// fw version
+	b, err = client.ReadHoldingRegisters(0, 1)
+	if err != nil {
+		return err
+	}
+
+	descriptor.Version = fmt.Sprintf("%.1f", float64(binary.BigEndian.Uint32(b))/10)
+
+	// serial number
+	b, err = client.ReadHoldingRegisters(16, 2)
+	if err != nil {
+		return err
+	}
+
+	descriptor.Serial = fmt.Sprintf("%d", binary.BigEndian.Uint32(b))
+
+	return nil
 }
 
 // snip creates modbus operation
 func (p *SBCProducer) snip(iec Measurement, readlen uint16) Operation {
 	return Operation{
-		FuncCode: ReadHoldingReg,
+		FuncCode: readHoldingReg,
 		OpCode:   p.Opcode(iec) - 1, // adjust according to docs
 		ReadLen:  readlen,
 		IEC61850: iec,
@@ -93,12 +137,47 @@ func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
+// identify implements Identifier interface
+func (p *SBCProducer) identify(bytes []byte) bool {
+	if len(bytes) < 4 {
+		return false
+	}
+
+	switch string(bytes[:4]) {
+	case "ALD1", "ALE3", "AWE3":
+		p.typ = string(bytes[:4])
+	default:
+		return false
+	}
+
+	return true
+}
+
+// Probe implements Producer interface
 func (p *SBCProducer) Probe() Operation {
-	return p.snip16(VoltageL1)
+	return Operation{
+		FuncCode: readHoldingReg,
+		OpCode:   6,
+		ReadLen:  4,
+	}
 }
 
 // Produce implements Producer interface
 func (p *SBCProducer) Produce() (res []Operation) {
+	// single-phase meter
+	if p.typ == "ALD1" {
+		res = append(res,
+			p.snip16(VoltageL1),
+			p.snip16(CurrentL1, 10),
+			p.snip16(PowerL1, 100),
+			p.snip16(ReactivePowerL1, 100),
+			p.snip16(CosphiL1, 100),
+			p.snip32(Import, 100),
+		)
+
+		return res
+	}
+
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,
 	} {
@@ -112,7 +191,9 @@ func (p *SBCProducer) Produce() (res []Operation) {
 	}
 
 	for _, op := range []Measurement{
+		Power, ReactivePower,
 		PowerL1, PowerL2, PowerL3,
+		ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
 		CosphiL1, CosphiL2, CosphiL3,
 	} {
 		res = append(res, p.snip16(op, 100))

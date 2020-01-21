@@ -55,12 +55,12 @@ func (p *MPM3MPProducer) Type() string {
 
 // Description implements Producer interface
 func (p *MPM3MPProducer) Description() string {
-	return "Bernecker Engineering MPM3PM meters"
+	return "Bernecker Engineering MPM3PM"
 }
 
 func (p *MPM3MPProducer) snip(iec Measurement, readlen uint16, transform RTUTransform, scaler ...float64) Operation {
 	snip := Operation{
-		FuncCode:  ReadInputReg,
+		FuncCode:  readInputReg,
 		OpCode:    p.Opcodes[iec],
 		ReadLen:   readlen,
 		Transform: transform,

@@ -1,6 +1,8 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register(NewJanitzaProducer)
@@ -51,12 +53,16 @@ func (p *JanitzaProducer) Type() string {
 
 // Description implements Producer interface
 func (p *JanitzaProducer) Description() string {
-	return "Janitza B-Series meters"
+	return "Janitza MID B-Series"
+}
+
+func (p *JanitzaProducer) Initialize(client modbusClient, descriptor *DeviceDescriptor) error {
+	return initializeMID(client, descriptor)
 }
 
 func (p *JanitzaProducer) snip(iec Measurement) Operation {
 	snip := Operation{
-		FuncCode:  ReadHoldingReg,
+		FuncCode:  readHoldingReg,
 		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,

@@ -1,6 +1,7 @@
 package rs485
 
 import (
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -10,14 +11,55 @@ import (
 )
 
 const (
-	ReadHoldingReg = 3
-	ReadInputReg   = 4
+	// modbus operation types
+	readHoldingReg = 3
+	readInputReg   = 4
 )
 
+// modbusClient is the minimal interface that is usable by the initializer interface.
+// It is used to keep the producers free of modbus implementation dependencies.
+type modbusClient interface {
+	ReadHoldingRegisters(address, quantity uint16) (results []byte, err error)
+	ReadInputRegisters(address, quantity uint16) (results []byte, err error)
+}
+
+// identificator implements device recognition logic
+type identificator interface {
+	identify(bytes []byte) bool
+}
+
+// initializer can be implemented by producers to perform bus operations for
+// device initialization
+type initializer interface {
+	// initialize prepares the device for usage. Any setup or initialization should
+	// be done here. It requires that the client has the correct device id applied.
+	initialize(client modbusClient, descriptor *meters.DeviceDescriptor) error
+}
+
+// MID meters initialization method used by Janitza and ABB
+func initializeMID(client modbusClient, descriptor *meters.DeviceDescriptor) error {
+	// serial
+	if bytes, err := client.ReadHoldingRegisters(0x8900, 2); err == nil {
+		descriptor.Serial = fmt.Sprintf("%4x", binary.BigEndian.Uint32(bytes))
+	}
+	// firmware
+	if bytes, err := client.ReadHoldingRegisters(0x8908, 8); err == nil {
+		descriptor.Version = string(bytes)
+	}
+	// type
+	if bytes, err := client.ReadHoldingRegisters(0x8960, 6); err == nil {
+		descriptor.Model = string(bytes)
+	}
+
+	// assume success
+	return nil
+}
+
 type rs485 struct {
-	producer Producer
-	ops      chan Operation
-	inflight Operation
+	producer   Producer
+	descriptor meters.DeviceDescriptor
+	ops        chan Operation
+	inflight   Operation
 }
 
 // NewDevice creates a device who's type must exist in the producer registry
@@ -43,42 +85,56 @@ func NewDevice(typeid string) (meters.Device, error) {
 	return nil, fmt.Errorf("unknown meter type %s", typeid)
 }
 
-// Initialize prepares the device for usage. Any setup or initilization should be done here.
+// Initialize prepares the device for usage. Any setup or initialization should be done here.
 func (d *rs485) Initialize(client modbus.Client) error {
+	d.descriptor = meters.DeviceDescriptor{
+		Manufacturer: d.producer.Type(),
+		Model:        d.producer.Description(),
+	}
+
+	// does device support initializing itself?
+	if p, ok := d.producer.(initializer); ok {
+		return p.initialize(client, &d.descriptor)
+	}
+
 	return nil
 }
 
 // Descriptor returns the device descriptor. Since this method doe not have bus access the descriptor should be preared
-// during initilization.
+// during initialization.
 func (d *rs485) Descriptor() meters.DeviceDescriptor {
-	return meters.DeviceDescriptor{
-		Manufacturer: d.producer.Type(),
-		Model:        d.producer.Description(),
+	return d.descriptor
+}
+
+func (d *rs485) rawQuery(client modbus.Client, op Operation) (bytes []byte, err error) {
+	if op.ReadLen == 0 {
+		return bytes, fmt.Errorf("invalid meter operation %v", op)
 	}
+
+	switch op.FuncCode {
+	case readHoldingReg:
+		bytes, err = client.ReadHoldingRegisters(op.OpCode, op.ReadLen)
+	case readInputReg:
+		bytes, err = client.ReadInputRegisters(op.OpCode, op.ReadLen)
+	default:
+		return bytes, fmt.Errorf("unknown function code %d", op.FuncCode)
+	}
+
+	if err != nil {
+		return bytes, errors.Wrap(err, "read failed")
+	}
+
+	return bytes, nil
 }
 
 func (d *rs485) query(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
-	var bytes []byte
-
-	if op.ReadLen == 0 {
-		return res, fmt.Errorf("invalid meter operation %v", op)
-	}
-
 	if op.Transform == nil {
 		return res, fmt.Errorf("transformation not defined: %v", op)
 	}
 
-	switch op.FuncCode {
-	case ReadHoldingReg:
-		bytes, err = client.ReadHoldingRegisters(op.OpCode, op.ReadLen)
-	case ReadInputReg:
-		bytes, err = client.ReadInputRegisters(op.OpCode, op.ReadLen)
-	default:
-		return res, fmt.Errorf("unknown function code %d", op.FuncCode)
-	}
-
+	bytes, err := d.rawQuery(client, op)
 	if err != nil {
-		return res, errors.Wrap(err, "read failed")
+		return res, err
 	}
 
 	res = meters.MeasurementResult{
@@ -91,15 +147,31 @@ func (d *rs485) query(client modbus.Client, op Operation) (res meters.Measuremen
 }
 
 // Probe is called by the handler after preparing the bus by setting the device id
-func (d *rs485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
+func (d *rs485) Probe(client modbus.Client) (res bool, err error) {
 	op := d.producer.Probe()
 
-	res, err = d.query(client, op)
-	if err != nil {
-		return res, err
+	// use specific identificator for devices that are able to recognize
+	// themselves reliably
+	if idf, ok := d.producer.(identificator); ok {
+		bytes, err := d.rawQuery(client, op)
+		if err != nil {
+			return false, err
+		}
+
+		match := idf.identify(bytes)
+		return match, nil
 	}
 
-	return res, nil
+	// use default validator looking for 110/230V
+	measurement, err := d.query(client, op)
+	if err != nil {
+		return false, err
+	}
+
+	v := validator{[]float64{110, 230}}
+	match := v.validate(measurement.Value)
+
+	return match, nil
 }
 
 // Query is called by the handler after preparing the bus by setting the device id and waiting for rate limit

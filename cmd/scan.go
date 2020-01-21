@@ -41,21 +41,6 @@ func addDesc(s *string, key string, val string) {
 	}
 }
 
-// validator checks if value is in range of reference values
-type validator struct {
-	refs []float64
-}
-
-func (v validator) check(f float64) bool {
-	tolerance := 0.1 // 10%
-	for _, ref := range v.refs {
-		if f >= (1-tolerance)*ref && f <= (1+tolerance)*ref {
-			return true
-		}
-	}
-	return false
-}
-
 func scan(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
 		log.Fatalf("excess arguments, aborting: %v", args)
@@ -93,9 +78,6 @@ func scan(cmd *cobra.Command, args []string) {
 	deviceList := make(map[int]meters.Device)
 	log.Printf("starting bus scan on %s", adapter)
 
-	// validate against 110V and 230V to make detection reliable
-	v := validator{[]float64{110, 230}}
-
 SCAN:
 	// loop over all valid slave adresses
 	for deviceID := 1; deviceID <= 247; deviceID++ {
@@ -111,13 +93,11 @@ SCAN:
 				log.Println(err) // log error but continue
 			}
 
-			mr, err := dev.Probe(client)
-			if err == nil && v.check(mr.Value) {
-				log.Printf("device %d: %s type device found, %s: %.2f\r\n",
+			match, err := dev.Probe(client)
+			if match && err == nil {
+				log.Printf("device %d: %s type device found\r\n",
 					deviceID,
 					dev.Descriptor().Manufacturer,
-					mr.Measurement,
-					mr.Value,
 				)
 
 				deviceList[deviceID] = dev
