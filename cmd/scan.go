@@ -93,9 +93,6 @@ func scan(cmd *cobra.Command, args []string) {
 	deviceList := make(map[int]meters.Device)
 	log.Printf("starting bus scan on %s", adapter)
 
-	// validate against 110V and 230V to make detection reliable
-	v := validator{[]float64{110, 230}}
-
 SCAN:
 	// loop over all valid slave adresses
 	for deviceID := 1; deviceID <= 247; deviceID++ {
@@ -111,13 +108,11 @@ SCAN:
 				log.Println(err) // log error but continue
 			}
 
-			mr, err := dev.Probe(client)
-			if err == nil && v.check(mr.Value) {
-				log.Printf("device %d: %s type device found, %s: %.2f\r\n",
+			match, err := dev.Probe(client)
+			if match && err == nil {
+				log.Printf("device %d: %s type device found\r\n",
 					deviceID,
 					dev.Descriptor().Manufacturer,
-					mr.Measurement,
-					mr.Value,
 				)
 
 				deviceList[deviceID] = dev

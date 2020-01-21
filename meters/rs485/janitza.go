@@ -53,7 +53,7 @@ func (p *JanitzaProducer) Type() string {
 
 // Description implements Producer interface
 func (p *JanitzaProducer) Description() string {
-	return "Janitza MID B-Series meters"
+	return "Janitza MID B-Series"
 }
 
 func (p *JanitzaProducer) Initialize(client modbusClient, descriptor *DeviceDescriptor) error {

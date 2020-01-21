@@ -59,7 +59,7 @@ func (p *DZGProducer) Type() string {
 
 // Description implements Producer interface
 func (p *DZGProducer) Description() string {
-	return "DZG Metering GmbH DVH4013 meters"
+	return "DZG Metering GmbH DVH4013"
 }
 
 func (p *DZGProducer) snip(iec Measurement, scaler ...float64) Operation {

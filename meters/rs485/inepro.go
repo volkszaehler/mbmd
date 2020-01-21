@@ -107,7 +107,8 @@ func (p *IneproProducer) Description() string {
 	return "Inepro Metering Pro 380"
 }
 
-func (p *IneproProducer) Initialize(client modbusClient, descriptor *DeviceDescriptor) error {
+// initialize implements initializer interface
+func (p *IneproProducer) initialize(client modbusClient, descriptor *DeviceDescriptor) error {
 	// serial
 	if bytes, err := client.ReadHoldingRegisters(0x4000, 2); err == nil {
 		descriptor.Serial = fmt.Sprintf("%d", binary.BigEndian.Uint32(bytes))

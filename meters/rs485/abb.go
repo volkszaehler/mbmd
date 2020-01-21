@@ -67,7 +67,7 @@ func (p *ABBProducer) Type() string {
 
 // Description implements Producer interface
 func (p *ABBProducer) Description() string {
-	return "ABB A/B-Series meters"
+	return "ABB A/B-Series"
 }
 
 func (p *ABBProducer) Initialize(client modbusClient, descriptor *DeviceDescriptor) error {

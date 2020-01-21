@@ -70,7 +70,7 @@ func (p *SDMProducer) Type() string {
 }
 
 func (p *SDMProducer) Description() string {
-	return "Eastron SDM meters"
+	return "Eastron SDM"
 }
 
 func (p *SDMProducer) snip(iec Measurement) Operation {
