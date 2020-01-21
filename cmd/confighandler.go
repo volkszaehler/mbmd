@@ -132,6 +132,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string) (res
 	return res
 }
 
+// ConnectionManager returns connection manager for spec or creates new one
 func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
