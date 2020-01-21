@@ -11,6 +11,8 @@ const (
 )
 
 type SBCProducer struct {
+	typ    string
+	phases int
 	Opcodes
 }
 
@@ -47,7 +49,11 @@ func NewSBCProducer() Producer {
 		Power:         51, // scaler 100
 		ReactivePower: 52, // scaler 100
 	}
-	return &SBCProducer{Opcodes: ops}
+	return &SBCProducer{
+		typ:     "ALE3", // assume ALE3
+		phases:  3,      // assume 3 phase device
+		Opcodes: ops,
+	}
 }
 
 // Type implements Producer interface
@@ -57,7 +63,7 @@ func (p *SBCProducer) Type() string {
 
 // Description implements Producer interface
 func (p *SBCProducer) Description() string {
-	return "Saia Burgess Controls ALE3 meters"
+	return "Saia Burgess " + p.typ
 }
 
 // snip creates modbus operation
@@ -96,11 +102,23 @@ func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 
 // Identify implements Identifier interface
 func (p *SBCProducer) Identify(bytes []byte) bool {
-	const b = "ALD1" // single phase
-	const b = "ALE3" // three phase direct
-	const b = "AWE3" // three phase converter
-	"D5"             // oneway
-	"W5"             // twoway
+	if len(bytes) < 4 {
+		return false
+	}
+
+	switch string(bytes[:4]) {
+	case "ALD1":
+		// single phase
+		p.phases = 1
+	case "ALE3", "AWE3":
+		// three phase direct/ converter
+		p.phases = 3
+	default:
+		return false
+	}
+
+	p.typ = string(bytes[:4])
+	return true
 }
 
 // Probe implements Producer interface

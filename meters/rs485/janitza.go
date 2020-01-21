@@ -51,7 +51,7 @@ func (p *JanitzaProducer) Type() string {
 
 // Description implements Producer interface
 func (p *JanitzaProducer) Description() string {
-	return "Janitza B-Series meters"
+	return "Janitza B-Series"
 }
 
 func (p *JanitzaProducer) snip(iec Measurement) Operation {
