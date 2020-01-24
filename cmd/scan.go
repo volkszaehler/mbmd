@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	golog "log"
 	"os"
 	"time"
 
@@ -72,7 +72,7 @@ func scan(cmd *cobra.Command, args []string) {
 
 	// raw log
 	if viper.GetBool("raw") {
-		conn.Logger(log.New(os.Stderr, "", log.LstdFlags))
+		conn.Logger(golog.New(os.Stderr, "", golog.LstdFlags))
 	}
 
 	// create devices

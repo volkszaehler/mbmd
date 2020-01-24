@@ -2,12 +2,42 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	golog "log"
+	"os"
 	"sort"
 
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/rs485"
 )
+
+// logger is the golang compatible logger interface used by all commands
+type logger interface {
+	Printf(format string, v ...interface{})
+	Println(v ...interface{})
+	Fatalf(format string, v ...interface{})
+	Fatal(v ...interface{})
+}
+
+// quietlogger logs only fatal messages
+type quietlogger struct {
+	*golog.Logger
+}
+
+func (l *quietlogger) Printf(format string, v ...interface{}) {}
+func (l *quietlogger) Println(v ...interface{})               {}
+
+// log variable replaces golang log package functions
+var log logger = golog.New(os.Stderr, "", golog.LstdFlags)
+
+// configureLogger sets default logger.
+// According to verbosity flag only fatal messages are shown
+func configureLogger(verbose bool, flag int) {
+	if verbose {
+		log = golog.New(os.Stderr, "", flag)
+	} else {
+		log = &quietlogger{golog.New(os.Stderr, "", flag)}
+	}
+}
 
 // meterHelp output list of supported devices
 func meterHelp() string {

@@ -31,6 +31,7 @@ script:
   # build
   - make
   # ensure all changes are committed
+  - go run main.go doc
   - test -z "$(git status --porcelain)" || (git status; git diff; false)
 
 before_deploy:
