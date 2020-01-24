@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	golog "log"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -144,7 +144,7 @@ func inspect(cmd *cobra.Command, args []string) {
 	// create devices from command line
 	devices, _ := cmd.PersistentFlags().GetStringSlice("devices")
 	if len(devices) == 0 {
-		fmt.Fprint(os.Stderr, "config: no devices found - terminiating")
+		fmt.Fprint(os.Stderr, "config: no devices found - terminating")
 		os.Exit(1)
 	}
 	for _, dev := range devices {
@@ -155,7 +155,7 @@ func inspect(cmd *cobra.Command, args []string) {
 
 	// raw log
 	if viper.GetBool("raw") {
-		setLogger(confHandler.Managers, log.New(os.Stderr, "", 0))
+		setLogger(confHandler.Managers, golog.New(os.Stderr, "", 0))
 	}
 
 	for _, m := range confHandler.Managers {

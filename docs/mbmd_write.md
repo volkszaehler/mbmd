@@ -1,13 +1,22 @@
-## mbmd version
+## mbmd write
 
-Show MBMD version
+Write register (EXPERIMENTAL)
 
 ### Synopsis
 
-Show MBMD version
+Write writes a single register (holding, coil). Write will ignore the
+config file and requires adapter configuration using command line.
 
 ```
-mbmd version [flags]
+mbmd write [flags] register length value
+```
+
+### Options
+
+```
+  -d, --device string     MODBUS device ID to query. Only single device allowed. (default "1")
+  -e, --encoding string   Data encoding: bit|int|uint|hex|float|string (default "int")
+  -t, --type string       Register type to write: holding|coil (default "holding")
 ```
 
 ### Options inherited from parent commands

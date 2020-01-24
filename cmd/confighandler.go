@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"regexp"
 	"sort"

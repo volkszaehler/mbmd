@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	"log"
+	golog "log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -227,12 +227,12 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	if countDevices(confHandler.Managers) == 0 {
-		log.Fatal("config: no devices found - terminiating")
+		log.Fatal("config: no devices found - terminating")
 	}
 
 	// raw log
 	if viper.GetBool("raw") {
-		setLogger(confHandler.Managers, log.New(os.Stderr, "", log.LstdFlags))
+		setLogger(confHandler.Managers, golog.New(os.Stderr, "", golog.LstdFlags))
 	}
 
 	// query engine
