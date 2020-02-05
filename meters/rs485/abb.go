@@ -143,9 +143,14 @@ func (p *ABBProducer) Probe() Operation {
 func (p *ABBProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,
-		CurrentL1, CurrentL2, CurrentL3,
 	} {
 		res = append(res, p.snip32u(op, 10))
+	}
+
+	for _, op := range []Measurement{
+		CurrentL1, CurrentL2, CurrentL3,
+	} {
+		res = append(res, p.snip32u(op, 100))
 	}
 
 	for _, op := range []Measurement{
@@ -163,7 +168,7 @@ func (p *ABBProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		Power, PowerL1, PowerL2, PowerL3,
 	} {
-		res = append(res, p.snip32i(op, 10))
+		res = append(res, p.snip32i(op, 100))
 	}
 
 	for _, op := range []Measurement{
