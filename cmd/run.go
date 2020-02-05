@@ -174,7 +174,7 @@ func checkVersion() {
 
 	if res, err := latest.Check(githubTag, server.Version); err == nil {
 		if res.Outdated {
-			log.Printf("updates available - please upgrade to ingress %s", res.Current)
+			log.Printf("updates available - please upgrade to %s", res.Current)
 		}
 	}
 }
