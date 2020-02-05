@@ -12,9 +12,10 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "mbmd",
-	Short: "ModBus Measurement Daemon",
-	Long:  "Easily read and distribute data from ModBus meters and grid inverters",
+	Use:               "mbmd",
+	Short:             "ModBus Measurement Daemon",
+	Long:              "Easily read and distribute data from ModBus meters and grid inverters",
+	DisableAutoGenTag: true, // prevent changing timestamps
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
