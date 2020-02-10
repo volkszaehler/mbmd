@@ -26,14 +26,12 @@ func NewMqttOptions(
 	user string,
 	password string,
 	clientID string,
-	cleanSession bool,
 ) *MQTT.ClientOptions {
 	opt := MQTT.NewClientOptions()
 	opt.AddBroker(broker)
 	opt.SetUsername(user)
 	opt.SetPassword(password)
 	opt.SetClientID(clientID)
-	opt.SetCleanSession(cleanSession)
 	opt.SetAutoReconnect(true)
 	return opt
 }

@@ -9,7 +9,6 @@ mqtt:
   password:
   clientid: mbmd
   qos: 0
-  clean: true
   homie: homie
 
 # influxdb config

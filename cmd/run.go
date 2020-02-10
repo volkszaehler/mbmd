@@ -280,7 +280,6 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetString("mqtt.user"),
 				viper.GetString("mqtt.password"),
 				viper.GetString("mqtt.clientid"),
-				viper.GetBool("mqtt.clean"),
 			)
 			mqttRunner := server.NewMqttRunner(options, qos, topic, verbose)
 			tee.AttachRunner(server.NewSnipRunner(mqttRunner.Run))
@@ -293,7 +292,6 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetString("mqtt.user"),
 				viper.GetString("mqtt.password"),
 				viper.GetString("mqtt.clientid"),
-				viper.GetBool("mqtt.clean"),
 			)
 			cc := server.ToControlChannel(teeC.Attach())
 			homieRunner := server.NewHomieRunner(qe, cc, options, qos, topic, verbose)

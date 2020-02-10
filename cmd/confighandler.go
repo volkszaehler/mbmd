@@ -40,7 +40,6 @@ type commandLine struct {
 	InfluxURL         interface{} `mapstructure:"influx-url"`
 	InfluxUser        interface{} `mapstructure:"influx-user"`
 	MqttBroker        interface{} `mapstructure:"mqtt-broker"`
-	MqttClean         interface{} `mapstructure:"mqtt-clean"`
 	MqttClientID      interface{} `mapstructure:"mqtt-clientid"`
 	MqttHomie         interface{} `mapstructure:"mqtt-homie"`
 	MqttPassword      interface{} `mapstructure:"mqtt-password"`
