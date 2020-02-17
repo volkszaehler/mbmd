@@ -6,7 +6,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.2
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.1
 	github.com/grid-x/modbus v0.0.0-20200107204205-6fc73f7037b9
 	github.com/grid-x/serial v0.0.0-20191104121038-e24bc9bf6f08 // indirect
