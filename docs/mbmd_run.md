@@ -39,7 +39,6 @@ mbmd run [flags]
   -i, --influx-url string           InfluxDB URL. ex: http://10.10.1.1:8086
       --influx-user string          InfluxDB user (optional)
   -m, --mqtt-broker string          MQTT broker URI. ex: tcp://10.10.1.1:1883
-      --mqtt-clean                  MQTT clean Session
       --mqtt-clientid string        MQTT client id (default "mbmd")
       --mqtt-homie string           MQTT Homie IoT discovery base topic (homieiot.github.io). Set empty to disable. (default "homie")
       --mqtt-password string        MQTT password (optional)

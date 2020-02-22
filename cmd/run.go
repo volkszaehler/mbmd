@@ -102,11 +102,6 @@ any type is considered valid.
 		"mbmd",
 		"MQTT client id",
 	)
-	runCmd.PersistentFlags().Bool(
-		"mqtt-clean",
-		false,
-		"MQTT clean Session",
-	)
 	runCmd.PersistentFlags().Int(
 		"mqtt-qos",
 		0,
@@ -159,7 +154,7 @@ any type is considered valid.
 	bindPflagsWithExceptions(pflags, "devices")
 
 	// mqtt
-	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "clean", "qos", "homie")
+	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "qos", "homie")
 
 	// influx
 	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "precision", "interval", "user", "password")
