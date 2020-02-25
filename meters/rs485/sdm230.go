@@ -27,11 +27,12 @@ func NewSDM230Producer() Producer {
 		Export:    0x004a, // 220, 230
 		Cosphi:    0x001e, //      230
 		Frequency: 0x0046, //      230
-		// ImportReactive: 0x4C,   // 220, 230
-		// ExportReactive: 0x4E,   // 220, 230
-		// ApparentPower:  0x0012, // 230
-		// ReactivePower:  0x0018, // 230
-		// PhaseAngle:     0x0024, // 230
+		ReactiveImport: 0x4C,   // 220, 230
+		ReactiveExport: 0x4E,   // 220, 230
+		ApparentPower:  0x0012, // 230
+		ReactivePower:  0x0018, // 230
+		Sum:     0x0156, // 230
+		PhaseAngle:     0x0024, // 230
 	}
 	return &SDM230Producer{Opcodes: ops}
 }
@@ -56,7 +57,7 @@ func (p *SDM230Producer) snip(iec Measurement) Operation {
 }
 
 func (p *SDM230Producer) Probe() Operation {
-	return p.snip(VoltageL1)
+	return p.snip(Voltage)
 }
 
 func (p *SDM230Producer) Produce() (res []Operation) {
