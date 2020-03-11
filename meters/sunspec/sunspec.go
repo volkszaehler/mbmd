@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"time"
+	"encoding/binary"
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
@@ -184,6 +185,12 @@ func (d *sunSpec) convertPoint(b sunspec.Block, blockID int, pointID string, m m
 		return meters.MeasurementResult{}, errors.New("NaN value")
 	}
 
+	// apply fix for invalid negativ values
+	if val, exists := negativeMap[m]; exists && val {
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf[0:], uint32(v))
+		v = math.Abs(float64(int32(binary.BigEndian.Uint32(buf[0:]))))
+	}
 	// apply scale factor for energy
 	if div, ok := dividerMap[m]; ok {
 		v /= div

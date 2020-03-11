@@ -120,6 +120,13 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 	},
 }
 
+var negativeMap = map[meters.Measurement]bool{
+	meters.Export:     true,
+	meters.ExportL1:   true,
+	meters.ExportL2:   true,
+	meters.ExportL3:   true,
+}
+
 var dividerMap = map[meters.Measurement]float64{
 	meters.Export:     1000,
 	meters.ExportL1:   1000,
