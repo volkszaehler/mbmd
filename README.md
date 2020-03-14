@@ -289,9 +289,9 @@ In case of TCP connection, the adapter paramter becomes the hostname and port:
 
 # Changelog
 
-## 0.8 (unreleased)
+## 0.8
 
-Initial release at https://github.com/volkszaehler/mbmd
+Initial release at https://github.com/volkszaehler/mbmd. Various enhancements and additional meters.
 
 ## 0.7
 
