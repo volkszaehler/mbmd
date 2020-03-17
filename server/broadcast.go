@@ -10,7 +10,7 @@ type Broadcaster struct {
 	wg         sync.WaitGroup
 	in         <-chan interface{}
 	recipients []chan<- interface{}
-	done       chan bool
+	done       chan struct{}
 }
 
 // NewBroadcaster creates a Broadcaster that implements
@@ -19,7 +19,7 @@ func NewBroadcaster(in <-chan interface{}) *Broadcaster {
 	return &Broadcaster{
 		in:         in,
 		recipients: make([]chan<- interface{}, 0),
-		done:       make(chan bool),
+		done:       make(chan struct{}),
 	}
 }
 
@@ -36,7 +36,7 @@ func (b *Broadcaster) Run() {
 }
 
 // Done returns a channel signalling when broadcasting has stopped
-func (b *Broadcaster) Done() <-chan bool {
+func (b *Broadcaster) Done() <-chan struct{} {
 	return b.done
 }
 
@@ -48,7 +48,7 @@ func (b *Broadcaster) stop() {
 		close(recipient)
 	}
 	b.wg.Wait()
-	b.done <- true
+	close(b.done)
 }
 
 // Attach creates and attaches a channel to the broadcaster
