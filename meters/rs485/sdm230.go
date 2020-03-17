@@ -20,18 +20,18 @@ func NewSDM230Producer() Producer {
 	 * See https://bg-etech.de/download/manual/SDM230-register.pdf
 	 */
 	ops := Opcodes{
-		Voltage:   0x0000, // 220, 230
-		Current:   0x0006, // 220, 230
-		Power:     0x000C, //      230
-		Import:    0x0048, // 220, 230
-		Export:    0x004a, // 220, 230
-		Cosphi:    0x001e, //      230
-		Frequency: 0x0046, //      230
+		Voltage:        0x0000, // 220, 230
+		Current:        0x0006, // 220, 230
+		Power:          0x000C, //      230
+		Import:         0x0048, // 220, 230
+		Export:         0x004a, // 220, 230
+		Cosphi:         0x001e, //      230
+		Frequency:      0x0046, //      230
 		ReactiveImport: 0x4C,   // 220, 230
 		ReactiveExport: 0x4E,   // 220, 230
 		ApparentPower:  0x0012, // 230
 		ReactivePower:  0x0018, // 230
-		Sum:     0x0156, // 230
+		Sum:            0x0156, // 230
 		PhaseAngle:     0x0024, // 230
 	}
 	return &SDM230Producer{Opcodes: ops}

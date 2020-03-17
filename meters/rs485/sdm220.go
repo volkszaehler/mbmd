@@ -20,15 +20,14 @@ func NewSDM220Producer() Producer {
 	 * See https://bg-etech.de/download/manual/SDM220StandardDE.pdf
 	 */
 	ops := Opcodes{
-		Voltage: 0x0000, // 220, 230
-		Current: 0x0006, // 220, 230
-		Import:  0x0048, // 220, 230
-		Export:  0x004a, // 220, 230
-		Sum:     0x0156, // 220, 230
-		// SumWirk:        0x0156, // 220
-		ReactiveSum:       0x0158, // 220
+		Voltage:        0x0000, // 220, 230
+		Current:        0x0006, // 220, 230
+		Import:         0x0048, // 220, 230
+		Export:         0x004a, // 220, 230
+		Sum:            0x0156, // 220, 230
+		ReactiveSum:    0x0158, // 220
 		ReactiveImport: 0x4C,   // 220, 230
-		ReactiveExport: 0x4E,   // 220, 230	
+		ReactiveExport: 0x4E,   // 220, 230
 	}
 	return &SDM220Producer{Opcodes: ops}
 }
