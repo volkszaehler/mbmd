@@ -149,7 +149,7 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 	meterType = strings.ToUpper(meterType)
 
 	var isSunspec bool
-	sunspecTypes := []string{"FRONIUS", "KOSTAL", "KACO", "SE", "SMA", "SOLAREDGE", "SUNS", "SUNSPEC"}
+	sunspecTypes := []string{"FRONIUS", "KOSTAL", "KACO", "SE", "SMA", "SOLAREDGE", "STECA", "SUNS", "SUNSPEC"}
 	for _, t := range sunspecTypes {
 		if t == meterType {
 			isSunspec = true

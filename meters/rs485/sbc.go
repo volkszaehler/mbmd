@@ -17,7 +17,7 @@ type SBCProducer struct {
 func NewSBCProducer() Producer {
 	/**
 	 * Opcodes for Saia Burgess ALE3
-	 * http://datenblatt.stark-elektronik.de/saia_burgess/DE_DS_Energymeter-ALE3-with-Modbus.pdf
+	 * https://sbc-support.com/de/produkt-index/axx-energiezaehler/axx3-3-ph-modbus/
 	 */
 	ops := Opcodes{
 		Import: 28, // double, scaler 100

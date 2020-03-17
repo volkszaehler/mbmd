@@ -69,7 +69,7 @@ func scanSunspec(client modbus.Client) {
 			blocknum := 0
 			m.Do(func(b sunspec.Block) {
 				if blocknum > 0 {
-					fmt.Fprintln(tw, fmt.Sprintf("-- Block %d --", blocknum))
+					fmt.Fprintf(tw, "-- Block %d --\n", blocknum)
 				}
 				blocknum++
 
@@ -89,7 +89,7 @@ func scanSunspec(client modbus.Client) {
 					}
 
 					vs := fmt.Sprintf("%17v", v)
-					fmt.Fprintln(tw, fmt.Sprintf("%s\t%s\t   %s", p.Id(), vs, p.Type()))
+					fmt.Fprintf(tw, "%s\t%s\t   %s\n", p.Id(), vs, p.Type())
 				})
 			})
 
