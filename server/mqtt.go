@@ -3,14 +3,20 @@ package server
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"github.com/volkszaehler/mbmd/meters"
 )
 
 const (
 	publishTimeout = 2000 * time.Millisecond
+)
+
+var (
+	topicRE = regexp.MustCompile(`(\w+)([LTS]\d)`)
 )
 
 // MqttClient is a MQTT publisher
@@ -105,13 +111,27 @@ func NewMqttRunner(options *MQTT.ClientOptions, qos byte, topic string, verbose 
 	}
 }
 
+// topicFromMeasurement converts measurements of type MeasureLx/MeasureSx/MeasureTx to hierarchical Measure/Lx topics
+func topicFromMeasurement(measurement meters.Measurement) string {
+	name := measurement.String()
+	match := topicRE.FindStringSubmatch(name)
+	if len(match) != 3 {
+		return name
+	}
+
+	topic := fmt.Sprintf("%s/%s", match[1], match[2])
+
+	return topic
+}
+
 // Run MqttClient publisher
 func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	// notify connection and override will
 	m.MqttClient.Publish(fmt.Sprintf("%s/status", m.topic), true, "connected")
 
 	for snip := range in {
-		topic := fmt.Sprintf("%s/%s/%s", m.topic, mqttDeviceTopic(snip.Device), snip.Measurement)
+		subtopic := topicFromMeasurement(snip.Measurement)
+		topic := fmt.Sprintf("%s/%s/%s", m.topic, mqttDeviceTopic(snip.Device), subtopic)
 		message := fmt.Sprintf("%.3f", snip.Value)
 		go m.Publish(topic, false, message)
 	}

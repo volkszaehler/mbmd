@@ -13,7 +13,7 @@ import (
 
 const (
 	// deviceIDregex is the regex pattern that identifies valid device ids
-	deviceIDregex = "\\w*(\\d+)\\.(\\d+)"
+	deviceIDregex = `\w*(\d+)\.(\d+)`
 )
 
 // DeviceInfo returns device descriptor by device id
