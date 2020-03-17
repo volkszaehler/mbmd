@@ -59,7 +59,6 @@ type MqttConfig struct {
 	Password string
 	ClientID string
 	Qos      int
-	Clean    bool
 	Homie    string
 }
 
@@ -130,6 +129,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string) (res
 	return res
 }
 
+// ConnectionManager returns connection manager from cache or creates new connection wrapped by manager
 func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {

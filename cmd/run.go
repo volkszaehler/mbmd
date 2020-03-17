@@ -203,7 +203,7 @@ func run(cmd *cobra.Command, args []string) {
 		log.Printf("config: using %s", viper.ConfigFileUsed())
 
 		var conf Config
-		if err := viper.GetViper().UnmarshalExact(&conf); err != nil {
+		if err := viper.UnmarshalExact(&conf); err != nil {
 			log.Fatalf("config: failed parsing config file %s: %v", cfgFile, err)
 		}
 
