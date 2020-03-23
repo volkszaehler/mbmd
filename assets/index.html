@@ -358,6 +358,13 @@
 						<td class="col-3" v-if="pop(m.THD)">${ m.THD }</td>
 						<td class="col-3" v-else>&mdash;</td>
 					</tr>
+					<tr class="d-flex" v-if="populated(m.PhaseAngle)">
+						<td class="col-3">Phase Angle</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-3">${ m.PhaseAngle }</td>
+					</tr>
 					<tr class="d-flex" v-if="pop(m.Frequency)">
 						<td class="col-3">Frequency (Hz)</td>
 						<td class="col-2">&mdash;</td>
