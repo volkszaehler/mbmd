@@ -15,6 +15,11 @@ RUN adduser -D -g '' appuser
 
 WORKDIR /build
 
+# cache modules
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
 COPY . .
 RUN make install
 RUN GOARCH={{ .GoARCH }} GOARM={{ .GoARM }} make build
@@ -30,7 +35,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 
 # Copy our static executable.
-COPY --from=builder /build/mbmd /go/bin/mbmd
+COPY --from=builder /build/mbmd /usr/local/bin/mbmd
 
 # Use an unprivileged user.
 USER appuser
@@ -38,4 +43,4 @@ USER appuser
 EXPOSE 8080
 
 # Run the binary
-ENTRYPOINT ["/go/bin/mbmd"]
+ENTRYPOINT ["/usr/local/bin/mbmd"]

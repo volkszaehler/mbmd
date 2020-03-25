@@ -1,6 +1,9 @@
 .vscode/
+*.json
+*.sh
+*.yaml
 dist/
-manifest.json
 linux-*.Dockerfile
 mbmd
-mbmd.yaml
+!entrypoint.sh
+!mbmd.dist.yaml
