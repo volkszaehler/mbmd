@@ -1,20 +1,15 @@
-# This is an example goreleaser.yaml file with some sane defaults.
-# Make sure to check the documentation at http://goreleaser.com
 release:
-  # Repo in which the release will be created.
   github:
     owner: volkszaehler
     name: mbmd
 before:
   hooks:
-    # you may remove this if you don't need go generate
-    - go generate ./...
+  - make assets
 builds:
-- id: mbmd
-  # Path to main.go file or main package.
+- id: main
   main: main.go
   ldflags:
-  - -X github.com/volkszaehler/mbmd.Version={{.Version}} -X github.com/volkszaehler/mbmd.Commit={{.ShortCommit}}
+  - -X github.com/volkszaehler/mbmd/server.Version={{.Version}} -X github.com/volkszaehler/mbmd/server.Commit={{.ShortCommit}}
   env:
   - CGO_ENABLED=0
   goos:
@@ -25,6 +20,17 @@ builds:
   - arm
   goarm:
   - "6"
+archives:
+  - builds:
+    - main
+    replacements:
+      amd64: 64-bit
+      386: 32-bit
+      darwin: macOS
+    format: tar.gz
+    format_overrides:
+    - goos: windows
+      format: zip
 checksum:
   name_template: 'checksums.txt'
 snapshot:
