@@ -24,10 +24,10 @@ type Rs485Device struct {
 // NewDevice creates a device who's type must exist in the producer registry
 func NewDevice(typeid string) (*Rs485Device, error) {
 	if factory, ok := Producers[typeid]; ok {
-		d := &Rs485Device{
+		device := &Rs485Device{
 			producer: factory(),
 		}
-		return d, nil
+		return device, nil
 	}
 
 	return nil, fmt.Errorf("unknown meter type %s", typeid)
