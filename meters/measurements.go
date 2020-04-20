@@ -20,7 +20,7 @@ func (r MeasurementResult) String() string {
 // Measurement is the type of measurement, i.e. the physical property being measued in common notation
 type Measurement int
 
-//go:generate stringer -type=Measurement
+//go:generate enumer -type=Measurement
 const (
 	_ Measurement = iota
 

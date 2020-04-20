@@ -3,6 +3,6 @@
 package main
 
 import (
+	_ "github.com/alvaroloes/enumer"
 	_ "github.com/mjibson/esc"
-	_ "golang.org/x/tools/cmd/stringer"
 )
