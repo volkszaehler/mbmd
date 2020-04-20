@@ -2,6 +2,7 @@ package meters
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -262,4 +263,16 @@ func (m *Measurement) Description() string {
 		description = description + " (" + unit + ")"
 	}
 	return description
+}
+
+// UnStringMeasurement converts case insensitive string to a measurement value
+func UnStringMeasurement(s string) Measurement {
+	s = strings.ToLower(s)
+	l := strings.ToLower(_Measurement_name)
+	for i := 0; i < len(_Measurement_index)-1; i++ {
+		if s == l[_Measurement_index[i]:_Measurement_index[i+1]] {
+			return Measurement(i + 1)
+		}
+	}
+	return Measurement(0)
 }
