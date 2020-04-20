@@ -14,17 +14,17 @@ const (
 	ReadInputReg   = 4
 )
 
-// Device implements meters.Device
-type Device struct {
+// RS485 implements meters.Device
+type RS485 struct {
 	producer Producer
 	ops      chan Operation
 	inflight Operation
 }
 
 // NewDevice creates a device who's type must exist in the producer registry
-func NewDevice(typeid string) (*Device, error) {
+func NewDevice(typeid string) (*RS485, error) {
 	if factory, ok := Producers[typeid]; ok {
-		device := &Device{
+		device := &RS485{
 			producer: factory(),
 		}
 		return device, nil
@@ -34,18 +34,18 @@ func NewDevice(typeid string) (*Device, error) {
 }
 
 // Initialize prepares the device for usage. Any setup or initialization should be done here.
-func (d *Device) Initialize(client modbus.Client) error {
+func (d *RS485) Initialize(client modbus.Client) error {
 	return nil
 }
 
 // Producer returns the underlying producer. The producer can be used to understand which operations the device supports.
-func (d *Device) Producer() Producer {
+func (d *RS485) Producer() Producer {
 	return d.producer
 }
 
 // Descriptor returns the device descriptor. Since this method does not have bus access the descriptor should be
 // prepared during initialization.
-func (d *Device) Descriptor() meters.DeviceDescriptor {
+func (d *RS485) Descriptor() meters.DeviceDescriptor {
 	return meters.DeviceDescriptor{
 		Manufacturer: d.producer.Type(),
 		Model:        d.producer.Description(),
@@ -53,7 +53,7 @@ func (d *Device) Descriptor() meters.DeviceDescriptor {
 }
 
 // QueryOp executes a single query operation on the bus
-func (d *Device) QueryOp(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
+func (d *RS485) QueryOp(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
 	var bytes []byte
 
 	if op.ReadLen == 0 {
@@ -87,7 +87,7 @@ func (d *Device) QueryOp(client modbus.Client, op Operation) (res meters.Measure
 }
 
 // Probe is called by the handler after preparing the bus by setting the device id
-func (d *Device) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
+func (d *RS485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
 	op := d.producer.Probe()
 
 	res, err = d.QueryOp(client, op)
@@ -99,14 +99,14 @@ func (d *Device) Probe(client modbus.Client) (res meters.MeasurementResult, err 
 }
 
 // Query is called by the handler after preparing the bus by setting the device id and waiting for rate limit
-func (d *Device) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
+func (d *RS485) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
 	res = make([]meters.MeasurementResult, 0)
 
 	if d.ops == nil {
 		d.ops = make(chan Operation)
 
 		// ringbuffer of device operations
-		go func(d *Device) {
+		go func(d *RS485) {
 			for {
 				for _, op := range d.producer.Produce() {
 					d.ops <- op

@@ -16,8 +16,7 @@ import (
 	"github.com/volkszaehler/mbmd/meters"
 )
 
-// Device implements meters.Device
-type Device struct {
+type SunSpec struct {
 	models     []sunspec.Model
 	descriptor meters.DeviceDescriptor
 }
@@ -38,15 +37,15 @@ func (e partialError) Cause() error {
 func (e partialError) PartiallyInitialized() {}
 
 // NewDevice creates a Sunspec device
-func NewDevice(meterType string) Device {
-	return &Device{
+func NewDevice(meterType string) *SunSpec {
+	return &SunSpec{
 		descriptor: meters.DeviceDescriptor{
 			Manufacturer: meterType,
 		},
 	}
 }
 
-func (d *Device) Initialize(client modbus.Client) error {
+func (d *SunSpec) Initialize(client modbus.Client) error {
 	in, err := sunspecbus.Open(client)
 	if err != nil && in == nil {
 		return err
@@ -80,7 +79,7 @@ func (d *Device) Initialize(client modbus.Client) error {
 	return err
 }
 
-func (d *Device) readCommonBlock(device sunspec.Device) error {
+func (d *SunSpec) readCommonBlock(device sunspec.Device) error {
 	// TODO catch panic
 	commonModel := device.MustModel(sunspec.ModelId(1))
 	// TODO catch panic
@@ -101,7 +100,7 @@ func (d *Device) readCommonBlock(device sunspec.Device) error {
 }
 
 // collect and sort supported models except for common
-func (d *Device) collectModels(device sunspec.Device) error {
+func (d *SunSpec) collectModels(device sunspec.Device) error {
 	d.models = device.Collect(sunspec.OneOfSeveralModelIds(d.relevantModelIds()))
 	if len(d.models) == 0 {
 		return errors.New("sunspec: could not find supported model")
@@ -111,7 +110,7 @@ func (d *Device) collectModels(device sunspec.Device) error {
 	return nil
 }
 
-func (d *Device) relevantModelIds() []sunspec.ModelId {
+func (d *SunSpec) relevantModelIds() []sunspec.ModelId {
 	modelIds := make([]sunspec.ModelId, 0, len(modelMap))
 	for k := range modelMap {
 		modelIds = append(modelIds, sunspec.ModelId(k))
@@ -121,7 +120,7 @@ func (d *Device) relevantModelIds() []sunspec.ModelId {
 }
 
 // remove model 101 if model 103 found
-func (d *Device) sanitizeModels() {
+func (d *SunSpec) sanitizeModels() {
 	m101 := -1
 	for i, m := range d.models {
 		if m.Id() == sunspec.ModelId(101) {
@@ -134,11 +133,11 @@ func (d *Device) sanitizeModels() {
 	}
 }
 
-func (d *Device) Descriptor() meters.DeviceDescriptor {
+func (d *SunSpec) Descriptor() meters.DeviceDescriptor {
 	return d.descriptor
 }
 
-func (d *Device) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
+func (d *SunSpec) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
 	if d.notInitialized() {
 		return res, errors.New("sunspec: not initialized")
 	}
@@ -173,12 +172,11 @@ func (d *Device) Probe(client modbus.Client) (res meters.MeasurementResult, err 
 	return res, fmt.Errorf("sunspec: could not find model for probe snip")
 }
 
-func (d *Device) notInitialized() bool {
+func (d *SunSpec) notInitialized() bool {
 	return len(d.models) == 0
 }
 
-func (d *Device) convertPoint(b sunspec.Block, blockID int, pointID string, m meters.Measurement) (meters.MeasurementResult, error) {
-	p := b.MustPoint(pointID)
+func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point, m meters.Measurement) (meters.MeasurementResult, error) {
 	v := p.ScaledValue()
 
 	if math.IsNaN(v) {
@@ -199,13 +197,13 @@ func (d *Device) convertPoint(b sunspec.Block, blockID int, pointID string, m me
 	return mr, nil
 }
 
-func (d *Device) QueryOp(client modbus.Client, measurement meters.Measurement) (res meters.MeasurementResult, err error) {
+func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) (res meters.MeasurementResult, err error) {
 	if d.notInitialized() {
 		return res, errors.New("sunspec: not initialized")
 	}
 
 	for _, model := range d.models {
-		supportedID := model.Id
+		supportedID := model.Id()
 		for modelID, blockMap := range modelMap {
 			if modelID != supportedID {
 				continue
@@ -214,14 +212,13 @@ func (d *Device) QueryOp(client modbus.Client, measurement meters.Measurement) (
 			for blockID, pointMap := range blockMap {
 				for pointID, m := range pointMap {
 					if m == measurement {
-
 						block := model.MustBlock(blockID)
-						if err = b.Read(); err != nil {
+						if err = block.Read(); err != nil {
 							return
 						}
 
-						point := block.mustPoint(pointID)
-						return d.convertPoint(b, blockID, pointID, m)
+						point := block.MustPoint(pointID)
+						return d.convertPoint(block, point, m)
 					}
 				}
 			}
@@ -231,7 +228,7 @@ func (d *Device) QueryOp(client modbus.Client, measurement meters.Measurement) (
 	return meters.MeasurementResult{}, fmt.Errorf("sunspec: %s not found", measurement)
 }
 
-func (d *Device) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
+func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
 	if d.notInitialized() {
 		return res, errors.New("sunspec: not initialized")
 	}
@@ -239,16 +236,18 @@ func (d *Device) Query(client modbus.Client) (res []meters.MeasurementResult, er
 	for _, model := range d.models {
 		blockID := 0
 
-		model.Do(func(b sunspec.Block) {
+		model.Do(func(block sunspec.Block) {
 			defer func() { blockID++ }()
 
-			if err = b.Read(); err != nil {
+			if err = block.Read(); err != nil {
 				return
 			}
 
 			if bps, ok := modelMap[model.Id()][blockID]; ok {
 				for pointID, m := range bps {
-					if mr, err := d.convertPoint(b, blockID, pointID, m); err == nil {
+					point := block.MustPoint(pointID)
+
+					if mr, err := d.convertPoint(block, point, m); err == nil {
 						res = append(res, mr)
 					}
 				}
