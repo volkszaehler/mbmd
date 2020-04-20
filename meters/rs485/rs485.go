@@ -43,13 +43,18 @@ func NewDevice(typeid string) (meters.Device, error) {
 	return nil, fmt.Errorf("unknown meter type %s", typeid)
 }
 
-// Initialize prepares the device for usage. Any setup or initilization should be done here.
+// Initialize prepares the device for usage. Any setup or initialization should be done here.
 func (d *rs485) Initialize(client modbus.Client) error {
 	return nil
 }
 
-// Descriptor returns the device descriptor. Since this method doe not have bus access the descriptor should be preared
-// during initilization.
+// Producer returns the underlying producer. The producer can be used to understand which operations the device supports.
+func (d *rs485) Producer() Producer {
+	return d.producer
+}
+
+// Descriptor returns the device descriptor. Since this method does not have bus access the descriptor should be
+// prepared during initialization.
 func (d *rs485) Descriptor() meters.DeviceDescriptor {
 	return meters.DeviceDescriptor{
 		Manufacturer: d.producer.Type(),
@@ -57,7 +62,8 @@ func (d *rs485) Descriptor() meters.DeviceDescriptor {
 	}
 }
 
-func (d *rs485) query(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
+// QueryOp executes a single query operation on the bus
+func (d *rs485) QueryOp(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
 	var bytes []byte
 
 	if op.ReadLen == 0 {
@@ -94,7 +100,7 @@ func (d *rs485) query(client modbus.Client, op Operation) (res meters.Measuremen
 func (d *rs485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
 	op := d.producer.Probe()
 
-	res, err = d.query(client, op)
+	res, err = d.QueryOp(client, op)
 	if err != nil {
 		return res, err
 	}
@@ -118,7 +124,7 @@ func (d *rs485) Query(client modbus.Client) (res []meters.MeasurementResult, err
 			d.inflight = <-d.ops
 		}
 
-		m, err := d.query(client, d.inflight)
+		m, err := d.QueryOp(client, d.inflight)
 		if err != nil {
 			return res, err
 		}
