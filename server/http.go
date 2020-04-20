@@ -168,22 +168,26 @@ func (h *Httpd) Run(
 	router := mux.NewRouter().StrictSlash(true)
 
 	// static
-	router.HandleFunc("/", h.mkIndexHandler())
+	static := router.PathPrefix("/").Subrouter()
+	static.Use(handlers.CompressHandler)
 
 	// individual handlers per folder
+	static.HandleFunc("/", h.mkIndexHandler())
 	for _, folder := range []string{"js", "css"} {
 		prefix := fmt.Sprintf("/%s/", folder)
-		router.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(devAssets, prefix))))
+		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(devAssets, prefix))))
 	}
 
 	// api
 	api := router.PathPrefix("/api").Subrouter()
+	api.Use(jsonHandler)
+	api.Use(handlers.CompressHandler)
+
 	api.HandleFunc("/last", h.allDevicesHandler(h.mc.Current))
 	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Current))
 	api.HandleFunc("/avg", h.allDevicesHandler(h.mc.Average))
 	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Average))
 	api.HandleFunc("/status", h.mkStatusHandler(s))
-	api.Use(jsonHandler)
 
 	// websocket
 	router.HandleFunc("/ws", h.mkSocketHandler(hub))
@@ -193,7 +197,7 @@ func (h *Httpd) Run(
 
 	srv := http.Server{
 		Addr:         url,
-		Handler:      handlers.CompressHandler(router),
+		Handler:      router,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
