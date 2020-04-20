@@ -197,6 +197,7 @@ func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point, m meters.Measur
 	return mr, nil
 }
 
+// QueryOp executes a single query operation on the bus
 func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) (res meters.MeasurementResult, err error) {
 	if d.notInitialized() {
 		return res, errors.New("sunspec: not initialized")
@@ -228,6 +229,7 @@ func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) 
 	return meters.MeasurementResult{}, fmt.Errorf("sunspec: %s not found", measurement)
 }
 
+// Query is called by the handler after preparing the bus by setting the device id and waiting for rate limit
 func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
 	if d.notInitialized() {
 		return res, errors.New("sunspec: not initialized")

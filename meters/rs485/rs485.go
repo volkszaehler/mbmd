@@ -52,6 +52,18 @@ func (d *RS485) Descriptor() meters.DeviceDescriptor {
 	}
 }
 
+// Probe is called by the handler after preparing the bus by setting the device id
+func (d *RS485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
+	op := d.producer.Probe()
+
+	res, err = d.QueryOp(client, op)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
 // QueryOp executes a single query operation on the bus
 func (d *RS485) QueryOp(client modbus.Client, op Operation) (res meters.MeasurementResult, err error) {
 	var bytes []byte
@@ -81,18 +93,6 @@ func (d *RS485) QueryOp(client modbus.Client, op Operation) (res meters.Measurem
 		Measurement: op.IEC61850,
 		Value:       op.Transform(bytes),
 		Timestamp:   time.Now(),
-	}
-
-	return res, nil
-}
-
-// Probe is called by the handler after preparing the bus by setting the device id
-func (d *RS485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
-	op := d.producer.Probe()
-
-	res, err = d.QueryOp(client, op)
-	if err != nil {
-		return res, err
 	}
 
 	return res, nil
