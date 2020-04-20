@@ -14,6 +14,7 @@ const (
 	ReadInputReg   = 4
 )
 
+// Rs485Device implements meters.Device
 type Rs485Device struct {
 	producer Producer
 	ops      chan Operation
@@ -23,21 +24,10 @@ type Rs485Device struct {
 // NewDevice creates a device who's type must exist in the producer registry
 func NewDevice(typeid string) (*Rs485Device, error) {
 	if factory, ok := Producers[typeid]; ok {
-		device := &rs485{
+		d := &Rs485Device{
 			producer: factory(),
-			ops:      make(chan Operation),
 		}
-
-		// ringbuffer of device operations
-		go func(d *Rs485Device) {
-			for {
-				for _, op := range d.producer.Produce() {
-					d.ops <- op
-				}
-			}
-		}(device)
-
-		return device, nil
+		return d, nil
 	}
 
 	return nil, fmt.Errorf("unknown meter type %s", typeid)
@@ -111,6 +101,19 @@ func (d *Rs485Device) Probe(client modbus.Client) (res meters.MeasurementResult,
 // Query is called by the handler after preparing the bus by setting the device id and waiting for rate limit
 func (d *Rs485Device) Query(client modbus.Client) (res []meters.MeasurementResult, err error) {
 	res = make([]meters.MeasurementResult, 0)
+
+	if d.ops == nil {
+		d.ops = make(chan Operation)
+
+		// ringbuffer of device operations
+		go func(d *Rs485Device) {
+			for {
+				for _, op := range d.producer.Produce() {
+					d.ops <- op
+				}
+			}
+		}(d)
+	}
 
 	// Query loop will try to read all operations in a single run. It will
 	// always start with the current inflight operation. If an error is encountered,
