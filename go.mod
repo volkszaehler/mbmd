@@ -1,6 +1,7 @@
 module github.com/volkszaehler/mbmd
 
 require (
+	github.com/alvaroloes/enumer v1.1.2 // indirect
 	github.com/andig/gosunspec v0.0.0-20200112114436-368765cf4ec1
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
