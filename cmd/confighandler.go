@@ -158,7 +158,7 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 	}
 
 	sort.SearchStrings(sunspecTypes, meterType)
-	if _, ok := manager.Conn.(*meters.TCP); ok || isSunspec {
+	if isSunspec {
 		meter = sunspec.NewDevice(meterType)
 	} else {
 		var err error
@@ -169,12 +169,6 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 	}
 
 	return meter
-}
-
-// isRTUDevice checks if type is a known RTU device type
-func (conf *DeviceConfigHandler) isRTUDevice(meterType string) bool {
-	_, ok := rs485.Producers[strings.ToUpper(meterType)]
-	return ok
 }
 
 // CreateDevice creates new device and adds it to the connection manager
@@ -235,10 +229,9 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
 
-	// RTU flag is inferred if the device is of RTU type.
-	// It is used to implicitly create an RTUOverTCP instead of a TCP connection
-	rtu := conf.isRTUDevice(meterType)
-	manager := conf.ConnectionManager(connSpec, rtu, 0, "")
+	// If this is an RTU over TCP device, a default RTU over TCP should already
+	// have been created of the --rtu flag was specified. We'll not re-check this here.
+	manager := conf.ConnectionManager(connSpec, false, 0, "")
 
 	meter := conf.createDeviceForManager(manager, meterType)
 	if err := manager.Add(uint8(id), meter); err != nil {
