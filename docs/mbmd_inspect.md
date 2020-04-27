@@ -20,10 +20,10 @@ mbmd inspect [flags]
                           Valid types are:
                             RTU
                               ABB      ABB A/B-Series meters
-                              BE       Bernecker Engineering MPM3PM meters
                               DZG      DZG Metering GmbH DVH4013 meters
                               INEPRO   Inepro Metering Pro 380
                               JANITZA  Janitza B-Series meters
+                              MPM      Bernecker Engineering MPM3PM meters
                               SBC      Saia Burgess Controls ALE3 meters
                               SDM      Eastron SDM630
                               SDM220   Eastron SDM220

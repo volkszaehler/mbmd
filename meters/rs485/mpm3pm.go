@@ -9,7 +9,7 @@ func init() {
 }
 
 const (
-	METERTYPE_BE = "BE"
+	METERTYPE_MPM = "MPM"
 )
 
 type MPM3MPProducer struct {
@@ -50,7 +50,7 @@ func NewMPM3MPProducer() Producer {
 
 // Type implements Producer interface
 func (p *MPM3MPProducer) Type() string {
-	return METERTYPE_BE
+	return METERTYPE_MPM
 }
 
 // Description implements Producer interface
@@ -60,7 +60,7 @@ func (p *MPM3MPProducer) Description() string {
 
 func (p *MPM3MPProducer) snip(iec Measurement, readlen uint16, transform RTUTransform, scaler ...float64) Operation {
 	snip := Operation{
-		FuncCode:  ReadInputReg,
+		FuncCode:  ReadHoldingReg,
 		OpCode:    p.Opcodes[iec],
 		ReadLen:   readlen,
 		Transform: transform,
