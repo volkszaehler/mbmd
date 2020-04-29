@@ -8,6 +8,8 @@ github.com/alvaroloes/enumer v1.1.2 h1:5khqHB33TZy1GWCO/lZwcroBFh7u+0j40T83VUbfA
 github.com/alvaroloes/enumer v1.1.2/go.mod h1:FxrjvuXoDAx9isTJrv4c+T410zFi0DtXIT0m65DJ+Wo=
 github.com/andig/gosunspec v0.0.0-20200112114436-368765cf4ec1 h1:Fe5Mw5GBsmi1lDsYfRsE++f/PDk0p+TdbR6iQhu1RlM=
 github.com/andig/gosunspec v0.0.0-20200112114436-368765cf4ec1/go.mod h1:YkshK8WMzYn1iXAZzHUO75gIqhMSan2ctgBVtBkRIyA=
+github.com/andig/gosunspec v0.0.0-20200429133549-3cf6a82fed9c h1:AMtX56iHlNYVxMID7fe9efuVtaxgtdjyMeolg7q87IE=
+github.com/andig/gosunspec v0.0.0-20200429133549-3cf6a82fed9c/go.mod h1:YkshK8WMzYn1iXAZzHUO75gIqhMSan2ctgBVtBkRIyA=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0 h1:HWo1m869IqiPhD389kmkxeTalrjNbbJTC8LXupb+sl0=

@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/volkszaehler/mbmd/meters"
+	quirks "github.com/volkszaehler/mbmd/meters/sunspec"
 
 	sunspec "github.com/andig/gosunspec"
 	bus "github.com/andig/gosunspec/modbus"
@@ -85,7 +86,11 @@ func scanSunspec(client modbus.Client) {
 					if p.NotImplemented() {
 						v = "n/a"
 					} else if t == "int" || t == "uin" || t == "acc" {
-						v = fmt.Sprintf("%.2f", p.ScaledValue())
+						// for time being, always to this
+						quirks.FixKostal(p)
+
+						v = p.ScaledValue()
+						v = fmt.Sprintf("%.2f", v)
 					}
 
 					vs := fmt.Sprintf("%17v", v)
