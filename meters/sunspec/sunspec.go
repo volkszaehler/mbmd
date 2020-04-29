@@ -36,6 +36,20 @@ func (e partialError) Cause() error {
 // PartiallyInitialized implements SunSpecPartiallyInitialized()
 func (e partialError) PartiallyInitialized() {}
 
+// FixKostal implements workaround for negative KOSTAL values (https://github.com/volkszaehler/mbmd/pull/97)
+func FixKostal(p sunspec.Point) {
+	switch t := p.Value().(type) {
+	case sunspec.Acc32:
+		if t > sunspec.Acc32(math.MaxInt32) {
+			p.SetAcc32(-p.Value().(sunspec.Acc32))
+		}
+	case sunspec.Acc64:
+		if t > sunspec.Acc64(math.MaxInt64) {
+			p.SetAcc64(-p.Value().(sunspec.Acc64))
+		}
+	}
+}
+
 // NewDevice creates a Sunspec device
 func NewDevice(meterType string) *SunSpec {
 	return &SunSpec{
@@ -177,6 +191,10 @@ func (d *SunSpec) notInitialized() bool {
 }
 
 func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point, m meters.Measurement) (meters.MeasurementResult, error) {
+	if d.descriptor.Manufacturer == "KOSTAL" {
+		FixKostal(p)
+	}
+
 	v := p.ScaledValue()
 
 	if math.IsNaN(v) {
