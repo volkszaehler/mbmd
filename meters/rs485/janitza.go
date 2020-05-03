@@ -66,8 +66,8 @@ func (p *JanitzaProducer) snip(iec Measurement) Operation {
 }
 
 // Probe implements Producer interface
-func (p *JanitzaProducer) Probe() Operation {
-	return p.snip(VoltageL1)
+func (p *JanitzaProducer) Probe() (Operation, error) {
+	return p.snip(VoltageL1), nil
 }
 
 // Produce implements Producer interface

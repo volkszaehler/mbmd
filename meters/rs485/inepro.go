@@ -119,8 +119,8 @@ func (p *IneproProducer) snip(iec Measurement, scaler ...float64) Operation {
 }
 
 // Probe implements Producer interface
-func (p *IneproProducer) Probe() Operation {
-	return p.snip(VoltageL1)
+func (p *IneproProducer) Probe() (Operation, error) {
+	return p.snip(VoltageL1), nil
 }
 
 // Produce implements Producer interface

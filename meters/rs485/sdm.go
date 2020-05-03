@@ -84,8 +84,8 @@ func (p *SDMProducer) snip(iec Measurement) Operation {
 	return operation
 }
 
-func (p *SDMProducer) Probe() Operation {
-	return p.snip(VoltageL1)
+func (p *SDMProducer) Probe() (Operation, error) {
+	return p.snip(VoltageL1), nil
 }
 
 func (p *SDMProducer) Produce() (res []Operation) {

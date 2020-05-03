@@ -85,8 +85,8 @@ func (p *MPM3MPProducer) snip32i(iec Measurement, scaler ...float64) Operation {
 }
 
 // Probe implements Producer interface
-func (p *MPM3MPProducer) Probe() Operation {
-	return p.snip32u(VoltageL1, 10)
+func (p *MPM3MPProducer) Probe() (Operation, error) {
+	return p.snip32u(VoltageL1, 10), nil
 }
 
 // Produce implements Producer interface

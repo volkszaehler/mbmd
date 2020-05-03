@@ -1,6 +1,10 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"fmt"
+
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register(NewSDM72Producer)
@@ -49,8 +53,8 @@ func (p *SDM72Producer) snip(iec Measurement) Operation {
 
 // This device does not provide voltage data
 // so it is not possible to automatically detect the device
-func (p *SDM72Producer) Probe() Operation {
-	return Operation{}
+func (p *SDM72Producer) Probe() (Operation, error) {
+	return Operation{}, fmt.Errorf("%s does not support Probe", p.Description())
 }
 
 func (p *SDM72Producer) Produce() (res []Operation) {
