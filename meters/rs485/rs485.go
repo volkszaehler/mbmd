@@ -57,8 +57,8 @@ func (d *RS485) Probe(client modbus.Client) (res meters.MeasurementResult, err e
 	op := d.producer.Probe()
 
 	// check for empty op in case Probe isn't supported
-	if Operation{} == op {
-		return res, fmt.Errorf("meter %s doesn't support Probe", d.producer.Description)
+	if op.FuncCode == 0 {
+		return res, fmt.Errorf("meter type %s doesn't support Probe", d.producer.Description())
 	}
 
 	res, err = d.QueryOp(client, op)
