@@ -56,6 +56,11 @@ func (d *RS485) Descriptor() meters.DeviceDescriptor {
 func (d *RS485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
 	op := d.producer.Probe()
 
+	// check for empty op in case Probe isn't supported
+	if Operation{} == op {
+		return res, fmt.Errorf("meter %s doesn't support Probe", d.producer.Description)
+	}
+
 	res, err = d.QueryOp(client, op)
 	if err != nil {
 		return res, err
