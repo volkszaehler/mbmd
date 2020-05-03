@@ -86,7 +86,7 @@ web page that updates itself with the latest values:
 
 Alternatively run `mbmd` using the Docker image:
 
-	docker run -p 8080:8080 --device=/dev/ttyUSB0 volkszaehler/mbmd -a /dev/ttyUSB0 -u 0.0.0.0:8080 -d sdm:1
+	docker run -p 8080:8080 --device=/dev/ttyUSB0 volkszaehler/mbmd run -a /dev/ttyUSB0 -u 0.0.0.0:8080 -d sdm:1
 
 To mount the config file into the docker container use `-v $(pwd)/mbmd.yaml:/etc/mbmd.yaml`.
 
