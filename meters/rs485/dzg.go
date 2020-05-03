@@ -79,8 +79,8 @@ func (p *DZGProducer) snip(iec Measurement, scaler ...float64) Operation {
 }
 
 // Probe implements Producer interface
-func (p *DZGProducer) Probe() (Operation, error) {
-	return p.snip(VoltageL1, 100), nil
+func (p *DZGProducer) Probe() Operation {
+	return p.snip(VoltageL1, 100)
 }
 
 // Produce implements Producer interface

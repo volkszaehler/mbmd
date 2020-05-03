@@ -93,8 +93,8 @@ func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
-func (p *SBCProducer) Probe() (Operation, error) {
-	return p.snip16(VoltageL1), nil
+func (p *SBCProducer) Probe() Operation {
+	return p.snip16(VoltageL1)
 }
 
 // Produce implements Producer interface

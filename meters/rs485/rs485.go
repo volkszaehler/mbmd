@@ -54,9 +54,11 @@ func (d *RS485) Descriptor() meters.DeviceDescriptor {
 
 // Probe is called by the handler after preparing the bus by setting the device id
 func (d *RS485) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
-	op, err := d.producer.Probe()
-	if err != nil {
-		return res, err
+	op := d.producer.Probe()
+
+	// check for empty op in case Probe isn't supported
+	if Operation{} == op {
+		return res, fmt.Errorf("meter %s doesn't support Probe", d.producer.Description)
 	}
 
 	res, err = d.QueryOp(client, op)

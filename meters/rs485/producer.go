@@ -29,7 +29,7 @@ type Producer interface {
 
 	// Produce creates a device operation suited to detect the device during
 	// scanning, typically a L1 voltage read operation
-	Probe() (Operation, error)
+	Probe() Operation
 }
 
 // Opcodes map measurements to physical registers

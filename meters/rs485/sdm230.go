@@ -56,8 +56,8 @@ func (p *SDM230Producer) snip(iec Measurement) Operation {
 	return operation
 }
 
-func (p *SDM230Producer) Probe() (Operation, error) {
-	return p.snip(Voltage), nil
+func (p *SDM230Producer) Probe() Operation {
+	return p.snip(Voltage)
 }
 
 func (p *SDM230Producer) Produce() (res []Operation) {

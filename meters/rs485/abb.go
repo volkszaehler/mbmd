@@ -135,8 +135,8 @@ func (p *ABBProducer) snip64u(iec Measurement, scaler ...float64) Operation {
 }
 
 // Probe implements Producer interface
-func (p *ABBProducer) Probe() (Operation, error) {
-	return p.snip32u(VoltageL1, 10), nil
+func (p *ABBProducer) Probe() Operation {
+	return p.snip32u(VoltageL1, 10)
 }
 
 // Produce implements Producer interface
