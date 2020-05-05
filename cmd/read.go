@@ -42,7 +42,7 @@ func init() {
 	readCmd.PersistentFlags().StringP(
 		"encoding", "e",
 		"int",
-		"Data encoding: bit|int|uint|hex|float|string",
+		"Data encoding: bit|int|uint|int32s|uint32s|hex|float|string",
 	)
 }
 
@@ -145,15 +145,21 @@ func decode(b []byte, length int, encoding string) string {
 	case "int":
 		u := bytes2uint(b, length)
 		return strconv.FormatInt(int64(u), 10)
-	case "int32swapped":
+	case "int32swapped", "int32s":
 		if length != 2 {
-			log.Fatal("Invalid length for int32swapped encoding")
+			log.Fatal("Invalid length for int32(swapped) encoding")
 		}
 		u := bytes2uintSwapped(b, length)
-		return strconv.FormatInt(int64(u), 10)
+		return strconv.FormatInt(int64(int32(u)), 10)
 	case "uint":
 		u := bytes2uint(b, length)
 		return strconv.FormatUint(u, 10)
+	case "uint32swapped", "uint32s":
+		if length != 2 {
+			log.Fatal("Invalid length for uint32(swapped) encoding")
+		}
+		u := bytes2uintSwapped(b, length)
+		return strconv.FormatUint(uint64(uint32(u)), 10)
 	case "hex":
 		return fmt.Sprintf("%02x", b)
 	case "string":
