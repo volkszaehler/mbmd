@@ -16,7 +16,7 @@ mbmd read [flags] register length
 
 ```
   -d, --device string     MODBUS device ID to query. Only single device allowed. (default "1")
-  -e, --encoding string   Data encoding: bit|int|uint|hex|float|string (default "int")
+  -e, --encoding string   Data encoding: bit|int|uint|int32s|uint32s|hex|float|string (default "int")
   -t, --type string       Register type to read: holding|input|coil|discrete (default "holding")
 ```
 
