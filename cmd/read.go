@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters/rs485"
 )
 
 // readCmd represents the read command
@@ -42,7 +43,7 @@ func init() {
 	readCmd.PersistentFlags().StringP(
 		"encoding", "e",
 		"int",
-		"Data encoding: bit|int|uint|hex|float|string",
+		"Data encoding: bit|int|uint|int32s|uint32s|hex|float|string",
 	)
 }
 
@@ -85,11 +86,6 @@ func deviceIDFromSpec(meterDef string) uint8 {
 	}
 
 	return uint8(devID)
-}
-
-func bytes2uintSwapped(b []byte, length int) uint64 {
-	_ = b[3] // bounds check hint to compiler; see golang.org/issue/14808
-	return uint64(b[3])<<16 | uint64(b[2])<<24 | uint64(b[1]) | uint64(b[0])<<8
 }
 
 func bytes2uint(b []byte, length int) uint64 {
@@ -145,15 +141,21 @@ func decode(b []byte, length int, encoding string) string {
 	case "int":
 		u := bytes2uint(b, length)
 		return strconv.FormatInt(int64(u), 10)
-	case "int32swapped":
+	case "int32swapped", "int32s":
 		if length != 2 {
-			log.Fatal("Invalid length for int32swapped encoding")
+			log.Fatal("Invalid length for int32(swapped) encoding")
 		}
-		u := bytes2uintSwapped(b, length)
-		return strconv.FormatInt(int64(u), 10)
+		u := rs485.BigEndianUint32Swapped(b)
+		return strconv.FormatInt(int64(int32(u)), 10)
 	case "uint":
 		u := bytes2uint(b, length)
 		return strconv.FormatUint(u, 10)
+	case "uint32swapped", "uint32s":
+		if length != 2 {
+			log.Fatal("Invalid length for uint32(swapped) encoding")
+		}
+		u := rs485.BigEndianUint32Swapped(b)
+		return strconv.FormatUint(uint64(uint32(u)), 10)
 	case "hex":
 		return fmt.Sprintf("%02x", b)
 	case "string":
