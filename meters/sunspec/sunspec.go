@@ -215,7 +215,34 @@ func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point, m meters.Measur
 	return mr, nil
 }
 
-// QueryOp executes a single query operation on the bus
+// QueryPoint executes a single query operation for model/block/point on the bus
+func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID string) (res meters.MeasurementResult, err error) {
+	if d.notInitialized() {
+		return res, errors.New("sunspec: not initialized")
+	}
+
+	for _, model := range d.models {
+		if sunspec.ModelId(modelID) != model.Id() {
+			continue
+		}
+
+		block, err := model.Block(blockID)
+		if err != nil {
+			return meters.MeasurementResult{}, err
+		}
+
+		point, err := block.Point(pointID)
+		if err != nil {
+			return meters.MeasurementResult{}, err
+		}
+
+		return d.convertPoint(block, point, meters.Measurement(0))
+	}
+
+	return meters.MeasurementResult{}, fmt.Errorf("sunspec: %d:%d:%s not found", modelID, blockID, pointID)
+}
+
+// QueryOp queries all models and blocks until measurement is found
 func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) (res meters.MeasurementResult, err error) {
 	if d.notInitialized() {
 		return res, errors.New("sunspec: not initialized")
