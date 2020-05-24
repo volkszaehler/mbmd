@@ -22,6 +22,13 @@ func RTUIeee754ToFloat64(b []byte) float64 {
 	return float64(f)
 }
 
+// RTUIeee754ToFloat64Swapped converts 32 bit IEEE 754 float readings
+func RTUIeee754ToFloat64Swapped(b []byte) float64 {
+	bits := uint32(BigEndianUint32Swapped(b))
+	f := math.Float32frombits(bits)
+	return float64(f)
+}
+
 // RTUUint16ToFloat64 converts 16 bit unsigned integer readings
 func RTUUint16ToFloat64(b []byte) float64 {
 	u := binary.BigEndian.Uint16(b)
