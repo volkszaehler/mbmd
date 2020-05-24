@@ -43,7 +43,7 @@ func init() {
 	readCmd.PersistentFlags().StringP(
 		"encoding", "e",
 		"int",
-		"Data encoding: bit|int|uint|int32s|uint32s|hex|float|string",
+		"Data encoding: bit|int|uint|int32s|uint32s|hex|float|floats|string",
 	)
 }
 
@@ -162,6 +162,12 @@ func decode(b []byte, length int, encoding string) string {
 		return string(b)
 	case "float":
 		f := bytes2float(b, length)
+		return fmt.Sprintf("%f", f)
+	case "floatswapped", "floats":
+		if length != 2 {
+			log.Fatal("Invalid length for float(swapped) encoding")
+		}
+		f := rs485.RTUIeee754ToFloat64Swapped(b)
 		return fmt.Sprintf("%f", f)
 	}
 
