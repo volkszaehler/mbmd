@@ -226,9 +226,20 @@ func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID
 			continue
 		}
 
+		// read zero block to initialize scale factors
+		if blockID > 0 {
+			if block, err := model.Block(0); err == nil {
+				if err = block.Read(); err != nil {
+					return meters.MeasurementResult{}, err
+				}
+			}
+		}
+
 		block, err := model.Block(blockID)
-		if err != nil {
-			return meters.MeasurementResult{}, err
+		if err == nil {
+			if err = block.Read(); err != nil {
+				return meters.MeasurementResult{}, err
+			}
 		}
 
 		point, err := block.Point(pointID)
