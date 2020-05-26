@@ -260,22 +260,17 @@ func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) 
 	}
 
 	for _, model := range d.models {
-		supportedID := model.Id()
 		for modelID, blockMap := range modelMap {
-			if modelID != supportedID {
+			if modelID != model.Id() {
 				continue
 			}
 
 			for blockID, pointMap := range blockMap {
 				for pointID, m := range pointMap {
 					if m == measurement {
-						block := model.MustBlock(blockID)
-						if err = block.Read(); err != nil {
-							return
-						}
-
-						point := block.MustPoint(pointID)
-						return d.convertPoint(block, point, m)
+						mr, err := d.QueryPoint(client, int(modelID), blockID, pointID)
+						mr.Measurement = measurement
+						return mr, err
 					}
 				}
 			}
@@ -292,17 +287,19 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 	}
 
 	for _, model := range d.models {
-		blockID := 0
-
-		model.Do(func(block sunspec.Block) {
-			defer func() { blockID++ }()
-
-			if err = block.Read(); err != nil {
-				return
+		for modelID, blockMap := range modelMap {
+			if modelID != model.Id() {
+				continue
 			}
 
-			if bps, ok := modelMap[model.Id()][blockID]; ok {
-				for pointID, m := range bps {
+			for blockID, pointMap := range blockMap {
+				block := model.MustBlock(blockID)
+
+				if err := block.Read(); err != nil {
+					return res, err
+				}
+
+				for pointID, m := range pointMap {
 					point := block.MustPoint(pointID)
 
 					if mr, err := d.convertPoint(block, point, m); err == nil {
@@ -310,7 +307,7 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 					}
 				}
 			}
-		})
+		}
 	}
 
 	return res, nil

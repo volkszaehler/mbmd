@@ -54,6 +54,7 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 		},
 	},
 	model160.ModelID: {
+		0: {}, // include for sake of scale factors
 		1: {
 			model160.DCA:  meters.DCCurrentS1,
 			model160.DCV:  meters.DCVoltageS1,
