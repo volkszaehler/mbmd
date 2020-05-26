@@ -1,7 +1,7 @@
 module github.com/volkszaehler/mbmd
 
 require (
-	github.com/alvaroloes/enumer v1.1.2 // indirect
+	github.com/alvaroloes/enumer v1.1.2
 	github.com/andig/gosunspec v0.0.0-20200429133549-3cf6a82fed9c
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -28,7 +28,7 @@ require (
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20200420001825-978e26b7c37c
+	golang.org/x/tools v0.0.0-20200420001825-978e26b7c37c // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )
 
