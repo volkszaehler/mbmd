@@ -3,6 +3,7 @@ package sunspec
 import (
 	"fmt"
 	"math"
+	"sort"
 	"time"
 
 	sunspec "github.com/andig/gosunspec"
@@ -292,7 +293,20 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 				continue
 			}
 
-			for blockID, pointMap := range blockMap {
+			// sort blocks so block 0 is always read first
+			sortedBlocks := make([]int, len(blockMap))
+			for k := range blockMap {
+				sortedBlocks = append(sortedBlocks, k)
+			}
+			sort.Ints(sortedBlocks)
+
+			// always add zero block
+			if sortedBlocks[0] != 0 {
+				sortedBlocks = append([]int{0}, sortedBlocks...)
+			}
+
+			for blockID := range sortedBlocks {
+				pointMap := blockMap[blockID]
 				block := model.MustBlock(blockID)
 
 				if err := block.Read(); err != nil {
