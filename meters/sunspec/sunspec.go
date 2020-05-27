@@ -17,6 +17,7 @@ import (
 	"github.com/volkszaehler/mbmd/meters"
 )
 
+// SunSpec is the sunspec device implementation
 type SunSpec struct {
 	models     []sunspec.Model
 	descriptor meters.DeviceDescriptor
@@ -60,6 +61,7 @@ func NewDevice(meterType string) *SunSpec {
 	}
 }
 
+// Initialize implements the Device interface
 func (d *SunSpec) Initialize(client modbus.Client) error {
 	in, err := sunspecbus.Open(client)
 	if err != nil && in == nil {
@@ -148,10 +150,12 @@ func (d *SunSpec) sanitizeModels() {
 	}
 }
 
+// Descriptor implements the Device interface
 func (d *SunSpec) Descriptor() meters.DeviceDescriptor {
 	return d.descriptor
 }
 
+// Probe implements the Device interface
 func (d *SunSpec) Probe(client modbus.Client) (res meters.MeasurementResult, err error) {
 	if d.notInitialized() {
 		return res, errors.New("sunspec: not initialized")
