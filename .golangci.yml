@@ -3,3 +3,4 @@ issues:
   - "`sunspecModelID` is unused"
   - "`printModel` is unused"
   - "func `..sunSpec..sanitizeModels` is unused"
+  - "func `..SunSpec..relevantModelIds` is unused"
