@@ -118,10 +118,12 @@ func (d *SunSpec) readCommonBlock(device sunspec.Device) error {
 
 // collect and sort supported models except for common
 func (d *SunSpec) collectModels(device sunspec.Device) error {
-	d.models = device.Collect(sunspec.OneOfSeveralModelIds(d.relevantModelIds()))
-	if len(d.models) == 0 {
-		return errors.New("sunspec: could not find supported model")
-	}
+	d.models = device.Collect(sunspec.AllModels)
+
+	// don't error for sake of QueryPoint
+	// if len(device.Collect(sunspec.OneOfSeveralModelIds(d.relevantModelIds()))) == 0 {
+	// 	return errors.New("sunspec: could not find supported model")
+	// }
 
 	// sanitizeModels()
 	return nil
