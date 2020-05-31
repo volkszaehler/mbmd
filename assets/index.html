@@ -37,6 +37,20 @@
 		</div>
 	</nav>
 
+	<template id="measurement">
+		<tr class="d-flex" v-if="this.display">
+			<td class="col-3">${title}</td>
+			<td class="col-2" v-if="this.l1">${val1}</td>
+			<td class="col-2" v-else>&mdash;</td>
+			<td class="col-2" v-if="this.l2">${val2}</td>
+			<td class="col-2" v-else>&mdash;</td>
+			<td class="col-2" v-if="this.l3">${val3}</td>
+			<td class="col-2" v-else>&mdash;</td>
+			<td class="col-3" v-if="this.sum">${valsum}</td>
+			<td class="col-3" v-else>&mdash;</td>
+		</tr>
+	</template>
+
 	<div class="container">
 		<div id="realtime">
 			<h1>Measurements</h1>
@@ -84,6 +98,20 @@
 						<td class="col-2" v-else>&mdash;</td>
 						<td class="col-3" v-if="pop(m.DCPower)">${ m.DCPower }</td>
 						<td class="col-3" v-else>&mdash;</td>
+					</tr>
+					<tr class="d-flex" v-if="pop(m.ChargeState)">
+						<td class="col-3">Charge State (%)</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-3">${ m.ChargeState }</td>
+					</tr>
+					<tr class="d-flex" v-if="pop(m.BatteryVoltage)">
+						<td class="col-3">Battery Voltage (V)</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-3">${ m.BatteryVoltage }</td>
 					</tr>
 					<tr class="d-flex" v-if="pop(m.ChargeState)">
 						<td class="col-3">Charge State (%)</td>
@@ -379,6 +407,63 @@
 						<td class="col-2">&mdash;</td>
 						<td class="col-3">${ m.HeatsinkTemp }</td>
 					</tr>
+				</tbody>
+			</table>
+
+			<table class="metertable table table-striped" v-for="(m, idx) in sortedMeters">
+				<thead class="thead-dark">
+					<tr class="d-flex">
+						<th class="col-3">${ idx }</th>
+						<th class="col-2">L1</th>
+						<th class="col-2">L2</th>
+						<th class="col-2">L3</th>
+						<th class="col-3">Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- strings -->
+					<tr is="row" v-bind:data="m" val="DCVoltage" title="DC Voltage (V)"></tr>
+					<tr is="row" v-bind:data="m" val="DCCurrent" title="DC Current (A)"></tr>
+					<tr is="row" v-bind:data="m" val="DCPower" title="DC Power (W)"></tr>
+					<tr is="row" v-bind:data="m" val="HeatsinkTemp" title="Heatsink Temperature (°C)"></tr>
+
+					<!-- battery -->
+					<tr is="row" v-bind:data="m" val="ChargeState" title="Charge State (%)"></tr>
+					<tr is="row" v-bind:data="m" val="BatteryVoltage" title="Battery Voltage (V)"></tr>
+
+					<!-- meter actuals -->
+					<tr is="row" v-bind:data="m" val="Voltage" title="Voltage (V)"></tr>
+					<tr is="row" v-bind:data="m" val="Current" title="Current (A)"></tr>
+					<tr is="row" v-bind:data="m" val="Power" title="Power (W)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactivePower" title="Reactive Power (var)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ApparentPower" title="Apparent Power (VA)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ImportPower" title="Import Power (W)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ExportPower" title="Export Power (W)" sum></tr>
+
+					<!-- meter energy -->
+					<tr is="row" v-bind:data="m" val="Sum" title="Sum (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="SumT1" title="Tariff 1 Sum (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="SumT2" title="Tariff 2 Sum (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="Import" title="Import (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ImportT1" title="Tariff 1 Import (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ImportT2" title="Tariff 2 Import (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="Export" title="Export (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ExportT1" title="Tariff 1 Export (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ExportT2" title="Tariff 2 Export (kWh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveSum" title="Reactive Sum (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveSumT1" title="Tariff 1 Reactive Sum (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveSumT2" title="Tariff 2 Reactive Sum (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveImport" title="Reactive Import (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveImportT1" title="Tariff 1 Reactive Import (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveImportT2" title="Tariff 2 Reactive Import (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveExport" title="Reactive Export (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveExportT1" title="Tariff 1 Reactive Export (kvarh)" sum></tr>
+					<tr is="row" v-bind:data="m" val="ReactiveExportT2" title="Tariff 2 Reactive Export (kvarh)" sum></tr>
+
+					<!-- quality -->
+					<tr is="row" v-bind:data="m" val="Cosphi" title="Power Factor (cos 𝜑)"></tr>
+					<tr is="row" v-bind:data="m" val="THD" title="THD Voltage ("></tr>
+					<tr is="row" v-bind:data="m" val="Frequency" title="Frequency (Hz)"></tr>
 				</tbody>
 			</table>
 		</div>

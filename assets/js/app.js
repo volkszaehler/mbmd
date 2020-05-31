@@ -1,6 +1,59 @@
+Vue.component('row', {
+	template: '#measurement',
+	delimiters: ["${", "}"],
+	props: {
+		data: Object,
+		title: String,
+		val: String,
+		sum: Boolean,
+	},
+	data: function () {
+		self = this;
+
+		// p determines if the argumnt is non-null
+		let p = function (i) {
+			return self.data[i] !== undefined && self.data[i] !== null && self.data[i] !== "";
+		}
+
+		// val returns addable value: null, NaN and empty are converted to 0
+		let v = function (i) {
+			let v = parseFloat(self.data[i]);
+			return isNaN(v) ? 0 : v;
+		}
+
+		// total sum, phase or string definition
+		let l123 = p(this.val);
+		let l1 = p(this.val+"L1") || p(this.val+"S1");
+		let l2 = p(this.val+"L2") || p(this.val+"S2");
+		let l3 = p(this.val+"L3") || p(this.val+"S3");
+
+		let valsum;
+		if (this.sum) {
+			if (l123) {
+				valsum = v(this.val);
+			} else if (p(this.val+"L1") || p(this.val+"L2") || p(this.val+"L3")) {
+				valsum = v(this.val+"L1") + v(this.val+"L2") + v(this.val+"L3");
+			} else {
+				valsum = v(this.val+"S1") + v(this.val+"S2") + v(this.val+"S3");
+			}
+		}
+
+		return {
+			display: l123 || l1 || l2 || l3,
+			l1: l1,
+			l2: l2,
+			l3: l3,
+			val1: (p(this.val+"L1") ? v(this.val+"L1") : v(this.val+"S1")).toFixed(2),
+			val2: (p(this.val+"L2") ? v(this.val+"L2") : v(this.val+"S2")).toFixed(2),
+			val3: (p(this.val+"L3") ? v(this.val+"L3") : v(this.val+"S3")).toFixed(2),
+			valsum: valsum.toFixed(2),
+		};
+	},
+});
+
 let sort = {
 	methods: {
-		sorted: function(theMap) {
+		sorted: function (theMap) {
 			var devs = Object.keys(theMap);
 			devs.sort();
 			var res = {};
@@ -132,13 +185,14 @@ function connectSocket() {
 	var ws, loc = window.location;
 	var protocol = loc.protocol == "https:" ? "wss:" : "ws:"
 
-	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
+	// ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
+	ws = new WebSocket("ws://localhost:8081/ws");
 
 	ws.onerror = function(evt) {
 		ws.close();
 	}
 	ws.onclose = function (evt) {
-		window.setTimeout(connectSocket, 100);
+		window.setTimeout(connectSocket, 1000);
 	};
 	ws.onmessage = function (evt) {
 		var json = JSON.parse(evt.data);
