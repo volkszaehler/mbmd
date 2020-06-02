@@ -1,55 +1,3 @@
-Vue.component('row', {
-	template: '#measurement',
-	delimiters: ["${", "}"],
-	props: {
-		data: Object,
-		title: String,
-		val: String,
-		sum: Boolean,
-	},
-	data: function () {
-		self = this;
-
-		// p determines if the argumnt is non-null
-		let p = function (i) {
-			return self.data[i] !== undefined && self.data[i] !== null && self.data[i] !== "";
-		}
-
-		// val returns addable value: null, NaN and empty are converted to 0
-		let v = function (i) {
-			let v = parseFloat(self.data[i]);
-			return isNaN(v) ? 0 : v;
-		}
-
-		// total sum, phase or string definition
-		let l123 = p(this.val);
-		let l1 = p(this.val+"L1") || p(this.val+"S1");
-		let l2 = p(this.val+"L2") || p(this.val+"S2");
-		let l3 = p(this.val+"L3") || p(this.val+"S3");
-
-		let valsum;
-		if (this.sum) {
-			if (l123) {
-				valsum = v(this.val);
-			} else if (p(this.val+"L1") || p(this.val+"L2") || p(this.val+"L3")) {
-				valsum = v(this.val+"L1") + v(this.val+"L2") + v(this.val+"L3");
-			} else {
-				valsum = v(this.val+"S1") + v(this.val+"S2") + v(this.val+"S3");
-			}
-		}
-
-		return {
-			display: l123 || l1 || l2 || l3,
-			l1: l1,
-			l2: l2,
-			l3: l3,
-			val1: (p(this.val+"L1") ? v(this.val+"L1") : v(this.val+"S1")).toFixed(2),
-			val2: (p(this.val+"L2") ? v(this.val+"L2") : v(this.val+"S2")).toFixed(2),
-			val3: (p(this.val+"L3") ? v(this.val+"L3") : v(this.val+"S3")).toFixed(2),
-			valsum: valsum.toFixed(2),
-		};
-	},
-});
 
 let sort = {
 	methods: {
@@ -65,10 +13,44 @@ let sort = {
 	}
 }
 
-var dataapp = new Vue({
+let formatter = {
+	methods: {
+		// val returns addable value: null, NaN and empty are converted to 0
+		val: function (v) {
+			v = parseFloat(v);
+			return isNaN(v) ? 0 : v;
+		},
+		fmt: function (v) {
+			return this.val(v).toFixed(2);
+		}
+	}
+}
+
+Vue.component('row', {
+	template: '#measurement',
+	delimiters: ["${", "}"],
+	mixins: [formatter],
+	props: {
+		data: Object,
+		title: String,
+		// val: String,
+		sum: Boolean,
+	},
+	computed: {
+		valsum: function() {
+			if (this.total !== undefined) {
+				return this.total;
+			} else {
+				return this.val(this._1) + this.val(this._2) + this.val(this._3);
+			}
+		},
+	},
+});
+
+let dataapp = new Vue({
 	el: '#realtime',
 	delimiters: ['${', '}'],
-	mixins: [sort],
+	mixins: [sort, formatter],
 	data: {
 		meters: {},
 		message: 'Loading...'
@@ -83,12 +65,6 @@ var dataapp = new Vue({
 			}
 			return false;
 		},
-
-		// val returns addable value: null, NaN and empty are converted to 0
-		val: function (v) {
-			v = parseFloat(v);
-			return isNaN(v) ? 0 : v;
-		}
 	}
 })
 
@@ -151,22 +127,35 @@ function updateStatus(status) {
 	Vue.set(statusapp.meters, id, dict)
 }
 
+const re = /^(.+?)([SL]([1-9]))?$/
+
 function updateData(data) {
 	// extract the last update
-	var id = data["Device"]
-	var type = data["IEC61850"]
-	var value = fixed(data["Value"])
+	let id = data["Device"]
+	let type = data["IEC61850"]
+	let value = fixed(data["Value"])
+
+	// put into status line
+	dataapp.message = "Received " + id + " / " + type + ": " + si(value)
+
+	// match type
+	let match = re.exec(type)
+	let base = match[1]
+	let component = "total"
+	if (match[3] !== undefined) {
+		component = "_" + match[3]
+	}
 
 	// create or update data table
-	var dict = dataapp.meters[id] || {}
-	dict[type] = value
+	let meter = dataapp.meters[id] || {}
+	let dict = meter[base] || {}
 
-	// put into statusline
-	dataapp.message = "Received " + id + " / " + type + ": " + si(value)
+	dict[component] = value
+	meter[base] = dict
 
 	// make update reactive, see
 	// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
-	Vue.set(dataapp.meters, id, dict)
+	Vue.set(dataapp.meters, id, meter)
 }
 
 function processMessage(data) {
@@ -188,10 +177,10 @@ function connectSocket() {
 	// ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
 	ws = new WebSocket("ws://localhost:8081/ws");
 
-	ws.onerror = function(evt) {
+	ws.onerror = function () {
 		ws.close();
 	}
-	ws.onclose = function (evt) {
+	ws.onclose = function () {
 		window.setTimeout(connectSocket, 1000);
 	};
 	ws.onmessage = function (evt) {
