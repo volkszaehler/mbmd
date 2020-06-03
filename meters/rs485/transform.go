@@ -71,6 +71,12 @@ func RTUInt32ToFloat64Swapped(b []byte) float64 {
 	return float64(u)
 }
 
+// RTUInt64ToFloat64 converts 64 bit signed integer readings
+func RTUInt64ToFloat64(b []byte) float64 {
+	u := int64(binary.BigEndian.Uint64(b))
+	return float64(u)
+}
+
 // MakeScaledTransform creates an RTUTransform with applied scaler
 func MakeScaledTransform(transform RTUTransform, scaler float64) RTUTransform {
 	return RTUTransform(func(b []byte) float64 {
