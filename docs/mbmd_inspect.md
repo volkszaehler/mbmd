@@ -21,6 +21,7 @@ mbmd inspect [flags]
                             RTU
                               ABB      ABB A/B-Series meters
                               DZG      DZG Metering GmbH DVH4013 meters
+                              IEM3000  Schneider Electric iEM3000 series
                               INEPRO   Inepro Metering Pro 380
                               JANITZA  Janitza B-Series meters
                               MPM      Bernecker Engineering MPM3PM meters

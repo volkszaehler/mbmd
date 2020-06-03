@@ -59,7 +59,7 @@ func (p *IEM3000Producer) Type() string {
 
 // Description implements Producer interface
 func (p *IEM3000Producer) Description() string {
-	return "Schneider Electric iEM3000 Series"
+	return "Schneider Electric iEM3000 series"
 }
 
 func (p *IEM3000Producer) snipF(iec Measurement, scaler ...float64) Operation {
