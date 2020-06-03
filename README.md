@@ -248,6 +248,7 @@ manuals for definitive guidance):
 | KOSTAL Smart Energy Meter | 3 | + | + | + | + | + | + | + | - |
 | ORNO WE-514/515 | 1 | + | + | + | + | + | - | - | - |
 | ORNO WE-516/517 | 3 | + | + | + | + | + | + | + | - |
+| iEM3000 Series | 3 | + | + | + | + | + | + | (+) | + |
 
 - **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
 You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
@@ -274,12 +275,13 @@ this as the meter ID.
 It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
 - **BE MPM3PM**: Compact (4TE) three phase meter.
 - **KOSTAL Smart Energy Meter**: Slave device for Kostal grid inverters. Known [bug](https://github.com/volkszaehler/mbmd/pull/61#issuecomment-570081618) in inverter firmware with Total Export Energy.
-- **ORNO WE-514/515**: Low cost single phase meter 
+- **ORNO WE-514/515**: Low cost single phase meter
 By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
 WE-515 has a lithium battery and multi-tariff support, WE-514 does not support tariff zones.
 - **ORNO WE-516/517**: Low cost three phase meter.
 By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
 WE-517 has a lithium battery and multi-tariff support, WE-516 does not support tariff zones.
+- **Schneider Electric iEM3000 Series**: Professional meter with loads of configurable max/average measurements with timestamp functionality.
 
 ## Modbus TCP Grid Inverters
 
