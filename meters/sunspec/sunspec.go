@@ -77,20 +77,17 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	if len(devices) == 0 {
 		return errors.New("sunspec: device not found")
 	}
-	if len(devices) > 1 {
-		return errors.New("sunspec: multiple devices found")
-	}
-
-	device := devices[0]
 
 	// read common block
-	if err := d.readCommonBlock(device); err != nil {
+	if err := d.readCommonBlock(devices[0]); err != nil {
 		return err
 	}
 
 	// collect relevant models
-	if err := d.collectModels(device); err != nil {
-		return err
+	for _, device := range devices {
+		if err := d.collectModels(device); err != nil {
+			return err
+		}
 	}
 
 	return err
@@ -118,7 +115,8 @@ func (d *SunSpec) readCommonBlock(device sunspec.Device) error {
 
 // collect and sort supported models except for common
 func (d *SunSpec) collectModels(device sunspec.Device) error {
-	d.models = device.Collect(sunspec.AllModels)
+	models := device.Collect(sunspec.AllModels)
+	d.models = append(d.models, models...)
 
 	// don't error for sake of QueryPoint
 	// if len(device.Collect(sunspec.OneOfSeveralModelIds(d.relevantModelIds()))) == 0 {
