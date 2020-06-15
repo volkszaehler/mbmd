@@ -302,7 +302,16 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 			// sort blocks so block 0 is always read first
 			sortedBlocks := make([]int, len(blockMap))
 			for k := range blockMap {
-				sortedBlocks = append(sortedBlocks, k)
+				// check if value already exists in array
+				contains := false
+				for _, l := range sortedBlocks {
+					if l == k {
+						contains = true
+					}
+				}
+				if !contains {
+					sortedBlocks = append(sortedBlocks, k)
+				}
 			}
 			sort.Ints(sortedBlocks)
 
