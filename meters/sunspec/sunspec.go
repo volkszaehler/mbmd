@@ -273,6 +273,10 @@ func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) 
 			}
 
 			for blockID, pointMap := range blockMap {
+				if blockID >= model.Blocks() {
+					continue
+				}
+
 				for pointID, m := range pointMap {
 					if m == measurement {
 						mr, err := d.QueryPoint(client, int(modelID), blockID, pointID)
@@ -300,7 +304,7 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 			}
 
 			// sort blocks so block 0 is always read first
-			sortedBlocks := make([]int, len(blockMap))
+			sortedBlocks := make([]int, 0, len(blockMap))
 			for k := range blockMap {
 				sortedBlocks = append(sortedBlocks, k)
 			}
@@ -312,6 +316,10 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 			}
 
 			for blockID := range sortedBlocks {
+				if blockID >= model.Blocks() {
+					continue
+				}
+
 				pointMap := blockMap[blockID]
 				block := model.MustBlock(blockID)
 
