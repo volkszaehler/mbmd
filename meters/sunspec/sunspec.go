@@ -205,7 +205,7 @@ func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point, m meters.Measur
 	v := p.ScaledValue()
 
 	if math.IsNaN(v) {
-		return meters.MeasurementResult{}, errors.New("NaN value")
+		return meters.MeasurementResult{}, fmt.Errorf("%w", meters.ErrNaN)
 	}
 
 	// apply scale factor for energy
