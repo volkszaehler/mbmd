@@ -43,7 +43,7 @@ func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
 
 	qe := &QueryEngine{
 		handlers:    handlers,
-		deviceCache: make(map[string]meters.Device, 0),
+		deviceCache: make(map[string]meters.Device),
 	}
 	return qe
 }
