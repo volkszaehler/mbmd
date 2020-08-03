@@ -12,12 +12,12 @@ type Manager struct {
 }
 
 // NewManager creates a new connection manager instance. connection managers operate devices on a connection instance
-func NewManager(conn Connection) Manager {
+func NewManager(conn Connection) *Manager {
 	m := Manager{
 		devices: make([]device, 0),
 		Conn:    conn,
 	}
-	return m
+	return &m
 }
 
 // Add adds device to the device manager at specified device id

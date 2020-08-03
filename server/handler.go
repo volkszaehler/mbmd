@@ -19,13 +19,13 @@ const (
 // Handler is responsible for querying a single connection
 type Handler struct {
 	ID      int
-	Manager meters.Manager
+	Manager *meters.Manager
 	status  map[uint8]*RuntimeInfo
 }
 
 // NewHandler creates a connection handler. The handler is responsible
 // for querying all devices attached to the connection.
-func NewHandler(id int, m meters.Manager) *Handler {
+func NewHandler(id int, m *meters.Manager) *Handler {
 	handler := &Handler{
 		ID:      id,
 		Manager: m,

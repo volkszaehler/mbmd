@@ -28,7 +28,7 @@ type QueryEngine struct {
 }
 
 // NewQueryEngine creates new query engine
-func NewQueryEngine(managers map[string]meters.Manager) *QueryEngine {
+func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
 	handlers := make(map[string]*Handler)
 
 	for conn, m := range managers {

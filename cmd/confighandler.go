@@ -93,13 +93,13 @@ type DeviceConfig struct {
 // DeviceConfigHandler creates map of meter managers from given configuration
 type DeviceConfigHandler struct {
 	DefaultDevice string
-	Managers      map[string]meters.Manager
+	Managers      map[string]*meters.Manager
 }
 
 // NewDeviceConfigHandler creates a configuration handler
 func NewDeviceConfigHandler() *DeviceConfigHandler {
 	conf := &DeviceConfigHandler{
-		Managers: make(map[string]meters.Manager),
+		Managers: make(map[string]*meters.Manager),
 	}
 	return conf
 }
@@ -131,7 +131,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string) (res
 }
 
 // ConnectionManager returns connection manager from cache or creates new connection wrapped by manager
-func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) meters.Manager {
+func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) *meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
 		conn := createConnection(connSpec, rtu, baudrate, comset)
@@ -143,7 +143,7 @@ func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, ba
 }
 
 func (conf *DeviceConfigHandler) createDeviceForManager(
-	manager meters.Manager,
+	manager *meters.Manager,
 	meterType string,
 	subdevice int,
 ) meters.Device {
