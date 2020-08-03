@@ -37,9 +37,18 @@ func (m *Manager) Count() int {
 }
 
 // All iterates over all devices and executes the callback per device.
-// Before the callback, the slave id is set on the underlying connection if access is true.
 func (m *Manager) All(cb func(uint8, Device)) {
 	for _, device := range m.devices {
 		cb(device.id, device.dev)
 	}
+}
+
+// Find iterates over devices and executes the callback per device until true is returned.
+func (m *Manager) Find(cb func(uint8, Device) bool) bool {
+	for _, device := range m.devices {
+		if cb(device.id, device.dev) {
+			return true
+		}
+	}
+	return false
 }

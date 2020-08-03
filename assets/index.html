@@ -41,7 +41,7 @@
 		<div id="realtime">
 			<h1>Measurements</h1>
 			<p>${ message }</p>
-			<table class="metertable table table-striped" v-for="(m, idx) in sortedMeters">
+			<table class="metertable table table-striped" v-for="(m, idx) in sorted(meters)">
 				<thead class="thead-dark">
 					<tr class="d-flex">
 						<th class="col-3">${ idx }</th>
@@ -394,7 +394,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(m, idx) in meters">
+					<tr v-for="(m, idx) in sorted(meters)">
 						<td>${ idx }</td>
 						<td>${ m.Type }</td>
 						<td>${ m.Status }</td>
