@@ -2,5 +2,10 @@ package meters
 
 import "errors"
 
-// ErrNaN indicates a NaN reading result
-var ErrNaN = errors.New("NaN value")
+var (
+	// ErrNaN indicates a NaN reading result
+	ErrNaN = errors.New("NaN value")
+
+	// ErrPartiallyOpened indicates a partially opened device
+	ErrPartiallyOpened = errors.New("Device partially opened")
+)

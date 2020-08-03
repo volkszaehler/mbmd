@@ -24,21 +24,6 @@ type SunSpec struct {
 	descriptor meters.DeviceDescriptor
 }
 
-// partialError can be behaviour-checked for SunSpecPartiallyInitialized()
-// to indicate initialization error
-type partialError struct {
-	error
-	cause error
-}
-
-// Cause implements errors.Causer()
-func (e partialError) Cause() error {
-	return e.cause
-}
-
-// PartiallyInitialized implements SunSpecPartiallyInitialized()
-func (e partialError) PartiallyInitialized() {}
-
 // FixKostal implements workaround for negative KOSTAL values (https://github.com/volkszaehler/mbmd/pull/97)
 func FixKostal(p sunspec.Point) {
 	switch t := p.Value().(type) {
@@ -64,20 +49,21 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
 			Manufacturer: meterType,
+			SubDevice:    dev,
 		},
 	}
 }
 
 // Initialize implements the Device interface
 func (d *SunSpec) Initialize(client modbus.Client) error {
+	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
-	if err != nil && in == nil {
-		return err
-	} else if err != nil {
-		err = partialError{
-			error: errors.New("sunspec: device opened partially"),
-			cause: err,
+	if err != nil {
+		if in == nil {
+			return err
 		}
+
+		partiallyOpen = true
 	}
 
 	devices := in.Collect(sunspec.AllDevices)
@@ -98,6 +84,11 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	// collect relevant models
 	if err := d.collectModels(device); err != nil {
 		return err
+	}
+
+	// return partial open error if everything else went fine
+	if partiallyOpen {
+		err = fmt.Errorf("%w", meters.ErrPartiallyOpened)
 	}
 
 	return err
@@ -185,7 +176,7 @@ func (d *SunSpec) Probe(client modbus.Client) (res meters.MeasurementResult, err
 
 		v := p.ScaledValue()
 		if math.IsNaN(v) {
-			return res, errors.Wrapf(err, "sunspec: could not read probe snip")
+			return res, fmt.Errorf("%w", meters.ErrNaN)
 		}
 
 		mr := meters.MeasurementResult{

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -88,7 +89,7 @@ func (h *Handler) initializeDevice(
 	uniqueID := h.uniqueID(id, dev)
 
 	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
-		if _, partial := err.(meters.SunSpecPartiallyInitialized); !partial {
+		if !errors.Is(err, meters.ErrPartiallyOpened) {
 			log.Printf("initializing device %s failed: %v", uniqueID, err)
 
 			// wait for error to settle

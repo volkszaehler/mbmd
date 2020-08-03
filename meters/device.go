@@ -4,12 +4,6 @@ import (
 	"github.com/grid-x/modbus"
 )
 
-// SunSpecPartiallyInitialized indicates error during device initialization.
-// The sunspec device's model tree may be incomplete.
-type SunSpecPartiallyInitialized interface {
-	PartiallyInitialized()
-}
-
 // DeviceDescriptor describes a device
 type DeviceDescriptor struct {
 	Manufacturer string
@@ -17,6 +11,7 @@ type DeviceDescriptor struct {
 	Options      string
 	Version      string
 	Serial       string
+	SubDevice    int
 }
 
 // Device is a modbus device that can be described, probed and queried

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	golog "log"
 	"os"
@@ -97,7 +98,7 @@ func scan(cmd *cobra.Command, args []string) {
 	v := validator{[]float64{110, 230}}
 
 SCAN:
-	// loop over all valid slave adresses
+	// loop over all valid slave addresses
 	for deviceID := 1; deviceID <= 247; deviceID++ {
 		// give the bus some time to recover before querying the next device
 		time.Sleep(40 * time.Millisecond)
@@ -105,7 +106,7 @@ SCAN:
 
 		for _, dev := range devices {
 			if err := dev.Initialize(client); err != nil {
-				if _, partial := err.(meters.SunSpecPartiallyInitialized); !partial {
+				if !errors.Is(err, meters.ErrPartiallyOpened) {
 					continue // devices
 				}
 				log.Println(err) // log error but continue
