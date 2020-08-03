@@ -40,4 +40,5 @@ devices:
 - name: sma1
   type: sunspec
   id: 126
+  subdevice: 0 # use subdevice to access SunSpec subdevices
   adapter: 192.168.0.40:502

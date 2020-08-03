@@ -19,6 +19,7 @@ import (
 
 // SunSpec is the sunspec device implementation
 type SunSpec struct {
+	subdevice  int
 	models     []sunspec.Model
 	descriptor meters.DeviceDescriptor
 }
@@ -53,8 +54,14 @@ func FixKostal(p sunspec.Point) {
 }
 
 // NewDevice creates a Sunspec device
-func NewDevice(meterType string) *SunSpec {
+func NewDevice(meterType string, subdevice ...int) *SunSpec {
+	var dev int
+	if len(subdevice) > 0 {
+		dev = subdevice[0]
+	}
+
 	return &SunSpec{
+		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
 			Manufacturer: meterType,
 		},
@@ -77,11 +84,11 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	if len(devices) == 0 {
 		return errors.New("sunspec: device not found")
 	}
-	if len(devices) > 1 {
-		return errors.New("sunspec: multiple devices found")
+	if len(devices) <= d.subdevice {
+		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
-	device := devices[0]
+	device := devices[d.subdevice]
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
