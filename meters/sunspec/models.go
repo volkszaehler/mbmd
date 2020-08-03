@@ -4,6 +4,8 @@ import (
 	sunspec "github.com/andig/gosunspec"
 	"github.com/andig/gosunspec/models/model101"
 	"github.com/andig/gosunspec/models/model103"
+	"github.com/andig/gosunspec/models/model111"
+	"github.com/andig/gosunspec/models/model113"
 	"github.com/andig/gosunspec/models/model124"
 	"github.com/andig/gosunspec/models/model160"
 	"github.com/andig/gosunspec/models/model203"
@@ -31,8 +33,48 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model101.TmpCab: meters.HeatSinkTemp,
 		},
 	},
+	// single phase inverter - float
+	model111.ModelID: {
+		0: {
+			model101.A:      meters.Current,
+			model101.AphA:   meters.CurrentL1,
+			model101.PhVphA: meters.VoltageL1,
+			model101.Hz:     meters.Frequency,
+			model101.W:      meters.Power,
+			model101.VA:     meters.ApparentPower,
+			model101.VAr:    meters.ReactivePower,
+			model101.PF:     meters.Cosphi,
+			model101.WH:     meters.Export,
+			model101.DCA:    meters.DCCurrent,
+			model101.DCV:    meters.DCVoltage,
+			model101.DCW:    meters.DCPower,
+			model101.TmpCab: meters.HeatSinkTemp,
+		},
+	},
 	// three phase inverter
 	model103.ModelID: {
+		0: {
+			model103.A:      meters.Current,
+			model103.AphA:   meters.CurrentL1,
+			model103.AphB:   meters.CurrentL2,
+			model103.AphC:   meters.CurrentL3,
+			model103.PhVphA: meters.VoltageL1,
+			model103.PhVphB: meters.VoltageL2,
+			model103.PhVphC: meters.VoltageL3,
+			model103.Hz:     meters.Frequency,
+			model103.W:      meters.Power,
+			model103.VA:     meters.ApparentPower,
+			model103.VAr:    meters.ReactivePower,
+			model103.PF:     meters.Cosphi,
+			model103.WH:     meters.Export,
+			model103.DCA:    meters.DCCurrent,
+			model103.DCV:    meters.DCVoltage,
+			model103.DCW:    meters.DCPower,
+			model103.TmpCab: meters.HeatSinkTemp,
+		},
+	},
+	// three phase inverter - float
+	model113.ModelID: {
 		0: {
 			model103.A:      meters.Current,
 			model103.AphA:   meters.CurrentL1,
