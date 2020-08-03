@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 	"time"
 
 	sunspec "github.com/andig/gosunspec"
@@ -48,6 +49,7 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
+			Type:         meterType,
 			Manufacturer: meterType,
 			SubDevice:    dev,
 		},
@@ -94,6 +96,10 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	return err
 }
 
+func stringVal(b sunspec.Block, point string) string {
+	return strings.TrimSpace(b.MustPoint(point).StringValue())
+}
+
 func (d *SunSpec) readCommonBlock(device sunspec.Device) error {
 	// TODO catch panic
 	commonModel := device.MustModel(sunspec.ModelId(1))
@@ -103,13 +109,11 @@ func (d *SunSpec) readCommonBlock(device sunspec.Device) error {
 		return err
 	}
 
-	d.descriptor = meters.DeviceDescriptor{
-		Manufacturer: b.MustPoint(model1.Mn).StringValue(),
-		Model:        b.MustPoint(model1.Md).StringValue(),
-		Options:      b.MustPoint(model1.Opt).StringValue(),
-		Version:      b.MustPoint(model1.Vr).StringValue(),
-		Serial:       b.MustPoint(model1.SN).StringValue(),
-	}
+	d.descriptor.Manufacturer = stringVal(b, model1.Mn)
+	d.descriptor.Model = stringVal(b, model1.Md)
+	d.descriptor.Options = stringVal(b, model1.Opt)
+	d.descriptor.Version = stringVal(b, model1.Vr)
+	d.descriptor.Serial = stringVal(b, model1.SN)
 
 	return nil
 }

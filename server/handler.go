@@ -21,7 +21,7 @@ const (
 type Handler struct {
 	ID      int
 	Manager *meters.Manager
-	status  map[uint8]*RuntimeInfo
+	status  map[string]*RuntimeInfo
 }
 
 // NewHandler creates a connection handler. The handler is responsible
@@ -30,7 +30,7 @@ func NewHandler(id int, m *meters.Manager) *Handler {
 	handler := &Handler{
 		ID:      id,
 		Manager: m,
-		status:  make(map[uint8]*RuntimeInfo),
+		status:  make(map[string]*RuntimeInfo),
 	}
 
 	return handler
@@ -38,7 +38,8 @@ func NewHandler(id int, m *meters.Manager) *Handler {
 
 // uniqueID creates a unique id per device
 func (h *Handler) uniqueID(id uint8, dev meters.Device) string {
-	return fmt.Sprintf("%s%d.%d", dev.Descriptor().Manufacturer, h.ID, id)
+	desc := dev.Descriptor()
+	return fmt.Sprintf("%s%d-%d.%d", desc.Type, h.ID, id, desc.SubDevice)
 }
 
 // Run initializes and queries every device attached to the handler's connection
@@ -59,16 +60,16 @@ func (h *Handler) Run(
 		h.Manager.Conn.Slave(id)
 
 		// initialize device
-		status, ok := h.status[id]
+		uniqueID := h.uniqueID(id, dev)
+		status, ok := h.status[uniqueID]
 		if !ok {
 			var err error
 			if status, err = h.initializeDevice(ctx, control, id, dev); err != nil {
 				return
 			}
-			h.status[id] = status
+			h.status[uniqueID] = status
 		}
 
-		uniqueID := h.uniqueID(id, dev)
 		if queryable, wakeup := status.IsQueryable(); wakeup {
 			log.Printf("device %s is offline - reactivating", uniqueID)
 		} else if !queryable {
@@ -102,9 +103,7 @@ func (h *Handler) initializeDevice(
 		log.Println(err) // log error but continue
 	}
 
-	d := dev.Descriptor()
-	uniqueID = h.uniqueID(id, dev) // update id
-	log.Printf("initialized device %s: %v", uniqueID, d)
+	log.Printf("initialized device %s: %v", uniqueID, dev.Descriptor())
 
 	// create status
 	status := &RuntimeInfo{Online: true}
@@ -126,7 +125,7 @@ func (h *Handler) queryDevice(
 	dev meters.Device,
 ) {
 	uniqueID := h.uniqueID(id, dev)
-	status := h.status[id]
+	status := h.status[uniqueID]
 
 	for retry := 0; retry < maxRetry; retry++ {
 		status.Requests++

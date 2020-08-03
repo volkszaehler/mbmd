@@ -65,7 +65,8 @@ func countDevices(managers map[string]*meters.Manager) int {
 	var count int
 	for _, m := range managers {
 		m.All(func(id uint8, dev meters.Device) {
-			log.Printf("config: declared device %s:%d", dev.Descriptor().Manufacturer, id)
+			conf := dev.Descriptor()
+			log.Printf("config: declared device %s:%d.%d", conf.Type, id, conf.SubDevice)
 			count++
 		})
 	}

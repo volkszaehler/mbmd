@@ -46,8 +46,10 @@ func (d *RS485) Producer() Producer {
 // Descriptor returns the device descriptor. Since this method does not have bus access the descriptor should be
 // prepared during initialization.
 func (d *RS485) Descriptor() meters.DeviceDescriptor {
+	typ := d.producer.Type()
 	return meters.DeviceDescriptor{
-		Manufacturer: d.producer.Type(),
+		Type:         typ,
+		Manufacturer: typ,
 		Model:        d.producer.Description(),
 	}
 }

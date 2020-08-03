@@ -31,7 +31,14 @@ type QueryEngine struct {
 func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
 	handlers := make(map[string]*Handler)
 
-	for conn, m := range managers {
+	// sort handlers by name
+	keys := make([]string, 0)
+	for conn := range managers {
+		keys = append(keys, conn)
+	}
+
+	for _, conn := range keys {
+		m := managers[conn]
 		if m.Count() == 0 {
 			// don't give ids to empty connections
 			continue
