@@ -135,15 +135,12 @@ function connectSocket() {
 	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
 
 	ws.onerror = function(evt) {
-		// console.warn("Connection error");
 		ws.close();
 	}
 	ws.onclose = function (evt) {
-		// console.warn("Connection closed");
 		window.setTimeout(connectSocket, 100);
 	};
 	ws.onmessage = function (evt) {
-		console.log(evt.data)
 		var json = JSON.parse(evt.data);
 		processMessage(json);
 	};
