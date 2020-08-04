@@ -76,6 +76,7 @@ func NewStatus(qe DeviceInfo, control <-chan ControlSnip) *Status {
 			}
 
 			desc := s.qe.DeviceDescriptorByID(c.Device)
+
 			ds := DeviceStatus{
 				Device:       c.Device,
 				Type:         desc.Manufacturer,

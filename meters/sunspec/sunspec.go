@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 	"time"
 
 	sunspec "github.com/andig/gosunspec"
@@ -19,24 +20,10 @@ import (
 
 // SunSpec is the sunspec device implementation
 type SunSpec struct {
+	subdevice  int
 	models     []sunspec.Model
 	descriptor meters.DeviceDescriptor
 }
-
-// partialError can be behaviour-checked for SunSpecPartiallyInitialized()
-// to indicate initialization error
-type partialError struct {
-	error
-	cause error
-}
-
-// Cause implements errors.Causer()
-func (e partialError) Cause() error {
-	return e.cause
-}
-
-// PartiallyInitialized implements SunSpecPartiallyInitialized()
-func (e partialError) PartiallyInitialized() {}
 
 // FixKostal implements workaround for negative KOSTAL values (https://github.com/volkszaehler/mbmd/pull/97)
 func FixKostal(p sunspec.Point) {
@@ -53,35 +40,43 @@ func FixKostal(p sunspec.Point) {
 }
 
 // NewDevice creates a Sunspec device
-func NewDevice(meterType string) *SunSpec {
+func NewDevice(meterType string, subdevice ...int) *SunSpec {
+	var dev int
+	if len(subdevice) > 0 {
+		dev = subdevice[0]
+	}
+
 	return &SunSpec{
+		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
+			Type:         meterType,
 			Manufacturer: meterType,
+			SubDevice:    dev,
 		},
 	}
 }
 
 // Initialize implements the Device interface
 func (d *SunSpec) Initialize(client modbus.Client) error {
+	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
-	if err != nil && in == nil {
-		return err
-	} else if err != nil {
-		err = partialError{
-			error: errors.New("sunspec: device opened partially"),
-			cause: err,
+	if err != nil {
+		if in == nil {
+			return err
 		}
+
+		partiallyOpen = true
 	}
 
 	devices := in.Collect(sunspec.AllDevices)
 	if len(devices) == 0 {
 		return errors.New("sunspec: device not found")
 	}
-	if len(devices) > 1 {
-		return errors.New("sunspec: multiple devices found")
+	if len(devices) <= d.subdevice {
+		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
-	device := devices[0]
+	device := devices[d.subdevice]
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
@@ -93,7 +88,16 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 		return err
 	}
 
+	// return partial open error if everything else went fine
+	if partiallyOpen {
+		err = fmt.Errorf("%w", meters.ErrPartiallyOpened)
+	}
+
 	return err
+}
+
+func stringVal(b sunspec.Block, point string) string {
+	return strings.TrimSpace(b.MustPoint(point).StringValue())
 }
 
 func (d *SunSpec) readCommonBlock(device sunspec.Device) error {
@@ -105,13 +109,11 @@ func (d *SunSpec) readCommonBlock(device sunspec.Device) error {
 		return err
 	}
 
-	d.descriptor = meters.DeviceDescriptor{
-		Manufacturer: b.MustPoint(model1.Mn).StringValue(),
-		Model:        b.MustPoint(model1.Md).StringValue(),
-		Options:      b.MustPoint(model1.Opt).StringValue(),
-		Version:      b.MustPoint(model1.Vr).StringValue(),
-		Serial:       b.MustPoint(model1.SN).StringValue(),
-	}
+	d.descriptor.Manufacturer = stringVal(b, model1.Mn)
+	d.descriptor.Model = stringVal(b, model1.Md)
+	d.descriptor.Options = stringVal(b, model1.Opt)
+	d.descriptor.Version = stringVal(b, model1.Vr)
+	d.descriptor.Serial = stringVal(b, model1.SN)
 
 	return nil
 }
@@ -178,7 +180,7 @@ func (d *SunSpec) Probe(client modbus.Client) (res meters.MeasurementResult, err
 
 		v := p.ScaledValue()
 		if math.IsNaN(v) {
-			return res, errors.Wrapf(err, "sunspec: could not read probe snip")
+			return res, fmt.Errorf("%w", meters.ErrNaN)
 		}
 
 		mr := meters.MeasurementResult{

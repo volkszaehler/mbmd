@@ -61,11 +61,12 @@ func meterHelp() string {
 }
 
 // countDevices counts all devices for all meters
-func countDevices(managers map[string]meters.Manager) int {
+func countDevices(managers map[string]*meters.Manager) int {
 	var count int
 	for _, m := range managers {
 		m.All(func(id uint8, dev meters.Device) {
-			log.Printf("config: declared device %s:%d", dev.Descriptor().Manufacturer, id)
+			conf := dev.Descriptor()
+			log.Printf("config: declared device %s:%d.%d", conf.Type, id, conf.SubDevice)
 			count++
 		})
 	}
@@ -73,7 +74,7 @@ func countDevices(managers map[string]meters.Manager) int {
 }
 
 // setLogger enabled raw logging for all devices
-func setLogger(managers map[string]meters.Manager, logger meters.Logger) {
+func setLogger(managers map[string]*meters.Manager, logger meters.Logger) {
 	for _, m := range managers {
 		m.Conn.Logger(logger)
 	}

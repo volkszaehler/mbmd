@@ -1,31 +1,33 @@
 package meters
 
-import (
-	"fmt"
-)
+type device struct {
+	id  uint8
+	dev Device
+}
 
 // Manager handles devices attached to a connection
 type Manager struct {
-	devices map[uint8]Device
+	devices []device
 	Conn    Connection
 }
 
 // NewManager creates a new connection manager instance. connection managers operate devices on a connection instance
-func NewManager(conn Connection) Manager {
+func NewManager(conn Connection) *Manager {
 	m := Manager{
-		devices: make(map[uint8]Device, 1),
+		devices: make([]device, 0),
 		Conn:    conn,
 	}
-	return m
+	return &m
 }
 
 // Add adds device to the device manager at specified device id
-func (m *Manager) Add(id uint8, device Device) error {
-	if _, ok := m.devices[id]; ok {
-		return fmt.Errorf("duplicate device id %d", id)
+func (m *Manager) Add(id uint8, dev Device) error {
+	device := device{
+		id:  id,
+		dev: dev,
 	}
 
-	m.devices[id] = device
+	m.devices = append(m.devices, device)
 	return nil
 }
 
@@ -35,9 +37,18 @@ func (m *Manager) Count() int {
 }
 
 // All iterates over all devices and executes the callback per device.
-// Before the callback, the slave id is set on the underlying connection if access is true.
 func (m *Manager) All(cb func(uint8, Device)) {
-	for id, device := range m.devices {
-		cb(id, device)
+	for _, device := range m.devices {
+		cb(device.id, device.dev)
 	}
+}
+
+// Find iterates over devices and executes the callback per device until true is returned.
+func (m *Manager) Find(cb func(uint8, Device) bool) bool {
+	for _, device := range m.devices {
+		if cb(device.id, device.dev) {
+			return true
+		}
+	}
+	return false
 }

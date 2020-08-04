@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -19,25 +20,26 @@ const (
 // Handler is responsible for querying a single connection
 type Handler struct {
 	ID      int
-	Manager meters.Manager
-	status  map[uint8]*RuntimeInfo
+	Manager *meters.Manager
+	status  map[string]*RuntimeInfo
 }
 
 // NewHandler creates a connection handler. The handler is responsible
 // for querying all devices attached to the connection.
-func NewHandler(id int, m meters.Manager) *Handler {
+func NewHandler(id int, m *meters.Manager) *Handler {
 	handler := &Handler{
 		ID:      id,
 		Manager: m,
-		status:  make(map[uint8]*RuntimeInfo),
+		status:  make(map[string]*RuntimeInfo),
 	}
 
 	return handler
 }
 
-// uniqueID creates a unique id per device
-func (h *Handler) uniqueID(id uint8, dev meters.Device) string {
-	return fmt.Sprintf("%s%d.%d", dev.Descriptor().Manufacturer, h.ID, id)
+// deviceID creates a unique id per device
+func (h *Handler) deviceID(id uint8, dev meters.Device) string {
+	desc := dev.Descriptor()
+	return fmt.Sprintf("%s%d-%d.%d", desc.Type, h.ID, id, desc.SubDevice)
 }
 
 // Run initializes and queries every device attached to the handler's connection
@@ -58,18 +60,18 @@ func (h *Handler) Run(
 		h.Manager.Conn.Slave(id)
 
 		// initialize device
-		status, ok := h.status[id]
+		deviceID := h.deviceID(id, dev)
+		status, ok := h.status[deviceID]
 		if !ok {
 			var err error
 			if status, err = h.initializeDevice(ctx, control, id, dev); err != nil {
 				return
 			}
-			h.status[id] = status
+			h.status[deviceID] = status
 		}
 
-		uniqueID := h.uniqueID(id, dev)
 		if queryable, wakeup := status.IsQueryable(); wakeup {
-			log.Printf("device %s is offline - reactivating", uniqueID)
+			log.Printf("device %s is offline - reactivating", deviceID)
 		} else if !queryable {
 			return
 		}
@@ -85,11 +87,11 @@ func (h *Handler) initializeDevice(
 	id uint8,
 	dev meters.Device,
 ) (*RuntimeInfo, error) {
-	uniqueID := h.uniqueID(id, dev)
+	deviceID := h.deviceID(id, dev)
 
 	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
-		if _, partial := err.(meters.SunSpecPartiallyInitialized); !partial {
-			log.Printf("initializing device %s failed: %v", uniqueID, err)
+		if !errors.Is(err, meters.ErrPartiallyOpened) {
+			log.Printf("initializing device %s failed: %v", deviceID, err)
 
 			// wait for error to settle
 			ctx, cancel := context.WithTimeout(ctx, initDelay)
@@ -101,16 +103,14 @@ func (h *Handler) initializeDevice(
 		log.Println(err) // log error but continue
 	}
 
-	d := dev.Descriptor()
-	uniqueID = h.uniqueID(id, dev) // update id
-	log.Printf("initialized device %s: %v", uniqueID, d)
+	log.Printf("initialized device %s: %v", deviceID, dev.Descriptor())
 
 	// create status
 	status := &RuntimeInfo{Online: true}
 
 	// signal device online
 	control <- ControlSnip{
-		Device: uniqueID,
+		Device: deviceID,
 		Status: *status,
 	}
 
@@ -124,8 +124,8 @@ func (h *Handler) queryDevice(
 	id uint8,
 	dev meters.Device,
 ) {
-	uniqueID := h.uniqueID(id, dev)
-	status := h.status[id]
+	deviceID := h.deviceID(id, dev)
+	status := h.status[deviceID]
 
 	for retry := 0; retry < maxRetry; retry++ {
 		status.Requests++
@@ -135,19 +135,19 @@ func (h *Handler) queryDevice(
 			// send ok status
 			status.Available(true)
 			control <- ControlSnip{
-				Device: uniqueID,
+				Device: deviceID,
 				Status: *status,
 			}
 
 			// send measurements
 			for _, r := range measurements {
 				if math.IsNaN(r.Value) {
-					log.Printf("device %s skipping NaN for %s", uniqueID, r.Measurement.String())
+					log.Printf("device %s skipping NaN for %s", deviceID, r.Measurement.String())
 					continue
 				}
 
 				snip := QuerySnip{
-					Device:            uniqueID,
+					Device:            deviceID,
 					MeasurementResult: r,
 				}
 				results <- snip
@@ -157,7 +157,7 @@ func (h *Handler) queryDevice(
 		}
 
 		status.Errors++
-		log.Printf("device %s did not respond (%d/%d)", uniqueID, retry+1, maxRetry)
+		log.Printf("device %s did not respond (%d/%d)", deviceID, retry+1, maxRetry)
 
 		// wait for device to settle after error
 		select {
@@ -167,7 +167,7 @@ func (h *Handler) queryDevice(
 		}
 	}
 
-	log.Printf("device %s is offline", uniqueID)
+	log.Printf("device %s is offline", deviceID)
 
 	// close connection to force modbus client to reopen
 	h.Manager.Conn.Close()
@@ -175,7 +175,7 @@ func (h *Handler) queryDevice(
 	// send error status
 	status.Available(false)
 	control <- ControlSnip{
-		Device: uniqueID,
+		Device: deviceID,
 		Status: *status,
 	}
 }

@@ -83,22 +83,23 @@ type AdapterConfig struct {
 
 // DeviceConfig describes a single device's configuration
 type DeviceConfig struct {
-	Type    string
-	ID      uint8
-	Name    string
-	Adapter string
+	Type      string
+	ID        uint8
+	SubDevice int
+	Name      string
+	Adapter   string
 }
 
 // DeviceConfigHandler creates map of meter managers from given configuration
 type DeviceConfigHandler struct {
 	DefaultDevice string
-	Managers      map[string]meters.Manager
+	Managers      map[string]*meters.Manager
 }
 
 // NewDeviceConfigHandler creates a configuration handler
 func NewDeviceConfigHandler() *DeviceConfigHandler {
 	conf := &DeviceConfigHandler{
-		Managers: make(map[string]meters.Manager),
+		Managers: make(map[string]*meters.Manager),
 	}
 	return conf
 }
@@ -130,7 +131,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string) (res
 }
 
 // ConnectionManager returns connection manager from cache or creates new connection wrapped by manager
-func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) meters.Manager {
+func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) *meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
 		conn := createConnection(connSpec, rtu, baudrate, comset)
@@ -142,8 +143,9 @@ func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, ba
 }
 
 func (conf *DeviceConfigHandler) createDeviceForManager(
-	manager meters.Manager,
+	manager *meters.Manager,
 	meterType string,
+	subdevice int,
 ) meters.Device {
 	var meter meters.Device
 	meterType = strings.ToUpper(meterType)
@@ -159,8 +161,12 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 
 	sort.SearchStrings(sunspecTypes, meterType)
 	if isSunspec {
-		meter = sunspec.NewDevice(meterType)
+		meter = sunspec.NewDevice(meterType, subdevice)
 	} else {
+		if subdevice > 0 {
+			log.Fatalf("Invalid subdevice number for device %s: %d", meterType, subdevice)
+		}
+
 		var err error
 		meter, err = rs485.NewDevice(meterType)
 		if err != nil {
@@ -189,7 +195,7 @@ func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 	if !ok {
 		log.Fatalf("Missing adapter configuration for device %v", devConf)
 	}
-	meter := conf.createDeviceForManager(manager, devConf.Type)
+	meter := conf.createDeviceForManager(manager, devConf.Type, devConf.SubDevice)
 
 	if err := manager.Add(devConf.ID, meter); err != nil {
 		log.Fatalf("Error adding device %v: %v.", devConf, err)
@@ -224,7 +230,19 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 		log.Fatalf("Cannot parse device definition- meter type empty: %s. See -h for help.", meterDef)
 	}
 
-	id, err := strconv.Atoi(devID)
+	var subdevice int
+	devIDSplit := strings.SplitN(devID, ".", 2)
+	if len(devIDSplit) == 2 {
+		var err error
+		subdevice, err = strconv.Atoi(devIDSplit[1])
+		if err != nil {
+			log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
+		}
+	} else if len(devIDSplit) > 2 {
+		log.Fatalf("Error parsing device id %s. See -h for help.", devID)
+	}
+
+	id, err := strconv.Atoi(devIDSplit[0])
 	if err != nil {
 		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
@@ -233,7 +251,7 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 	// have been created of the --rtu flag was specified. We'll not re-check this here.
 	manager := conf.ConnectionManager(connSpec, false, 0, "")
 
-	meter := conf.createDeviceForManager(manager, meterType)
+	meter := conf.createDeviceForManager(manager, meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {
 		log.Fatalf("Error adding device %s: %v. See -h for help.", meterDef, err)
 	}

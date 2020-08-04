@@ -1,24 +1,27 @@
+let sort = {
+	methods: {
+		sorted: function(theMap) {
+			var devs = Object.keys(theMap);
+			devs.sort();
+			var res = {};
+			devs.forEach(function (key) {
+				res[key] = theMap[key];
+			});
+			return res;
+		}
+	}
+}
+
 var dataapp = new Vue({
 	el: '#realtime',
 	delimiters: ['${', '}'],
+	mixins: [sort],
 	data: {
 		meters: {},
 		message: 'Loading...'
 	},
-	computed: {
-		// return meters sorted by name
-		sortedMeters: function() {
-			var devs = Object.keys(this.meters);
-			devs.sort();
-			var res = {};
-			devs.forEach(function(key) {
-				res[key] = this.meters[key];
-			}, this);
-			return res;
-		}
-	},
 	methods: {
-		// pop returns true if it was called with any non-null argumnt
+		// pop returns true if it was called with any non-null argument
 		pop: function () {
 			for(var i=0; i<arguments.length; i++) {
 				if (arguments[i] !== undefined && arguments[i] !== null && arguments[i] !== "") {
@@ -48,6 +51,7 @@ var timeapp = new Vue({
 var statusapp = new Vue({
 	el: '#status',
 	delimiters: ['${', '}'],
+	mixins: [sort],
 	data: {
 		meters: {}
 	}
@@ -131,11 +135,9 @@ function connectSocket() {
 	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
 
 	ws.onerror = function(evt) {
-		// console.warn("Connection error");
 		ws.close();
 	}
 	ws.onclose = function (evt) {
-		// console.warn("Connection closed");
 		window.setTimeout(connectSocket, 100);
 	};
 	ws.onmessage = function (evt) {

@@ -290,11 +290,15 @@ are supported, too. SunSpec defines a default register layout for accessing
 the devices.
 
 Supported inverters include popular devices from SolarEdge (SE3000, SE9000)
-and SMA (Sunny Boy and Sunny Tripower).
+and SMA (Sunny Boy and Sunny TriPower).
 
-In case of TCP connection, the adapter paramter becomes the hostname and port:
+In case of TCP connection, the adapter parameter becomes the hostname and port:
 
 	./mbmd run -a 192.168.0.44:502 -d SMA:23
+
+SunSpec devices can host multiple subdevices, e.g. to expose a meter attached to an inverter. To access a subdevice, append its id to the slave id:
+
+	./mbmd run -a 192.168.0.44:502 -d FRONIUS:1.0 -d FRONIUS:1.1
 
 
 # Changelog

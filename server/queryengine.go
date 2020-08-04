@@ -2,18 +2,11 @@ package server
 
 import (
 	"context"
-	"log"
-	"regexp"
-	"strconv"
+	"sort"
 	"sync"
 	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
-)
-
-const (
-	// deviceIDregex is the regex pattern that identifies valid device ids
-	deviceIDregex = `\w*(\d+)\.(\d+)`
 )
 
 // DeviceInfo returns device descriptor by device id
@@ -23,15 +16,23 @@ type DeviceInfo interface {
 
 // QueryEngine executes queries on connections and attached devices
 type QueryEngine struct {
-	handlers map[string]*Handler
-	re       *regexp.Regexp
+	handlers    map[string]*Handler
+	deviceCache map[string]meters.Device
 }
 
 // NewQueryEngine creates new query engine
-func NewQueryEngine(managers map[string]meters.Manager) *QueryEngine {
+func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
 	handlers := make(map[string]*Handler)
 
-	for conn, m := range managers {
+	// sort handlers by name
+	keys := make([]string, 0, len(managers))
+	for conn := range managers {
+		keys = append(keys, conn)
+	}
+	sort.Strings(keys)
+
+	for _, conn := range keys {
+		m := managers[conn]
 		if m.Count() == 0 {
 			// don't give ids to empty connections
 			continue
@@ -41,30 +42,30 @@ func NewQueryEngine(managers map[string]meters.Manager) *QueryEngine {
 	}
 
 	qe := &QueryEngine{
-		handlers: handlers,
-		re:       regexp.MustCompile(deviceIDregex),
+		handlers:    handlers,
+		deviceCache: make(map[string]meters.Device),
 	}
 	return qe
 }
 
 // DeviceDescriptorByID implements DeviceInfo interface
 func (q *QueryEngine) DeviceDescriptorByID(id string) (res meters.DeviceDescriptor) {
-	match := q.re.FindStringSubmatch(id)
-	if len(match) != 3 {
-		log.Fatalf("unexpected device id %s", id)
+	// already cached?
+	if dev, ok := q.deviceCache[id]; ok {
+		return dev.Descriptor()
 	}
 
-	handlerID, _ := strconv.Atoi(match[1])
-	deviceID, _ := strconv.Atoi(match[2])
-
 	for _, h := range q.handlers {
-		if h.ID == handlerID {
-			h.Manager.All(func(id uint8, dev meters.Device) {
-				if id == uint8(deviceID) {
-					res = dev.Descriptor()
-				}
-			})
-		}
+		h.Manager.Find(func(slaveID uint8, dev meters.Device) (found bool) {
+			devID := h.deviceID(slaveID, dev)
+			if id == devID {
+				q.deviceCache[id] = dev
+				res = dev.Descriptor()
+				found = true
+			}
+
+			return
+		})
 	}
 
 	return res
@@ -84,6 +85,7 @@ func (q *QueryEngine) Run(
 	var wg sync.WaitGroup
 	for _, h := range q.handlers {
 		wg.Add(1)
+
 		go func(h *Handler) {
 			ticker := time.NewTicker(rate)
 			defer ticker.Stop()
@@ -103,5 +105,6 @@ func (q *QueryEngine) Run(
 			}
 		}(h)
 	}
+
 	wg.Wait()
 }
