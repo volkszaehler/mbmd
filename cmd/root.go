@@ -107,7 +107,7 @@ func initConfig() {
 		// using config file
 		cfgFile = viper.ConfigFileUsed()
 	} else {
-		var configFileNotFound *viper.ConfigFileNotFoundError
+		var configFileNotFound viper.ConfigFileNotFoundError
 		var unsupportedConfig viper.UnsupportedConfigError
 		if errors.As(err, &configFileNotFound) || errors.As(err, &unsupportedConfig) {
 			// not using config file

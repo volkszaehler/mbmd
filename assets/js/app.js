@@ -1,4 +1,3 @@
-
 let sort = {
 	methods: {
 		sorted: function (theMap) {
@@ -26,25 +25,22 @@ let formatter = {
 	}
 }
 
-Vue.component('row', {
-	template: '#measurement',
-	delimiters: ["${", "}"],
-	mixins: [formatter],
-	props: {
-		data: Object,
-		title: String,
-		// val: String,
-		sum: Boolean,
-	},
-	computed: {
-		valsum: function() {
-			if (this.total !== undefined) {
-				return this.total;
-			} else {
-				return this.val(this._1) + this.val(this._2) + this.val(this._3);
-			}
-		},
-	},
+let timeapp = new Vue({
+	el: '#time',
+	delimiters: ['${', '}'],
+	data: {
+		time: 'n/a',
+		date: 'n/a'
+	}
+});
+
+let statusapp = new Vue({
+	el: '#status',
+	delimiters: ['${', '}'],
+	mixins: [sort],
+	data: {
+		meters: {}
+	}
 });
 
 let dataapp = new Vue({
@@ -66,25 +62,27 @@ let dataapp = new Vue({
 			return false;
 		},
 	}
-})
+});
 
-var timeapp = new Vue({
-	el: '#time',
-	delimiters: ['${', '}'],
-	data: {
-		time: 'n/a',
-		date: 'n/a'
-	}
-})
-
-var statusapp = new Vue({
-	el: '#status',
-	delimiters: ['${', '}'],
-	mixins: [sort],
-	data: {
-		meters: {}
-	}
-})
+Vue.component('row', {
+	template: '#measurement',
+	delimiters: ["${", "}"],
+	mixins: [formatter],
+	props: {
+		data: Object,
+		title: String,
+		sum: Boolean,
+	},
+	computed: {
+		valsum: function () {
+			if (this.total !== undefined) {
+				return this.total;
+			} else {
+				return this.val(this._1) + this.val(this._2) + this.val(this._3);
+			}
+		},
+	},
+});
 
 var fixed = d3.format(".2f")
 var si = d3.format(".3~s")
@@ -182,9 +180,9 @@ function connectSocket() {
 	}
 	ws.onclose = function () {
 		window.setTimeout(connectSocket, 1000);
-	};
+	}
 	ws.onmessage = function (evt) {
 		var json = JSON.parse(evt.data);
 		processMessage(json);
-	};
+	}
 }
