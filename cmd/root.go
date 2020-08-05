@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -105,12 +106,15 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		// using config file
 		cfgFile = viper.ConfigFileUsed()
-	} else if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-		// parsing failed - exit
-		fmt.Println(err)
-		os.Exit(1)
 	} else {
-		// not using config file
-		cfgFile = ""
+		var configFileNotFound viper.ConfigFileNotFoundError
+		var unsupportedConfig viper.UnsupportedConfigError
+		if errors.As(err, &configFileNotFound) || errors.As(err, &unsupportedConfig) {
+			// not using config file
+			cfgFile = ""
+		} else {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 }
