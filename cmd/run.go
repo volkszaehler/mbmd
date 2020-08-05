@@ -128,14 +128,14 @@ any type is considered valid.
 		"InfluxDB measurement",
 	)
 	runCmd.PersistentFlags().String(
-		"influx-precision",
-		"s",
-		"InfluxDB precision",
+		"influx-organization",
+		"",
+		"InfluxDB organization",
 	)
-	runCmd.PersistentFlags().Duration(
-		"influx-interval",
-		30*time.Second,
-		"InfluxDB write interval",
+	runCmd.PersistentFlags().String(
+		"influx-token",
+		"",
+		"InfluxDB token (optional)",
 	)
 	runCmd.PersistentFlags().String(
 		"influx-user",
@@ -157,7 +157,7 @@ any type is considered valid.
 	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "qos", "homie")
 
 	// influx
-	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "precision", "interval", "user", "password")
+	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "organization", "token", "user", "password")
 }
 
 // checkVersion validates if updates are available
@@ -300,11 +300,10 @@ func run(cmd *cobra.Command, args []string) {
 			viper.GetString("influx.url"),
 			viper.GetString("influx.database"),
 			viper.GetString("influx.measurement"),
-			viper.GetString("influx.precision"),
-			viper.GetDuration("influx.interval"),
+			viper.GetString("influx.organization"),
+			viper.GetString("influx.token"),
 			viper.GetString("influx.user"),
 			viper.GetString("influx.password"),
-			viper.GetBool("verbose"),
 		)
 
 		tee.AttachRunner(server.NewSnipRunner(influx.Run))

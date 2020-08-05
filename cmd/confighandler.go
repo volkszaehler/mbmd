@@ -24,31 +24,31 @@ type Config struct {
 	Devices     []DeviceConfig
 }
 
-// commandLine areguments are embedded into Config to allow validating
+// commandLine arguments are embedded into Config to allow validating
 // surplus keys in config file
 type commandLine struct {
-	Adapter           interface{} `mapstructure:"adapter"`
-	Baudrate          interface{} `mapstructure:"baudrate"`
-	Comset            interface{} `mapstructure:"comset"`
-	Config            interface{} `mapstructure:"config"`
-	Help              interface{} `mapstructure:"help"`
-	InfluxDatabase    interface{} `mapstructure:"influx-database"`
-	InfluxInterval    interface{} `mapstructure:"influx-interval"`
-	InfluxMeasurement interface{} `mapstructure:"influx-measurement"`
-	InfluxPassword    interface{} `mapstructure:"influx-password"`
-	InfluxPrecision   interface{} `mapstructure:"influx-precision"`
-	InfluxURL         interface{} `mapstructure:"influx-url"`
-	InfluxUser        interface{} `mapstructure:"influx-user"`
-	MqttBroker        interface{} `mapstructure:"mqtt-broker"`
-	MqttClientID      interface{} `mapstructure:"mqtt-clientid"`
-	MqttHomie         interface{} `mapstructure:"mqtt-homie"`
-	MqttPassword      interface{} `mapstructure:"mqtt-password"`
-	MqttQos           interface{} `mapstructure:"mqtt-qos"`
-	MqttTopic         interface{} `mapstructure:"mqtt-topic"`
-	MqttUser          interface{} `mapstructure:"mqtt-user"`
-	Raw               interface{} `mapstructure:"raw"`
-	RTU               interface{} `mapstructure:"rtu"`
-	Verbose           interface{} `mapstructure:"verbose"`
+	Adapter            interface{} `mapstructure:"adapter"`
+	Baudrate           interface{} `mapstructure:"baudrate"`
+	Comset             interface{} `mapstructure:"comset"`
+	Config             interface{} `mapstructure:"config"`
+	Help               interface{} `mapstructure:"help"`
+	InfluxURL          interface{} `mapstructure:"influx-url"`
+	InfluxDatabase     interface{} `mapstructure:"influx-database"`
+	InfluxMeasurement  interface{} `mapstructure:"influx-measurement"`
+	InfluxOrganization interface{} `mapstructure:"influx-organization"`
+	InfluxToken        interface{} `mapstructure:"influx-token"`
+	InfluxPassword     interface{} `mapstructure:"influx-password"`
+	InfluxUser         interface{} `mapstructure:"influx-user"`
+	MqttBroker         interface{} `mapstructure:"mqtt-broker"`
+	MqttClientID       interface{} `mapstructure:"mqtt-clientid"`
+	MqttHomie          interface{} `mapstructure:"mqtt-homie"`
+	MqttPassword       interface{} `mapstructure:"mqtt-password"`
+	MqttQos            interface{} `mapstructure:"mqtt-qos"`
+	MqttTopic          interface{} `mapstructure:"mqtt-topic"`
+	MqttUser           interface{} `mapstructure:"mqtt-user"`
+	Raw                interface{} `mapstructure:"raw"`
+	RTU                interface{} `mapstructure:"rtu"`
+	Verbose            interface{} `mapstructure:"verbose"`
 }
 
 // MqttConfig describes the mqtt broker configuration
@@ -64,13 +64,13 @@ type MqttConfig struct {
 
 // InfluxConfig describes the InfluxDB configuration
 type InfluxConfig struct {
-	Database    string
-	Interval    time.Duration
-	Measurement string
-	Password    string
-	Precision   string
-	URL         string
-	User        string
+	URL          string
+	Database     string
+	Measurement  string
+	Organization string
+	Token        string
+	User         string
+	Password     string
 }
 
 // AdapterConfig describes device communication parameters
