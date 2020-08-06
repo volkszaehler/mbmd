@@ -161,7 +161,7 @@ func (h *Handler) queryDevice(
 		}
 
 		status.Errors++
-		log.Printf("device %s did not respond (%d/%d)", deviceID, retry+1, maxRetry)
+		log.Printf("device %s did not respond (%d/%d): %v", deviceID, retry+1, maxRetry, err)
 
 		// wait for device to settle after error
 		select {
