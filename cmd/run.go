@@ -56,6 +56,9 @@ func bindPFlagsWithPrefix(flags *pflag.FlagSet, prefix string, names ...string) 
 func init() {
 	rootCmd.AddCommand(runCmd)
 
+	// add root flags
+	runCmd.PersistentFlags().AddFlagSet(rootCmd.PersistentFlags())
+
 	runCmd.PersistentFlags().StringSliceP(
 		"devices", "d",
 		[]string{},
@@ -174,6 +177,22 @@ func checkVersion() {
 	}
 }
 
+// validate surplus config
+func validateRemainingKeys(cmd *cobra.Command, other map[string]interface{}) {
+	flags := cmd.PersistentFlags()
+
+	invalid := make([]string, 0)
+	for key := range other {
+		if flags.Lookup(key) == nil {
+			invalid = append(invalid, key)
+		}
+	}
+
+	if len(invalid) > 0 {
+		log.Fatalf("config: failed parsing config file %s - excess keys: %v", cfgFile, invalid)
+	}
+}
+
 func run(cmd *cobra.Command, args []string) {
 	log.Printf("mbmd %s (%s)", server.Version, server.Commit)
 	if len(args) > 0 {
@@ -206,6 +225,9 @@ func run(cmd *cobra.Command, args []string) {
 		if err := viper.UnmarshalExact(&conf); err != nil {
 			log.Fatalf("config: failed parsing config file %s: %v", cfgFile, err)
 		}
+
+		// validate surplus config
+		validateRemainingKeys(cmd, conf.Other)
 
 		// create devices from config file only if not overridden on command line
 		if len(devices) == 0 {

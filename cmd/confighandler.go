@@ -15,40 +15,13 @@ import (
 
 // Config describes the entire configuration
 type Config struct {
-	commandLine `mapstructure:",squash"` // for completeness
-	API         string
-	Rate        time.Duration
-	Mqtt        MqttConfig
-	Influx      InfluxConfig
-	Adapters    []AdapterConfig
-	Devices     []DeviceConfig
-}
-
-// commandLine arguments are embedded into Config to allow validating
-// surplus keys in config file
-type commandLine struct {
-	Adapter            interface{} `mapstructure:"adapter"`
-	Baudrate           interface{} `mapstructure:"baudrate"`
-	Comset             interface{} `mapstructure:"comset"`
-	Config             interface{} `mapstructure:"config"`
-	Help               interface{} `mapstructure:"help"`
-	InfluxURL          interface{} `mapstructure:"influx-url"`
-	InfluxDatabase     interface{} `mapstructure:"influx-database"`
-	InfluxMeasurement  interface{} `mapstructure:"influx-measurement"`
-	InfluxOrganization interface{} `mapstructure:"influx-organization"`
-	InfluxToken        interface{} `mapstructure:"influx-token"`
-	InfluxPassword     interface{} `mapstructure:"influx-password"`
-	InfluxUser         interface{} `mapstructure:"influx-user"`
-	MqttBroker         interface{} `mapstructure:"mqtt-broker"`
-	MqttClientID       interface{} `mapstructure:"mqtt-clientid"`
-	MqttHomie          interface{} `mapstructure:"mqtt-homie"`
-	MqttPassword       interface{} `mapstructure:"mqtt-password"`
-	MqttQos            interface{} `mapstructure:"mqtt-qos"`
-	MqttTopic          interface{} `mapstructure:"mqtt-topic"`
-	MqttUser           interface{} `mapstructure:"mqtt-user"`
-	Raw                interface{} `mapstructure:"raw"`
-	RTU                interface{} `mapstructure:"rtu"`
-	Verbose            interface{} `mapstructure:"verbose"`
+	API      string
+	Rate     time.Duration
+	Mqtt     MqttConfig
+	Influx   InfluxConfig
+	Adapters []AdapterConfig
+	Devices  []DeviceConfig
+	Other    map[string]interface{} `mapstructure:",remain"`
 }
 
 // MqttConfig describes the mqtt broker configuration
