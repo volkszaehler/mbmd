@@ -7,6 +7,19 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=yes" />
 	<link rel="stylesheet" href="css/bootstrap.min.css">
 	<link href="css/app.css" rel="stylesheet">
+
+	<!-- CSS -->
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/fontawesome.min.css" rel="stylesheet">
+
+	<!-- Bootstrap -->
+	<script src="js/jquery-3.4.1.slim.min.js"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.bundle.min.js"></script>
+
+	<!-- VueJS -->
+  <script src="js/vue.min.js"></script>
+  <script src="js/d3-format.min.js"></script>
 </head>
 
 <body>
@@ -56,17 +69,22 @@
 			<h1>Measurements</h1>
 			<p>${ message }</p>
 
-			<table class="metertable table table-striped" v-for="(m, idx) in sortedMeters">
+			<table class="metertable table table-striped" v-for="(m, idx) in sorted(meters)">
 				<thead class="thead-dark">
 					<tr class="d-flex">
-						<th class="col-3">${ idx }</th>
+						<th class="col-3">
+							<a href="#" class="text-body">
+								${ idx }
+								<i class="fas fa-chevron-up mx-2" data-toggle="collapse" v-bind:data-target="#'data-'+idx"></i>
+							</a>
+						</th>
 						<th class="col-2">L1</th>
 						<th class="col-2">L2</th>
 						<th class="col-2">L3</th>
 						<th class="col-3">Total</th>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody class="collapse show" v-bind:id="'data-'+idx">
 					<!-- strings -->
 					<tr is="row" v-bind:data="m.DCVoltage" title="DC Voltage (V)"></tr>
 					<tr is="row" v-bind:data="m.DCCurrent" title="DC Current (A)"></tr>
@@ -145,12 +163,7 @@
 	</div>
 	<!-- /.container -->
 
-	<script src="js/jquery-3.2.1.min.js"></script>
-	<script src="js/d3-format.min.js"></script>
-	<script src="js/tether.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
-	<script src="js/vue.min.js"></script>
-	<script src="js/app.js"></script>
+	<script src="js/app.js?{{.Tag}}"></script>
 </body>
 
 </html>

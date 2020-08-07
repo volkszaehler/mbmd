@@ -16,10 +16,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const devAssets = false
-
-//go:generate esc -private -o assets.go -pkg server -modtime 1566640112 -ignore .DS_Store -prefix ../assets ../assets
-
 // Httpd is an http server
 type Httpd struct {
 	mc *Cache
@@ -27,27 +23,23 @@ type Httpd struct {
 }
 
 func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
-	mainTemplate, err := _escFSString(devAssets, "/index.html")
-	if err != nil {
-		log.Fatal("httpd: failed to load embedded template: " + err.Error())
-	}
-	t, err := template.New("mbmd").Parse(mainTemplate)
-	if err != nil {
-		log.Fatal("httpd: failed to create main page template: ", err.Error())
-	}
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		data := struct {
-			SoftwareVersion string
-			GolangVersion   string
-		}{
-			SoftwareVersion: Version,
-			GolangVersion:   runtime.Version(),
-		}
-		err := t.Execute(w, data)
+
+		mainTemplate, err := _escFSString(useLocalAssets, "/index.html")
 		if err != nil {
+			log.Fatal("httpd: failed to load embedded template: " + err.Error())
+		}
+		t, err := template.New("mbmd").Parse(mainTemplate)
+		if err != nil {
+			log.Fatal("httpd: failed to create main page template: ", err.Error())
+		}
+
+		if err := t.Execute(w, map[string]interface{}{
+			"SoftwareVersion": Version,
+			"GolangVersion":   runtime.Version(),
+			"Tag":             time.Now().Unix(),
+		}); err != nil {
 			log.Fatal("httpd: failed to render main page: ", err.Error())
 		}
 	})
@@ -173,9 +165,9 @@ func (h *Httpd) Run(
 
 	// individual handlers per folder
 	static.HandleFunc("/", h.mkIndexHandler())
-	for _, folder := range []string{"js", "css"} {
+	for _, folder := range []string{"js", "css", "webfonts", "ico"} {
 		prefix := fmt.Sprintf("/%s/", folder)
-		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(devAssets, prefix))))
+		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(useLocalAssets, prefix))))
 	}
 
 	// api
