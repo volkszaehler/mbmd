@@ -14,7 +14,6 @@ require (
 	github.com/grid-x/serial v0.0.0-20191104121038-e24bc9bf6f08 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/influxdata/influxdb-client-go v1.4.0
-	github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/mjibson/esc v0.2.0
 	github.com/pelletier/go-toml v1.7.0 // indirect
