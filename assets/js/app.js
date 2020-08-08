@@ -25,42 +25,19 @@ let formatter = {
 	}
 }
 
-let timeapp = new Vue({
-	el: '#time',
-	delimiters: ['${', '}'],
-	data: {
-		time: 'n/a',
-		date: 'n/a'
-	}
-});
-
-let statusapp = new Vue({
-	el: '#status',
-	delimiters: ['${', '}'],
-	mixins: [sort],
-	data: {
-		meters: {}
-	}
-});
-
 let dataapp = new Vue({
 	el: '#realtime',
 	delimiters: ['${', '}'],
-	mixins: [sort, formatter],
+	mixins: [sort],
 	data: {
 		meters: {},
 		message: 'Loading...'
 	},
-	methods: {
-		// pop returns true if it was called with any non-null argument
-		pop: function () {
-			for(var i=0; i<arguments.length; i++) {
-				if (arguments[i] !== undefined && arguments[i] !== null && arguments[i] !== "") {
-					return true;
-				}
-			}
-			return false;
-		},
+	computed: {
+		sortedMeters: function() {
+			console.log(this.meters)
+			return this.sorted(this.meters);
+		}
 	}
 });
 
@@ -68,11 +45,7 @@ Vue.component('row', {
 	template: '#measurement',
 	delimiters: ["${", "}"],
 	mixins: [formatter],
-	props: {
-		data: Object,
-		title: String,
-		sum: Boolean,
-	},
+	props: ["data", "title", "sum"],
 	computed: {
 		valsum: function () {
 			if (this.total !== undefined) {
@@ -84,33 +57,18 @@ Vue.component('row', {
 	},
 });
 
-var fixed = d3.format(".2f")
-var si = d3.format(".3~s")
+let statusapp = new Vue({
+	el: '#status',
+	delimiters: ['${', '}'],
+	mixins: [sort],
+	data: {
+		meters: {}
+	}
+});
 
 $().ready(function () {
 	connectSocket();
 });
-
-function convertDate(unixtimestamp){
-	var date = new Date(unixtimestamp);
-	var day = "0" + date.getDate();
-	var month = "0" + (date.getMonth() + 1);
-	var year = date.getFullYear();
-	return year + '/' + month.substr(-2) + '/' + day.substr(-2);
-}
-
-function convertTime(unixtimestamp){
-	var date = new Date(unixtimestamp);
-	var hours = date.getHours();
-	var minutes = "0" + date.getMinutes();
-	var seconds = "0" + date.getSeconds();
-	return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-}
-
-function updateTime(data) {
-	timeapp.date = convertDate(data["Timestamp"])
-	timeapp.time = convertTime(data["Timestamp"])
-}
 
 function updateStatus(status) {
 	var id = status["Device"]
@@ -126,6 +84,9 @@ function updateStatus(status) {
 }
 
 const re = /^(.+?)([SL]([1-9]))?$/
+
+let fixed = d3.format(".2f")
+let si = d3.format(".3~s")
 
 function updateData(data) {
 	// extract the last update
@@ -163,7 +124,6 @@ function processMessage(data) {
 		}
 	}
 	else if (data.Device) {
-		updateTime(data);
 		updateData(data);
 	}
 }
@@ -182,6 +142,7 @@ function connectSocket() {
 		window.setTimeout(connectSocket, 1000);
 	}
 	ws.onmessage = function (evt) {
+		// console.log(evt.data);
 		var json = JSON.parse(evt.data);
 		processMessage(json);
 	}

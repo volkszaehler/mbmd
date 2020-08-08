@@ -26,7 +26,7 @@ func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=UTF-8")
 
-		mainTemplate, err := _escFSString(useLocalAssets, "/index.html")
+		mainTemplate, err := FSString(useLocalAssets, "/index.html")
 		if err != nil {
 			log.Fatal("httpd: failed to load embedded template: " + err.Error())
 		}
@@ -167,7 +167,7 @@ func (h *Httpd) Run(
 	static.HandleFunc("/", h.mkIndexHandler())
 	for _, folder := range []string{"js", "css", "webfonts", "ico"} {
 		prefix := fmt.Sprintf("/%s/", folder)
-		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(useLocalAssets, prefix))))
+		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(Dir(useLocalAssets, prefix))))
 	}
 
 	// api

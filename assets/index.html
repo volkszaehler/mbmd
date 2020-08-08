@@ -44,9 +44,6 @@
 					<a class="nav-link" href="#about">About</a>
 				</li>
 			</ul>
-			<span id="time" class="navbar-text">
-				${ date } ${ time }
-			</span>
 		</div>
 	</nav>
 
@@ -73,9 +70,10 @@
 				<thead class="thead-dark">
 					<tr class="d-flex">
 						<th class="col-3">
-							<a href="#" class="text-body">
+							<a href="#" class="text-white">
 								${ idx }
-								<i class="fas fa-chevron-up mx-2" data-toggle="collapse" v-bind:data-target="#'data-'+idx"></i>
+								<i class="fas fa-chevron-up mx-2" data-toggle="collapse" v-bind:data-target="'#data-'+idx"></i>
+								<i class="fas fa-chevron-down mx-2" data-toggle="collapse" v-bind:data-target="'#data-'+idx"></i>
 							</a>
 						</th>
 						<th class="col-2">L1</th>
