@@ -42,7 +42,7 @@ let dataapp = new Vue({
 });
 
 Vue.component('row', {
-	template: '#measurement',
+	template: '#data-row',
 	delimiters: ["${", "}"],
 	mixins: [formatter],
 	props: ["data", "title", "sum"],
