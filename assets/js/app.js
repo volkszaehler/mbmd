@@ -45,9 +45,17 @@ Vue.component('row', {
 	template: '#data-row',
 	delimiters: ["${", "}"],
 	mixins: [formatter],
-	props: ["data", "title", "sum"],
+	props: {
+		data: Object,
+		title: String,
+		sum: Boolean,
+	},
 	computed: {
+		dump: function (){
+			return this.data
+		},
 		valsum: function () {
+			console.log("valsum:"+this)
 			if (this.total !== undefined) {
 				return this.total;
 			} else {
@@ -97,6 +105,10 @@ function updateData(data) {
 	// put into status line
 	dataapp.message = "Received " + id + " / " + type + ": " + si(value)
 
+	if (type.indexOf("Reactive") === 0) {
+		console.log(type)
+	}
+
 	// match type
 	let match = re.exec(type)
 	let base = match[1]
@@ -132,8 +144,7 @@ function connectSocket() {
 	var ws, loc = window.location;
 	var protocol = loc.protocol == "https:" ? "wss:" : "ws:"
 
-	// ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
-	ws = new WebSocket("ws://localhost:8081/ws");
+	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
 
 	ws.onerror = function () {
 		ws.close();

@@ -47,31 +47,33 @@
 		</div>
 	</nav>
 
-	<template id="data-row">
-		<tr class="d-flex" v-if="data">
-			<td class="col-3">${title}</td>
-			<td class="col-2" v-if="data._1">${data._1}</td>
+	<script type="text/x-template" id="data-row">
+		<tr class="d-flex">
+			<td class="col-3">${title}${data}${dump}</td>
+			<td class="col-2" v-if="typeof data._1 !== 'undefined'">${data}</td>
 			<td class="col-2" v-else>&mdash;</td>
-			<td class="col-2" v-if="data._2">${data._2}</td>
+			<td class="col-2" v-if="typeof data._2 !== 'undefined'">${data}</td>
 			<td class="col-2" v-else>&mdash;</td>
-			<td class="col-2" v-if="data._3">${data._3}</td>
+			<td class="col-2" v-if="typeof data._3 !== 'undefined'">${data}</td>
 			<td class="col-2" v-else>&mdash;</td>
-			<td class="col-3" v-if="sum">${fmt(valsum)}</td>
+			<td class="col-3" v-if="data.total">${data.total}</td>
+			<td class="col-3" v-else-if="sum">${fmt(valsum)}</td>
 			<td class="col-3" v-else>&mdash;</td>
 		</tr>
-	</template>
+	</script>
 
 	<div class="container">
 		<div id="realtime">
 			<h1>Measurements</h1>
-			<p>${ message }</p>
+			<p>${message}</p>
 
-			<table class="metertable table table-striped" v-for="(m, idx) in sorted(meters)">
+			<table class="metertable table table-striped" v-for="(m, name, idx) in sorted(meters)">
 				<thead class="thead-dark">
 					<tr class="d-flex">
 						<th class="col-3">
 							<a href="#" class="text-white">
-								${ idx }
+								${name}
+								${m.Export}
 								<i class="fas fa-chevron-up mx-2" data-toggle="collapse" v-bind:data-target="'#data-'+idx"></i>
 								<i class="fas fa-chevron-down mx-2" data-toggle="collapse" v-bind:data-target="'#data-'+idx"></i>
 							</a>
@@ -142,9 +144,9 @@
 				</thead>
 				<tbody>
 					<tr v-for="(m, idx) in sorted(meters)">
-						<td>${ idx }</td>
-						<td>${ m.Type }</td>
-						<td>${ m.Status }</td>
+						<td>${idx}</td>
+						<td>${m.Type}</td>
+						<td>${m.Status}</td>
 					</tr>
 				</tbody>
 			</table>
