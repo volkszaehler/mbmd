@@ -39,7 +39,7 @@ func NewHandler(id int, m *meters.Manager) *Handler {
 // deviceID creates a unique id per device
 func (h *Handler) deviceID(id uint8, dev meters.Device) string {
 	desc := dev.Descriptor()
-	devID := fmt.Sprintf("%s%d-%d", desc.Type, h.ID, id)
+	devID := fmt.Sprintf("%s%d.%d", desc.Type, h.ID, id)
 	if desc.SubDevice > 0 {
 		devID = fmt.Sprintf("%s.%d", devID, desc.SubDevice)
 	}
