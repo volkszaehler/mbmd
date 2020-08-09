@@ -8,6 +8,7 @@ import (
 	"github.com/andig/gosunspec/models/model113"
 	"github.com/andig/gosunspec/models/model124"
 	"github.com/andig/gosunspec/models/model160"
+	"github.com/andig/gosunspec/models/model201"
 	"github.com/andig/gosunspec/models/model203"
 
 	"github.com/volkszaehler/mbmd/meters"
@@ -113,6 +114,20 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model160.DCV:  meters.DCVoltageS3,
 			model160.DCW:  meters.DCPowerS3,
 			model160.DCWH: meters.DCEnergyS3,
+		},
+	},
+	// single phase (AN or AB) meter
+	model201.ModelID: {
+		0: {
+			model201.A:        meters.Current,
+			model201.Hz:       meters.Frequency,
+			model201.PF:       meters.Cosphi,
+			model201.PhV:      meters.Voltage,
+			model201.TotWhExp: meters.Export,
+			model201.TotWhImp: meters.Import,
+			model201.VA:       meters.ApparentPower,
+			model201.VAR:      meters.ReactivePower,
+			model201.W:        meters.Power,
 		},
 	},
 	// wye-connect three phase (abcn) meter
