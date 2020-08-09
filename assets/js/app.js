@@ -1,6 +1,6 @@
 let sort = {
 	methods: {
-		sorted: function (theMap) {
+		sorted: function(theMap) {
 			var devs = Object.keys(theMap);
 			devs.sort();
 			var res = {};
@@ -12,41 +12,10 @@ let sort = {
 	}
 }
 
-let formatter = {
-	methods: {
-		// val returns addable value: null, NaN and empty are converted to 0
-		val: function (v) {
-			v = parseFloat(v);
-			return isNaN(v) ? 0 : v;
-		},
-		fmt: function (v) {
-			return this.val(v).toFixed(2);
-		}
-	}
-}
-
-let timeapp = new Vue({
-	el: '#time',
-	delimiters: ['${', '}'],
-	data: {
-		time: 'n/a',
-		date: 'n/a'
-	}
-});
-
-let statusapp = new Vue({
-	el: '#status',
-	delimiters: ['${', '}'],
-	mixins: [sort],
-	data: {
-		meters: {}
-	}
-});
-
-let dataapp = new Vue({
+var dataapp = new Vue({
 	el: '#realtime',
 	delimiters: ['${', '}'],
-	mixins: [sort, formatter],
+	mixins: [sort],
 	data: {
 		meters: {},
 		message: 'Loading...'
@@ -61,28 +30,32 @@ let dataapp = new Vue({
 			}
 			return false;
 		},
-	}
-});
 
-Vue.component('row', {
-	template: '#measurement',
-	delimiters: ["${", "}"],
-	mixins: [formatter],
-	props: {
-		data: Object,
-		title: String,
-		sum: Boolean,
-	},
-	computed: {
-		valsum: function () {
-			if (this.total !== undefined) {
-				return this.total;
-			} else {
-				return this.val(this._1) + this.val(this._2) + this.val(this._3);
-			}
-		},
-	},
-});
+		// val returns addable value: null, NaN and empty are converted to 0
+		val: function (v) {
+			v = parseFloat(v);
+			return isNaN(v) ? 0 : v;
+		}
+	}
+})
+
+var timeapp = new Vue({
+	el: '#time',
+	delimiters: ['${', '}'],
+	data: {
+		time: 'n/a',
+		date: 'n/a'
+	}
+})
+
+var statusapp = new Vue({
+	el: '#status',
+	delimiters: ['${', '}'],
+	mixins: [sort],
+	data: {
+		meters: {}
+	}
+})
 
 var fixed = d3.format(".2f")
 var si = d3.format(".3~s")
@@ -125,35 +98,22 @@ function updateStatus(status) {
 	Vue.set(statusapp.meters, id, dict)
 }
 
-const re = /^(.+?)([SL]([1-9]))?$/
-
 function updateData(data) {
 	// extract the last update
-	let id = data["Device"]
-	let type = data["IEC61850"]
-	let value = fixed(data["Value"])
-
-	// put into status line
-	dataapp.message = "Received " + id + " / " + type + ": " + si(value)
-
-	// match type
-	let match = re.exec(type)
-	let base = match[1]
-	let component = "total"
-	if (match[3] !== undefined) {
-		component = "_" + match[3]
-	}
+	var id = data["Device"]
+	var type = data["IEC61850"]
+	var value = fixed(data["Value"])
 
 	// create or update data table
-	let meter = dataapp.meters[id] || {}
-	let dict = meter[base] || {}
+	var dict = dataapp.meters[id] || {}
+	dict[type] = value
 
-	dict[component] = value
-	meter[base] = dict
+	// put into statusline
+	dataapp.message = "Received " + id + " / " + type + ": " + si(value)
 
 	// make update reactive, see
 	// https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
-	Vue.set(dataapp.meters, id, meter)
+	Vue.set(dataapp.meters, id, dict)
 }
 
 function processMessage(data) {
@@ -172,17 +132,16 @@ function connectSocket() {
 	var ws, loc = window.location;
 	var protocol = loc.protocol == "https:" ? "wss:" : "ws:"
 
-	// ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
-	ws = new WebSocket("ws://localhost:8081/ws");
+	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
 
-	ws.onerror = function () {
+	ws.onerror = function(evt) {
 		ws.close();
 	}
-	ws.onclose = function () {
-		window.setTimeout(connectSocket, 1000);
-	}
+	ws.onclose = function (evt) {
+		window.setTimeout(connectSocket, 100);
+	};
 	ws.onmessage = function (evt) {
 		var json = JSON.parse(evt.data);
 		processMessage(json);
-	}
+	};
 }
