@@ -93,7 +93,7 @@ func (p *IEM3000Producer) Produce() (res []Operation) {
 			snip := Operation{
 				FuncCode:  ReadHoldingReg,
 				OpCode:    p.Opcodes[op],
-				ReadLen:   2,
+				ReadLen:   4,
 				IEC61850:  op,
 				Transform: MakeScaledTransform(RTUInt64ToFloat64, 1000),
 			}
