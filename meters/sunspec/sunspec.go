@@ -1,6 +1,7 @@
 package sunspec
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -14,7 +15,6 @@ import (
 	_ "github.com/andig/gosunspec/models" // device tree parsing requires all models
 	"github.com/andig/gosunspec/models/model1"
 	"github.com/andig/gosunspec/models/model101"
-	"github.com/pkg/errors"
 	"github.com/volkszaehler/mbmd/meters"
 )
 

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/grid-x/modbus"
-	"github.com/pkg/errors"
 	"github.com/volkszaehler/mbmd/meters"
 )
 
@@ -93,7 +92,7 @@ func (d *RS485) QueryOp(client modbus.Client, op Operation) (res meters.Measurem
 	}
 
 	if err != nil {
-		return res, errors.Wrap(err, "read failed")
+		return res, fmt.Errorf("read failed: %v", err)
 	}
 
 	res = meters.MeasurementResult{
