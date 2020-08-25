@@ -21,7 +21,7 @@ Modbus communication is possible over RS485 connections as well as TCP sockets.
   * [Websocket API](#websocket-api)
   * [MQTT API](#mqtt-api)
 * [Supported Devices](#supported-devices)
-* [Changelog](#changelog)
+* [Releases](#releases)
 
 
 ## Requirements
@@ -221,6 +221,9 @@ By default, readings are published at `/mbmd/<unique id>/<reading>`. Rate limiti
 
 ![auto-discovery of thinks in OpenHAB](img/openhab.png)
 
+## InfluxDB support
+
+There is also the option to directly insert the data into an influxdb database by using the command-line options available. InfluxDB 1.8 and 2.0 are currently supported. to enable this, add the `--influx-database` and the `--influx-url` commandline parameter. More advanced configuration is available, to learn more checkout the [mbmd_run.md](docs/mbmd_run.md) documentation
 
 # Supported Devices
 
@@ -301,12 +304,6 @@ SunSpec devices can host multiple subdevices, e.g. to expose a meter attached to
 	./mbmd run -a 192.168.0.44:502 -d FRONIUS:1.0 -d FRONIUS:1.1
 
 
-# Changelog
+# Releases
 
-## 0.8
-
-Initial release at https://github.com/volkszaehler/mbmd. Various enhancements and additional meters.
-
-## 0.7
-
-Before versoin 0.8, `mbmd` was known as `sdm630` and developed by Mathias Dalheimer. Older releases of `mbmd`/`sdm630` can be found at https://github.com/gonium/gosdm630
+Download the lastest release from [github.com/volkszaehler/mbmd/releases](https://github.com/volkszaehler/mbmd/releases).
