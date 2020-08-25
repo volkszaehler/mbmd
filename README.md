@@ -21,7 +21,7 @@ Modbus communication is possible over RS485 connections as well as TCP sockets.
   * [Websocket API](#websocket-api)
   * [MQTT API](#mqtt-api)
 * [Supported Devices](#supported-devices)
-* [Changelog](#changelog)
+* [Releases](#releases)
 
 
 ## Requirements
@@ -304,14 +304,6 @@ SunSpec devices can host multiple subdevices, e.g. to expose a meter attached to
 	./mbmd run -a 192.168.0.44:502 -d FRONIUS:1.0 -d FRONIUS:1.1
 
 
-# Changelog
+# Releases
 
-## latest version 0.13
-
-## 0.8
-
-Initial release at https://github.com/volkszaehler/mbmd. Various enhancements and additional meters.
-
-## 0.7
-
-Before versoin 0.8, `mbmd` was known as `sdm630` and developed by Mathias Dalheimer. Older releases of `mbmd`/`sdm630` can be found at https://github.com/gonium/gosdm630
+download the lastest release [here](/releases/latest) or see the older versions on the [releases](/releases) pages
