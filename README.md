@@ -306,4 +306,4 @@ SunSpec devices can host multiple subdevices, e.g. to expose a meter attached to
 
 # Releases
 
-download the lastest release [here](/releases/latest) or see the older versions on the [releases](/releases) pages
+Download the lastest release from [github.com/volkszaehler/mbmd/releases](https://github.com/volkszaehler/mbmd/releases).
