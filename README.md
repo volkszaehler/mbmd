@@ -221,9 +221,9 @@ By default, readings are published at `/mbmd/<unique id>/<reading>`. Rate limiti
 
 ![auto-discovery of thinks in OpenHAB](img/openhab.png)
 
-## InfluxDb support
+## InfluxDB support
 
-There is also the option to directly insert the data into an influxdb database by using the command-line options available. Influxdb 1.x and 2.0 are currently supported. to enable this, add the `--influx-database` and the `--influx-url` commandline parameter. More advanced configuration is available, to learn more checkout the [mbmd_run.md](docs/mbmd_run.md) documentation
+There is also the option to directly insert the data into an influxdb database by using the command-line options available. InfluxDB 1.8 and 2.0 are currently supported. to enable this, add the `--influx-database` and the `--influx-url` commandline parameter. More advanced configuration is available, to learn more checkout the [mbmd_run.md](docs/mbmd_run.md) documentation
 
 # Supported Devices
 
