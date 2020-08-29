@@ -11,6 +11,7 @@ type RTUOverTCP struct {
 	address string
 	Client  modbus.Client
 	Handler *modbus.RTUOverTCPClientHandler
+	prevID  uint8
 }
 
 // NewRTUOverTCPClientHandler creates a TCP modbus handler
@@ -56,6 +57,12 @@ func (b *RTUOverTCP) Logger(l Logger) {
 
 // Slave sets the modbus device id for the following operations
 func (b *RTUOverTCP) Slave(deviceID uint8) {
+	// Some devices like SDM need to have a little pause between querying different device ids
+	if b.prevID != 0 && deviceID != b.prevID {
+		time.Sleep(time.Duration(100) * time.Millisecond)
+		b.prevID = deviceID
+	}
+
 	b.Handler.SetSlave(deviceID)
 }
 
