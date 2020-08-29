@@ -170,7 +170,7 @@ Both device APIs can also be called without the device id to return data for all
 
 The `/api/status` endpoint provides the following information:
 
-    $ curl http://localhost:8080/status
+    $ curl http://localhost:8080/api/status
     {
       "StartTime": "2017-01-25T16:35:50.839829945+01:00",
       "UpTime": 65587.177092186,
