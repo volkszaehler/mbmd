@@ -130,7 +130,7 @@ any type is considered valid.
 	runCmd.PersistentFlags().String(
 		"influx-organization",
 		"",
-		"InfluxDB organization",
+		"InfluxDB organization (use an empty string (\"\") for InfluxDB 1.8)",
 	)
 	runCmd.PersistentFlags().String(
 		"influx-token",

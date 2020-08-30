@@ -39,7 +39,7 @@ mbmd run [flags]
                                        Example: -d SDM:1@/dev/USB11 -d SMA:126@localhost:502
       --influx-database string       InfluxDB database
       --influx-measurement string    InfluxDB measurement (default "data")
-      --influx-organization string   InfluxDB organization
+      --influx-organization string   InfluxDB organization (use an empty string ("") for InfluxDB 1.8)
       --influx-password string       InfluxDB password (optional)
       --influx-token string          InfluxDB token (optional)
   -i, --influx-url string            InfluxDB URL. ex: http://10.10.1.1:8086
