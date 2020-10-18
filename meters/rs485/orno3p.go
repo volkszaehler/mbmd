@@ -4,16 +4,23 @@ import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
 	Register(NewORNO3PProducer)
-    
 }
 
 const (
 	METERTYPE_ORNO3p = "ORNO3p"
 )
 
-var ops3p Opcodes = Opcodes{
+type ORNO3PProducer struct {
+	Opcodes
+}
 
-		Frequency:       0x0014, // 32 bit, Hz
+func NewORNO3PProducer() Producer {
+	/***
+	 * Opcodes for ORNO WE-514 and WE-515
+	 * https://github.com/gituser-rk/orno-modbus-mqtt/blob/master/Register%20description%20OR-WE-514%26OR-WE-515.pdf
+	 */
+	ops := Opcodes{
+		Frequency: 0x0014, // 32 bit, Hz
 
 		VoltageL1:       0x000E, // 32 bit, V
 		CurrentL1:       0x0016, // 32 bit, A
@@ -36,57 +43,56 @@ var ops3p Opcodes = Opcodes{
 		ApparentPowerL3: 0x0032, // 32 bit, kva
 		CosphiL3:        0x003A, // 32 bit, XX,X(literal)
 
+		Power:         0x001C, // 32 bit, kW
+		ReactivePower: 0x0024, // 32 bit, kvar
+		ApparentPower: 0x002C, // 32 bit, kva
+		Cosphi:        0x0034, // 32 bit, XX,X(literal)
 
-		Power:           0x001C, // 32 bit, kW
-		ReactivePower:   0x0024, // 32 bit, kvar
-		ApparentPower:   0x002C, // 32 bit, kva
-		Cosphi:          0x0034, // 32 bit, XX,X(literal)
+		Sum:   0x0100, //32 Bit, kwh
+		SumL1: 0x0102, //32 Bit, kwh
+		SumL2: 0x0104, //32 Bit, kwh
+		SumL3: 0x0106, //32 Bit, kwh
 
-		Sum:             0x0100, //32 Bit, kwh
-		SumL1:           0x0102, //32 Bit, kwh
-		SumL2:           0x0104, //32 Bit, kwh
-		SumL3:           0x0106, //32 Bit, kwh
+		Import:   0x0108, //32 Bit, kwh
+		ImportL1: 0x010A, //32 Bit, kwh
+		ImportL2: 0x010C, //32 Bit, kwh
+		ImportL3: 0x010E, //32 Bit, kwh
 
-		Import:          0x0108, //32 Bit, kwh
-		ImportL1:        0x010A, //32 Bit, kwh
-		ImportL2:        0x010C, //32 Bit, kwh
-		ImportL3:        0x010E, //32 Bit, kwh
+		Export:   0x0110, //32 Bit, kwh
+		ExportL1: 0x0112, //32 Bit, kwh
+		ExportL2: 0x0114, //32 Bit, kwh
+		ExportL3: 0x0116, //32 Bit, kwh
 
-		Export:          0x0110, //32 Bit, kwh
-		ExportL1:        0x0112, //32 Bit, kwh
-		ExportL2:        0x0114, //32 Bit, kwh
-		ExportL3:        0x0116, //32 Bit, kwh
+		ReactiveSum:   0x0118, //32 Bit, kvarh
+		ReactiveSumL1: 0x011A, //32 Bit, kvarh
+		ReactiveSumL2: 0x011C, //32 Bit, kvarh
+		ReactiveSumL3: 0x011E, //32 Bit, kvarh
 
-		ReactiveSum:     0x0118, //32 Bit, kvarh
-		ReactiveSumL1:   0x011A, //32 Bit, kvarh
-		ReactiveSumL2:   0x011C, //32 Bit, kvarh
-		ReactiveSumL3:   0x011E, //32 Bit, kvarh
+		ReactiveImport:   0x0120, //32 Bit, kvarh
+		ReactiveImportL1: 0x0122, //32 Bit, kvarh
+		ReactiveImportL2: 0x0124, //32 Bit, kvarh
+		ReactiveImportL3: 0x0126, //32 Bit, kvarh
 
-		ReactiveImport:  0x0120, //32 Bit, kvarh
-		ReactiveImportL1:0x0122, //32 Bit, kvarh
-		ReactiveImportL2:0x0124, //32 Bit, kvarh
-		ReactiveImportL3:0x0126, //32 Bit, kvarh
+		ReactiveExport:   0x0128, //32 Bit, kvarh
+		ReactiveExportL1: 0x012A, //32 Bit, kvarh
+		ReactiveExportL2: 0x012C, //32 Bit, kvarh
+		ReactiveExportL3: 0x012E, //32 Bit, kvarh
 
-		ReactiveExport:  0x0128, //32 Bit, kvarh
-		ReactiveExportL1:0x012A, //32 Bit, kvarh
-		ReactiveExportL2:0x012C, //32 Bit, kvarh
-		ReactiveExportL3:0x012E, //32 Bit, kvarh
+		SumT1:            0x0130, //32 Bit, kwh
+		ImportT1:         0x0132, //32 Bit, kwh
+		ExportT1:         0x0134, //32 Bit, kwh
+		ReactiveSumT1:    0x0136, //32 Bit, kvarh
+		ReactiveImportT1: 0x0138, //32 Bit, kvarh
+		ReactiveExportT1: 0x013A, //32 Bit, kvarh
 
-		SumT1:           0x0130, //32 Bit, kwh
-		ImportT1:        0x0132, //32 Bit, kwh
-		ExportT1:        0x0134, //32 Bit, kwh
-		ReactiveSumT1:   0x0136, //32 Bit, kvarh
-		ReactiveImportT1:0x0138, //32 Bit, kvarh
-		ReactiveExportT1:0x013A, //32 Bit, kvarh
+		SumT2:            0x013C, //32 Bit, kwh
+		ImportT2:         0x013E, //32 Bit, kwh
+		ExportT2:         0x0140, //32 Bit, kwh
+		ReactiveSumT2:    0x0142, //32 Bit, kvarh
+		ReactiveImportT2: 0x0144, //32 Bit, kvarh
+		ReactiveExportT2: 0x0146, //32 Bit, kvarh
 
-		SumT2:           0x013C, //32 Bit, kwh
-		ImportT2:        0x013E, //32 Bit, kwh
-		ExportT2:        0x0140, //32 Bit, kwh
-		ReactiveSumT2:   0x0142, //32 Bit, kvarh
-		ReactiveImportT2:0x0144, //32 Bit, kvarh
-		ReactiveExportT2:0x0146, //32 Bit, kvarh
-
-/* // Curently not supported
+		/* // Curently not supported
 		SumT3:           0x0148, //32 Bit, kwh
 		ImportT3:        0x014A, //32 Bit, kwh
 		ExportT3:        0x014C, //32 Bit, kwh
@@ -100,17 +106,10 @@ var ops3p Opcodes = Opcodes{
 		ReactiveSumT4:   0x015A, //32 Bit, kvarh
 		ReactiveImportT4:0x015C, //32 Bit, kvarh
 		ReactiveExportT4:0x015E, //32 Bit, kvarh
-*/
+		*/
 	}
-    
 
-
-type ORNO3PProducer struct {
-	Opcodes
-}
-
-func NewORNO3PProducer() Producer {
-	return &ORNO3PProducer{Opcodes: ops3p}
+	return &ORNO3PProducer{Opcodes: ops}
 }
 
 // Type implements Producer interface
@@ -125,34 +124,33 @@ func (p *ORNO3PProducer) Description() string {
 
 // snip creates modbus operation
 func (p *ORNO3PProducer) snip(iec Measurement, readlen uint16) Operation {
-        return Operation{
-                FuncCode: ReadHoldingReg,
-                OpCode:   p.Opcode(iec), // adjust according to docs
-                ReadLen:  readlen,
-                IEC61850: iec,
-        }
+	return Operation{
+		FuncCode: ReadHoldingReg,
+		OpCode:   p.Opcode(iec), // adjust according to docs
+		ReadLen:  readlen,
+		IEC61850: iec,
+	}
 }
 
 // snip32 creates modbus operation for double register
 func (p *ORNO3PProducer) snip32(iec Measurement, scaler ...float64) Operation {
-        snip := p.snip(iec, 2)
+	snip := p.snip(iec, 2)
 
-        snip.Transform = RTUIeee754ToFloat64 // default conversion
-        if len(scaler) > 0 {
-                snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
-        }
+	snip.Transform = RTUIeee754ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
+	}
 
-        return snip
+	return snip
 }
 
 func (p *ORNO3PProducer) Probe() Operation {
-        return p.snip32(VoltageL1,1)
+	return p.snip32(VoltageL1, 1)
 }
 
 // Produce implements Producer interface
 func (p *ORNO3PProducer) Produce() (res []Operation) {
-
-// These values are stored as literals
+	// These values are stored as literals
 	for _, op := range []Measurement{
 		Frequency,
 		VoltageL1, CurrentL1, CosphiL1,
@@ -171,8 +169,7 @@ func (p *ORNO3PProducer) Produce() (res []Operation) {
 		res = append(res, p.snip32(op, 1))
 	}
 
-
-// For Power values, we need to scale by 1000 (aka convert kW/kva -> W/va)
+	// For Power values, we need to scale by 1000 (aka convert kW/kva -> W/va)
 	for _, op := range []Measurement{
 		PowerL1, ReactivePowerL1, ApparentPowerL1,
 		PowerL2, ReactivePowerL2, ApparentPowerL2,
@@ -183,4 +180,3 @@ func (p *ORNO3PProducer) Produce() (res []Operation) {
 	}
 	return res
 }
-
