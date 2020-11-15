@@ -225,9 +225,9 @@ func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point, m meters.Measur
 }
 
 // QueryPoint executes a single query operation for model/block/point on the bus
-func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID string) (res meters.MeasurementResult, err error) {
+func (d *SunSpec) QueryPointAny(client modbus.Client, modelID, blockID int, pointID string) (block sunspec.Block, point sunspec.Point, err error) {
 	if d.notInitialized() {
-		return res, errors.New("sunspec: not initialized")
+		return block, point, errors.New("sunspec: not initialized")
 	}
 
 	for _, model := range d.models {
@@ -239,7 +239,7 @@ func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID
 		if blockID > 0 {
 			if block, err := model.Block(0); err == nil {
 				if err = block.Read(); err != nil {
-					return meters.MeasurementResult{}, err
+					return block, point, err
 				}
 			}
 		}
@@ -247,19 +247,25 @@ func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID
 		block, err := model.Block(blockID)
 		if err == nil {
 			if err = block.Read(); err != nil {
-				return meters.MeasurementResult{}, err
+				return block, point, err
 			}
 		}
 
 		point, err := block.Point(pointID)
-		if err != nil {
-			return meters.MeasurementResult{}, err
-		}
-
-		return d.convertPoint(block, point, meters.Measurement(0))
+		return block, point, err
 	}
 
-	return meters.MeasurementResult{}, fmt.Errorf("sunspec: %d:%d:%s not found", modelID, blockID, pointID)
+	return block, point, fmt.Errorf("sunspec: %d:%d:%s not found", modelID, blockID, pointID)
+}
+
+// QueryPoint executes a single query operation for model/block/point on the bus
+func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID string) (res meters.MeasurementResult, err error) {
+	block, point, err := d.QueryPointAny(client, modelID, blockID, pointID)
+	if err != nil {
+		return res, err
+	}
+
+	return d.convertPoint(block, point, meters.Measurement(0))
 }
 
 // QueryOp queries all models and blocks until measurement is found
