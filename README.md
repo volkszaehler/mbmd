@@ -249,7 +249,7 @@ manuals for definitive guidance):
 | ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
 | BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
 | KOSTAL Smart Energy Meter | 3 | + | + | + | + | + | + | + | - |
-| ORNO WE-514/515 | 1 | + | + | + | + | + | - | - | - |
+| ORNO WE-504/514/515 | 1 | + | + | + | + | + | - | - | - |
 | ORNO WE-516/517 | 3 | + | + | + | + | + | + | + | - |
 | iEM3000 Series | 3 | + | + | + | + | + | + | (+) | + |
 
@@ -281,7 +281,7 @@ It has two tariffs, both import and export depending on meter version and compac
 - **ORNO WE-514/515**: Low cost single phase meter
 By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
 WE-515 has a lithium battery and multi-tariff support, WE-514 does not support tariff zones.
-- **ORNO WE-516/517**: Low cost three phase meter.
+- **ORNO WE-504/516/517**: Low cost three phase meter.
 By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
 WE-517 has a lithium battery and multi-tariff support, WE-516 does not support tariff zones.
 - **Schneider Electric iEM3000 Series**: Professional meter with loads of configurable max/average measurements with timestamp functionality.
