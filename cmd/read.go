@@ -43,7 +43,7 @@ func init() {
 	readCmd.PersistentFlags().StringP(
 		"encoding", "e",
 		"int",
-		"Data encoding: bit|int|uint|int32s|uint32s|hex|float|floats|string",
+		"Data encoding: bit|int|uint|int32s|uint32s|hex|float|floats|string|strings",
 	)
 }
 
@@ -159,6 +159,13 @@ func decode(b []byte, length int, encoding string) string {
 	case "hex":
 		return fmt.Sprintf("%02x", b)
 	case "string":
+		return string(b)
+	case "stringswapped", "strings":
+		for i := 0; i < len(b); i += 2 {
+			c := b[i]
+			b[i] = b[i+1]
+			b[i+1] = c
+		}
 		return string(b)
 	case "float":
 		f := bytes2float(b, length)
