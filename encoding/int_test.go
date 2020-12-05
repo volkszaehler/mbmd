@@ -1,4 +1,4 @@
-package rs485
+package encoding
 
 import "testing"
 
