@@ -12,6 +12,7 @@ import (
 	"github.com/grid-x/modbus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/volkszaehler/mbmd/encoding"
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/rs485"
 )
@@ -134,8 +135,8 @@ BYTES:
 	return strings.TrimRight(s, " ")
 }
 
-func decode(b []byte, length int, encoding string) string {
-	switch strings.ToLower(encoding) {
+func decode(b []byte, length int, enc string) string {
+	switch strings.ToLower(enc) {
 	case "bit":
 		return decodeCoils(b, length)
 	case "int":
@@ -145,7 +146,7 @@ func decode(b []byte, length int, encoding string) string {
 		if length != 2 {
 			log.Fatal("Invalid length for int32(swapped) encoding")
 		}
-		u := rs485.BigEndianUint32Swapped(b)
+		u := encoding.BigEndianUint32Swapped(b)
 		return strconv.FormatInt(int64(int32(u)), 10)
 	case "uint":
 		u := bytes2uint(b, length)
@@ -154,19 +155,14 @@ func decode(b []byte, length int, encoding string) string {
 		if length != 2 {
 			log.Fatal("Invalid length for uint32(swapped) encoding")
 		}
-		u := rs485.BigEndianUint32Swapped(b)
+		u := encoding.BigEndianUint32Swapped(b)
 		return strconv.FormatUint(uint64(uint32(u)), 10)
 	case "hex":
 		return fmt.Sprintf("%02x", b)
 	case "string":
 		return string(b)
 	case "stringswapped", "strings":
-		for i := 0; i < len(b); i += 2 {
-			c := b[i]
-			b[i] = b[i+1]
-			b[i+1] = c
-		}
-		return string(b)
+		return encoding.StringSwapped(b)
 	case "float":
 		f := bytes2float(b, length)
 		return fmt.Sprintf("%f", f)
