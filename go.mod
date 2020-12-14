@@ -3,7 +3,7 @@ module github.com/volkszaehler/mbmd
 require (
 	github.com/alvaroloes/enumer v1.1.2
 	github.com/andig/gosunspec v0.0.0-20200429133549-3cf6a82fed9c
-	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/eclipse/paho.mqtt.golang v1.3.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -24,7 +24,6 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	golang.org/x/tools v0.0.0-20200420001825-978e26b7c37c // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
