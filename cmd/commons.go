@@ -51,11 +51,11 @@ func meterHelp() string {
 
 	for _, t := range types {
 		p := rs485.Producers[t]()
-		s += fmt.Sprintf("\n    %-9s%s", t, p.Description())
+		s += fmt.Sprintf("\n    %-10s%s", t, p.Description())
 	}
 
 	s += fmt.Sprintf("\n  %s", "TCP")
-	s += fmt.Sprintf("\n    %-9s%s", "SUNS", "Sunspec-compatible MODBUS TCP device (SMA, SolarEdge, KOSTAL, etc)")
+	s += fmt.Sprintf("\n    %-10s%s", "SUNS", "Sunspec-compatible MODBUS TCP device (SMA, SolarEdge, KOSTAL, etc)")
 
 	return s
 }
