@@ -238,6 +238,7 @@ manuals for definitive guidance):
 
 | Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
 |---|---|---|---|---|---|---|---|---|---|
+| SDM72 | 3 | - | - | + | - | + | + | - | - |
 | SDM120/220 | 1 | + | + | + | + | + | + | - | - |
 | SDM530 | 3 | + | + | + | + | + | + | - | - |
 | SDM630 | 3 | + | + | + | + | + | + | + | + |
