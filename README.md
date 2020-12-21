@@ -238,6 +238,7 @@ manuals for definitive guidance):
 
 | Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
 |---|---|---|---|---|---|---|---|---|---|
+| SDM72 | 3 | - | - | + | - | + | + | - | - |
 | SDM120/220 | 1 | + | + | + | + | + | + | - | - |
 | SDM530 | 3 | + | + | + | + | + | + | - | - |
 | SDM630 | 3 | + | + | + | + | + | + | + | + |
@@ -253,9 +254,10 @@ manuals for definitive guidance):
 | ORNO WE-516/517 | 3 | + | + | + | + | + | + | + | - |
 | iEM3000 Series | 3 | + | + | + | + | + | + | (+) | + |
 
+- **SDM72**: Compact (4TE), 3P meter with bare minium of total measurements, no currents. Can be configured using the builtin display.
 - **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
 You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
-- SDM220, SDM230: More comfortable (2TE), can be configured using the builtin display and button.
+- **SDM220, SDM230**: More comfortable (2TE), can be configured using the builtin display.
 - **SDM530**: Very big (7TE) - takes up a lot of space, but all connections are
 on the underside of the meter.
 - **SDM630**: v1 and v2, both MID and non-MID. Compact (4TE) and with lots
