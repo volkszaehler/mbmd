@@ -2,10 +2,6 @@
 
 Read and publish measurements from all configured devices
 
-### Synopsis
-
-Read and publish measurements from all configured devices
-
 ```
 mbmd run [flags]
 ```

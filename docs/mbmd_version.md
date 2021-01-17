@@ -2,10 +2,6 @@
 
 Show MBMD version
 
-### Synopsis
-
-Show MBMD version
-
 ```
 mbmd version [flags]
 ```
