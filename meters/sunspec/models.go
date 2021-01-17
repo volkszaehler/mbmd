@@ -10,6 +10,8 @@ import (
 	"github.com/andig/gosunspec/models/model160"
 	"github.com/andig/gosunspec/models/model201"
 	"github.com/andig/gosunspec/models/model203"
+	"github.com/andig/gosunspec/models/model211"
+	"github.com/andig/gosunspec/models/model213"
 
 	"github.com/volkszaehler/mbmd/meters"
 )
@@ -166,6 +168,58 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model203.WphA:        meters.PowerL1,
 			model203.WphB:        meters.PowerL2,
 			model203.WphC:        meters.PowerL3,
+		},
+	},
+	// single phase (AN or AB) meter - float
+	model211.ModelID: {
+		0: {
+			model211.A:        meters.Current,
+			model211.Hz:       meters.Frequency,
+			model211.PF:       meters.Cosphi,
+			model211.PhV:      meters.Voltage,
+			model211.TotWhExp: meters.Export,
+			model211.TotWhImp: meters.Import,
+			model211.VA:       meters.ApparentPower,
+			model211.VAR:      meters.ReactivePower,
+			model211.W:        meters.Power,
+		},
+	},
+	// wye-connect three phase (abcn) meter - float
+	model213.ModelID: {
+		0: {
+			model213.A:           meters.Current,
+			model213.AphA:        meters.CurrentL1,
+			model213.AphB:        meters.CurrentL2,
+			model213.AphC:        meters.CurrentL3,
+			model213.Hz:          meters.Frequency,
+			model213.PF:          meters.Cosphi,
+			model213.PFphA:       meters.CosphiL1,
+			model213.PFphB:       meters.CosphiL2,
+			model213.PFphC:       meters.CosphiL3,
+			model213.PhV:         meters.Voltage,
+			model213.PhVphA:      meters.VoltageL1,
+			model213.PhVphB:      meters.VoltageL2,
+			model213.PhVphC:      meters.VoltageL3,
+			model213.TotWhExp:    meters.Export,
+			model213.TotWhExpPhA: meters.ExportL1,
+			model213.TotWhExpPhB: meters.ExportL2,
+			model213.TotWhExpPhC: meters.ExportL3,
+			model213.TotWhImp:    meters.Import,
+			model213.TotWhImpPhA: meters.ImportL1,
+			model213.TotWhImpPhB: meters.ImportL2,
+			model213.TotWhImpPhC: meters.ImportL3,
+			model213.VA:          meters.ApparentPower,
+			model213.VAphA:       meters.ApparentPowerL1,
+			model213.VAphB:       meters.ApparentPowerL2,
+			model213.VAphC:       meters.ApparentPowerL3,
+			model213.VAR:         meters.ReactivePower,
+			model213.VARphA:      meters.ReactivePowerL1,
+			model213.VARphB:      meters.ReactivePowerL2,
+			model213.VARphC:      meters.ReactivePowerL3,
+			model213.W:           meters.Power,
+			model213.WphA:        meters.PowerL1,
+			model213.WphB:        meters.PowerL2,
+			model213.WphC:        meters.PowerL3,
 		},
 	},
 	// storage
