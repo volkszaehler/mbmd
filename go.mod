@@ -23,6 +23,7 @@ require (
 	github.com/mjibson/esc v0.2.0
 	github.com/pascaldekloe/name v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
+	github.com/prometheus/client_golang v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
