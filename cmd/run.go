@@ -280,8 +280,16 @@ func run(cmd *cobra.Command, args []string) {
 		hub := server.NewSocketHub(status)
 		tee.AttachRunner(server.NewSnipRunner(hub.Run))
 
+		// prometheus daemon
+		promEnabled := viper.GetBool("api.prometheus")
+		var prom *server.Prometheusd
+		if promEnabled {
+			prom = server.NewPrometheusd()
+			tee.AttachRunner(server.NewSnipRunner(prom.Run))
+		}
+
 		// http daemon
-		httpd := server.NewHttpd(qe, cache)
+		httpd := server.NewHttpd(qe, cache, promEnabled)
 		go httpd.Run(hub, status, viper.GetString("api"))
 	}
 
