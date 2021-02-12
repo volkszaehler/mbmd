@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"html/template"
 	"io/fs"
 	"log"
@@ -28,6 +30,7 @@ type Httpd struct {
 	router *mux.Router
 	mc     *Cache
 	qe     DeviceInfo
+	prometheusEnabled bool
 }
 
 func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
@@ -154,12 +157,23 @@ func jsonHandler(h http.Handler) http.Handler {
 	})
 }
 
+// prometheusHandler is a middleware that prepares Prometheus metrics for collection by HTTP request
+func (h *Httpd) prometheusHandler() http.Handler {
+	return promhttp.HandlerFor(
+		prometheus.DefaultGatherer,
+		promhttp.HandlerOpts{
+			EnableOpenMetrics: true,
+		},
+	)
+}
+
 // NewHttpd creates HTTP daemon
-func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache) *Httpd {
+func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache, prometheusEnabled bool) *Httpd {
 	srv := &Httpd{
 		router: mux.NewRouter().StrictSlash(true),
 		qe:     qe,
 		mc:     mc,
+		prometheusEnabled: prometheusEnabled,
 	}
 
 	// static
@@ -170,6 +184,12 @@ func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache) *Httpd {
 	static.HandleFunc("/", srv.mkIndexHandler())
 	for _, dir := range []string{"css", "js"} {
 		static.PathPrefix("/" + dir).Handler(http.FileServer(http.FS(Assets)))
+	}
+
+	// Prometheus if enabled
+	if h.prometheusEnabled {
+		prom := router.Path("/metrics")
+		prom.Handler(h.prometheusHandler())
 	}
 
 	// api
