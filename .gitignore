@@ -1,4 +1,5 @@
 .vscode/
+.idea/
 *.json
 *.sh
 *.yaml
