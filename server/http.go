@@ -30,7 +30,6 @@ type Httpd struct {
 	router *mux.Router
 	mc     *Cache
 	qe     DeviceInfo
-	prometheusEnabled bool
 }
 
 func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
@@ -168,12 +167,11 @@ func (h *Httpd) prometheusHandler() http.Handler {
 }
 
 // NewHttpd creates HTTP daemon
-func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache, prometheusEnabled bool) *Httpd {
+func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache) *Httpd {
 	srv := &Httpd{
 		router: mux.NewRouter().StrictSlash(true),
 		qe:     qe,
 		mc:     mc,
-		prometheusEnabled: prometheusEnabled,
 	}
 
 	// static
@@ -186,11 +184,9 @@ func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache, prometheusEna
 		static.PathPrefix("/" + dir).Handler(http.FileServer(http.FS(Assets)))
 	}
 
-	// Prometheus if enabled
-	if h.prometheusEnabled {
-		prom := router.Path("/metrics")
-		prom.Handler(h.prometheusHandler())
-	}
+	// Prometheus
+	prom := router.Path("/metrics")
+	prom.Handler(h.prometheusHandler())
 
 	// api
 	api := srv.router.PathPrefix("/api").Subrouter()
