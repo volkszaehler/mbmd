@@ -67,7 +67,7 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 		dev = subdevice[0]
 	}
 
-	prometheusManager.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
+	prometheusManager.DevicesCreatedTotal.WithLabelValues(meterType, strconv.Itoa(dev)).Inc()
 
 	return &SunSpec{
 		subdevice: dev,
