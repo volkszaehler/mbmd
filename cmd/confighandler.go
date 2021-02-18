@@ -77,6 +77,7 @@ func NewDeviceConfigHandler() *DeviceConfigHandler {
 	return conf
 }
 
+// TODO prometheus
 // createConnection parses adapter string to create TCP or RTU connection
 func createConnection(device string, rtu bool, baudrate int, comset string) (res meters.Connection) {
 	if device == "mock" {

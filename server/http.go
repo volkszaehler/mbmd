@@ -26,7 +26,6 @@ const devAssets = false
 type Httpd struct {
 	mc *Cache
 	qe DeviceInfo
-	prometheusEnabled bool
 }
 
 func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
@@ -164,11 +163,10 @@ func (h *Httpd) prometheusHandler() http.Handler {
 }
 
 // NewHttpd creates HTTP daemon
-func NewHttpd(qe DeviceInfo, mc *Cache, prometheusEnabled bool) *Httpd {
+func NewHttpd(qe DeviceInfo, mc *Cache) *Httpd {
 	return &Httpd{
 		qe: qe,
 		mc: mc,
-		prometheusEnabled: prometheusEnabled,
 	}
 }
 
@@ -192,11 +190,9 @@ func (h *Httpd) Run(
 		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(devAssets, prefix))))
 	}
 
-	// Prometheus if enabled
-	if h.prometheusEnabled {
-		prom := router.Path("/metrics")
-		prom.Handler(h.prometheusHandler())
-	}
+	// Prometheus
+	prom := router.Path("/metrics")
+	prom.Handler(h.prometheusHandler())
 
 	// api
 	api := router.PathPrefix("/api").Subrouter()

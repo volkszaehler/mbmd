@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	golog "log"
 	"os"
 	"os/signal"
@@ -280,18 +281,13 @@ func run(cmd *cobra.Command, args []string) {
 		hub := server.NewSocketHub(status)
 		tee.AttachRunner(server.NewSnipRunner(hub.Run))
 
-		// prometheus daemon
-		promEnabled := viper.GetBool("api.prometheus")
-		var prom *server.Prometheusd
-		if promEnabled {
-			prom = server.NewPrometheusd()
-			tee.AttachRunner(server.NewSnipRunner(prom.Run))
-		}
-
 		// http daemon
-		httpd := server.NewHttpd(qe, cache, promEnabled)
+		httpd := server.NewHttpd(qe, cache)
 		go httpd.Run(hub, status, viper.GetString("api"))
 	}
+
+	// Prometheus manager - Register all metrics to default registry
+	prometheusManager.Init()
 
 	// MQTT client
 	if viper.GetString("mqtt.broker") != "" {
