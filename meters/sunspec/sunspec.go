@@ -3,8 +3,10 @@ package sunspec
 import (
 	"errors"
 	"fmt"
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -46,6 +48,8 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 		dev = subdevice[0]
 	}
 
+	prometheusManager.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
+
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
@@ -60,8 +64,12 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 func (d *SunSpec) Initialize(client modbus.Client) error {
 	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
+
+	prometheusManager.ConnectionAttemptTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
+
 	if err != nil {
 		if in == nil {
+			prometheusManager.ConnectionAttemptFailedTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
 			return err
 		}
 

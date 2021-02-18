@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	"log"
 	"math"
 	"time"
@@ -129,10 +130,13 @@ func (h *Handler) queryDevice(
 	dev meters.Device,
 ) {
 	deviceID := h.deviceID(id, dev)
+	deviceSerial := dev.Descriptor().Serial
 	status := h.status[deviceID]
 
 	for retry := 0; retry < maxRetry; retry++ {
 		status.Requests++
+		prometheusManager.DeviceQueriesTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+
 		measurements, err := dev.Query(h.Manager.Conn.ModbusClient())
 
 		if err == nil {
@@ -142,11 +146,13 @@ func (h *Handler) queryDevice(
 				Device: deviceID,
 				Status: *status,
 			}
+			prometheusManager.DeviceQueriesSuccessTotal.WithLabelValues(deviceID, deviceSerial).Inc()
 
 			// send measurements
 			for _, r := range measurements {
 				if math.IsNaN(r.Value) {
 					log.Printf("device %s skipping NaN for %s", deviceID, r.Measurement.String())
+					prometheusManager.DeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceID, deviceSerial).Inc()
 					continue
 				}
 
@@ -155,12 +161,15 @@ func (h *Handler) queryDevice(
 					MeasurementResult: r,
 				}
 				results <- snip
+
+				prometheusManager.UpdateMeasurementMetric(deviceID, deviceSerial, r)
 			}
 
 			return
 		}
 
 		status.Errors++
+		prometheusManager.DeviceQueriesErrorTotal.WithLabelValues(deviceID, deviceSerial).Inc()
 		log.Printf("device %s did not respond (%d/%d): %v", deviceID, retry+1, maxRetry, err)
 
 		// wait for device to settle after error
