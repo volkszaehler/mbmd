@@ -3,8 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	golog "log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -100,6 +102,8 @@ func scan(cmd *cobra.Command, args []string) {
 SCAN:
 	// loop over all valid slave addresses
 	for deviceID := 1; deviceID <= 247; deviceID++ {
+		deviceIdString := strconv.Itoa(deviceID)
+		prometheusManager.BusScanStartedTotal.WithLabelValues(deviceIdString).Inc()
 		// give the bus some time to recover before querying the next device
 		time.Sleep(40 * time.Millisecond)
 		conn.Slave(uint8(deviceID))
@@ -109,6 +113,8 @@ SCAN:
 				if !errors.Is(err, meters.ErrPartiallyOpened) {
 					continue // devices
 				}
+
+				prometheusManager.BusScanDeviceInitializationErrorTotal.WithLabelValues(deviceIdString).Inc()
 				log.Println(err) // log error but continue
 			}
 
@@ -121,8 +127,16 @@ SCAN:
 					mr.Value,
 				)
 
+				deviceSerial := dev.Descriptor().Serial
+				// TODO Refactor to generalized method where e. g. only MeasurementType needs to be passed
+				// TODO Can we set the timestamp of Gauge entry using the actual timestamp of measurement??
+				prometheusManager.MeasurementElectricCurrent.WithLabelValues(deviceIdString, deviceSerial).Set(mr.Value)
+				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceIdString, deviceSerial).Inc()
+
 				deviceList[deviceID] = dev
 				continue SCAN
+			} else {
+				prometheusManager.BusScanDeviceProbeFailedTotal.WithLabelValues(deviceIdString).Inc()
 			}
 		}
 
