@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	golog "log"
 	"net/http/pprof"
 	"os"
@@ -286,16 +287,8 @@ func run(cmd *cobra.Command, args []string) {
 		hub := server.NewSocketHub(status)
 		tee.AttachRunner(server.NewSnipRunner(hub.Run))
 
-		// prometheus daemon
-		promEnabled := viper.GetBool("api.prometheus")
-		var prom *server.Prometheusd
-		if promEnabled {
-			prom = server.NewPrometheusd()
-			tee.AttachRunner(server.NewSnipRunner(prom.Run))
-		}
-
 		// http daemon
-		httpd := server.NewHttpd(hub, status, qe, cache, promEnabled)
+		httpd := server.NewHttpd(hub, status, qe, cache)
 		go httpd.Run(viper.GetString("api"))
 
 		if viper.GetBool("profile") {
@@ -304,6 +297,9 @@ func run(cmd *cobra.Command, args []string) {
 			mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 		}
 	}
+
+	// Prometheus manager - Register all metrics to default registry
+	prometheusManager.Init()
 
 	// MQTT client
 	if viper.GetString("mqtt.broker") != "" {
