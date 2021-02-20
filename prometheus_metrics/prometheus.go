@@ -9,6 +9,7 @@ import (
 const NAMESPACE = "mbmd"
 const SSN_MISSING = "NOT_AVAILABLE"
 
+// TODO remove?
 var (
 	ConnectionAttemptTotal = prometheus.NewCounterVec(
 		newCounterOpts(
@@ -174,137 +175,46 @@ var (
 //
 // If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
-var counterVecMap = map[meters.Measurement]*prometheus.CounterVec{
-	meters.Sum:              nil,
-	meters.SumT1:            nil,
-	meters.SumT2:            nil,
-	meters.SumL1:            nil,
-	meters.SumL2:            nil,
-	meters.SumL3:            nil,
-	meters.Import:           nil,
-	meters.ImportT1:         nil,
-	meters.ImportT2:         nil,
-	meters.ImportL1:         nil,
-	meters.ImportL2:         nil,
-	meters.ImportL3:         nil,
-	meters.Export:           nil,
-	meters.ExportT1:         nil,
-	meters.ExportT2:         nil,
-	meters.ExportL1:         nil,
-	meters.ExportL2:         nil,
-	meters.ExportL3:         nil,
-	meters.ReactiveSum:      nil,
-	meters.ReactiveSumT1:    nil,
-	meters.ReactiveSumT2:    nil,
-	meters.ReactiveSumL1:    nil,
-	meters.ReactiveSumL2:    nil,
-	meters.ReactiveSumL3:    nil,
-	meters.ReactiveImport:   nil,
-	meters.ReactiveImportT1: nil,
-	meters.ReactiveImportT2: nil,
-	meters.ReactiveImportL1: nil,
-	meters.ReactiveImportL2: nil,
-	meters.ReactiveImportL3: nil,
-	meters.ReactiveExport:   nil,
-	meters.ReactiveExportT1: nil,
-	meters.ReactiveExportT2: nil,
-	meters.ReactiveExportL1: nil,
-	meters.ReactiveExportL2: nil,
-	meters.ReactiveExportL3: nil,
-	meters.DCEnergyS1:       nil,
-	meters.DCEnergyS2:       nil,
-	meters.DCEnergyS3:       nil,
-}
+// TODO make?
+var counterVecMap = map[meters.Measurement]*prometheus.CounterVec{}
 
 // gaugeVecMap contains all meters.Measurement that are associated with a prometheus.Gauge
 //
 // If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
-var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{
-	meters.Frequency:        MeasurementFrequency,
-	meters.Current:          MeasurementElectricCurrent,
-	meters.CurrentL1:        MeasurementL1Current,
-	meters.CurrentL2:        MeasurementL2Current,
-	meters.CurrentL3:        MeasurementL3Current,
-	meters.Voltage:          MeasurementVoltage,
-	meters.VoltageL1: 		 nil,
-	meters.VoltageL2:        nil,
-	meters.VoltageL3:        nil,
-	meters.Power:            nil,
-	meters.PowerL1:          nil,
-	meters.PowerL2:          nil,
-	meters.PowerL3:          nil,
-	meters.ImportPower:      nil,
-	meters.ImportPowerL1:    nil,
-	meters.ImportPowerL2:    nil,
-	meters.ImportPowerL3:    nil,
-	meters.ExportPower:      nil,
-	meters.ExportPowerL1:    nil,
-	meters.ExportPowerL2:    nil,
-	meters.ExportPowerL3:    nil,
-	meters.ReactivePower:    nil,
-	meters.ReactivePowerL1:  nil,
-	meters.ReactivePowerL2:  nil,
-	meters.ReactivePowerL3:  nil,
-	meters.ApparentPower:    nil,
-	meters.ApparentPowerL1:  nil,
-	meters.ApparentPowerL2:  nil,
-	meters.ApparentPowerL3:  nil,
-	meters.Cosphi:           nil,
-	meters.CosphiL1:         nil,
-	meters.CosphiL2:         nil,
-	meters.CosphiL3:         nil,
-	meters.THD:              nil,
-	meters.THDL1:            nil,
-	meters.THDL2:            nil,
-	meters.THDL3:            nil,
-	meters.DCCurrent:        nil,
-	meters.DCVoltage:        nil,
-	meters.DCPower:          nil,
-	meters.HeatSinkTemp:     nil,
-	meters.DCCurrentS1:      nil,
-	meters.DCVoltageS1:      nil,
-	meters.DCPowerS1:        nil,
-	meters.DCCurrentS2:      nil,
-	meters.DCVoltageS2:      nil,
-	meters.DCPowerS2:        nil,
-	meters.DCCurrentS3:      nil,
-	meters.DCVoltageS3:      nil,
-	meters.DCPowerS3:        nil,
-	meters.ChargeState:      nil,
-	meters.BatteryVoltage:   nil,
-	meters.PhaseAngle:       nil,
-}
+// TODO make?
+var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
 
 // Init registers all globally defined metrics to Prometheus library's default registry
 func Init() {
-	//prometheus.MustRegister(
-	//	//ConnectionAttemptTotal,
-	//	//ConnectionAttemptFailedTotal,
-	//	//ConnectionPartiallySuccessfulTotal,
-	//	//ReadDeviceDetailsFailedTotal,
-	//	//DevicesCreatedTotal,
-	//
-	//	// Device specific actions
-	//	DeviceQueriesTotal,
-	//	DeviceQueriesErrorTotal,
-	//	DeviceQueriesSuccessTotal,
-	//	DeviceQueryMeasurementValueSkippedTotal,
-	//
-	//	// Bus scan metrics of cmd.scan
-	//	BusScanTotal,
-	//	BusScanDeviceProbeSuccessfulTotal,
-	//	BusScanDeviceProbeFailedTotal,
-	//
-	//	// Measurement gauges
-	//	MeasurementElectricCurrent,
-	//	MeasurementL1Current,
-	//	MeasurementL2Current,
-	//	MeasurementL3Current,
-	//)
+	collectors := make([]prometheus.Collector, 0, len(meters.MeasurementValues()))
 
-	initAndRegisterGauges()
-	initAndRegisterCounters()
+	for _, measurement := range meters.MeasurementValues() {
+		switch measurement.PrometheusMetricType() {
+		case meters.Gauge:
+			newGauge := prometheus.NewGaugeVec(
+				newGaugeOpts(
+					measurement.PrometheusName(),
+					measurement.PrometheusDescription(),
+				),
+				[]string{"device_id", "serial_number"},
+			)
+			gaugeVecMap[measurement] = newGauge
+			collectors = append(collectors, newGauge)
+		case meters.Counter:
+			newCounter := prometheus.NewCounterVec(
+				newCounterOpts(
+					measurement.PrometheusName(),
+					measurement.PrometheusDescription(),
+				),
+				[]string{"device_id", "serial_number"},
+			)
+			counterVecMap[measurement] = newCounter
+			collectors = append(collectors, newCounter)
+		}
+	}
+
+	prometheus.MustRegister(collectors...)
 }
 
 // UpdateMeasurementMetric updates a counter or gauge based by passed measurement
@@ -344,50 +254,4 @@ func newGaugeOpts(name string, help string) prometheus.GaugeOpts {
 		Name:      name,
 		Help:      help,
 	}
-}
-
-func initAndRegisterCounters() {
-	//collectors := make([]prometheus.Collector, len(counterVecMap))
-
-	for measurement := range counterVecMap {
-		newCounter := prometheus.NewCounterVec(
-			newCounterOpts(
-				measurement.PrometheusName(),
-				prometheusDescription(measurement),
-			),
-			[]string{"device_id", "serial_number"},
-		)
-		counterVecMap[measurement] = newCounter
-		//collectors = append(collectors, newCounter)
-		prometheus.MustRegister(newCounter)
-	}
-
-	// fmt.Print("Registering new collectors of type CounterVec")
-	//prometheus.MustRegister(collectors...)
-}
-
-func initAndRegisterGauges() {
-	// gauges := make([]*prometheus.GaugeVec, len(gaugeVecMap))
-
-	for measurement := range gaugeVecMap {
-		newGauge := prometheus.NewGaugeVec(
-			newGaugeOpts(
-				measurement.PrometheusName(),
-				prometheusDescription(measurement),
-			),
-			[]string{"device_id", "serial_number"},
-		)
-		gaugeVecMap[measurement] = newGauge
-		// gauges = append(gauges, newGauge)
-		prometheus.MustRegister(newGauge)
-	}
-
-	//fmt.Print("Registering new collectors of type GaugeVec")
-
-}
-
-func prometheusDescription(measurement meters.Measurement) string {
-	description, unit := measurement.DescriptionAndUnit()
-
-	return fmt.Sprintf("Measurement of %s in %s", description, unit)
 }
