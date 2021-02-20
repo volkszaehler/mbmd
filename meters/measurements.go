@@ -336,11 +336,11 @@ func paraphraseChars(text string) string {
 	case "kw":
 		result = "kilowatt"
 	case "kwh":
-		result = "kilowatt_per_hour"
+		result = "kilowatt_hour"
 	case "va":
 		result = "voltampere"
 	case "kvarh":
-		result = "kilovar_per_hour"
+		result = "kilovar_hour"
 	default:
 		result = text
 	}
