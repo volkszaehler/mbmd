@@ -2,13 +2,8 @@ package meters
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
-)
-
-var (
-	reWhitespacePattern = regexp.MustCompile(`\w`)
 )
 
 // MeasurementResult is the result of modbus read operation
@@ -269,19 +264,49 @@ func (m *Measurement) DescriptionAndUnit() (string, string) {
 	return m.String(), ""
 }
 
-// PrometheusDescriptionAndUnit returns a name and its associated unit for Prometheus counters
-func (m *Measurement) PrometheusName() (string) {
+// PrometheusName returns a name and its associated unit for Prometheus counters
+func (m *Measurement) PrometheusName() string {
 	description, unit := m.DescriptionAndUnit()
 	if unit != "" {
 		unit = strings.ToLower(unit)
 	}
 
-	description = reWhitespacePattern.ReplaceAllString(
-		strings.ToLower(description),
-		"_",
-	)
+	description = strings.ReplaceAll(strings.ToLower(description), " ", "_")
 
-	return strings.Join([]string{description, unit}, "_")
+	paraphrasedUnit := paraphraseChars(unit)
+
+	return strings.Join([]string{description, paraphrasedUnit}, "_")
+}
+
+func paraphraseChars(text string) string {
+	text = strings.ToLower(text)
+	result := ""
+	switch text {
+	case "°":
+		result = "degree"
+	case "°c":
+		result = "degree_celsius"
+	case "%":
+		result = "percent"
+	case "a":
+		result = "ampere"
+	case "v":
+		result = "volt"
+	case "w":
+		result = "watt"
+	case "kw":
+		result = "kilowatt"
+	case "kwh":
+		result = "kilowatt_per_hour"
+	case "va":
+		result = "voltampere"
+	case "kvarh":
+		result = "kilovar_per_hour"
+	default:
+		result = text
+	}
+
+	return result
 }
 
 // Description returns a measurements human-readable name
