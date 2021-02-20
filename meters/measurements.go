@@ -275,7 +275,13 @@ func (m *Measurement) PrometheusName() string {
 
 	paraphrasedUnit := paraphraseChars(unit)
 
-	return strings.Join([]string{description, paraphrasedUnit}, "_")
+	return strings.Trim( // Trim trailing underscore (e. g. when unit string is empty)
+		strings.Join(
+			[]string{"measurement", description, paraphrasedUnit},
+			"_",
+		),
+		"_",
+	)
 }
 
 func paraphraseChars(text string) string {
