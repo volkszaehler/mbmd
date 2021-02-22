@@ -119,6 +119,9 @@ func (h *Handler) initializeDevice(
 		Status: *status,
 	}
 
+	// create Prometheus metrics
+	prometheusManager.CreateMeasurementMetrics(dev)
+
 	return status, nil
 }
 
