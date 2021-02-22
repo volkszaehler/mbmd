@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	golog "log"
 	"net/http/pprof"
 	"os"
@@ -299,7 +298,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// Prometheus manager - Register all metrics to default registry
-	prometheusManager.Init()
+	// prometheusManager.Init()
 
 	// MQTT client
 	if viper.GetString("mqtt.broker") != "" {
