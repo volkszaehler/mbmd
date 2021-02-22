@@ -218,7 +218,7 @@ var iec = map[Measurement]*measurement{
 	ImportL2:         newInternalMeasurement(WithDescription("L2 Import"), WithPrometheusName("l2_imported"), WithUnit(KiloWattHour), WithMetricType(Counter)),
 	ImportL3:         newInternalMeasurement(WithDescription("L3 Import"), WithPrometheusName("l3_imported"), WithUnit(KiloWattHour), WithMetricType(Counter)),
 	Export:           newInternalMeasurement(WithDescription("Total Export"), WithPrometheusName("total_exported"), WithUnit(KiloWattHour), WithMetricType(Counter)),
-	ExportT1:         newInternalMeasurement(WithDescription("Tariff 1 Export"), WithPrometheusName("exportedtariff_1"), WithUnit(KiloWattHour), WithMetricType(Counter)),
+	ExportT1:         newInternalMeasurement(WithDescription("Tariff 1 Export"), WithPrometheusName("tariff_1_exported"), WithUnit(KiloWattHour), WithMetricType(Counter)),
 	ExportT2:         newInternalMeasurement(WithDescription("Tariff 2 Export"), WithPrometheusName("tariff_2_exported"), WithUnit(KiloWattHour), WithMetricType(Counter)),
 	ExportL1:         newInternalMeasurement(WithDescription("L1 Export"), WithPrometheusName("l1_exported"), WithUnit(KiloWattHour), WithMetricType(Counter)),
 	ExportL2:         newInternalMeasurement(WithDescription("L2 Export"), WithPrometheusName("l2_exported"), WithUnit(KiloWattHour), WithMetricType(Counter)),
