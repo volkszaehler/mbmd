@@ -37,8 +37,8 @@ type unitAbbreviation struct {
 	Alternative string
 }
 
-var units = map[Unit]unit{
-	KiloVarHour: 	{unitAbbreviation{"kvarh", ""}, "kilo"},
+var units = map[Unit]*unit{
+	KiloVarHour: 	{unitAbbreviation{"kvarh", ""}, ""},
 	Var:			{unitAbbreviation{"var", ""}, ""},
 	KiloWattHour:   {unitAbbreviation{"kWh", ""}, ""},
 	Watt: 			{unitAbbreviation{"W", ""}, ""},
@@ -46,37 +46,39 @@ var units = map[Unit]unit{
 	Volt: 			{unitAbbreviation{"V", ""}, ""},
 	VoltAmpere: 	{unitAbbreviation{"VA", ""}, ""},
 	Degree: 		{unitAbbreviation{"°", "degree"}, ""},
-	DegreeCelsius: 	{unitAbbreviation{"°C", "degree_celsius"}, ""},
+	DegreeCelsius: 	{unitAbbreviation{"°C", "degree_celsius"}, "degrees_celsius"},
 	Hertz:			{unitAbbreviation{"Hz", "hertz"}, "hertz"},
 	Percent:		{unitAbbreviation{"%", "percent"}, "percent"},
 
 	NoUnit:			{unitAbbreviation{"", ""}, ""},
 }
 
-func (u Unit) PrometheusName() string {
-	switch u {
-	case Hertz:
-		return "hertz"
-	case DegreeCelsius:
-		return "degrees_celsius"
-	case NoUnit:
+func (u *Unit) PrometheusName() string {
+	if u == nil || *u == NoUnit {
 		return ""
-	default:
-		return u.String() + "s"
 	}
+
+	if unit, ok := units[*u]; ok {
+		plural := unit.PluralForm
+		if plural != "" {
+			return plural
+		}
+	}
+
+	return u.String() + "s"
 }
 
 // Abbreviation returns the matching abbreviation of a Unit if it exists
-func (u Unit) Abbreviation() string {
-	if unit, ok := units[u]; ok {
+func (u *Unit) Abbreviation() string {
+	if unit, ok := units[*u]; ok {
 		return unit.Abbreviation.Default
 	}
 	return ""
 }
 
 // AlternativeAbbreviation returns the matching alternative abbreviation of a Unit if it exists
-func (u Unit) AlternativeAbbreviation() string {
-	if unit, ok := units[u]; ok {
+func (u *Unit) AlternativeAbbreviation() string {
+	if unit, ok := units[*u]; ok {
 		alternative := unit.Abbreviation.Alternative
 		if alternative != "" {
 			return alternative
