@@ -21,7 +21,7 @@ func (r MeasurementResult) String() string {
 // MeasurementDescription describes a Measurement itself, its unit and according prometheus.Metric type
 type MeasurementDescription struct {
 	Description string
-	Unit        string
+	Unit        Unit
 	MetricType  MeasurementMetricType
 }
 
@@ -160,98 +160,98 @@ const (
 )
 
 var iec = map[Measurement]MeasurementDescription{
-	Frequency:        {"Frequency", "Hz", Gauge},
-	Current:          {"Current", "A", Gauge},
-	CurrentL1:        {"L1 Current", "A", Gauge},
-	CurrentL2:        {"L2 Current", "A", Gauge},
-	CurrentL3:        {"L3 Current", "A", Gauge},
-	Voltage:          {"Voltage", "V", Gauge},
-	VoltageL1:        {"L1 Voltage", "V", Gauge},
-	VoltageL2:        {"L2 Voltage", "V", Gauge},
-	VoltageL3:        {"L3 Voltage", "V", Gauge},
-	Power:            {"Power", "W", Gauge},
-	PowerL1:          {"L1 Power", "W", Gauge},
-	PowerL2:          {"L2 Power", "W", Gauge},
-	PowerL3:          {"L3 Power", "W", Gauge},
-	ImportPower:      {"Import Power", "W", Gauge},
-	ImportPowerL1:    {"L1 Import Power", "W", Gauge},
-	ImportPowerL2:    {"L2 Import Power", "W", Gauge},
-	ImportPowerL3:    {"L3 Import Power", "W", Gauge},
-	ExportPower:      {"Export Power", "W", Gauge},
-	ExportPowerL1:    {"L1 Export Power", "W", Gauge},
-	ExportPowerL2:    {"L2 Export Power", "W", Gauge},
-	ExportPowerL3:    {"L3 Export Power", "W", Gauge},
-	ReactivePower:    {"Reactive Power", "var", Gauge},
-	ReactivePowerL1:  {"L1 Reactive Power", "var", Gauge},
-	ReactivePowerL2:  {"L2 Reactive Power", "var", Gauge},
-	ReactivePowerL3:  {"L3 Reactive Power", "var", Gauge},
-	ApparentPower:    {"Apparent Power", "VA", Gauge},
-	ApparentPowerL1:  {"L1 Apparent Power", "VA", Gauge},
-	ApparentPowerL2:  {"L2 Apparent Power", "VA", Gauge},
-	ApparentPowerL3:  {"L3 Apparent Power", "VA", Gauge},
-	Cosphi:           {"Cosphi", "", Gauge},
-	CosphiL1:         {"L1 Cosphi", "",Gauge},
-	CosphiL2:         {"L2 Cosphi", "",Gauge},
-	CosphiL3:         {"L3 Cosphi", "", Gauge},
-	THD:              {"Average voltage to neutral THD", "%", Gauge},
-	THDL1:            {"L1 Voltage to neutral THD", "%", Gauge},
-	THDL2:            {"L2 Voltage to neutral THD", "%", Gauge},
-	THDL3:            {"L3 Voltage to neutral THD", "%", Gauge},
-	Sum:              {"Total Sum", "kWh", Counter},
-	SumT1:            {"Tariff 1 Sum", "kWh", Counter},
-	SumT2:            {"Tariff 2 Sum", "kWh", Counter},
-	SumL1:            {"L1 Sum", "kWh", Counter},
-	SumL2:            {"L2 Sum", "kWh", Counter},
-	SumL3:            {"L3 Sum", "kWh", Counter},
-	Import:           {"Total Import", "kWh", Counter},
-	ImportT1:         {"Tariff 1 Import", "kWh", Counter},
-	ImportT2:         {"Tariff 2 Import", "kWh", Counter},
-	ImportL1:         {"L1 Import", "kWh", Counter},
-	ImportL2:         {"L2 Import", "kWh", Counter},
-	ImportL3:         {"L3 Import", "kWh", Counter},
-	Export:           {"Total Export", "kWh", Counter},
-	ExportT1:         {"Tariff 1 Export", "kWh", Counter},
-	ExportT2:         {"Tariff 2 Export", "kWh", Counter},
-	ExportL1:         {"L1 Export", "kWh", Counter},
-	ExportL2:         {"L2 Export", "kWh", Counter},
-	ExportL3:         {"L3 Export", "kWh", Counter},
-	ReactiveSum:      {"Total Reactive", "kvarh", Counter},
-	ReactiveSumT1:    {"Tariff 1 Reactive", "kvarh", Counter},
-	ReactiveSumT2:    {"Tariff 2 Reactive", "kvarh", Counter},
-	ReactiveSumL1:    {"L1 Reactive", "kvarh", Counter},
-	ReactiveSumL2:    {"L2 Reactive", "kvarh", Counter},
-	ReactiveSumL3:    {"L3 Reactive", "kvarh", Counter},
-	ReactiveImport:   {"Reactive Import", "kvarh", Counter},
-	ReactiveImportT1: {"Tariff 1 Reactive Import", "kvarh", Counter},
-	ReactiveImportT2: {"Tariff 2 Reactive Import", "kvarh", Counter},
-	ReactiveImportL1: {"L1 Reactive Import", "kvarh", Counter},
-	ReactiveImportL2: {"L2 Reactive Import", "kvarh", Counter},
-	ReactiveImportL3: {"L3 Reactive Import", "kvarh", Counter},
-	ReactiveExport:   {"Reactive Export", "kvarh", Counter},
-	ReactiveExportT1: {"Tariff 1 Reactive Export", "kvarh", Counter},
-	ReactiveExportT2: {"Tariff 2 Reactive Export", "kvarh", Counter},
-	ReactiveExportL1: {"L1 Reactive Export", "kvarh", Counter},
-	ReactiveExportL2: {"L2 Reactive Export", "kvarh", Counter},
-	ReactiveExportL3: {"L3 Reactive Export", "kvarh", Counter},
-	DCCurrent:        {"DC Current", "A", Gauge},
-	DCVoltage:        {"DC Voltage", "V", Gauge},
-	DCPower:          {"DC Power", "W", Gauge},
-	HeatSinkTemp:     {"Heat Sink Temperature", "°C", Gauge},
-	DCCurrentS1:      {"String 1 Current", "A", Gauge},
-	DCVoltageS1:      {"String 1 Voltage", "V", Gauge},
-	DCPowerS1:        {"String 1 Power", "W", Gauge},
-	DCEnergyS1:       {"String 1 Generation", "kWh", Counter},
-	DCCurrentS2:      {"String 2 Current", "A", Gauge},
-	DCVoltageS2:      {"String 2 Voltage", "V", Gauge},
-	DCPowerS2:        {"String 2 Power", "W", Gauge},
-	DCEnergyS2:       {"String 2 Generation", "kWh", Counter},
-	DCCurrentS3:      {"String 3 Current", "A", Gauge},
-	DCVoltageS3:      {"String 3 Voltage", "V", Gauge},
-	DCPowerS3:        {"String 3 Power", "W", Gauge},
-	DCEnergyS3:       {"String 3 Generation", "kWh", Counter},
-	ChargeState:      {"Charge State", "%", Gauge},
-	BatteryVoltage:   {"Battery Voltage", "V", Gauge},
-	PhaseAngle:       {"Phase Angle", "°", Gauge},
+	Frequency:        {"Frequency", Hertz, Gauge},
+	Current:          {"Current", Ampere, Gauge},
+	CurrentL1:        {"L1 Current", Ampere, Gauge},
+	CurrentL2:        {"L2 Current", Ampere, Gauge},
+	CurrentL3:        {"L3 Current", Ampere, Gauge},
+	Voltage:          {"Voltage", Volt, Gauge},
+	VoltageL1:        {"L1 Voltage", Volt, Gauge},
+	VoltageL2:        {"L2 Voltage", Volt, Gauge},
+	VoltageL3:        {"L3 Voltage", Volt, Gauge},
+	Power:            {"Power", Watt, Gauge},
+	PowerL1:          {"L1 Power", Watt, Gauge},
+	PowerL2:          {"L2 Power", Watt, Gauge},
+	PowerL3:          {"L3 Power", Watt, Gauge},
+	ImportPower:      {"Import Power", Watt, Gauge},
+	ImportPowerL1:    {"L1 Import Power", Watt, Gauge},
+	ImportPowerL2:    {"L2 Import Power", Watt, Gauge},
+	ImportPowerL3:    {"L3 Import Power", Watt, Gauge},
+	ExportPower:      {"Export Power", Watt, Gauge},
+	ExportPowerL1:    {"L1 Export Power", Watt, Gauge},
+	ExportPowerL2:    {"L2 Export Power", Watt, Gauge},
+	ExportPowerL3:    {"L3 Export Power", Watt, Gauge},
+	ReactivePower:    {"Reactive Power", Var, Gauge},
+	ReactivePowerL1:  {"L1 Reactive Power", Var, Gauge},
+	ReactivePowerL2:  {"L2 Reactive Power", Var, Gauge},
+	ReactivePowerL3:  {"L3 Reactive Power", Var, Gauge},
+	ApparentPower:    {"Apparent Power", VoltAmpere, Gauge},
+	ApparentPowerL1:  {"L1 Apparent Power", VoltAmpere, Gauge},
+	ApparentPowerL2:  {"L2 Apparent Power", VoltAmpere, Gauge},
+	ApparentPowerL3:  {"L3 Apparent Power", VoltAmpere, Gauge},
+	Cosphi:           {"Cosphi", NoUnit, Gauge},
+	CosphiL1:         {"L1 Cosphi", NoUnit,Gauge},
+	CosphiL2:         {"L2 Cosphi", NoUnit,Gauge},
+	CosphiL3:         {"L3 Cosphi", NoUnit, Gauge},
+	THD:              {"Average voltage to neutral THD", Percent, Gauge},
+	THDL1:            {"L1 Voltage to neutral THD", Percent, Gauge},
+	THDL2:            {"L2 Voltage to neutral THD", Percent, Gauge},
+	THDL3:            {"L3 Voltage to neutral THD", Percent, Gauge},
+	Sum:              {"Total Sum", KiloWattHour, Counter},
+	SumT1:            {"Tariff 1 Sum", KiloWattHour, Counter},
+	SumT2:            {"Tariff 2 Sum", KiloWattHour, Counter},
+	SumL1:            {"L1 Sum", KiloWattHour, Counter},
+	SumL2:            {"L2 Sum", KiloWattHour, Counter},
+	SumL3:            {"L3 Sum", KiloWattHour, Counter},
+	Import:           {"Total Import", KiloWattHour, Counter},
+	ImportT1:         {"Tariff 1 Import", KiloWattHour, Counter},
+	ImportT2:         {"Tariff 2 Import", KiloWattHour, Counter},
+	ImportL1:         {"L1 Import", KiloWattHour, Counter},
+	ImportL2:         {"L2 Import", KiloWattHour, Counter},
+	ImportL3:         {"L3 Import", KiloWattHour, Counter},
+	Export:           {"Total Export", KiloWattHour, Counter},
+	ExportT1:         {"Tariff 1 Export", KiloWattHour, Counter},
+	ExportT2:         {"Tariff 2 Export", KiloWattHour, Counter},
+	ExportL1:         {"L1 Export", KiloWattHour, Counter},
+	ExportL2:         {"L2 Export", KiloWattHour, Counter},
+	ExportL3:         {"L3 Export", KiloWattHour, Counter},
+	ReactiveSum:      {"Total Reactive", KiloVarHour, Counter},
+	ReactiveSumT1:    {"Tariff 1 Reactive", KiloVarHour, Counter},
+	ReactiveSumT2:    {"Tariff 2 Reactive", KiloVarHour, Counter},
+	ReactiveSumL1:    {"L1 Reactive", KiloVarHour, Counter},
+	ReactiveSumL2:    {"L2 Reactive", KiloVarHour, Counter},
+	ReactiveSumL3:    {"L3 Reactive", KiloVarHour, Counter},
+	ReactiveImport:   {"Reactive Import", KiloVarHour, Counter},
+	ReactiveImportT1: {"Tariff 1 Reactive Import", KiloVarHour, Counter},
+	ReactiveImportT2: {"Tariff 2 Reactive Import", KiloVarHour, Counter},
+	ReactiveImportL1: {"L1 Reactive Import", KiloVarHour, Counter},
+	ReactiveImportL2: {"L2 Reactive Import", KiloVarHour, Counter},
+	ReactiveImportL3: {"L3 Reactive Import", KiloVarHour, Counter},
+	ReactiveExport:   {"Reactive Export", KiloVarHour, Counter},
+	ReactiveExportT1: {"Tariff 1 Reactive Export", KiloVarHour, Counter},
+	ReactiveExportT2: {"Tariff 2 Reactive Export", KiloVarHour, Counter},
+	ReactiveExportL1: {"L1 Reactive Export", KiloVarHour, Counter},
+	ReactiveExportL2: {"L2 Reactive Export", KiloVarHour, Counter},
+	ReactiveExportL3: {"L3 Reactive Export", KiloVarHour, Counter},
+	DCCurrent:        {"DC Current", Ampere, Gauge},
+	DCVoltage:        {"DC Voltage", Volt, Gauge},
+	DCPower:          {"DC Power", Watt, Gauge},
+	HeatSinkTemp:     {"Heat Sink Temperature", DegreeCelsius, Gauge},
+	DCCurrentS1:      {"String 1 Current", Ampere, Gauge},
+	DCVoltageS1:      {"String 1 Voltage", Volt, Gauge},
+	DCPowerS1:        {"String 1 Power", Watt, Gauge},
+	DCEnergyS1:       {"String 1 Generation", KiloWattHour, Counter},
+	DCCurrentS2:      {"String 2 Current", Ampere, Gauge},
+	DCVoltageS2:      {"String 2 Voltage", Volt, Gauge},
+	DCPowerS2:        {"String 2 Power", Watt, Gauge},
+	DCEnergyS2:       {"String 2 Generation", KiloWattHour, Counter},
+	DCCurrentS3:      {"String 3 Current", Ampere, Gauge},
+	DCVoltageS3:      {"String 3 Voltage", Volt, Gauge},
+	DCPowerS3:        {"String 3 Power", Watt, Gauge},
+	DCEnergyS3:       {"String 3 Generation", KiloWattHour, Counter},
+	ChargeState:      {"Charge State", Percent, Gauge},
+	BatteryVoltage:   {"Battery Voltage", Volt, Gauge},
+	PhaseAngle:       {"Phase Angle", Degree, Gauge},
 }
 
 // MarshalText implements encoding.TextMarshaler
@@ -264,7 +264,7 @@ func (m *Measurement) DescriptionAndUnit() (string, string) {
 	if details, ok := iec[*m]; ok {
 		unit := details.Unit
 		description := details.Description
-		return description, unit
+		return description, unit.Abbreviation()
 	}
 	return m.String(), ""
 }
@@ -299,52 +299,28 @@ func (m *Measurement) PrometheusDescription() string {
 
 // PrometheusName returns a name and its associated unit for Prometheus counters
 func (m *Measurement) PrometheusName() string {
-	description, unit := m.DescriptionAndUnit()
+	var description string
+	var unit string
+	if details, ok := iec[*m]; ok {
+		unit = details.Unit.PrometheusName()
+		description = details.Description
+	} else {
+		description = m.String()
+	}
+
 	if unit != "" {
 		unit = strings.ToLower(unit)
 	}
 
 	description = strings.ReplaceAll(strings.ToLower(description), " ", "_")
 
-	paraphrasedUnit := paraphraseChars(unit)
-
 	return strings.Trim( // Trim trailing underscore (e. g. when unit string is empty)
 		strings.Join(
-			[]string{"measurement", description, paraphrasedUnit},
+			[]string{"measurement", description, unit},
 			"_",
 		),
 		"_",
 	)
 }
 
-func paraphraseChars(text string) string {
-	text = strings.ToLower(text)
-	result := ""
-	switch text {
-	case "°":
-		result = "degree"
-	case "°c":
-		result = "degree_celsius"
-	case "%":
-		result = "percent"
-	case "a":
-		result = "ampere"
-	case "v":
-		result = "volt"
-	case "w":
-		result = "watt"
-	case "kw":
-		result = "kilowatt"
-	case "kwh":
-		result = "kilowatt_hour"
-	case "va":
-		result = "voltampere"
-	case "kvarh":
-		result = "kilovar_hour"
-	default:
-		result = text
-	}
-
-	return result
-}
 
