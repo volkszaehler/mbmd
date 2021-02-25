@@ -111,14 +111,6 @@ var (
 		[]string{"device_id"},
 	)
 
-	MeasurementElectricCurrent = prometheus.NewGaugeVec(
-		*newGaugeOpts(
-			"measurement_electric_current_ampere",
-			"Last electric current measured",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
 	ReadDeviceDetailsFailedTotal = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"smart_meter_read_device_details_failed_total",
@@ -174,37 +166,24 @@ var counterVecMap = map[meters.Measurement]*prometheus.CounterVec{}
 // TODO make?
 var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
 
-// Init registers all globally defined metrics to Prometheus library's default registry
-// TODO remove?
+// Init registers all globally defined static metrics to Prometheus library's default registry
 func Init() {
-	collectors := make([]prometheus.Collector, 0, len(meters.MeasurementValues()))
-
-	for _, measurement := range meters.MeasurementValues() {
-		switch measurement.PrometheusMetricType() {
-		case meters.Gauge:
-			newGauge := prometheus.NewGaugeVec(
-				*newGaugeOpts(
-					measurement.PrometheusName(),
-					measurement.PrometheusDescription(),
-				),
-				[]string{"device_id", "serial_number"},
-			)
-			gaugeVecMap[measurement] = newGauge
-			collectors = append(collectors, newGauge)
-		case meters.Counter:
-			newCounter := prometheus.NewCounterVec(
-				*newCounterOpts(
-					measurement.PrometheusName(),
-					measurement.PrometheusDescription(),
-				),
-				[]string{"device_id", "serial_number"},
-			)
-			counterVecMap[measurement] = newCounter
-			collectors = append(collectors, newCounter)
-		}
-	}
-
-	prometheus.MustRegister(collectors...)
+	prometheus.MustRegister(
+		ConnectionAttemptTotal,
+		ConnectionAttemptFailedTotal,
+		ConnectionPartiallySuccessfulTotal,
+		DevicesCreatedTotal,
+		BusScanStartedTotal,
+		BusScanDeviceInitializationErrorTotal,
+		BusScanTotal,
+		BusScanDeviceProbeSuccessfulTotal,
+		BusScanDeviceProbeFailedTotal,
+		ReadDeviceDetailsFailedTotal,
+		DeviceQueriesTotal,
+		DeviceQueriesErrorTotal,
+		DeviceQueriesSuccessTotal,
+		DeviceQueryMeasurementValueSkippedTotal,
+	)
 }
 
 // UpdateMeasurementMetric updates a counter or gauge based by passed measurement
