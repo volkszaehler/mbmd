@@ -51,9 +51,15 @@ func NewMqttClient(
 	log.Printf("mqtt: connecting %s at %s", options.ClientID, options.Servers)
 
 	client := MQTT.NewClient(options)
+	// TODO prometheus: PublisherMqttClientCreated
+
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatalf("mqtt: error connecting: %s", token.Error())
+		// TODO prometheus: PublisherMqttClientConnectionFailure
+	} /* else if err == nil {
+		// TODO prometheus: PublisherMqttClientConnectionSuccess
 	}
+	*/
 	if verbose {
 		log.Println("mqtt: connected")
 	}
@@ -72,6 +78,7 @@ func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
 		log.Printf("mqtt: publish %s, message: %s", topic, message)
 	}
 	go m.WaitForToken(token)
+	// TODO prometheus: PublisherMqttClientMessagesPublished
 }
 
 // WaitForToken synchronously waits until token operation completed
@@ -81,6 +88,7 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 			log.Printf("mqtt: error: %s", token.Error())
 		}
 	} else if m.verbose {
+		// TODO prometheus: PublisherMqttClientWaitForTokenTimedOut
 		log.Println("mqtt: timeout")
 	}
 }
@@ -104,6 +112,7 @@ func NewMqttRunner(options *MQTT.ClientOptions, qos byte, topic string, verbose 
 	options.SetWill(lwt, "disconnected", qos, true)
 
 	client := NewMqttClient(options, qos, verbose)
+	// TODO prometheus: PublisherMqttRunnerCreated
 
 	return &MqttRunner{
 		MqttClient: client,
@@ -127,6 +136,7 @@ func topicFromMeasurement(measurement meters.Measurement) string {
 // Run MqttClient publisher
 func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	// notify connection and override will
+	// TODO prometheus: PublisherMqttRunnerRun
 	m.MqttClient.Publish(fmt.Sprintf("%s/status", m.topic), true, "connected")
 
 	for snip := range in {

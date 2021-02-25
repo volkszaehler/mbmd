@@ -38,6 +38,7 @@ type SocketClient struct {
 func (c *SocketClient) writePump() {
 	defer func() {
 		c.conn.Close()
+		// TODO prometheus: WebsocketClientConnectionClosed
 	}()
 	for {
 		msg := <-c.send
@@ -45,18 +46,23 @@ func (c *SocketClient) writePump() {
 			return
 		}
 		if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+			// TODO prometheus: WebsocketClientMessagesSentFailed
 			return
 		}
+		// TODO prometheus: WebsocketClientMessagesSentSuccessfully
 	}
 }
 
 // ServeWebsocket handles websocket requests from the peer.
 func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
+	// TODO prometheus: WebsocketClientCreated
 	if err != nil {
 		log.Println(err)
+		// TODO prometheus: WebsocketClientCreationFailed
 		return
 	}
+	// TODO prometheus: WebsocketClientCreatedSucessfully
 	client := &SocketClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 

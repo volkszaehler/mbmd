@@ -3,12 +3,13 @@ package sunspec
 import (
 	"errors"
 	"fmt"
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
@@ -83,9 +84,11 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 func (d *SunSpec) Initialize(client modbus.Client) error {
 	devices, err := DeviceTree(client)
 
+	// TODO prometheus: DeviceModbusConnectionAttemptTotal
 	prometheusManager.ConnectionAttemptTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
 
 	if err != nil && !errors.Is(err, meters.ErrPartiallyOpened) {
+			// TODO prometheus: DeviceModbusConnectionFailedTotal
 			prometheusManager.ConnectionAttemptFailedTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
 		return err
 	}
@@ -93,6 +96,8 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	if err := d.InitializeWithTree(devices); err != nil {
 		return err
 	}
+
+	// TODO prometheus: else DeviceModbusConnectionSuccess
 
 	// this may be ErrPartiallyOpened
 	return err
@@ -107,8 +112,10 @@ func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
+		// TODO prometheus: DeviceModbusCommonBlockReadFailure
 		return err
 	}
+	// TODO prometheus: DeviceModbusCommonBlockReadSuccess
 
 	// collect relevant models
 	return d.collectModels(device)
