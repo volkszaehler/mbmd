@@ -34,6 +34,32 @@ func (r MeasurementResult) String() string {
 }
 
 // measurement describes a Measurement itself, its unit and according prometheus.Metric type
+// A measurement object is built by using the builder function newInternalMeasurement.
+// Then, its fields can be set by using measurementOptions.
+// Required fields are
+// - Description
+// - Unit
+// - MetricType
+// A Prometheus name and help text is "auto-generated". The format is:
+// <Name>			::=	<Description>_<Unit>[_<CounterTotal>]
+// <Description>	::= measurementOption.WithDescription() | measurementOption.WithCustomDescription()
+// <Unit>			::= measurementOption.WithUnit()
+// <CounterTotal>	::= "total" // if metric type is Counter
+// E. g.:
+//  Assuming a device's manufacturer is "myManufacturer"
+//	newInternalMeasurement(WithDescription("Frequency Test With Some Text"), WithUnit(Hertz), WithMetricType(Counter))
+//	=> Name (before creating prometheus.Metric): "frequency_test_with_some_text_hertz_total"
+//  => Description: "Measurement of Frequency Test With Some Text in Hertz"
+//
+// You can set custom Prometheus names and help texts by using the measurementOptions
+// to override the "auto-generated" name and help text
+// - WithCustomPrometheusName
+// - WithCustomPrometheusDescription
+// However, please make sure that the custom name conforms to Prometheus' naming conventions.
+// (See https://prometheus.io/docs/practices/naming/)
+// Please also note that PrometheusInfo.Name does not equal the actual name of prometheus.Metric;
+// It's processed when initializing all prometheus.Metric in prometheus_metrics.UpdateMeasurementMetrics
+// (see prometheus.go for more information).
 type measurement struct {
 	Description    string
 	Unit           *Unit
@@ -172,8 +198,8 @@ const (
 )
 
 var iec = map[Measurement]*measurement{
-	Frequency: 		  newInternalMeasurement(WithDescription("Frequency"), WithUnit(Hertz), WithMetricType(Gauge)),
-	Current: 		  newInternalMeasurement(WithDescription("Current"), WithUnit(Ampere), WithMetricType(Gauge)),
+	Frequency:        newInternalMeasurement(WithDescription("Frequency"), WithUnit(Hertz), WithMetricType(Gauge)),
+	Current:          newInternalMeasurement(WithDescription("Current"), WithUnit(Ampere), WithMetricType(Gauge)),
 	CurrentL1:        newInternalMeasurement(WithDescription("L1 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
 	CurrentL2:        newInternalMeasurement(WithDescription("L2 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
 	CurrentL3:        newInternalMeasurement(WithDescription("L3 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
@@ -343,7 +369,7 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	} else {
 		if m.Unit != nil {
 			if m.PrometheusInfo.MetricType == Counter {
-				m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, m.Unit.PrometheusName() + "_total")
+				m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, m.Unit.PrometheusName()+"_total")
 			} else {
 				m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, m.Unit.PrometheusName())
 			}
@@ -412,7 +438,6 @@ func generatePrometheusDescription(description string, unit string) string {
 		return fmt.Sprintf("Measurement of %s", description)
 	}
 }
-
 
 func generatePrometheusName(name string, unit string) string {
 	measurementName := strings.ToLower(name)
