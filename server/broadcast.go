@@ -16,6 +16,7 @@ type Broadcaster struct {
 // NewBroadcaster creates a Broadcaster that implements
 // a hub and spoke message replication pattern
 func NewBroadcaster(in <-chan interface{}) *Broadcaster {
+	// TODO prometheus: BroadcastersCreated
 	return &Broadcaster{
 		in:         in,
 		recipients: make([]chan<- interface{}, 0),
@@ -25,6 +26,7 @@ func NewBroadcaster(in <-chan interface{}) *Broadcaster {
 
 // Run executes the broadcaster
 func (b *Broadcaster) Run() {
+	// TODO prometheus: BroadcastersRun
 	for s := range b.in {
 		b.Lock()
 		for _, recipient := range b.recipients {
@@ -42,6 +44,7 @@ func (b *Broadcaster) Done() <-chan struct{} {
 
 // stop closes broadcast receiver channels and waits for run methods to finish
 func (b *Broadcaster) stop() {
+	// TODO prometheus: BroadcastersStopped
 	b.Lock()
 	defer b.Unlock()
 	for _, recipient := range b.recipients {
@@ -58,6 +61,8 @@ func (b *Broadcaster) Attach() <-chan interface{} {
 	b.Lock()
 	b.recipients = append(b.recipients, channel)
 	b.Unlock()
+
+	// TODO prometheus: BroadcastersChannelsCreated
 
 	return channel
 }

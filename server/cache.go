@@ -38,11 +38,14 @@ func NewCache(maxAge time.Duration, status *Status, verbose bool) *Cache {
 		verbose:  verbose,
 	}
 
+	// TODO prometheus: MeterReadingCacheCreatedTotal
+
 	return cache
 }
 
 // Run consumes meter readings into snip cache
 func (mc *Cache) Run(in <-chan QuerySnip) {
+	// TODO prometheus: MeterReadingCacheQuerySnipsConsumed
 	for snip := range in {
 		uniqueID := snip.Device
 
@@ -52,6 +55,7 @@ func (mc *Cache) Run(in <-chan QuerySnip) {
 			readings = NewMeterReadings(mc.maxAge)
 			mc.Lock()
 			mc.readings[uniqueID] = readings
+			// TODO prometheus: MeterReadingCacheReadingsCached
 			mc.Unlock()
 		}
 

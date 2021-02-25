@@ -40,6 +40,8 @@ func NewInfluxClient(
 		log.Fatal("influx: missing measurement")
 	}
 
+	// TODO prometheus: PublisherInfluxClientCreated
+
 	return &Influx{
 		client:      client,
 		measurement: measurement,
@@ -49,6 +51,7 @@ func NewInfluxClient(
 
 // Run Influx publisher
 func (m *Influx) Run(in <-chan QuerySnip) {
+	// TODO prometheus: PublisherInfluxClientRun
 	// log errors
 	go func() {
 		for err := range m.writer.Errors() {

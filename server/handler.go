@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	"log"
 	"math"
 	"time"
+
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 
 	"github.com/volkszaehler/mbmd/meters"
 )
@@ -33,6 +34,8 @@ func NewHandler(id int, m *meters.Manager) *Handler {
 		Manager: m,
 		status:  make(map[string]*RuntimeInfo),
 	}
+
+	// TODO prometheus: ConnectionHandlersCreated
 
 	return handler
 }
@@ -93,6 +96,7 @@ func (h *Handler) initializeDevice(
 	dev meters.Device,
 ) (*RuntimeInfo, error) {
 	deviceID := h.deviceID(id, dev)
+	// TODO prometheus: ConnectionHandlerDevicesInitializedRoutineStarted
 
 	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
 		if !errors.Is(err, meters.ErrPartiallyOpened) {
@@ -103,12 +107,14 @@ func (h *Handler) initializeDevice(
 			defer cancel()
 			<-ctx.Done()
 
+			// TODO prometheus: ConnectionHandlerDevicesInitializationFailure
 			return nil, err
 		}
 		log.Println(err) // log error but continue
 	}
 
 	log.Printf("initialized device %s: %v", deviceID, dev.Descriptor())
+	// TODO prometheus: ConnectionHandlerDevicesInitializationSuccess
 
 	// create status
 	status := &RuntimeInfo{Online: true}
@@ -187,6 +193,7 @@ func (h *Handler) queryDevice(
 
 	// close connection to force modbus client to reopen
 	h.Manager.Conn.Close()
+	// TODO prometheus: ModbusConnectionsClosed
 
 	// send error status
 	status.Available(false)

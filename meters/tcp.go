@@ -37,6 +37,8 @@ func NewTCP(address string) Connection {
 		Handler: handler,
 	}
 
+	// TODO prometheus: TCPConnectionCreated
+
 	return b
 }
 
@@ -71,4 +73,5 @@ func (b *TCP) Timeout(timeout time.Duration) time.Duration {
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *TCP) Close() {
 	b.Handler.Close()
+	// TODO prometheus: TCPConnectionClosed
 }
