@@ -3,12 +3,13 @@ package sunspec
 import (
 	"errors"
 	"fmt"
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
@@ -65,16 +66,21 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
 
+	// TODO prometheus: DeviceModbusConnectionAttemptTotal
 	prometheusManager.ConnectionAttemptTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
 
 	if err != nil {
 		if in == nil {
+			// TODO prometheus: DeviceModbusConnectionFailedTotal
 			prometheusManager.ConnectionAttemptFailedTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
 			return err
 		}
 
 		partiallyOpen = true
+		// TODO prometheus: DeviceModbusConnectionPartialSuccess
 	}
+
+	// TODO prometheus: else DeviceModbusConnectionSuccess
 
 	devices := in.Collect(sunspec.AllDevices)
 	if len(devices) == 0 {
@@ -88,13 +94,17 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
+		// TODO prometheus: DeviceModbusCommonBlockReadFailure
 		return err
 	}
+	// TODO prometheus: DeviceModbusCommonBlockReadSuccess
 
 	// collect relevant models
 	if err := d.collectModels(device); err != nil {
+		// TODO prometheus: DeviceModbusModelCollectionFailure
 		return err
 	}
+	// TODO prometheus: DeviceModbusModelCollectionSuccess
 
 	// return partial open error if everything else went fine
 	if partiallyOpen {
