@@ -3,11 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 	golog "log"
 	"os"
 	"strconv"
 	"time"
+
+	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -128,9 +129,11 @@ SCAN:
 				)
 
 				deviceSerial := dev.Descriptor().Serial
+
 				// TODO Refactor to generalized method where e. g. only MeasurementType needs to be passed
 				// TODO Can we set the timestamp of Gauge entry using the actual timestamp of measurement??
-				prometheusManager.MeasurementElectricCurrent.WithLabelValues(deviceIdString, deviceSerial).Set(mr.Value)
+				// prometheusManager.MeasurementElectricCurrent.WithLabelValues(deviceIdString, deviceSerial).Set(mr.Value)
+				prometheusManager.UpdateMeasurementMetric(deviceIdString, deviceSerial, mr)
 				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceIdString, deviceSerial).Inc()
 
 				deviceList[deviceID] = dev
