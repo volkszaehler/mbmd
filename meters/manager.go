@@ -17,6 +17,7 @@ func NewManager(conn Connection) *Manager {
 		devices: make([]device, 0),
 		Conn:    conn,
 	}
+	// TODO prometheus: ConnectionManagerCreated
 	return &m
 }
 
