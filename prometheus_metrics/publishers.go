@@ -2,9 +2,10 @@ package prometheus_metrics
 
 import "github.com/prometheus/client_golang/prometheus"
 
-type publisherCollectors struct {
-	collectable
-}
+// publisherCollectors contains all Prometheus metrics about publishers like HTTP, MQTT, ...
+//
+// Implements collectable interface
+type publisherCollectors struct {}
 
 var labels = []string{"type"}
 
@@ -14,7 +15,7 @@ var (
 			"publisher_created_total",
 			"",
 		),
-		[]string{"type"},
+		labels,
 	)
 
 	PublisherDataPublished = prometheus.NewCounterVec(
@@ -22,7 +23,7 @@ var (
 			"publisher_data_published_total",
 			"",
 		),
-		[]string{"type"},
+		labels,
 	)
 
 	PublisherDataPublishedSize = prometheus.NewCounterVec(
@@ -30,7 +31,7 @@ var (
 			"publisher_data_published_size_bytes_total",
 			"",
 		),
-		[]string{"type"},
+		labels,
 	)
 
 	PublisherDataPublishedError = prometheus.NewCounterVec(
@@ -38,7 +39,7 @@ var (
 			"publisher_data_published_errors_total",
 			"",
 		),
-		[]string{"type"},
+		labels,
 	)
 
 	PublisherConnectionFlush = prometheus.NewCounterVec(
@@ -46,7 +47,7 @@ var (
 			"publisher_connection_flushes_total",
 			"",
 		),
-		[]string{"type"},
+		labels,
 	)
 )
 
@@ -59,3 +60,4 @@ func (c publisherCollectors) Collect() []prometheus.Collector {
 		PublisherConnectionFlush,
 	}
 }
+
