@@ -1,6 +1,9 @@
 package prometheus_metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"log"
+)
 
 // Static metrics
 var (
@@ -119,32 +122,34 @@ var (
 // RegisterStatics registers all globally defined static metrics to Prometheus library's default registry
 func RegisterStatics() {
 	collectables := getAllCollectors()
-	collectors := make([]prometheus.Collector, len(collectables))
 
-	for _, c := range collectables {
-		collectors = append(collectors, c.Collect()...)
+	for _, collectable := range collectables {
+		for _, prometheusCollector := range collectable.Collect() {
+			if err := prometheus.Register(prometheusCollector); err != nil {
+				log.Fatalf("Could not register a metric '%s' (%s)", prometheusCollector, err)
+			}
+		}
 	}
 
-
-	prometheus.MustRegister(
-		//ConnectionAttemptTotal,
-		//ConnectionAttemptFailedTotal,
-		//ConnectionPartiallySuccessfulTotal,
-		//DevicesCreatedTotal,
-		//BusScanStartedTotal,
-		//BusScanDeviceInitializationErrorTotal,
-		//BusScanTotal,
-		//BusScanDeviceProbeSuccessfulTotal,
-		//BusScanDeviceProbeFailedTotal,
-		//ReadDeviceDetailsFailedTotal,
-		//DeviceQueriesTotal,
-		//DeviceQueriesErrorTotal,
-		//DeviceQueriesSuccessTotal,
-		//DeviceQueryMeasurementValueSkippedTotal,
-
-		// Socket related metrics
-		collectors...
-	)
+	//prometheus.MustRegister(
+	//	//ConnectionAttemptTotal,
+	//	//ConnectionAttemptFailedTotal,
+	//	//ConnectionPartiallySuccessfulTotal,
+	//	//DevicesCreatedTotal,
+	//	//BusScanStartedTotal,
+	//	//BusScanDeviceInitializationErrorTotal,
+	//	//BusScanTotal,
+	//	//BusScanDeviceProbeSuccessfulTotal,
+	//	//BusScanDeviceProbeFailedTotal,
+	//	//ReadDeviceDetailsFailedTotal,
+	//	//DeviceQueriesTotal,
+	//	//DeviceQueriesErrorTotal,
+	//	//DeviceQueriesSuccessTotal,
+	//	//DeviceQueryMeasurementValueSkippedTotal,
+	//
+	//	// Socket related metrics
+	//	collectors...
+	//)
 }
 
 func getAllCollectors() []collectable {
