@@ -59,7 +59,7 @@ func (r MeasurementResult) String() string {
 // (See https://prometheus.io/docs/practices/naming/)
 // Please also note that PrometheusInfo.Name does not equal the actual name of prometheus.Metric;
 // It's processed when initializing all prometheus.Metric in prometheus_metrics.UpdateMeasurementMetrics
-// (see prometheus.go for more information).
+// (see prometheus_metrics/measurements.go for more information).
 type measurement struct {
 	Description    string
 	Unit           *Unit
