@@ -3,9 +3,9 @@ package prometheus_metrics
 import "github.com/prometheus/client_golang/prometheus"
 
 // socketCollectors contains all Prometheus metrics about web sockets
-type socketCollectors struct {
-	collectable
-}
+//
+// Implements collectable interface
+type socketCollectors struct {}
 
 var (
 	WebSocketClientConnectionClose = prometheus.NewCounter(
@@ -63,4 +63,3 @@ func (c socketCollectors) Collect() []prometheus.Collector {
 		WebSocketMessageBytesSent,
 	}
 }
-
