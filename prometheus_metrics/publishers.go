@@ -26,6 +26,15 @@ var (
 		labels,
 	)
 
+	PublisherDataPublishAttempt = prometheus.NewCounterVec(
+		*newCounterOpts(
+			"publisher_data_publish_attempts_total",
+			"",
+		),
+		labels,
+	)
+
+
 	PublisherDataPublishedSize = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"publisher_data_published_size_bytes_total",
@@ -42,9 +51,33 @@ var (
 		labels,
 	)
 
+	PublisherConnectionSuccess = prometheus.NewCounterVec(
+		*newCounterOpts(
+			"publisher_connection_successes_total",
+			"",
+		),
+		labels,
+	)
+
+	PublisherConnectionFailure = prometheus.NewCounterVec(
+		*newCounterOpts(
+			"publisher_connection_failures_total",
+			"",
+		),
+		labels,
+	)
+
 	PublisherConnectionFlush = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"publisher_connection_flushes_total",
+			"",
+		),
+		labels,
+	)
+
+	PublisherConnectionTimeOut = prometheus.NewCounterVec(
+		*newCounterOpts(
+			"publisher_connection_timeouts_total",
 			"",
 		),
 		labels,
@@ -57,7 +90,11 @@ func (c publisherCollectors) Collect() []prometheus.Collector {
 		PublisherDataPublished,
 		PublisherDataPublishedSize,
 		PublisherDataPublishedError,
+		PublisherDataPublishAttempt,
+		PublisherConnectionSuccess,
 		PublisherConnectionFlush,
+		PublisherConnectionFailure,
+		PublisherConnectionTimeOut,
 	}
 }
 
