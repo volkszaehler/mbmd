@@ -150,5 +150,6 @@ func RegisterStatics() {
 func getAllCollectors() []collectable {
 	return []collectable{
 		socketCollectors{},
+		publisherCollectors{},
 	}
 }
