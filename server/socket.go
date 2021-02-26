@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/volkszaehler/mbmd/prometheus_metrics"
 	"log"
 	"net/http"
 	"time"
@@ -38,36 +39,36 @@ type SocketClient struct {
 func (c *SocketClient) writePump() {
 	defer func() {
 		c.conn.Close()
-		// TODO prometheus: WebsocketClientConnectionClosed
+		prometheus_metrics.WebSocketClientConnectionClose.Inc()
 	}()
 	for {
 		msg := <-c.send
 		if err := c.conn.SetWriteDeadline(time.Now().Add(socketWriteWait)); err != nil {
+			prometheus_metrics.WebSocketClientMessageSendFailure.Inc()
 			return
 		}
 		if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-			// TODO prometheus: WebsocketClientMessagesSentFailed
+			prometheus_metrics.WebSocketClientMessageSendFailure.Inc()
 			return
 		}
-		// TODO prometheus: WebsocketClientMessagesSentSuccessfully
+		prometheus_metrics.WebSocketClientMessageSendSuccess.Inc()
 	}
 }
 
 // ServeWebsocket handles websocket requests from the peer.
 func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
-	// TODO prometheus: WebsocketClientCreated
 	if err != nil {
 		log.Println(err)
-		// TODO prometheus: WebsocketClientCreationFailed
+		prometheus_metrics.WebSocketClientCreationFailure.WithLabelValues("upgrade").Inc()
 		return
 	}
-	// TODO prometheus: WebsocketClientCreatedSucessfully
 	client := &SocketClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
 	// run writing to client in goroutine
 	go client.writePump()
+	prometheus_metrics.WebSocketClientCreationSuccess.WithLabelValues("upgrade").Inc()
 }
 
 // SocketHub maintains the set of active clients and broadcasts messages to the
@@ -108,6 +109,7 @@ func (h *SocketHub) broadcast(i interface{}) {
 			select {
 			case client.send <- message:
 			default:
+				prometheus_metrics.WebSocketMessageBytesSent.Add(float64(len(message)))
 				close(client.send)
 				delete(h.clients, client)
 			}
