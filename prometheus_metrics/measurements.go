@@ -28,129 +28,12 @@
 package prometheus_metrics
 
 import (
-	"log"
-	"strings"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/volkszaehler/mbmd/meters"
+	"log"
 )
 
-const NAMESPACE = "mbmd"
 const SSN_MISSING = "NOT_AVAILABLE"
-
-// Static metrics
-var (
-	ConnectionAttemptTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_connection_attempt_total",
-			"Total amount of a smart meter's connection attempts",
-		),
-		[]string{"model", "sub_device"},
-	)
-
-	ConnectionAttemptFailedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_connection_attempt_failed_total",
-			"Amount of a smart meter's connection failures",
-		),
-		[]string{"model", "sub_device"},
-	)
-
-	ConnectionPartiallySuccessfulTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_connection_partially_successful_total",
-			"Number of connections that are partially open",
-		),
-		[]string{"model", "sub_device"},
-	)
-
-	DevicesCreatedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_devices_created_total",
-			"Number of smart meter devices created/registered",
-		),
-		[]string{"meter_type", "sub_device"},
-	)
-
-	BusScanStartedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"bus_scan_started_total",
-			"Total started bus scans",
-		),
-		[]string{"device_id"},
-	)
-
-	BusScanDeviceInitializationErrorTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"bus_scan_device_initialization_error_total",
-			"Total errors upon initialization of a device during bus scan",
-		),
-		[]string{"device_id"},
-	)
-
-	BusScanTotal = prometheus.NewCounter(
-		*newCounterOpts(
-			"bus_scan_total",
-			"Amount of bus scans done",
-		),
-	)
-
-	BusScanDeviceProbeSuccessfulTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"bus_scan_device_probe_successful_total",
-			"Amount of successfully found devices during bus scan",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
-	BusScanDeviceProbeFailedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"bus_scan_device_probe_failed_total",
-			"Amount of devices failed to be found during bus scan",
-		),
-		[]string{"device_id"},
-	)
-
-	ReadDeviceDetailsFailedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_read_device_details_failed_total",
-			"Reading additional details of a smart meter failed",
-		),
-		[]string{"model"},
-	)
-
-	DeviceQueriesTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_total",
-			"Amount of queries/requests done for a smart meter",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
-	DeviceQueriesErrorTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_error_total",
-			"Errors occured during smart meter query",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
-	DeviceQueriesSuccessTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_success_total",
-			"Successful smart meter query",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
-	DeviceQueryMeasurementValueSkippedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_measurement_value_skipped_total",
-			"NaN measurement values found and skipped during smart meter query",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-)
 
 // counterVecMap contains all meters.Measurement that are associated with a prometheus.Counter
 //
@@ -165,26 +48,6 @@ var counterVecMap = map[meters.Measurement]*prometheus.CounterVec{}
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
 // TODO make?
 var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
-
-// Init registers all globally defined static metrics to Prometheus library's default registry
-func Init() {
-	prometheus.MustRegister(
-		ConnectionAttemptTotal,
-		ConnectionAttemptFailedTotal,
-		ConnectionPartiallySuccessfulTotal,
-		DevicesCreatedTotal,
-		BusScanStartedTotal,
-		BusScanDeviceInitializationErrorTotal,
-		BusScanTotal,
-		BusScanDeviceProbeSuccessfulTotal,
-		BusScanDeviceProbeFailedTotal,
-		ReadDeviceDetailsFailedTotal,
-		DeviceQueriesTotal,
-		DeviceQueriesErrorTotal,
-		DeviceQueriesSuccessTotal,
-		DeviceQueryMeasurementValueSkippedTotal,
-	)
-}
 
 // UpdateMeasurementMetric updates a counter or gauge based by passed measurement
 //
@@ -268,38 +131,4 @@ func CreateMeasurementMetrics(device meters.Device, labels ...string) {
 			}
 		}
 	}
-}
-
-// newCounterOpts creates a CounterOpts object, but with a predefined namespace
-func newCounterOpts(name string, help string) *prometheus.CounterOpts {
-	return &prometheus.CounterOpts{
-		Namespace: NAMESPACE,
-		Name:      name,
-		Help:      help,
-	}
-}
-
-// newCounterOptsWithSubsystem acts the same as newCounterOpts, but specifies a subsystem for Prometheus fully qualified name
-func newCounterOptsWithSubsystem(subsystem string, name string, help string) *prometheus.CounterOpts {
-	opts := newCounterOpts(name, help)
-	opts.Subsystem = strings.ToLower(subsystem)
-
-	return opts
-}
-
-// newGaugeOpts creates a GaugeOpts object, but with a predefined namespace
-func newGaugeOpts(name string, help string) *prometheus.GaugeOpts {
-	return &prometheus.GaugeOpts{
-		Namespace: NAMESPACE,
-		Name:      name,
-		Help:      help,
-	}
-}
-
-// newGaugeOptsWithSubsystem acts the same as newGaugeOpts, but specifies a subsystem for Prometheus fully qualified name
-func newGaugeOptsWithSubsystem(subsystem string, name string, help string) *prometheus.GaugeOpts {
-	opts := newGaugeOpts(name, help)
-	opts.Subsystem = strings.ToLower(subsystem)
-
-	return opts
 }

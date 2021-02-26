@@ -287,7 +287,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// Prometheus manager - Register all static metrics to default registry
-	prometheusManager.Init()
+	prometheusManager.RegisterStatics()
 
 	// MQTT client
 	if viper.GetString("mqtt.broker") != "" {
