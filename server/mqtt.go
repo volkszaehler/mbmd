@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/volkszaehler/mbmd/prometheus_metrics"
 	"log"
 	"regexp"
 	"strings"
@@ -86,6 +87,8 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 	if token.WaitTimeout(publishTimeout) {
 		if token.Error() != nil {
 			log.Printf("mqtt: error: %s", token.Error())
+			prometheus_metrics.PublisherDataPublishedError.WithLabelValues("mqtt").Inc()
+
 		}
 	} else if m.verbose {
 		// TODO prometheus: PublisherMqttClientWaitForTokenTimedOut
