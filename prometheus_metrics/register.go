@@ -118,20 +118,37 @@ var (
 
 // RegisterStatics registers all globally defined static metrics to Prometheus library's default registry
 func RegisterStatics() {
+	collectables := getAllCollectors()
+	collectors := make([]prometheus.Collector, len(collectables))
+
+	for _, c := range collectables {
+		collectors = append(collectors, c.Collect()...)
+	}
+
+
 	prometheus.MustRegister(
-		ConnectionAttemptTotal,
-		ConnectionAttemptFailedTotal,
-		ConnectionPartiallySuccessfulTotal,
-		DevicesCreatedTotal,
-		BusScanStartedTotal,
-		BusScanDeviceInitializationErrorTotal,
-		BusScanTotal,
-		BusScanDeviceProbeSuccessfulTotal,
-		BusScanDeviceProbeFailedTotal,
-		ReadDeviceDetailsFailedTotal,
-		DeviceQueriesTotal,
-		DeviceQueriesErrorTotal,
-		DeviceQueriesSuccessTotal,
-		DeviceQueryMeasurementValueSkippedTotal,
+		//ConnectionAttemptTotal,
+		//ConnectionAttemptFailedTotal,
+		//ConnectionPartiallySuccessfulTotal,
+		//DevicesCreatedTotal,
+		//BusScanStartedTotal,
+		//BusScanDeviceInitializationErrorTotal,
+		//BusScanTotal,
+		//BusScanDeviceProbeSuccessfulTotal,
+		//BusScanDeviceProbeFailedTotal,
+		//ReadDeviceDetailsFailedTotal,
+		//DeviceQueriesTotal,
+		//DeviceQueriesErrorTotal,
+		//DeviceQueriesSuccessTotal,
+		//DeviceQueryMeasurementValueSkippedTotal,
+
+		// Socket related metrics
+		collectors...
 	)
+}
+
+func getAllCollectors() []collectable {
+	return []collectable{
+		socketCollectors{},
+	}
 }
