@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/volkszaehler/mbmd/prometheus_metrics"
 	"log"
 	"time"
 
@@ -40,7 +41,7 @@ func NewInfluxClient(
 		log.Fatal("influx: missing measurement")
 	}
 
-	// TODO prometheus: PublisherInfluxClientCreated
+	prometheus_metrics.PublisherCreated.WithLabelValues("influx").Inc()
 
 	return &Influx{
 		client:      client,
@@ -51,11 +52,11 @@ func NewInfluxClient(
 
 // Run Influx publisher
 func (m *Influx) Run(in <-chan QuerySnip) {
-	// TODO prometheus: PublisherInfluxClientRun
 	// log errors
 	go func() {
 		for err := range m.writer.Errors() {
 			log.Printf("influxdb error: %v", err)
+			prometheus_metrics.PublisherDataPublishedError.WithLabelValues("influx").Inc()
 		}
 	}()
 
@@ -72,7 +73,10 @@ func (m *Influx) Run(in <-chan QuerySnip) {
 		// write asynchronously
 		p := influxdb.NewPoint(m.measurement, tags, fields, time.Now())
 		m.writer.WritePoint(p)
+		// prometheus_metrics.PublisherDataPublishedSize.WithLabelValues("influx").Add(float64(len(p)))
+		prometheus_metrics.PublisherDataPublished.WithLabelValues("influx").Inc()
 	}
 
 	m.client.Close()
+	prometheus_metrics.PublisherConnectionFlush.WithLabelValues("influx").Inc()
 }
