@@ -7,38 +7,6 @@ import (
 
 // Static metrics
 var (
-	ConnectionAttemptTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_connection_attempt_total",
-			"Total amount of a smart meter's connection attempts",
-		),
-		[]string{"model", "sub_device"},
-	)
-
-	ConnectionAttemptFailedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_connection_attempt_failed_total",
-			"Amount of a smart meter's connection failures",
-		),
-		[]string{"model", "sub_device"},
-	)
-
-	ConnectionPartiallySuccessfulTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_connection_partially_successful_total",
-			"Number of connections that are partially open",
-		),
-		[]string{"model", "sub_device"},
-	)
-
-	DevicesCreatedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_devices_created_total",
-			"Number of smart meter devices created/registered",
-		),
-		[]string{"meter_type", "sub_device"},
-	)
-
 	BusScanStartedTotal = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"bus_scan_started_total",
@@ -85,38 +53,6 @@ var (
 		),
 		[]string{"model"},
 	)
-
-	DeviceQueriesTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_total",
-			"Amount of queries/requests done for a smart meter",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
-	DeviceQueriesErrorTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_error_total",
-			"Errors occured during smart meter query",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
-	DeviceQueriesSuccessTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_success_total",
-			"Successful smart meter query",
-		),
-		[]string{"device_id", "serial_number"},
-	)
-
-	DeviceQueryMeasurementValueSkippedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"smart_meter_queries_measurement_value_skipped_total",
-			"NaN measurement values found and skipped during smart meter query",
-		),
-		[]string{"device_id", "serial_number"},
-	)
 )
 
 // RegisterStatics registers all globally defined static metrics to Prometheus library's default registry
@@ -132,8 +68,8 @@ func RegisterStatics() {
 	}
 
 	//prometheus.MustRegister(
-	//	//ConnectionAttemptTotal,
-	//	//ConnectionAttemptFailedTotal,
+	//	//DeviceModbusConnectionAttemptTotal,
+	//	//DeviceModbusConnectionFailure,
 	//	//ConnectionPartiallySuccessfulTotal,
 	//	//DevicesCreatedTotal,
 	//	//BusScanStartedTotal,
@@ -142,10 +78,10 @@ func RegisterStatics() {
 	//	//BusScanDeviceProbeSuccessfulTotal,
 	//	//BusScanDeviceProbeFailedTotal,
 	//	//ReadDeviceDetailsFailedTotal,
-	//	//DeviceQueriesTotal,
-	//	//DeviceQueriesErrorTotal,
-	//	//DeviceQueriesSuccessTotal,
-	//	//DeviceQueryMeasurementValueSkippedTotal,
+	//	//ConnectionHandlerDeviceQueriesTotal,
+	//	//ConnectionHandlerDeviceQueriesErrorTotal,
+	//	//ConnectionHandlerDeviceQueriesSuccessTotal,
+	//	//ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal,
 	//
 	//	// Socket related metrics
 	//	collectors...
@@ -156,5 +92,7 @@ func getAllCollectors() []collectable {
 	return []collectable{
 		socketCollectors{},
 		publisherCollectors{},
+		handlerCollectors{},
+		deviceCollectors{},
 	}
 }
