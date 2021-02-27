@@ -66,27 +66,31 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
 
-	// TODO prometheus: DeviceModbusConnectionAttemptTotal
-	prometheusManager.ConnectionAttemptTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
+	subDeviceAsString := strconv.Itoa(d.descriptor.SubDevice)
+	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
 
 	if err != nil {
 		if in == nil {
-			// TODO prometheus: DeviceModbusConnectionFailedTotal
-			prometheusManager.ConnectionAttemptFailedTotal.WithLabelValues(d.descriptor.Model, strconv.Itoa(d.descriptor.SubDevice)).Inc()
+			prometheusManager.DeviceModbusConnectionFailure.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
 			return err
 		}
 
 		partiallyOpen = true
-		// TODO prometheus: DeviceModbusConnectionPartialSuccess
 	}
 
-	// TODO prometheus: else DeviceModbusConnectionSuccess
+	if partiallyOpen {
+		prometheusManager.DeviceModbusConnectionPartialSuccess.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+	} else {
+		prometheusManager.DeviceModbusConnectionSuccess.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+	}
 
 	devices := in.Collect(sunspec.AllDevices)
 	if len(devices) == 0 {
+		prometheusManager.DeviceByConfigNotFound.WithLabelValues("sunspec", "none").Inc()
 		return errors.New("sunspec: device not found")
 	}
 	if len(devices) <= d.subdevice {
+		prometheusManager.DeviceByConfigNotFound.WithLabelValues("sunspec", strconv.Itoa(d.subdevice)).Inc()
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
@@ -95,21 +99,26 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
 		// TODO prometheus: DeviceModbusCommonBlockReadFailure
+		prometheusManager.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(subDeviceAsString).Inc()
 		return err
 	}
 	// TODO prometheus: DeviceModbusCommonBlockReadSuccess
+	prometheusManager.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(subDeviceAsString).Inc()
 
 	// collect relevant models
 	if err := d.collectModels(device); err != nil {
 		// TODO prometheus: DeviceModbusModelCollectionFailure
+		prometheusManager.SunSpecDeviceModbusModelCollectionFailure.WithLabelValues(subDeviceAsString).Inc()
 		return err
 	}
 	// TODO prometheus: DeviceModbusModelCollectionSuccess
+	prometheusManager.SunSpecDeviceModbusModelCollectionSuccess.WithLabelValues(subDeviceAsString).Inc()
 
 	// return partial open error if everything else went fine
 	if partiallyOpen {
 		err = fmt.Errorf("%w", meters.ErrPartiallyOpened)
 	}
+
 
 	return err
 }
