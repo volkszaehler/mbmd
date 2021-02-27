@@ -35,7 +35,7 @@ func NewHandler(id int, m *meters.Manager) *Handler {
 		status:  make(map[string]*RuntimeInfo),
 	}
 
-	// TODO prometheus: ConnectionHandlersCreated
+	prometheusManager.ConnectionHandlerCreated.WithLabelValues(m.Conn.String()).Inc()
 
 	return handler
 }
@@ -96,7 +96,7 @@ func (h *Handler) initializeDevice(
 	dev meters.Device,
 ) (*RuntimeInfo, error) {
 	deviceID := h.deviceID(id, dev)
-	// TODO prometheus: ConnectionHandlerDevicesInitializedRoutineStarted
+	prometheusManager.ConnectionHandlerDeviceInitializationRoutineStarted.Inc()
 
 	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
 		if !errors.Is(err, meters.ErrPartiallyOpened) {
@@ -107,14 +107,14 @@ func (h *Handler) initializeDevice(
 			defer cancel()
 			<-ctx.Done()
 
-			// TODO prometheus: ConnectionHandlerDevicesInitializationFailure
+			prometheusManager.ConnectionHandlerDeviceInitializationFailure.Inc()
 			return nil, err
 		}
 		log.Println(err) // log error but continue
 	}
 
 	log.Printf("initialized device %s: %v", deviceID, dev.Descriptor())
-	// TODO prometheus: ConnectionHandlerDevicesInitializationSuccess
+	prometheusManager.ConnectionHandlerDeviceInitializationSuccess.Inc()
 
 	// create status
 	status := &RuntimeInfo{Online: true}
@@ -144,7 +144,7 @@ func (h *Handler) queryDevice(
 
 	for retry := 0; retry < maxRetry; retry++ {
 		status.Requests++
-		prometheusManager.DeviceQueriesTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+		prometheusManager.ConnectionHandlerDeviceQueriesTotal.WithLabelValues(deviceID, deviceSerial).Inc()
 
 		measurements, err := dev.Query(h.Manager.Conn.ModbusClient())
 
@@ -155,13 +155,13 @@ func (h *Handler) queryDevice(
 				Device: deviceID,
 				Status: *status,
 			}
-			prometheusManager.DeviceQueriesSuccessTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+			prometheusManager.ConnectionHandlerDeviceQueriesSuccessTotal.WithLabelValues(deviceID, deviceSerial).Inc()
 
 			// send measurements
 			for _, r := range measurements {
 				if math.IsNaN(r.Value) {
 					log.Printf("device %s skipping NaN for %s", deviceID, r.Measurement.String())
-					prometheusManager.DeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+					prometheusManager.ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceID, deviceSerial).Inc()
 					continue
 				}
 
@@ -178,7 +178,7 @@ func (h *Handler) queryDevice(
 		}
 
 		status.Errors++
-		prometheusManager.DeviceQueriesErrorTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+		prometheusManager.ConnectionHandlerDeviceQueriesErrorTotal.WithLabelValues(deviceID, deviceSerial).Inc()
 		log.Printf("device %s did not respond (%d/%d): %v", deviceID, retry+1, maxRetry, err)
 
 		// wait for device to settle after error
@@ -190,10 +190,10 @@ func (h *Handler) queryDevice(
 	}
 
 	log.Printf("device %s is offline", deviceID)
+	prometheusManager.CurrentDevicesActive.WithLabelValues(deviceID).Dec()
 
 	// close connection to force modbus client to reopen
 	h.Manager.Conn.Close()
-	// TODO prometheus: ModbusConnectionsClosed
 
 	// send error status
 	status.Available(false)
