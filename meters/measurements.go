@@ -41,14 +41,14 @@ func (r MeasurementResult) String() string {
 // - Unit
 // - MetricType
 // A Prometheus name and help text is "auto-generated". The format is:
-// <Name>			::=	<Description>_<Unit>[_<CounterTotal>]
+// <Name>			::=	measurement_<Description>_<Unit>[_<CounterTotal>]
 // <Description>	::= measurementOption.WithDescription() | measurementOption.WithCustomDescription()
 // <Unit>			::= measurementOption.WithUnit()
 // <CounterTotal>	::= "total" // if metric type is Counter
 // E. g.:
 //  Assuming a device's manufacturer is "myManufacturer"
 //	newInternalMeasurement(WithDescription("Frequency Test With Some Text"), WithUnit(Hertz), WithMetricType(Counter))
-//	=> Name (before creating prometheus.Metric): "frequency_test_with_some_text_hertz_total"
+//	=> Name (before creating prometheus.Metric): "measurement_frequency_test_with_some_text_hertz_total"
 //  => Description: "Measurement of Frequency Test With Some Text in Hertz"
 //
 // You can set custom Prometheus names and help texts by using the measurementOptions
@@ -407,7 +407,15 @@ func WithPrometheusName(name string) measurementOptions {
 
 func WithGenericPrometheusName() measurementOptions {
 	return func(m *measurement) {
-		m.PrometheusInfo.Name = generatePrometheusName(m.Description, m.Unit.PrometheusName())
+		if m.Unit != nil {
+			if m.PrometheusInfo.MetricType == Counter {
+				m.PrometheusInfo.Name = generatePrometheusName(m.Description, m.Unit.PrometheusName()+"_total")
+			} else {
+				m.PrometheusInfo.Name = generatePrometheusName(m.Description, m.Unit.PrometheusName())
+			}
+		} else {
+			m.PrometheusInfo.Name = generatePrometheusName(m.Description, "")
+		}
 	}
 }
 
