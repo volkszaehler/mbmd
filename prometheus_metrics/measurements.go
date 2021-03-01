@@ -1,4 +1,4 @@
-// prometheus_metrics
+// Package prometheus_metrics
 //
 // These functions take care of registering and updating counters/gauges.
 // Whenever a prometheus.Metric is created, it complies with following convention "automatically".
