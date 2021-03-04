@@ -28,6 +28,7 @@ const (
 
 type unit struct {
 	Abbreviation 	unitAbbreviation
+	FullName		string
 	PluralForm		string
 }
 
@@ -38,19 +39,19 @@ type unitAbbreviation struct {
 }
 
 var units = map[Unit]*unit{
-	KiloVarHour: 	{unitAbbreviation{"kvarh", ""}, ""},
-	Var:			{unitAbbreviation{"var", ""}, ""},
-	KiloWattHour:   {unitAbbreviation{"kWh", ""}, ""},
-	Watt: 			{unitAbbreviation{"W", ""}, ""},
-	Ampere: 		{unitAbbreviation{"A", ""}, ""},
-	Volt: 			{unitAbbreviation{"V", ""}, ""},
-	VoltAmpere: 	{unitAbbreviation{"VA", ""}, ""},
-	Degree: 		{unitAbbreviation{"°", "degree"}, ""},
-	DegreeCelsius: 	{unitAbbreviation{"°C", "degree_celsius"}, "degrees_celsius"},
-	Hertz:			{unitAbbreviation{"Hz", "hertz"}, "hertz"},
-	Percent:		{unitAbbreviation{"%", "percent"}, "percent"},
+	KiloVarHour: 	{unitAbbreviation{"kvarh", ""}, "Kilovoltampere-hour (reactive)", ""},
+	Var:			{unitAbbreviation{"var", "volt_ampere"}, "Voltampere (reactive)", "volt_amperes"},
+	KiloWattHour:   {unitAbbreviation{"kWh", ""}, "Kilowatt-hour", ""},
+	Watt: 			{unitAbbreviation{"W", ""}, "Watt",""},
+	Ampere: 		{unitAbbreviation{"A", ""}, "Ampere",""},
+	Volt: 			{unitAbbreviation{"V", ""}, "Volt",""},
+	VoltAmpere: 	{unitAbbreviation{"VA", ""}, "Voltampere",""},
+	Degree: 		{unitAbbreviation{"°", "degree"}, "Degree",""},
+	DegreeCelsius: 	{unitAbbreviation{"°C", "degree_celsius"}, "Degree Celsius","degrees_celsius"},
+	Hertz:			{unitAbbreviation{"Hz", "hertz"}, "Hertz","hertz"},
+	Percent:		{unitAbbreviation{"%", "percent"}, "Per cent","percent"},
 
-	NoUnit:			{unitAbbreviation{"", ""}, ""},
+	NoUnit:			{unitAbbreviation{"", ""}, "", ""},
 }
 
 func (u *Unit) PrometheusName() string {
@@ -87,3 +88,9 @@ func (u *Unit) AlternativeAbbreviation() string {
 	return ""
 }
 
+func (u *Unit) FullName() string {
+	if unit, ok := units[*u]; ok {
+		return unit.FullName
+	}
+	return ""
+}
