@@ -121,21 +121,20 @@ SCAN:
 
 			mr, err := dev.Probe(client)
 			if err == nil && v.check(mr.Value) {
+				deviceDescriptor := dev.Descriptor()
 				log.Printf("device %d: %s type device found, %s: %.2f\r\n",
 					deviceID,
-					dev.Descriptor().Manufacturer,
+					deviceDescriptor.Manufacturer,
 					mr.Measurement,
 					mr.Value,
 				)
 
-				deviceSerial := dev.Descriptor().Serial
-
 				// TODO Refactor to generalized method where e. g. only MeasurementType needs to be passed
 				// TODO Can we set the timestamp of Gauge entry using the actual timestamp of measurement??
 				// prometheusManager.MeasurementElectricCurrent.WithLabelValues(deviceIdString, deviceSerial).Set(mr.Value)
-				prometheusManager.UpdateMeasurementMetric(deviceIdString, deviceSerial, mr)
-				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceIdString, deviceSerial).Inc()
-				prometheusManager.CurrentDevicesActive.WithLabelValues(dev.Descriptor().Type, strconv.Itoa(dev.Descriptor().SubDevice)).Inc()
+				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Type, deviceIdString, deviceDescriptor.Serial, mr)
+				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceIdString, deviceDescriptor.Serial).Inc()
+				prometheusManager.CurrentDevicesActive.WithLabelValues(deviceDescriptor.Type, strconv.Itoa(deviceDescriptor.SubDevice)).Inc()
 
 				deviceList[deviceID] = dev
 				continue SCAN
