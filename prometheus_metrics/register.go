@@ -62,7 +62,7 @@ func RegisterStatics() {
 	for _, collectable := range collectables {
 		for _, prometheusCollector := range collectable.Collect() {
 			if err := prometheus.Register(prometheusCollector); err != nil {
-				log.Fatalf("Could not register a metric '%s' (%s)", prometheusCollector, err)
+				log.Printf("Could not register a metric '%s' (%s)", prometheusCollector, err)
 			}
 		}
 	}
