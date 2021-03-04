@@ -392,7 +392,7 @@ func WithPrometheusDescription(description string) measurementOptions {
 func WithGenericPrometheusDescription() measurementOptions {
 	return func(m *measurement) {
 		if m.Unit != nil {
-			m.PrometheusInfo.Description = generatePrometheusDescription(m.Description, m.Unit.Abbreviation())
+			m.PrometheusInfo.Description = generatePrometheusDescription(m.Description, m.Unit.FullName())
 		} else {
 			m.PrometheusInfo.Description = generatePrometheusDescription(m.Description, "")
 		}

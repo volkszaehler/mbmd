@@ -299,6 +299,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// Prometheus manager - Register all static metrics to default registry
+	prometheusManager.CreateMeasurementMetrics()
 	prometheusManager.RegisterStatics()
 
 	// MQTT client

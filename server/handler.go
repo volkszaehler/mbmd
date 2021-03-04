@@ -125,9 +125,6 @@ func (h *Handler) initializeDevice(
 		Status: *status,
 	}
 
-	// create Prometheus metrics
-	prometheusManager.CreateMeasurementMetrics(dev)
-
 	return status, nil
 }
 
@@ -139,12 +136,12 @@ func (h *Handler) queryDevice(
 	dev meters.Device,
 ) {
 	deviceID := h.deviceID(id, dev)
-	deviceSerial := dev.Descriptor().Serial
+	deviceDescriptor := dev.Descriptor()
 	status := h.status[deviceID]
 
 	for retry := 0; retry < maxRetry; retry++ {
 		status.Requests++
-		prometheusManager.ConnectionHandlerDeviceQueriesTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+		prometheusManager.ConnectionHandlerDeviceQueriesTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
 
 		measurements, err := dev.Query(h.Manager.Conn.ModbusClient())
 
@@ -155,13 +152,13 @@ func (h *Handler) queryDevice(
 				Device: deviceID,
 				Status: *status,
 			}
-			prometheusManager.ConnectionHandlerDeviceQueriesSuccessTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+			prometheusManager.ConnectionHandlerDeviceQueriesSuccessTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
 
 			// send measurements
 			for _, r := range measurements {
 				if math.IsNaN(r.Value) {
 					log.Printf("device %s skipping NaN for %s", deviceID, r.Measurement.String())
-					prometheusManager.ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+					prometheusManager.ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
 					continue
 				}
 
@@ -171,14 +168,14 @@ func (h *Handler) queryDevice(
 				}
 				results <- snip
 
-				prometheusManager.UpdateMeasurementMetric(deviceID, deviceSerial, r)
+				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Type, deviceID, deviceDescriptor.Serial, r)
 			}
 
 			return
 		}
 
 		status.Errors++
-		prometheusManager.ConnectionHandlerDeviceQueriesErrorTotal.WithLabelValues(deviceID, deviceSerial).Inc()
+		prometheusManager.ConnectionHandlerDeviceQueriesErrorTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
 		log.Printf("device %s did not respond (%d/%d): %v", deviceID, retry+1, maxRetry, err)
 
 		// wait for device to settle after error
