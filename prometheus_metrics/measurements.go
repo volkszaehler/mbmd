@@ -53,6 +53,7 @@ var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
 //
 // Returns false if the associated prometheus.Metric does not exist
 func UpdateMeasurementMetric(
+	meterType string,
 	deviceId string,
 	deviceSerial string,
 	measurement meters.MeasurementResult,
@@ -65,34 +66,29 @@ func UpdateMeasurementMetric(
 	// 		fmt.Printf("prometheus> [%s] deviceSerial: %s, measurement: %s\n", deviceId, deviceSerial, measurement.Value)
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
 		// 	fmt.Printf("prometheus> [%s] Setting gauge value of %s to %s\n", deviceId, gauge.WithLabelValues(deviceId, deviceSerial).Desc(), measurement.Value)
-		gauge.WithLabelValues(deviceId, deviceSerial).Set(measurement.Value)
+		gauge.WithLabelValues(meterType, deviceId, deviceSerial).Set(measurement.Value)
 		return ok
 	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
 		// 	fmt.Printf("prometheus> [%s] Setting counter value of %s to %s\n", deviceId, counter.WithLabelValues(deviceId, deviceSerial).Desc(), measurement.Value)
-		counter.WithLabelValues(deviceId, deviceSerial).Add(measurement.Value)
+		counter.WithLabelValues(meterType, deviceId, deviceSerial).Add(measurement.Value)
 		return ok
 	} else {
 		return ok
 	}
 }
 
-// CreateMeasurementMetrics initializes all existing meters.Measurement for a manufacturer
+// CreateMeasurementMetrics initializes all existing meters.Measurement
 //
 // If a prometheus.Metric could not be registered (see prometheus.Register),
 // the affected prometheus.Metric will be omitted.
-func CreateMeasurementMetrics(device meters.Device, labels ...string) {
-	if !(len(labels) > 0) {
-		labels = []string{"device_id", "serial_number"}
-	}
-
-	manufacturerName := device.Descriptor().Manufacturer
+func CreateMeasurementMetrics() {
+	labels = []string{"model_type", "device_id", "serial_number"}
 
 	for _, measurement := range meters.MeasurementValues() {
 		switch measurement.PrometheusMetricType() {
 		case meters.Gauge:
 			newGauge := prometheus.NewGaugeVec(
-				*newGaugeOptsWithSubsystem(
-					manufacturerName,
+				*newGaugeOpts(
 					measurement.PrometheusName(),
 					measurement.PrometheusDescription(),
 				),
@@ -100,10 +96,9 @@ func CreateMeasurementMetrics(device meters.Device, labels ...string) {
 			)
 
 			if err := prometheus.Register(newGauge); err != nil {
-				log.Fatalf(
-					"Could not register gauge for measurement '%s' for devices with manufacturer '%s'. Error: %s\nOmitting...\n",
+				log.Printf(
+					"Could not register gauge for measurement '%s'. Omitting... (Error: %s)\n",
 					measurement,
-					manufacturerName,
 					err,
 				)
 			} else {
@@ -111,8 +106,7 @@ func CreateMeasurementMetrics(device meters.Device, labels ...string) {
 			}
 		case meters.Counter:
 			newCounter := prometheus.NewCounterVec(
-				*newCounterOptsWithSubsystem(
-					manufacturerName,
+				*newCounterOpts(
 					measurement.PrometheusName(),
 					measurement.PrometheusDescription(),
 				),
@@ -120,10 +114,9 @@ func CreateMeasurementMetrics(device meters.Device, labels ...string) {
 			)
 
 			if err := prometheus.Register(newCounter); err != nil {
-				log.Fatalf(
-					"Could not register counter for measurement '%s' for device '%s'. Error: %s\nOmitting...\n",
+				log.Printf(
+					"Could not register counter for measurement '%s'. Omitting... (Error: %s)\n",
 					measurement,
-					manufacturerName,
 					err,
 				)
 			} else {
