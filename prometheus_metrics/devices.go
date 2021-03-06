@@ -1,6 +1,10 @@
 package prometheus_metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/volkszaehler/mbmd/meters"
+	"strconv"
+)
 
 type deviceCollectors struct {}
 
@@ -10,7 +14,7 @@ var (
 			"devices_created_total",
 			"Number of smart meter devices created/registered",
 		),
-		[]string{"device_id"},
+		[]string{"meter_type"},
 	)
 
 	CurrentDevicesActive = prometheus.NewGaugeVec(
@@ -96,6 +100,14 @@ var (
 		),
 		[]string{"sub_device"},
 	)
+
+	DeviceInfoDetails = prometheus.NewGaugeVec(
+		*newGaugeOpts(
+			"device_info",
+			"Registered smart meter devices of which Prometheus metrics will be collected",
+		),
+		deviceInfoMetricLabels,
+	)
 )
 
 func (d deviceCollectors) Collect() []prometheus.Collector {
@@ -113,6 +125,31 @@ func (d deviceCollectors) Collect() []prometheus.Collector {
 		SunSpecDeviceModbusCommonBlockReadsFailures,
 		SunSpecDeviceModbusModelCollectionSuccess,
 		SunSpecDeviceModbusModelCollectionFailure,
+
+		DeviceInfoDetails,
 	}
 }
 
+var deviceInfoMetricLabels = []string{
+	"type",
+	"manufacturer",
+	"model",
+	"options",
+	"version",
+	"serial_number",
+	"sub_device",
+}
+
+// RegisterDevice takes a meters.DeviceDescriptor struct, creates and registers a generalized info metric
+// that can be used to join with other metrics that have same label values
+func RegisterDevice(deviceDescriptor *meters.DeviceDescriptor) {
+	DeviceInfoDetails.WithLabelValues(
+		deviceDescriptor.Type,
+		deviceDescriptor.Manufacturer,
+		deviceDescriptor.Model,
+		deviceDescriptor.Options,
+		deviceDescriptor.Version,
+		deviceDescriptor.Serial,
+		strconv.Itoa(deviceDescriptor.SubDevice),
+	).Add(1.0)
+}
