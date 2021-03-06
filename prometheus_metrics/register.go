@@ -35,7 +35,7 @@ var (
 			"bus_scan_device_probe_successful_total",
 			"Amount of successfully found devices during bus scan",
 		),
-		[]string{"device_id", "serial_number"},
+		[]string{"serial_number"},
 	)
 
 	BusScanDeviceProbeFailedTotal = prometheus.NewCounterVec(
