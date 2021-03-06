@@ -53,8 +53,6 @@ var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
 //
 // Returns false if the associated prometheus.Metric does not exist
 func UpdateMeasurementMetric(
-	meterType string,
-	deviceId string,
 	deviceSerial string,
 	measurement meters.MeasurementResult,
 ) (ok bool) {
@@ -66,11 +64,11 @@ func UpdateMeasurementMetric(
 	// 		fmt.Printf("prometheus> [%s] deviceSerial: %s, measurement: %s\n", deviceId, deviceSerial, measurement.Value)
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
 		// 	fmt.Printf("prometheus> [%s] Setting gauge value of %s to %s\n", deviceId, gauge.WithLabelValues(deviceId, deviceSerial).Desc(), measurement.Value)
-		gauge.WithLabelValues(meterType, deviceId, deviceSerial).Set(measurement.Value)
+		gauge.WithLabelValues(deviceSerial).Set(measurement.Value)
 		return ok
 	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
 		// 	fmt.Printf("prometheus> [%s] Setting counter value of %s to %s\n", deviceId, counter.WithLabelValues(deviceId, deviceSerial).Desc(), measurement.Value)
-		counter.WithLabelValues(meterType, deviceId, deviceSerial).Add(measurement.Value)
+		counter.WithLabelValues(deviceSerial).Add(measurement.Value)
 		return ok
 	} else {
 		return ok
@@ -82,7 +80,7 @@ func UpdateMeasurementMetric(
 // If a prometheus.Metric could not be registered (see prometheus.Register),
 // the affected prometheus.Metric will be omitted.
 func CreateMeasurementMetrics() {
-	labels = []string{"model_type", "device_id", "serial_number"}
+	labels = []string{"serial_number"}
 
 	for _, measurement := range meters.MeasurementValues() {
 		switch measurement.PrometheusMetricType() {
