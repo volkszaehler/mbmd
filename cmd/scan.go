@@ -132,8 +132,8 @@ SCAN:
 				// TODO Refactor to generalized method where e. g. only MeasurementType needs to be passed
 				// TODO Can we set the timestamp of Gauge entry using the actual timestamp of measurement??
 				// prometheusManager.MeasurementElectricCurrent.WithLabelValues(deviceIdString, deviceSerial).Set(mr.Value)
-				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Type, deviceIdString, deviceDescriptor.Serial, mr)
-				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceIdString, deviceDescriptor.Serial).Inc()
+				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Serial, mr)
+				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceDescriptor.Serial).Inc()
 				prometheusManager.CurrentDevicesActive.WithLabelValues(deviceDescriptor.Type, strconv.Itoa(deviceDescriptor.SubDevice)).Inc()
 
 				deviceList[deviceID] = dev

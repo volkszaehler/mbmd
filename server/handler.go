@@ -125,6 +125,10 @@ func (h *Handler) initializeDevice(
 		Status: *status,
 	}
 
+	descriptor := dev.Descriptor()
+
+	prometheusManager.RegisterDevice(&descriptor)
+
 	return status, nil
 }
 
@@ -141,7 +145,7 @@ func (h *Handler) queryDevice(
 
 	for retry := 0; retry < maxRetry; retry++ {
 		status.Requests++
-		prometheusManager.ConnectionHandlerDeviceQueriesTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
+		prometheusManager.ConnectionHandlerDeviceQueriesTotal.WithLabelValues(deviceDescriptor.Serial).Inc()
 
 		measurements, err := dev.Query(h.Manager.Conn.ModbusClient())
 
@@ -152,13 +156,13 @@ func (h *Handler) queryDevice(
 				Device: deviceID,
 				Status: *status,
 			}
-			prometheusManager.ConnectionHandlerDeviceQueriesSuccessTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
+			prometheusManager.ConnectionHandlerDeviceQueriesSuccessTotal.WithLabelValues(deviceDescriptor.Serial).Inc()
 
 			// send measurements
 			for _, r := range measurements {
 				if math.IsNaN(r.Value) {
 					log.Printf("device %s skipping NaN for %s", deviceID, r.Measurement.String())
-					prometheusManager.ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
+					prometheusManager.ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceDescriptor.Serial).Inc()
 					continue
 				}
 
@@ -168,14 +172,14 @@ func (h *Handler) queryDevice(
 				}
 				results <- snip
 
-				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Type, deviceID, deviceDescriptor.Serial, r)
+				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Serial, r)
 			}
 
 			return
 		}
 
 		status.Errors++
-		prometheusManager.ConnectionHandlerDeviceQueriesErrorTotal.WithLabelValues(deviceID, deviceDescriptor.Serial).Inc()
+		prometheusManager.ConnectionHandlerDeviceQueriesErrorTotal.WithLabelValues(deviceDescriptor.Serial).Inc()
 		log.Printf("device %s did not respond (%d/%d): %v", deviceID, retry+1, maxRetry, err)
 
 		// wait for device to settle after error
