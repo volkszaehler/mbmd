@@ -10,10 +10,11 @@ type handlerCollectors struct {}
 var handlerCollectorsLabels = []string{"rtu_tcp_addr"}
 
 var (
+	// TODO Remove?
 	ConnectionHandlerCreated = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"connection_handler_created_total",
-			"",
+			"// TODO Remove?",
 		),
 		handlerCollectorsLabels,
 	)
@@ -21,21 +22,21 @@ var (
 	ConnectionHandlerDeviceInitializationRoutineStarted = prometheus.NewCounter(
 		*newCounterOpts(
 			"connection_handler_device_initialization_routine_starts_total",
-			"",
+			"Total starts of routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
 	ConnectionHandlerDeviceInitializationFailure = prometheus.NewCounter(
 		*newCounterOpts(
 			"connection_handler_device_initialization_failures_total",
-			"",
+			"Total failures of routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
 	ConnectionHandlerDeviceInitializationSuccess = prometheus.NewCounter(
 		*newCounterOpts(
 			"connection_handler_device_initialization_successes_total",
-			"",
+			"Total successful routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
