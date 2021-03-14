@@ -25,14 +25,14 @@ var (
 	WebSocketClientMessageSendFailure = prometheus.NewCounter(
 		*newCounterOpts(
 			"websocket_client_message_send_failure_total",
-			"",
+			"Total count of message send failures to a web socket client",
 		),
 	)
 
 	WebSocketClientCreationFailure = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"websocket_client_creation_failure_total",
-			"",
+			"Total count of accepting and failed creation of a web socket client",
 		),
 		[]string{"creation_type"},
 	)
@@ -40,7 +40,7 @@ var (
 	WebSocketClientCreationSuccess = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"websocket_client_creation_success_total",
-			"",
+			"Total count of accepting and successful creation of a web socket client",
 		),
 		[]string{"creation_type"},
 	)
@@ -48,7 +48,7 @@ var (
 	WebSocketMessageBytesSent = prometheus.NewCounter(
 		*newCounterOpts(
 			"websocket_message_bytes_sent_total",
-			"",
+			"Total bytes sent to web socket clients",
 		),
 	)
 )
