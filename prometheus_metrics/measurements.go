@@ -1,29 +1,34 @@
 // Package prometheus_metrics
 //
 // These functions take care of registering and updating counters/gauges.
-// Whenever a prometheus.Metric is created, it complies with following convention "automatically".
 // For instance: A counter for total connection attempts
 // => Name for newCounterOpts: `smart_meter_connection_attempt_total`
 // => Metric type: Counter
-// => After prometheus.Metric creation: `mbmd_smart_meter_connection_attempt_total`
+// => After prometheus.Metric creation:
+//	- Name: `mbmd_smart_meter_connection_attempt_total`
+//	- Metric: prometheus.Counter
 //
 // If a new measurement prometheus.Metric is created, it follows this convention:
 // For instance: "L1 Export Power" with unit `W`
 // => Name: `l1_export_power`
 // => Subsystem (device manufacturer): `sunspec`
 // => Metric type: Gauge
-// => After prometheus.Metric creation: `mbmd_sunspec_l1_export_power_watts`
-// General naming convention: `mbmd_<DEVICE_MANUFACTURER>_<NAME_IN_LOWER_CASE_WITH_UNDERSCORES>_<UNIT>`
+// => After prometheus.Metric creation:
+//	- Name: `mbmd_l1_export_power_watts`
+//	- Labels: {"serial_number"}
+//
+// General naming convention: `mbmd_<NAME_IN_LOWER_CASE_WITH_UNDERSCORES>_<UNIT>['_total']`
 // Measurement metrics are treated slightly differently and are maintained in measurement.go
 // It ensures that extensibility and customization of Prometheus names and descriptions is easy.
 // By default, if no custom Prometheus name is given, the measurement name is transformed to lower case
 // and whitespaces are replaced with underscores.
 //
 // Besides dynamic measurement metrics, some static metrics have been introduced
-// in order to keep track of e. g. connection attempts, failed connection attempts, amount of bus scans, ...
+// and can be found in the file respectively, for instance: metrics for devices -> devices.go
 //
 // If you want to add new metrics, make sure your metric details comply to the usual Prometheus naming conventions
-// e. g.: Amount of connection attempts -> Most fitting metric type: Counter -> Name (in newCounterOpts): `smart_meter_connection_attempt_total`
+// e. g.: Amount of connection attempts
+//	-> Most fitting metric type: Counter -> Name (in newCounterOpts): `smart_meter_connection_attempt_total`
 // For more information regarding naming conventions and best practices, see https://prometheus.io/docs/practices/naming/
 package prometheus_metrics
 
