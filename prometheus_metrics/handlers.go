@@ -7,18 +7,7 @@ import "github.com/prometheus/client_golang/prometheus"
 // Implements collectable interface
 type handlerCollectors struct {}
 
-var handlerCollectorsLabels = []string{"rtu_tcp_addr"}
-
 var (
-	// TODO Remove?
-	ConnectionHandlerCreated = prometheus.NewCounterVec(
-		*newCounterOpts(
-			"connection_handler_created_total",
-			"// TODO Remove?",
-		),
-		handlerCollectorsLabels,
-	)
-
 	ConnectionHandlerDeviceInitializationRoutineStarted = prometheus.NewCounter(
 		*newCounterOpts(
 			"connection_handler_device_initialization_routine_starts_total",
@@ -75,8 +64,6 @@ var (
 
 func (h handlerCollectors) Collect() []prometheus.Collector {
 	return []prometheus.Collector{
-		ConnectionHandlerCreated,
-
 		ConnectionHandlerDeviceInitializationRoutineStarted,
 		ConnectionHandlerDeviceInitializationFailure,
 		ConnectionHandlerDeviceInitializationSuccess,
