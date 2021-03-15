@@ -34,7 +34,7 @@ var (
 			"connection_handler_device_queries_total",
 			"Amount of queries/requests done for a smart meter",
 		),
-		[]string{"serial_number"},
+		[]string{"device_name", "serial_number"},
 	)
 
 	ConnectionHandlerDeviceQueriesErrorTotal = prometheus.NewCounterVec(
@@ -42,7 +42,7 @@ var (
 			"connection_handler_device_queries_error_total",
 			"Errors occurred during smart meter query",
 		),
-		[]string{"serial_number"},
+		[]string{"device_name", "serial_number"},
 	)
 
 	ConnectionHandlerDeviceQueriesSuccessTotal = prometheus.NewCounterVec(
@@ -50,7 +50,7 @@ var (
 			"connection_handler_device_queries_success_total",
 			"Successful smart meter query",
 		),
-		[]string{"serial_number"},
+		[]string{"device_name", "serial_number"},
 	)
 
 	ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal = prometheus.NewCounterVec(
@@ -58,7 +58,7 @@ var (
 			"connection_handler_device_queries_measurement_value_skipped_total",
 			"NaN measurement values found and skipped during smart meter query",
 		),
-		[]string{"serial_number"},
+		[]string{"device_name", "serial_number"},
 	)
 )
 
