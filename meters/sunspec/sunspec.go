@@ -66,7 +66,6 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
 
-	//subDeviceAsString := strconv.Itoa(d.descriptor.SubDevice)
 	deviceName := d.descriptor.Name
 	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
 
