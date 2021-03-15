@@ -42,12 +42,12 @@ func (r MeasurementResult) String() string {
 // - MetricType
 // A Prometheus name and help text is "auto-generated". The format is:
 // <Name>			::=	measurement_<Description>_<Unit>[_<CounterTotal>]
-// <Description>	::= measurementOption.WithDescription() | measurementOption.WithCustomDescription()
-// <Unit>			::= measurementOption.WithUnit()
+// <Description>	::= <measurementOption.WithDescription()> | <measurementOption.WithCustomDescription()>
+// <Unit>			::= <measurementOption.WithUnit()>
 // <CounterTotal>	::= "total" // if metric type is Counter
 // E. g.:
-//  Assuming a device's manufacturer is "myManufacturer"
-//	newInternalMeasurement(WithDescription("Frequency Test With Some Text"), WithUnit(Hertz), WithMetricType(Counter))
+//  Assuming a device's manufacturer is "myManufacturer":
+//		newInternalMeasurement(WithDescription("Frequency Test With Some Text"), WithUnit(Hertz), WithMetricType(Counter))
 //	=> Name (before creating prometheus.Metric): "measurement_frequency_test_with_some_text_hertz_total"
 //  => Description: "Measurement of Frequency Test With Some Text in Hertz"
 //
