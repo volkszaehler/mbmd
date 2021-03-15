@@ -84,7 +84,6 @@ func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 func (d *SunSpec) Initialize(client modbus.Client) error {
 	devices, err := DeviceTree(client)
 
-	//subDeviceAsString := strconv.Itoa(d.descriptor.SubDevice)
 	deviceName := d.descriptor.Name
 	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
 

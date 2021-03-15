@@ -5,7 +5,6 @@ import (
 	"fmt"
 	golog "log"
 	"os"
-	"strconv"
 	"time"
 
 	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
@@ -103,8 +102,6 @@ func scan(cmd *cobra.Command, args []string) {
 SCAN:
 	// loop over all valid slave addresses
 	for deviceID := 1; deviceID <= 247; deviceID++ {
-		deviceIdString := strconv.Itoa(deviceID)
-		prometheusManager.BusScanStartedTotal.WithLabelValues(deviceIdString).Inc()
 		// give the bus some time to recover before querying the next device
 		time.Sleep(40 * time.Millisecond)
 		conn.Slave(uint8(deviceID))
@@ -115,7 +112,7 @@ SCAN:
 					continue // devices
 				}
 
-				prometheusManager.BusScanDeviceInitializationErrorTotal.WithLabelValues(deviceIdString).Inc()
+				prometheusManager.BusScanDeviceInitializationErrorTotal.WithLabelValues(dev.Descriptor().Name).Inc()
 				log.Println(err) // log error but continue
 			}
 
@@ -130,12 +127,12 @@ SCAN:
 				)
 
 				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Serial, mr)
-				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceDescriptor.Serial).Inc()
+				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
 
 				deviceList[deviceID] = dev
 				continue SCAN
 			} else {
-				prometheusManager.BusScanDeviceProbeFailedTotal.WithLabelValues(deviceIdString).Inc()
+				prometheusManager.BusScanDeviceProbeFailedTotal.WithLabelValues(dev.Descriptor().Name).Inc()
 			}
 		}
 
