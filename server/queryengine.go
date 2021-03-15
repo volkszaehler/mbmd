@@ -43,7 +43,6 @@ func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
 		handlers:    handlers,
 		deviceCache: make(map[string]meters.Device),
 	}
-	// TODO prometheus: QueryEnginesCreated
 	return qe
 }
 
@@ -79,7 +78,6 @@ func (q *QueryEngine) Run(
 ) {
 	defer close(control)
 	defer close(results)
-	// TODO prometheus: QueryEnginesQueriesRunTotal
 
 	// run each connection manager inside separate goroutine
 	var wg sync.WaitGroup
@@ -93,7 +91,6 @@ func (q *QueryEngine) Run(
 			for {
 				// run handlers
 				h.Run(ctx, control, results)
-				// TODO prometheus: QueryEnginesQueryHandlersExecuted
 
 				// wait for rate limit
 				select {

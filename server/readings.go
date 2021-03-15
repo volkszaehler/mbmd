@@ -91,7 +91,6 @@ func NewMeterReadings(maxAge time.Duration) *MeterReadings {
 		Current:  Readings{},
 		Historic: make([]*Readings, 0),
 	}
-	// TODO prometheus: MeterReadingsCreated
 
 	// housekeeping
 	go func(mr *MeterReadings) {
@@ -111,7 +110,6 @@ func (mr *MeterReadings) Add(snip QuerySnip) {
 
 	mr.Current.Add(snip)
 	mr.Historic = append(mr.Historic, mr.Current.Clone())
-	// TODO prometheus: MeterReadingsHistoryAppended
 }
 
 // Average averages historic readings after given timestamp
