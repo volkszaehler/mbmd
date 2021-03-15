@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -62,7 +61,7 @@ func DeviceTree(client modbus.Client) ([]sunspec.Device, error) {
 }
 
 // NewDevice creates a Sunspec device
-func NewDevice(meterType string, subdevice ...int) *SunSpec {
+func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 	var dev int
 	if len(subdevice) > 0 {
 		dev = subdevice[0]
@@ -73,6 +72,7 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
+			Name:		  name,
 			Type:         meterType,
 			Manufacturer: meterType,
 			SubDevice:    dev,
@@ -84,11 +84,12 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 func (d *SunSpec) Initialize(client modbus.Client) error {
 	devices, err := DeviceTree(client)
 
-	subDeviceAsString := strconv.Itoa(d.descriptor.SubDevice)
-	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+	//subDeviceAsString := strconv.Itoa(d.descriptor.SubDevice)
+	deviceName := d.descriptor.Name
+	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
 
 	if err != nil && !errors.Is(err, meters.ErrPartiallyOpened) {
-			prometheusManager.DeviceModbusConnectionFailure.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+			prometheusManager.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
 		return err
 	}
 
@@ -104,7 +105,7 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 
 func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 	if len(devices) <= d.subdevice {
-		prometheusManager.DeviceByConfigNotFound.WithLabelValues("sunspec", strconv.Itoa(d.subdevice)).Inc()
+		prometheusManager.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
@@ -112,12 +113,10 @@ func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
-		// TODO prometheus: DeviceModbusCommonBlockReadFailure
-		prometheusManager.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(subDeviceAsString).Inc()
+		prometheusManager.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	// TODO prometheus: DeviceModbusCommonBlockReadSuccess
-	prometheusManager.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(subDeviceAsString).Inc()
+	prometheusManager.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
 
 	// collect relevant models
 	return d.collectModels(device)

@@ -77,7 +77,6 @@ func NewDeviceConfigHandler() *DeviceConfigHandler {
 	return conf
 }
 
-// TODO prometheus
 // createConnection parses adapter string to create TCP or RTU connection
 func createConnection(device string, rtu bool, baudrate int, comset string, timeout time.Duration) (res meters.Connection) {
 	if device == "mock" {
@@ -120,6 +119,7 @@ func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, ba
 
 func (conf *DeviceConfigHandler) createDeviceForManager(
 	manager *meters.Manager,
+	name string,
 	meterType string,
 	subdevice int,
 ) meters.Device {
@@ -137,16 +137,16 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 
 	sort.SearchStrings(sunspecTypes, meterType)
 	if isSunspec {
-		meter = sunspec.NewDevice(meterType, subdevice)
+		meter = sunspec.NewDevice(name, meterType, subdevice)
 	} else {
 		if subdevice > 0 {
-			log.Fatalf("Invalid subdevice number for device %s: %d", meterType, subdevice)
+			log.Fatalf("Invalid subdevice number for device '%s' (%s): %d", name, meterType, subdevice)
 		}
 
 		var err error
-		meter, err = rs485.NewDevice(meterType)
+		meter, err = rs485.NewDevice(name, meterType)
 		if err != nil {
-			log.Fatalf("Error creating device %s: %v.", meterType, err)
+			log.Fatalf("Error creating device '%s' (%s): %v.", name, meterType, err)
 		}
 	}
 
@@ -171,7 +171,7 @@ func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 	if !ok {
 		log.Fatalf("Missing adapter configuration for device %v", devConf)
 	}
-	meter := conf.createDeviceForManager(manager, devConf.Type, devConf.SubDevice)
+	meter := conf.createDeviceForManager(manager, devConf.Name, devConf.Type, devConf.SubDevice)
 
 	if err := manager.Add(devConf.ID, meter); err != nil {
 		log.Fatalf("Error adding device %v: %v.", devConf, err)
@@ -227,7 +227,7 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout 
 	// have been created of the --rtu flag was specified. We'll not re-check this here.
 	manager := conf.ConnectionManager(connSpec, false, 0, "", timeout)
 
-	meter := conf.createDeviceForManager(manager, meterType, subdevice)
+	meter := conf.createDeviceForManager(manager, "", meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {
 		log.Fatalf("Error adding device %s: %v. See -h for help.", meterDef, err)
 	}

@@ -51,6 +51,7 @@ func (d *RS485) Producer() Producer {
 // prepared during initialization.
 func (d *RS485) Descriptor() meters.DeviceDescriptor {
 	return meters.DeviceDescriptor{
+		Name: 		  d.name,
 		Type:         d.typ,
 		Manufacturer: d.typ,
 		Model:        d.producer.Description(),
