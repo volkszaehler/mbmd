@@ -91,7 +91,6 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 			prometheus_metrics.PublisherDataPublishedError.WithLabelValues("mqtt").Inc()
 		} else {
 			prometheus_metrics.PublisherDataPublished.WithLabelValues("mqtt").Inc()
-			// prometheus_metrics.PublisherDataPublishedSize.WithLabelValues("mqtt").Add(float64(len(token)))
 		}
 	} else {
 		prometheus_metrics.PublisherConnectionTimeOut.WithLabelValues("mqtt").Inc()
@@ -143,7 +142,6 @@ func topicFromMeasurement(measurement meters.Measurement) string {
 // Run MqttClient publisher
 func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	// notify connection and override will
-	// TODO prometheus: PublisherMqttRunnerRun
 	m.MqttClient.Publish(fmt.Sprintf("%s/status", m.topic), true, "connected")
 
 	for snip := range in {

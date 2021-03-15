@@ -51,7 +51,6 @@ func NewHomieRunner(qe DeviceInfo, cc <-chan ControlSnip, options *MQTT.ClientOp
 		meters:    make(map[string]*homieMeter),
 	}
 
-	// TODO prometheus: PublisherHomieRunnerCreated
 	prometheus_metrics.PublisherCreated.WithLabelValues("homie").Inc()
 
 	return hr
@@ -76,7 +75,6 @@ func (hr *HomieRunner) cloneOptions() *MQTT.ClientOptions {
 
 // Run MQTT client publisher
 func (hr *HomieRunner) Run(in <-chan QuerySnip) {
-	// TODO prometheus: PublisherHomieRunnerMessagesPublished
 	defer hr.unregister() // cleanup topics
 
 	for {
@@ -239,7 +237,6 @@ func (hr *homieMeter) publish(subtopic string, message string) {
 
 // unpublish retained message hierarchy
 func (hr *homieMeter) unpublish(subtopic string, exceptions ...string) {
-	// TODO prometheus: PublisherHomieRunnerMessagesUnpublished
 	topic := fmt.Sprintf("%s/%s/#", hr.rootTopic, subtopic)
 	if hr.verbose {
 		log.Printf("mqtt: unpublish %s", topic)

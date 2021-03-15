@@ -82,11 +82,11 @@ func scan(cmd *cobra.Command, args []string) {
 	// create devices
 	devices := make([]meters.Device, 0)
 	if _, ok := conn.(*meters.TCP); ok {
-		suns := sunspec.NewDevice("SUNS")
+		suns := sunspec.NewDevice("", "SUNS")
 		devices = append(devices, suns)
 	} else {
 		for t := range rs485.Producers {
-			dev, err := rs485.NewDevice(t)
+			dev, err := rs485.NewDevice("", t)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -129,12 +129,8 @@ SCAN:
 					mr.Value,
 				)
 
-				// TODO Refactor to generalized method where e. g. only MeasurementType needs to be passed
-				// TODO Can we set the timestamp of Gauge entry using the actual timestamp of measurement??
-				// prometheusManager.MeasurementElectricCurrent.WithLabelValues(deviceIdString, deviceSerial).Set(mr.Value)
 				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Serial, mr)
 				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceDescriptor.Serial).Inc()
-				prometheusManager.CurrentDevicesActive.WithLabelValues(deviceDescriptor.Type, strconv.Itoa(deviceDescriptor.SubDevice)).Inc()
 
 				deviceList[deviceID] = dev
 				continue SCAN

@@ -17,20 +17,12 @@ var (
 		[]string{"meter_type"},
 	)
 
-	CurrentDevicesActive = prometheus.NewGaugeVec(
-		*newGaugeOpts(
-			"devices_currently_active",
-			"",
-		),
-		[]string{"meter_type", "sub_device"},
-	)
-
 	DeviceModbusConnectionAttemptTotal = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"device_connection_attempts_total",
 			"Total amount of a smart meter's connection attempts",
 		),
-		[]string{"model_type", "sub_device"},
+		[]string{"device_name"},
 	)
 
 	DeviceModbusConnectionFailure = prometheus.NewCounterVec(
@@ -38,7 +30,7 @@ var (
 			"device_connection_failures_total",
 			"Amount of a smart meter's connection failures",
 		),
-		[]string{"model_type", "sub_device"},
+		[]string{"device_name"},
 	)
 
 	DeviceModbusConnectionSuccess = prometheus.NewCounterVec(
@@ -46,7 +38,7 @@ var (
 			"device_connection_successes_total",
 			"Amount of a smart meter's successful connection ",
 		),
-		[]string{"model_type", "sub_device"},
+		[]string{"device_name"},
 	)
 
 	DeviceModbusConnectionPartialSuccess = prometheus.NewCounterVec(
@@ -54,7 +46,7 @@ var (
 			"device_connection_partial_successes_total",
 			"Amount of a smart meter's partial opened connection",
 		),
-		[]string{"model_type", "sub_device"},
+		[]string{"device_name"},
 	)
 
 	DeviceByConfigNotFound = prometheus.NewCounterVec(
@@ -62,34 +54,34 @@ var (
 			"device_not_found_by_config_total",
 			"Amount of devices defined by config yaml not found",
 		),
-		[]string{"model_type", "sub_device"},
+		[]string{"device_name"},
 	)
 
 	SunSpecDeviceModbusCommonBlockReadsSuccess = prometheus.NewCounterVec(
-		*newCounterOptsWithSubsystem(
-			"sunspec",
-			"connection_common_block_read_successes_total",
-			"Total amount of successful common reads on SunSpec smart meters",
-		),
-		[]string{"sub_device"},
+		prometheus.CounterOpts{
+			Name: "connection_common_block_read_successes_total",
+			Help: "Total amount of successful common reads on SunSpec smart meters",
+			ConstLabels: prometheus.Labels{"type": "sunspec"},
+		},
+		[]string{"device_name"},
 	)
 
 	SunSpecDeviceModbusCommonBlockReadsFailures = prometheus.NewCounterVec(
-		*newCounterOptsWithSubsystem(
-			"sunspec",
-			"connection_common_block_read_failures_total",
-			"Total amount of failed common reads on SunSpec smart meters",
-		),
-		[]string{"sub_device"},
+		prometheus.CounterOpts{
+			Name: "connection_common_block_read_failures_total",
+			Help: "Total amount of failed common reads on SunSpec smart meters",
+			ConstLabels: prometheus.Labels{"type": "sunspec"},
+		},
+		[]string{"device_name"},
 	)
 
 	SunSpecDeviceModbusModelCollectionSuccess = prometheus.NewCounterVec(
-		*newCounterOptsWithSubsystem(
-			"sunspec",
-			"connection_model_collection_successes_total",
-			"Total amount of successful model collection tasks on SunSpec smart meters",
-		),
-		[]string{"sub_device"},
+		prometheus.CounterOpts{
+			Name:        "connection_model_collection_successes_total",
+			Help:        "Total amount of successful model collection tasks on SunSpec smart meters",
+			ConstLabels: prometheus.Labels{"type": "sunspec"},
+		},
+		[]string{"device_name"},
 	)
 
 	SunSpecDeviceModbusModelCollectionFailure = prometheus.NewCounterVec(
@@ -98,7 +90,7 @@ var (
 			"connection_model_collection_failures_total",
 			"Total amount of failed model collection tasks on SunSpec smart meters",
 		),
-		[]string{"sub_device"},
+		[]string{"device_name"},
 	)
 
 	DeviceInfoDetails = prometheus.NewGaugeVec(
@@ -113,7 +105,6 @@ var (
 func (d deviceCollectors) Collect() []prometheus.Collector {
 	return []prometheus.Collector{
 		DevicesCreatedTotal,
-		CurrentDevicesActive,
 		DeviceModbusConnectionAttemptTotal,
 		DeviceModbusConnectionFailure,
 		DeviceModbusConnectionSuccess,
@@ -131,6 +122,7 @@ func (d deviceCollectors) Collect() []prometheus.Collector {
 }
 
 var deviceInfoMetricLabels = []string{
+	"device_name",
 	"type",
 	"manufacturer",
 	"model",
@@ -144,6 +136,7 @@ var deviceInfoMetricLabels = []string{
 // that can be used to join with other metrics that have same label values
 func RegisterDevice(deviceDescriptor *meters.DeviceDescriptor) {
 	DeviceInfoDetails.WithLabelValues(
+		deviceDescriptor.Name,
 		deviceDescriptor.Type,
 		deviceDescriptor.Manufacturer,
 		deviceDescriptor.Model,

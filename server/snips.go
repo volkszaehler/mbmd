@@ -44,7 +44,6 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 
 // NewSnipRunner adapts a chan QuerySnip to chan interface
 func NewSnipRunner(run func(c <-chan QuerySnip)) func(c <-chan interface{}) {
-	// TODO prometheus: SnipRunnersCreated
 	return func(c <-chan interface{}) {
 		out := make(chan QuerySnip)
 
@@ -71,7 +70,6 @@ func NewSnipRunner(run func(c <-chan QuerySnip)) func(c <-chan interface{}) {
 
 // NewControlRunner adapts a chan ControlSnip to chan interface
 func NewControlRunner(run func(c <-chan ControlSnip)) func(c <-chan interface{}) {
-	// TODO prometheus: ControlRunnersCreated
 	return func(c <-chan interface{}) {
 		out := make(chan ControlSnip)
 

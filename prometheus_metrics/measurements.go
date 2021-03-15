@@ -44,14 +44,12 @@ const SSN_MISSING = "NOT_AVAILABLE"
 //
 // If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
-// TODO make?
 var counterVecMap = map[meters.Measurement]*prometheus.CounterVec{}
 
 // gaugeVecMap contains all meters.Measurement that are associated with a prometheus.Gauge
 //
 // If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
-// TODO make?
 var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
 
 // UpdateMeasurementMetric updates a counter or gauge based by passed measurement
@@ -61,18 +59,16 @@ func UpdateMeasurementMetric(
 	deviceSerial string,
 	measurement meters.MeasurementResult,
 ) (ok bool) {
-	// TODO Remove when development is finished or think about a solution handling mocked devices
+	// Handle empty device serial numbers (e. g. on mocks)
+	// TODO Better handling??
 	if deviceSerial == "" {
 		deviceSerial = SSN_MISSING
 	}
 
-	// 		fmt.Printf("prometheus> [%s] deviceSerial: %s, measurement: %s\n", deviceId, deviceSerial, measurement.Value)
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
-		// 	fmt.Printf("prometheus> [%s] Setting gauge value of %s to %s\n", deviceId, gauge.WithLabelValues(deviceId, deviceSerial).Desc(), measurement.Value)
 		gauge.WithLabelValues(deviceSerial).Set(measurement.Value)
 		return ok
 	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
-		// 	fmt.Printf("prometheus> [%s] Setting counter value of %s to %s\n", deviceId, counter.WithLabelValues(deviceId, deviceSerial).Desc(), measurement.Value)
 		counter.WithLabelValues(deviceSerial).Add(measurement.Value)
 		return ok
 	} else {

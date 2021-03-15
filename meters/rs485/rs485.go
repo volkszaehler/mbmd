@@ -15,15 +15,17 @@ const (
 
 // RS485 implements meters.Device
 type RS485 struct {
+	name 	 string
 	producer Producer
 	ops      chan Operation
 	inflight Operation
 }
 
 // NewDevice creates a device who's type must exist in the producer registry
-func NewDevice(typeid string) (*RS485, error) {
+func NewDevice(name string, typeid string) (*RS485, error) {
 	if factory, ok := Producers[typeid]; ok {
 		device := &RS485{
+			name: name,
 			producer: factory(),
 		}
 		return device, nil
@@ -47,6 +49,7 @@ func (d *RS485) Producer() Producer {
 func (d *RS485) Descriptor() meters.DeviceDescriptor {
 	typ := d.producer.Type()
 	return meters.DeviceDescriptor{
+		Name: 		  d.name,
 		Type:         typ,
 		Manufacturer: typ,
 		Model:        d.producer.Description(),

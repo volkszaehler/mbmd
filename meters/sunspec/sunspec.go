@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -43,7 +42,7 @@ func FixKostal(p sunspec.Point) {
 }
 
 // NewDevice creates a Sunspec device
-func NewDevice(meterType string, subdevice ...int) *SunSpec {
+func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 	var dev int
 	if len(subdevice) > 0 {
 		dev = subdevice[0]
@@ -54,6 +53,7 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
+			Name:		  name,
 			Type:         meterType,
 			Manufacturer: meterType,
 			SubDevice:    dev,
@@ -66,12 +66,13 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
 
-	subDeviceAsString := strconv.Itoa(d.descriptor.SubDevice)
-	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+	//subDeviceAsString := strconv.Itoa(d.descriptor.SubDevice)
+	deviceName := d.descriptor.Name
+	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
 
 	if err != nil {
 		if in == nil {
-			prometheusManager.DeviceModbusConnectionFailure.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+			prometheusManager.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
 			return err
 		}
 
@@ -79,18 +80,18 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	}
 
 	if partiallyOpen {
-		prometheusManager.DeviceModbusConnectionPartialSuccess.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+		prometheusManager.DeviceModbusConnectionPartialSuccess.WithLabelValues(deviceName).Inc()
 	} else {
-		prometheusManager.DeviceModbusConnectionSuccess.WithLabelValues(d.descriptor.Type, subDeviceAsString).Inc()
+		prometheusManager.DeviceModbusConnectionSuccess.WithLabelValues(deviceName).Inc()
 	}
 
 	devices := in.Collect(sunspec.AllDevices)
 	if len(devices) == 0 {
-		prometheusManager.DeviceByConfigNotFound.WithLabelValues("sunspec", "none").Inc()
+		prometheusManager.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return errors.New("sunspec: device not found")
 	}
 	if len(devices) <= d.subdevice {
-		prometheusManager.DeviceByConfigNotFound.WithLabelValues("sunspec", strconv.Itoa(d.subdevice)).Inc()
+		prometheusManager.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
@@ -98,21 +99,17 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
-		// TODO prometheus: DeviceModbusCommonBlockReadFailure
-		prometheusManager.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(subDeviceAsString).Inc()
+		prometheusManager.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	// TODO prometheus: DeviceModbusCommonBlockReadSuccess
-	prometheusManager.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(subDeviceAsString).Inc()
+	prometheusManager.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
 
 	// collect relevant models
 	if err := d.collectModels(device); err != nil {
-		// TODO prometheus: DeviceModbusModelCollectionFailure
-		prometheusManager.SunSpecDeviceModbusModelCollectionFailure.WithLabelValues(subDeviceAsString).Inc()
+		prometheusManager.SunSpecDeviceModbusModelCollectionFailure.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	// TODO prometheus: DeviceModbusModelCollectionSuccess
-	prometheusManager.SunSpecDeviceModbusModelCollectionSuccess.WithLabelValues(subDeviceAsString).Inc()
+	prometheusManager.SunSpecDeviceModbusModelCollectionSuccess.WithLabelValues(deviceName).Inc()
 
 	// return partial open error if everything else went fine
 	if partiallyOpen {

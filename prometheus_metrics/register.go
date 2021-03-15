@@ -23,13 +23,6 @@ var (
 		[]string{"device_id"},
 	)
 
-	BusScanTotal = prometheus.NewCounter(
-		*newCounterOpts(
-			"bus_scan_total",
-			"Amount of bus scans done",
-		),
-	)
-
 	BusScanDeviceProbeSuccessfulTotal = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"bus_scan_device_probe_successful_total",
@@ -66,26 +59,6 @@ func RegisterStatics() {
 			}
 		}
 	}
-
-	//prometheus.MustRegister(
-	//	//DeviceModbusConnectionAttemptTotal,
-	//	//DeviceModbusConnectionFailure,
-	//	//ConnectionPartiallySuccessfulTotal,
-	//	//DevicesCreatedTotal,
-	//	//BusScanStartedTotal,
-	//	//BusScanDeviceInitializationErrorTotal,
-	//	//BusScanTotal,
-	//	//BusScanDeviceProbeSuccessfulTotal,
-	//	//BusScanDeviceProbeFailedTotal,
-	//	//ReadDeviceDetailsFailedTotal,
-	//	//ConnectionHandlerDeviceQueriesTotal,
-	//	//ConnectionHandlerDeviceQueriesErrorTotal,
-	//	//ConnectionHandlerDeviceQueriesSuccessTotal,
-	//	//ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal,
-	//
-	//	// Socket related metrics
-	//	collectors...
-	//)
 }
 
 func getAllCollectors() []collectable {
