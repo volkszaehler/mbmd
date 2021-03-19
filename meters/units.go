@@ -49,7 +49,7 @@ var units = map[Unit]*unit{
 	Volt:          {unitAbbreviation{"V", ""}, "Volts", ""},
 	VoltAmpere:    {unitAbbreviation{"VA", ""}, "Voltamperes", ""},
 	Degree:        {unitAbbreviation{"°", "degree"}, "Degrees", ""},
-	DegreeCelsius: {unitAbbreviation{"°C", "degree_celsius"}, "Degree Celsius", "degrees_celsius"},
+	DegreeCelsius: {unitAbbreviation{"°C", "degree_celsius"}, "Degrees Celsius", "degrees_celsius"},
 	Hertz:         {unitAbbreviation{"Hz", "hertz"}, "Hertz", "hertz"},
 	Percent:       {unitAbbreviation{"%", "percent"}, "Per cent", "percent"},
 	Joule:         {unitAbbreviation{"J", ""}, "Joules", ""},

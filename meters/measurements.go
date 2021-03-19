@@ -199,7 +199,7 @@ const (
 )
 
 var iec = map[Measurement]*measurement{
-	Frequency:        newInternalMeasurement(withDescription("Frequency"), withUnit(Hertz), withMetricType(Gauge)),
+	Frequency:        newInternalMeasurement(withDescription("Frequency"), withPrometheusDescription("Frequency of the power line in Hertz"), withUnit(Hertz), withMetricType(Gauge)),
 	Current:          newInternalMeasurement(withDescription("Current"), withUnit(Ampere), withMetricType(Gauge)),
 	CurrentL1:        newInternalMeasurement(withDescription("L1 Current"), withUnit(Ampere), withMetricType(Gauge)),
 	CurrentL2:        newInternalMeasurement(withDescription("L2 Current"), withUnit(Ampere), withMetricType(Gauge)),

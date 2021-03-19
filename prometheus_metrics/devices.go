@@ -20,7 +20,7 @@ var (
 	DeviceModbusConnectionAttemptTotal = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"device_connection_attempts_total",
-			"Total amount of a smart meter's connection attempts",
+			"Number of a smart meter's connection attempts",
 		),
 		[]string{"device_name"},
 	)
@@ -61,7 +61,7 @@ var (
 		*newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_common_block_read_successes_total",
-			"Total amount of successful common reads on SunSpec smart meters",
+			"Number of successful common reads on SunSpec smart meters",
 		),
 		[]string{"device_name"},
 	)
@@ -70,7 +70,7 @@ var (
 		*newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_common_block_read_failures_total",
-			"Total amount of failed common reads on SunSpec smart meters",
+			"Number of failed common reads on SunSpec smart meters",
 		),
 		[]string{"device_name"},
 	)
@@ -79,7 +79,7 @@ var (
 		*newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_model_collection_successes_total",
-			"Total amount of successful model collection tasks on SunSpec smart meters",
+			"Number of successful model collection tasks on SunSpec smart meters",
 		),
 		[]string{"device_name"},
 	)
@@ -88,7 +88,7 @@ var (
 		*newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_model_collection_failures_total",
-			"Total amount of failed model collection tasks on SunSpec smart meters",
+			"Number of failed model collection tasks on SunSpec smart meters",
 		),
 		[]string{"device_name"},
 	)
@@ -96,7 +96,7 @@ var (
 	DeviceInfoDetails = prometheus.NewGaugeVec(
 		*newGaugeOpts(
 			"device_info",
-			"Additional Information about meters",
+			"Additional information about a meter",
 		),
 		deviceInfoMetricLabels,
 	)
