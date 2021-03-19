@@ -43,12 +43,12 @@ func (r MeasurementResult) String() string {
 // - MetricType
 // A Prometheus name and help text is "auto-generated". The format is:
 // <Name>			::=	measurement_<Description>_<Unit>[_<CounterTotal>]
-// <Description>	::= <measurementOption.WithDescription()> | <measurementOption.WithCustomDescription()>
-// <Unit>			::= <measurementOption.WithUnit()>
+// <Description>	::= <measurementOption.withDescription()> | <measurementOption.WithCustomDescription()>
+// <Unit>			::= <measurementOption.withUnit()>
 // <CounterTotal>	::= "total" // if metric type is Counter
 // E. g.:
 //  Assuming a device's manufacturer is "myManufacturer":
-//		newInternalMeasurement(WithDescription("Frequency Test With Some Text"), WithUnit(Hertz), WithMetricType(Counter))
+//		newInternalMeasurement(withDescription("Frequency Test With Some Text"), withUnit(Hertz), withMetricType(Counter))
 //	=> Name (before creating prometheus.Metric): "measurement_frequency_test_with_some_text_hertz_total"
 //  => Description: "Measurement of Frequency Test With Some Text in Hertz"
 //
@@ -199,102 +199,102 @@ const (
 )
 
 var iec = map[Measurement]*measurement{
-	Frequency:        newInternalMeasurement(WithDescription("Frequency"), WithUnit(Hertz), WithMetricType(Gauge)),
-	Current:          newInternalMeasurement(WithDescription("Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	CurrentL1:        newInternalMeasurement(WithDescription("L1 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	CurrentL2:        newInternalMeasurement(WithDescription("L2 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	CurrentL3:        newInternalMeasurement(WithDescription("L3 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	Voltage:          newInternalMeasurement(WithDescription("Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	VoltageL1:        newInternalMeasurement(WithDescription("L1 Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	VoltageL2:        newInternalMeasurement(WithDescription("L2 Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	VoltageL3:        newInternalMeasurement(WithDescription("L3 Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	Power:            newInternalMeasurement(WithDescription("Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	PowerL1:          newInternalMeasurement(WithDescription("L1 Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	PowerL2:          newInternalMeasurement(WithDescription("L2 Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	PowerL3:          newInternalMeasurement(WithDescription("L3 Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ImportPower:      newInternalMeasurement(WithDescription("Import Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ImportPowerL1:    newInternalMeasurement(WithDescription("L1 Import Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ImportPowerL2:    newInternalMeasurement(WithDescription("L2 Import Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ImportPowerL3:    newInternalMeasurement(WithDescription("L3 Import Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ExportPower:      newInternalMeasurement(WithDescription("Export Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ExportPowerL1:    newInternalMeasurement(WithDescription("L1 Export Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ExportPowerL2:    newInternalMeasurement(WithDescription("L2 Export Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ExportPowerL3:    newInternalMeasurement(WithDescription("L3 Export Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	ReactivePower:    newInternalMeasurement(WithDescription("Reactive Power"), WithUnit(Var), WithMetricType(Gauge)),
-	ReactivePowerL1:  newInternalMeasurement(WithDescription("L1 Reactive Power"), WithUnit(Var), WithMetricType(Gauge)),
-	ReactivePowerL2:  newInternalMeasurement(WithDescription("L2 Reactive Power"), WithUnit(Var), WithMetricType(Gauge)),
-	ReactivePowerL3:  newInternalMeasurement(WithDescription("L3 Reactive Power"), WithUnit(Var), WithMetricType(Gauge)),
-	ApparentPower:    newInternalMeasurement(WithDescription("Apparent Power"), WithUnit(VoltAmpere), WithMetricType(Gauge)),
-	ApparentPowerL1:  newInternalMeasurement(WithDescription("L1 Apparent Power"), WithUnit(VoltAmpere), WithMetricType(Gauge)),
-	ApparentPowerL2:  newInternalMeasurement(WithDescription("L2 Apparent Power"), WithUnit(VoltAmpere), WithMetricType(Gauge)),
-	ApparentPowerL3:  newInternalMeasurement(WithDescription("L3 Apparent Power"), WithUnit(VoltAmpere), WithMetricType(Gauge)),
-	Cosphi:           newInternalMeasurement(WithDescription("Cosphi"), WithMetricType(Gauge)),
-	CosphiL1:         newInternalMeasurement(WithDescription("L1 Cosphi"), WithMetricType(Gauge)),
-	CosphiL2:         newInternalMeasurement(WithDescription("L2 Cosphi"), WithMetricType(Gauge)),
-	CosphiL3:         newInternalMeasurement(WithDescription("L3 Cosphi"), WithMetricType(Gauge)),
-	THD:              newInternalMeasurement(WithDescription("Average voltage to neutral THD"), WithUnit(Percent), WithMetricType(Gauge)),
-	THDL1:            newInternalMeasurement(WithDescription("L1 Voltage to neutral THD"), WithUnit(Percent), WithMetricType(Gauge)),
-	THDL2:            newInternalMeasurement(WithDescription("L2 Voltage to neutral THD"), WithUnit(Percent), WithMetricType(Gauge)),
-	THDL3:            newInternalMeasurement(WithDescription("L3 Voltage to neutral THD"), WithUnit(Percent), WithMetricType(Gauge)),
-	Sum:              newInternalMeasurement(WithDescription("Total Sum"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	SumT1:            newInternalMeasurement(WithDescription("Tariff 1 Sum"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	SumT2:            newInternalMeasurement(WithDescription("Tariff 2 Sum"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	SumL1:            newInternalMeasurement(WithDescription("L1 Sum"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	SumL2:            newInternalMeasurement(WithDescription("L2 Sum"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	SumL3:            newInternalMeasurement(WithDescription("L3 Sum"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	Import:           newInternalMeasurement(WithDescription("Total Import"), WithPrometheusName("energy_import"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ImportT1:         newInternalMeasurement(WithDescription("Tariff 1 Import"), WithPrometheusName("tariff_1_imported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ImportT2:         newInternalMeasurement(WithDescription("Tariff 2 Import"), WithPrometheusName("tariff_2_imported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ImportL1:         newInternalMeasurement(WithDescription("L1 Import"), WithPrometheusName("l1_imported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ImportL2:         newInternalMeasurement(WithDescription("L2 Import"), WithPrometheusName("l2_imported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ImportL3:         newInternalMeasurement(WithDescription("L3 Import"), WithPrometheusName("l3_imported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	Export:           newInternalMeasurement(WithDescription("Total Export"), WithPrometheusName("energy_export"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ExportT1:         newInternalMeasurement(WithDescription("Tariff 1 Export"), WithPrometheusName("tariff_1_exported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ExportT2:         newInternalMeasurement(WithDescription("Tariff 2 Export"), WithPrometheusName("tariff_2_exported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ExportL1:         newInternalMeasurement(WithDescription("L1 Export"), WithPrometheusName("l1_exported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ExportL2:         newInternalMeasurement(WithDescription("L2 Export"), WithPrometheusName("l2_exported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ExportL3:         newInternalMeasurement(WithDescription("L3 Export"), WithPrometheusName("l3_exported"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	ReactiveSum:      newInternalMeasurement(WithDescription("Total Reactive"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveSumT1:    newInternalMeasurement(WithDescription("Tariff 1 Reactive"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveSumT2:    newInternalMeasurement(WithDescription("Tariff 2 Reactive"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveSumL1:    newInternalMeasurement(WithDescription("L1 Reactive"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveSumL2:    newInternalMeasurement(WithDescription("L2 Reactive"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveSumL3:    newInternalMeasurement(WithDescription("L3 Reactive"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveImport:   newInternalMeasurement(WithDescription("Reactive Import"), WithPrometheusName("reactive_imported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveImportT1: newInternalMeasurement(WithDescription("Tariff 1 Reactive Import"), WithPrometheusName("tariff_2_reactive_imported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveImportT2: newInternalMeasurement(WithDescription("Tariff 2 Reactive Import"), WithPrometheusName("tariff_1_reactive_imported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveImportL1: newInternalMeasurement(WithDescription("L1 Reactive Import"), WithPrometheusName("l1_reactive_imported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveImportL2: newInternalMeasurement(WithDescription("L2 Reactive Import"), WithPrometheusName("l2_reactive_imported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveImportL3: newInternalMeasurement(WithDescription("L3 Reactive Import"), WithPrometheusName("l3_reactive_imported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveExport:   newInternalMeasurement(WithDescription("Reactive Export"), WithPrometheusName("reactive_exported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveExportT1: newInternalMeasurement(WithDescription("Tariff 1 Reactive Export"), WithPrometheusName("tariff_1_reactive_exported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveExportT2: newInternalMeasurement(WithDescription("Tariff 2 Reactive Export"), WithPrometheusName("tariff_2_reactive_exported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveExportL1: newInternalMeasurement(WithDescription("L1 Reactive Export"), WithPrometheusName("l1_reactive_exported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveExportL2: newInternalMeasurement(WithDescription("L2 Reactive Export"), WithPrometheusName("l2_reactive_exported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	ReactiveExportL3: newInternalMeasurement(WithDescription("L3 Reactive Export"), WithPrometheusName("l3_reactive_exported"), WithUnit(KiloVarHour), WithMetricType(Counter)),
-	DCCurrent:        newInternalMeasurement(WithDescription("DC Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	DCVoltage:        newInternalMeasurement(WithDescription("DC Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	DCPower:          newInternalMeasurement(WithDescription("DC Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	HeatSinkTemp:     newInternalMeasurement(WithDescription("Heat Sink Temperature"), WithUnit(DegreeCelsius), WithMetricType(Gauge)),
-	DCCurrentS1:      newInternalMeasurement(WithDescription("String 1 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	DCVoltageS1:      newInternalMeasurement(WithDescription("String 1 Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	DCPowerS1:        newInternalMeasurement(WithDescription("String 1 Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	DCEnergyS1:       newInternalMeasurement(WithDescription("String 1 Generation"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	DCCurrentS2:      newInternalMeasurement(WithDescription("String 2 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	DCVoltageS2:      newInternalMeasurement(WithDescription("String 2 Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	DCPowerS2:        newInternalMeasurement(WithDescription("String 2 Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	DCEnergyS2:       newInternalMeasurement(WithDescription("String 2 Generation"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
-	DCCurrentS3:      newInternalMeasurement(WithDescription("String 3 Current"), WithUnit(Ampere), WithMetricType(Gauge)),
-	DCVoltageS3:      newInternalMeasurement(WithDescription("String 3 Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	DCPowerS3:        newInternalMeasurement(WithDescription("String 3 Power"), WithUnit(Watt), WithMetricType(Gauge)),
-	DCEnergyS3:       newInternalMeasurement(WithDescription("String 3 Generation"), WithUnit(KiloWattHour), WithUnitInPrometheus(Joule), WithMetricType(Counter)),
+	Frequency:        newInternalMeasurement(withDescription("Frequency"), withUnit(Hertz), withMetricType(Gauge)),
+	Current:          newInternalMeasurement(withDescription("Current"), withUnit(Ampere), withMetricType(Gauge)),
+	CurrentL1:        newInternalMeasurement(withDescription("L1 Current"), withUnit(Ampere), withMetricType(Gauge)),
+	CurrentL2:        newInternalMeasurement(withDescription("L2 Current"), withUnit(Ampere), withMetricType(Gauge)),
+	CurrentL3:        newInternalMeasurement(withDescription("L3 Current"), withUnit(Ampere), withMetricType(Gauge)),
+	Voltage:          newInternalMeasurement(withDescription("Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	VoltageL1:        newInternalMeasurement(withDescription("L1 Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	VoltageL2:        newInternalMeasurement(withDescription("L2 Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	VoltageL3:        newInternalMeasurement(withDescription("L3 Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	Power:            newInternalMeasurement(withDescription("Power"), withUnit(Watt), withMetricType(Gauge)),
+	PowerL1:          newInternalMeasurement(withDescription("L1 Power"), withUnit(Watt), withMetricType(Gauge)),
+	PowerL2:          newInternalMeasurement(withDescription("L2 Power"), withUnit(Watt), withMetricType(Gauge)),
+	PowerL3:          newInternalMeasurement(withDescription("L3 Power"), withUnit(Watt), withMetricType(Gauge)),
+	ImportPower:      newInternalMeasurement(withDescription("Import Power"), withUnit(Watt), withMetricType(Gauge)),
+	ImportPowerL1:    newInternalMeasurement(withDescription("L1 Import Power"), withUnit(Watt), withMetricType(Gauge)),
+	ImportPowerL2:    newInternalMeasurement(withDescription("L2 Import Power"), withUnit(Watt), withMetricType(Gauge)),
+	ImportPowerL3:    newInternalMeasurement(withDescription("L3 Import Power"), withUnit(Watt), withMetricType(Gauge)),
+	ExportPower:      newInternalMeasurement(withDescription("Export Power"), withUnit(Watt), withMetricType(Gauge)),
+	ExportPowerL1:    newInternalMeasurement(withDescription("L1 Export Power"), withUnit(Watt), withMetricType(Gauge)),
+	ExportPowerL2:    newInternalMeasurement(withDescription("L2 Export Power"), withUnit(Watt), withMetricType(Gauge)),
+	ExportPowerL3:    newInternalMeasurement(withDescription("L3 Export Power"), withUnit(Watt), withMetricType(Gauge)),
+	ReactivePower:    newInternalMeasurement(withDescription("Reactive Power"), withUnit(Var), withMetricType(Gauge)),
+	ReactivePowerL1:  newInternalMeasurement(withDescription("L1 Reactive Power"), withUnit(Var), withMetricType(Gauge)),
+	ReactivePowerL2:  newInternalMeasurement(withDescription("L2 Reactive Power"), withUnit(Var), withMetricType(Gauge)),
+	ReactivePowerL3:  newInternalMeasurement(withDescription("L3 Reactive Power"), withUnit(Var), withMetricType(Gauge)),
+	ApparentPower:    newInternalMeasurement(withDescription("Apparent Power"), withUnit(VoltAmpere), withMetricType(Gauge)),
+	ApparentPowerL1:  newInternalMeasurement(withDescription("L1 Apparent Power"), withUnit(VoltAmpere), withMetricType(Gauge)),
+	ApparentPowerL2:  newInternalMeasurement(withDescription("L2 Apparent Power"), withUnit(VoltAmpere), withMetricType(Gauge)),
+	ApparentPowerL3:  newInternalMeasurement(withDescription("L3 Apparent Power"), withUnit(VoltAmpere), withMetricType(Gauge)),
+	Cosphi:           newInternalMeasurement(withDescription("Cosphi"), withMetricType(Gauge)),
+	CosphiL1:         newInternalMeasurement(withDescription("L1 Cosphi"), withMetricType(Gauge)),
+	CosphiL2:         newInternalMeasurement(withDescription("L2 Cosphi"), withMetricType(Gauge)),
+	CosphiL3:         newInternalMeasurement(withDescription("L3 Cosphi"), withMetricType(Gauge)),
+	THD:              newInternalMeasurement(withDescription("Average voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
+	THDL1:            newInternalMeasurement(withDescription("L1 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
+	THDL2:            newInternalMeasurement(withDescription("L2 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
+	THDL3:            newInternalMeasurement(withDescription("L3 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
+	Sum:              newInternalMeasurement(withDescription("Total Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumT1:            newInternalMeasurement(withDescription("Tariff 1 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumT2:            newInternalMeasurement(withDescription("Tariff 2 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumL1:            newInternalMeasurement(withDescription("L1 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumL2:            newInternalMeasurement(withDescription("L2 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumL3:            newInternalMeasurement(withDescription("L3 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	Import:           newInternalMeasurement(withDescription("Total Import"), withPrometheusName("energy_import"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportT1:         newInternalMeasurement(withDescription("Tariff 1 Import"), withPrometheusName("tariff_1_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportT2:         newInternalMeasurement(withDescription("Tariff 2 Import"), withPrometheusName("tariff_2_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportL1:         newInternalMeasurement(withDescription("L1 Import"), withPrometheusName("l1_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportL2:         newInternalMeasurement(withDescription("L2 Import"), withPrometheusName("l2_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportL3:         newInternalMeasurement(withDescription("L3 Import"), withPrometheusName("l3_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	Export:           newInternalMeasurement(withDescription("Total Export"), withPrometheusName("energy_export"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportT1:         newInternalMeasurement(withDescription("Tariff 1 Export"), withPrometheusName("tariff_1_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportT2:         newInternalMeasurement(withDescription("Tariff 2 Export"), withPrometheusName("tariff_2_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportL1:         newInternalMeasurement(withDescription("L1 Export"), withPrometheusName("l1_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportL2:         newInternalMeasurement(withDescription("L2 Export"), withPrometheusName("l2_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportL3:         newInternalMeasurement(withDescription("L3 Export"), withPrometheusName("l3_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ReactiveSum:      newInternalMeasurement(withDescription("Total Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumT1:    newInternalMeasurement(withDescription("Tariff 1 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumT2:    newInternalMeasurement(withDescription("Tariff 2 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumL1:    newInternalMeasurement(withDescription("L1 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumL2:    newInternalMeasurement(withDescription("L2 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumL3:    newInternalMeasurement(withDescription("L3 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImport:   newInternalMeasurement(withDescription("Reactive Import"), withPrometheusName("reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportT1: newInternalMeasurement(withDescription("Tariff 1 Reactive Import"), withPrometheusName("tariff_2_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportT2: newInternalMeasurement(withDescription("Tariff 2 Reactive Import"), withPrometheusName("tariff_1_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportL1: newInternalMeasurement(withDescription("L1 Reactive Import"), withPrometheusName("l1_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportL2: newInternalMeasurement(withDescription("L2 Reactive Import"), withPrometheusName("l2_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportL3: newInternalMeasurement(withDescription("L3 Reactive Import"), withPrometheusName("l3_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExport:   newInternalMeasurement(withDescription("Reactive Export"), withPrometheusName("reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportT1: newInternalMeasurement(withDescription("Tariff 1 Reactive Export"), withPrometheusName("tariff_1_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportT2: newInternalMeasurement(withDescription("Tariff 2 Reactive Export"), withPrometheusName("tariff_2_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportL1: newInternalMeasurement(withDescription("L1 Reactive Export"), withPrometheusName("l1_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportL2: newInternalMeasurement(withDescription("L2 Reactive Export"), withPrometheusName("l2_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportL3: newInternalMeasurement(withDescription("L3 Reactive Export"), withPrometheusName("l3_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	DCCurrent:        newInternalMeasurement(withDescription("DC Current"), withUnit(Ampere), withMetricType(Gauge)),
+	DCVoltage:        newInternalMeasurement(withDescription("DC Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	DCPower:          newInternalMeasurement(withDescription("DC Power"), withUnit(Watt), withMetricType(Gauge)),
+	HeatSinkTemp:     newInternalMeasurement(withDescription("Heat Sink Temperature"), withUnit(DegreeCelsius), withMetricType(Gauge)),
+	DCCurrentS1:      newInternalMeasurement(withDescription("String 1 Current"), withUnit(Ampere), withMetricType(Gauge)),
+	DCVoltageS1:      newInternalMeasurement(withDescription("String 1 Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	DCPowerS1:        newInternalMeasurement(withDescription("String 1 Power"), withUnit(Watt), withMetricType(Gauge)),
+	DCEnergyS1:       newInternalMeasurement(withDescription("String 1 Generation"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	DCCurrentS2:      newInternalMeasurement(withDescription("String 2 Current"), withUnit(Ampere), withMetricType(Gauge)),
+	DCVoltageS2:      newInternalMeasurement(withDescription("String 2 Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	DCPowerS2:        newInternalMeasurement(withDescription("String 2 Power"), withUnit(Watt), withMetricType(Gauge)),
+	DCEnergyS2:       newInternalMeasurement(withDescription("String 2 Generation"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	DCCurrentS3:      newInternalMeasurement(withDescription("String 3 Current"), withUnit(Ampere), withMetricType(Gauge)),
+	DCVoltageS3:      newInternalMeasurement(withDescription("String 3 Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	DCPowerS3:        newInternalMeasurement(withDescription("String 3 Power"), withUnit(Watt), withMetricType(Gauge)),
+	DCEnergyS3:       newInternalMeasurement(withDescription("String 3 Generation"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
 	DCCurrentS4:      {"String 4 Current", "A"},
 	DCVoltageS4:      {"String 4 Voltage", "V"},
 	DCPowerS4:        {"String 4 Power", "W"},
 	DCEnergyS4:       {"String 4 Generation", "kWh"},
-	ChargeState:      newInternalMeasurement(WithDescription("Charge State"), WithUnit(Percent), WithMetricType(Gauge)),
-	BatteryVoltage:   newInternalMeasurement(WithDescription("Battery Voltage"), WithUnit(Volt), WithMetricType(Gauge)),
-	PhaseAngle:       newInternalMeasurement(WithDescription("Phase Angle"), WithUnit(Degree), WithMetricType(Gauge)),
+	ChargeState:      newInternalMeasurement(withDescription("Charge State"), withUnit(Percent), withMetricType(Gauge)),
+	BatteryVoltage:   newInternalMeasurement(withDescription("Battery Voltage"), withUnit(Volt), withMetricType(Gauge)),
+	PhaseAngle:       newInternalMeasurement(withDescription("Phase Angle"), withUnit(Degree), withMetricType(Gauge)),
 }
 
 // MarshalText implements encoding.TextMarshaler
@@ -366,15 +366,15 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	}
 
 	if m.Unit == nil {
-		WithUnit(NoUnit)(m)
+		withUnit(NoUnit)(m)
 	}
 
 	if m.PrometheusInfo.Description == "" {
-		WithGenericPrometheusDescription()(m)
+		withGenericPrometheusDescription()(m)
 	}
 
 	if m.PrometheusInfo.Name == "" {
-		WithGenericPrometheusName()(m)
+		withGenericPrometheusName()(m)
 	} else {
 		var displayUnit *Unit
 		if m.PrometheusInfo.Unit != nil {
@@ -397,15 +397,15 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	return m
 }
 
-// WithPrometheusDescription enables setting a Prometheus description of a Measurement
-func WithPrometheusDescription(description string) measurementOptions {
+// withPrometheusDescription enables setting a Prometheus description of a Measurement
+func withPrometheusDescription(description string) measurementOptions {
 	return func(m *measurement) {
 		m.PrometheusInfo.Description = description
 	}
 }
 
-// WithGenericPrometheusDescription sets the Prometheus description to a generated, more generic format
-func WithGenericPrometheusDescription() measurementOptions {
+// withGenericPrometheusDescription sets the Prometheus description to a generated, more generic format
+func withGenericPrometheusDescription() measurementOptions {
 	return func(m *measurement) {
 		var displayUnit *Unit
 		if m.PrometheusInfo.Unit != nil {
@@ -422,27 +422,29 @@ func WithGenericPrometheusDescription() measurementOptions {
 	}
 }
 
-// WithUnit sets the Unit of a Measurement
+// withUnit sets the Unit of a Measurement
 // If u is nil, the unit will be set to NoUnit
-func WithUnit(u Unit) measurementOptions {
+func withUnit(u Unit) measurementOptions {
 	return func(m *measurement) {
 		m.Unit = &u
 	}
 }
 
-func WithUnitInPrometheus(u Unit) measurementOptions {
+// withUnitInPrometheus set the Unit to be displayed in Prometheus
+// If u is set, any incoming measurements are automatically converted to specified u
+func withUnitInPrometheus(u Unit) measurementOptions {
 	return func(m *measurement) {
 		m.PrometheusInfo.Unit = &u
 	}
 }
 
-func WithPrometheusName(name string) measurementOptions {
+func withPrometheusName(name string) measurementOptions {
 	return func(m *measurement) {
 		m.PrometheusInfo.Name = name
 	}
 }
 
-func WithGenericPrometheusName() measurementOptions {
+func withGenericPrometheusName() measurementOptions {
 	return func(m *measurement) {
 		var displayUnit *Unit
 		if m.PrometheusInfo.Unit != nil {
@@ -463,13 +465,13 @@ func WithGenericPrometheusName() measurementOptions {
 	}
 }
 
-func WithMetricType(metricType MetricType) measurementOptions {
+func withMetricType(metricType MetricType) measurementOptions {
 	return func(m *measurement) {
 		m.PrometheusInfo.MetricType = metricType
 	}
 }
 
-func WithDescription(description string) measurementOptions {
+func withDescription(description string) measurementOptions {
 	return func(m *measurement) {
 		m.Description = description
 	}
@@ -498,6 +500,11 @@ func generatePrometheusName(name string, unit string) string {
 	)
 }
 
+// ConvertValueTo queries the targetUnit's conversion func from a conversion map
+// and converts it to the defined Unit
+//
+// If a conversionFunc cannot be found, this func will return 0.0
+// as the source Unit cannot be converted to target Unit via non-defined conversion function!
 func (r *MeasurementResult) ConvertValueTo(targetUnit Unit) float64 {
 	if r.Value == 0.0 {
 		return 0.0
