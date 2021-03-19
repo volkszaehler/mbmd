@@ -7,9 +7,9 @@ import (
 	"fmt"
 )
 
-const _UnitName = "kilo_var_hourvarkilo_watt_hourwattamperevoltvolt_amperedegreedegree_celsiushertzpercentno_unit"
+const _UnitName = "kilo_var_hourvarkilo_watt_hourwattamperevoltvolt_amperedegreedegree_celsiushertzpercentjouleno_unit"
 
-var _UnitIndex = [...]uint8{0, 13, 16, 30, 34, 40, 44, 55, 61, 75, 80, 87, 94}
+var _UnitIndex = [...]uint8{0, 13, 16, 30, 34, 40, 44, 55, 61, 75, 80, 87, 92, 99}
 
 func (i Unit) String() string {
 	i -= 1
@@ -19,7 +19,7 @@ func (i Unit) String() string {
 	return _UnitName[_UnitIndex[i]:_UnitIndex[i+1]]
 }
 
-var _UnitValues = []Unit{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+var _UnitValues = []Unit{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
 
 var _UnitNameToValueMap = map[string]Unit{
 	_UnitName[0:13]:  1,
@@ -33,7 +33,8 @@ var _UnitNameToValueMap = map[string]Unit{
 	_UnitName[61:75]: 9,
 	_UnitName[75:80]: 10,
 	_UnitName[80:87]: 11,
-	_UnitName[87:94]: 12,
+	_UnitName[87:92]: 12,
+	_UnitName[92:99]: 13,
 }
 
 // UnitString retrieves an enum value from the enum constants string name.

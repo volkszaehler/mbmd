@@ -69,7 +69,11 @@ func UpdateMeasurementMetric(
 		gauge.WithLabelValues(deviceSerial).Set(measurement.Value)
 		return ok
 	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
-		counter.WithLabelValues(deviceSerial).Add(measurement.Value)
+		if unit := measurement.Unit(); unit != nil && *unit == meters.KiloWattHour {
+			counter.WithLabelValues(deviceSerial).Add(measurement.ConvertValueTo(meters.Joule))
+		} else {
+			counter.WithLabelValues(deviceSerial).Add(measurement.Value)
+		}
 		return ok
 	} else {
 		return ok
