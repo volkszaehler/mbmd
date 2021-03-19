@@ -441,9 +441,9 @@ func WithDescription(description string) measurementOptions {
 
 func generatePrometheusDescription(description string, unit string) string {
 	if unit != "" {
-		return fmt.Sprintf("Measurement of %s in %s", description, unit)
+		return fmt.Sprintf("%s in %s", description, unit)
 	} else {
-		return fmt.Sprintf("Measurement of %s", description)
+		return fmt.Sprintf("%s", description)
 	}
 }
 
