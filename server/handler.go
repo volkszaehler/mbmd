@@ -170,7 +170,7 @@ func (h *Handler) queryDevice(
 				}
 				results <- snip
 
-				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Serial, r)
+				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Name, deviceDescriptor.Serial, r)
 			}
 
 			return

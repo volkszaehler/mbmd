@@ -56,6 +56,7 @@ var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
 //
 // Returns false if the associated prometheus.Metric does not exist
 func UpdateMeasurementMetric(
+	deviceName string,
 	deviceSerial string,
 	measurement meters.MeasurementResult,
 ) (ok bool) {
@@ -66,13 +67,13 @@ func UpdateMeasurementMetric(
 	}
 
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
-		gauge.WithLabelValues(deviceSerial).Set(measurement.Value)
+		gauge.WithLabelValues(deviceName, deviceSerial).Set(measurement.Value)
 		return ok
 	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
 		if unit := measurement.Unit(); unit != nil && *unit == meters.KiloWattHour {
-			counter.WithLabelValues(deviceSerial).Add(measurement.ConvertValueTo(meters.Joule))
+			counter.WithLabelValues(deviceName, deviceSerial).Add(measurement.ConvertValueTo(meters.Joule))
 		} else {
-			counter.WithLabelValues(deviceSerial).Add(measurement.Value)
+			counter.WithLabelValues(deviceName, deviceSerial).Add(measurement.Value)
 		}
 		return ok
 	} else {
@@ -80,13 +81,13 @@ func UpdateMeasurementMetric(
 	}
 }
 
+var measurementMetricsLabels = []string{"device_name", "serial_number"}
+
 // CreateMeasurementMetrics initializes all existing meters.Measurement
 //
 // If a prometheus.Metric could not be registered (see prometheus.Register),
 // the affected prometheus.Metric will be omitted.
 func CreateMeasurementMetrics() {
-	labels = []string{"serial_number"}
-
 	for _, measurement := range meters.MeasurementValues() {
 		switch measurement.PrometheusMetricType() {
 		case meters.Gauge:
@@ -95,7 +96,7 @@ func CreateMeasurementMetrics() {
 					measurement.PrometheusName(),
 					measurement.PrometheusDescription(),
 				),
-				labels,
+				measurementMetricsLabels,
 			)
 
 			if err := prometheus.Register(newGauge); err != nil {
@@ -113,7 +114,7 @@ func CreateMeasurementMetrics() {
 					measurement.PrometheusName(),
 					measurement.PrometheusDescription(),
 				),
-				labels,
+				measurementMetricsLabels,
 			)
 
 			if err := prometheus.Register(newCounter); err != nil {

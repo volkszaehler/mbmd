@@ -126,7 +126,7 @@ SCAN:
 					mr.Value,
 				)
 
-				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Serial, mr)
+				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Name, deviceDescriptor.Serial, mr)
 				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
 
 				deviceList[deviceID] = dev
