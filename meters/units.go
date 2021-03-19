@@ -23,6 +23,8 @@ const (
 
 	Percent
 
+	Joule
+
 	NoUnit
 )
 
@@ -50,9 +52,26 @@ var units = map[Unit]*unit{
 	DegreeCelsius: {unitAbbreviation{"°C", "degree_celsius"}, "Degree Celsius", "degrees_celsius"},
 	Hertz:         {unitAbbreviation{"Hz", "hertz"}, "Hertz", "hertz"},
 	Percent:       {unitAbbreviation{"%", "percent"}, "Per cent", "percent"},
+	Joule:         {unitAbbreviation{"J", ""}, "Joules", ""},
 
 	NoUnit: {unitAbbreviation{"", ""}, "", ""},
 }
+
+var conversionMap = map[Unit]func(float64) float64{
+	Joule: func(input float64) float64 {
+		return (input * 3.6) * 1_000_000
+	},
+}
+
+//var units = map[Unit]*unit{
+//	KiloVarHour:   makeUnitDefinition(
+//		"kvarh",
+//		"",
+//		"Kilovoltampere-hours (reactive)",
+//		"",
+//		),
+//	Var:
+//}
 
 func (u *Unit) PrometheusName() string {
 	if u == nil || *u == NoUnit {
@@ -94,3 +113,37 @@ func (u *Unit) FullName() string {
 	}
 	return ""
 }
+
+//func makeUnitDefinition(
+//	abbreviation string,
+//	abbreviationAlternative string,
+//	fullName string,
+//	pluralForm string,
+//) *unit {
+//	unitAbbr := &unitAbbreviation{
+//		Default:		abbreviation,
+//		Alternative: 	abbreviationAlternative,
+//	}
+//
+//	unitDef := &unit{
+//		Abbreviation: 	unitAbbr,
+//		FullName: 		fullName,
+//		PluralForm: 	pluralForm,
+//	}
+//
+//	return unitDef
+//}
+//
+//func makeUnitDefinitionWithConversion(
+//	abbreviation string,
+//	abbreviationAlternative string,
+//	fullName string,
+//	pluralForm string,
+//	conversionFuncs map[string]*func(float64)float64,
+//) *unit {
+//	unitDef := makeUnitDefinition(abbreviation, abbreviationAlternative, fullName, pluralForm)
+//
+//	unitDef.Converter = conversionFuncs
+//
+//	return unitDef
+//}
