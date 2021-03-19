@@ -6,9 +6,9 @@ import (
 
 func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testing.T) {
 	measurement := newInternalMeasurement(
-		WithDescription("My Test Measurement"),
-		WithUnit(Ampere),
-		WithMetricType(Counter),
+		withDescription("My Test Measurement"),
+		withUnit(Ampere),
+		withMetricType(Counter),
 	)
 
 	expectedPrometheusName := "measurement_my_test_measurement_amperes_total"
@@ -39,11 +39,11 @@ func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testi
 
 func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 	measurement := newInternalMeasurement(
-		WithDescription("My Test Measurement"),
-		WithPrometheusDescription("My custom description for my measurement"),
-		WithPrometheusName("my_custom_name_for_my_test_measurement"),
-		WithUnit(Ampere),
-		WithMetricType(Gauge),
+		withDescription("My Test Measurement"),
+		withPrometheusDescription("My custom description for my measurement"),
+		withPrometheusName("my_custom_name_for_my_test_measurement"),
+		withUnit(Ampere),
+		withMetricType(Gauge),
 	)
 
 	expectedPrometheusName := "measurement_my_custom_name_for_my_test_measurement_amperes"
