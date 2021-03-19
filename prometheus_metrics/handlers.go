@@ -5,7 +5,7 @@ import "github.com/prometheus/client_golang/prometheus"
 // handlerCollectors contains all Prometheus metrics about modbus connection handlers
 //
 // Implements collectable interface
-type handlerCollectors struct {}
+type handlerCollectors struct{}
 
 var (
 	ConnectionHandlerDeviceInitializationRoutineStarted = prometheus.NewCounter(
@@ -32,7 +32,7 @@ var (
 	ConnectionHandlerDeviceQueriesTotal = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"connection_handler_device_queries_total",
-			"Amount of queries/requests done for a smart meter",
+			"Number of queries to a meter",
 		),
 		[]string{"device_name", "serial_number"},
 	)
