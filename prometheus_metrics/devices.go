@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type deviceCollectors struct {}
+type deviceCollectors struct{}
 
 var (
 	DevicesCreatedTotal = prometheus.NewCounterVec(
@@ -58,41 +58,38 @@ var (
 	)
 
 	SunSpecDeviceModbusCommonBlockReadsSuccess = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: 	 NAMESPACE,
-			Name: 		 "connection_common_block_read_successes_total",
-			Help: 		 "Total amount of successful common reads on SunSpec smart meters",
-			ConstLabels: prometheus.Labels{"type": "sunspec"},
-		},
+		*newCounterOptsWithSubsystem(
+			"sunspec",
+			"connection_common_block_read_successes_total",
+			"Total amount of successful common reads on SunSpec smart meters",
+		),
 		[]string{"device_name"},
 	)
 
 	SunSpecDeviceModbusCommonBlockReadsFailures = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "connection_common_block_read_failures_total",
-			Help: "Total amount of failed common reads on SunSpec smart meters",
-			ConstLabels: prometheus.Labels{"type": "sunspec"},
-		},
+		*newCounterOptsWithSubsystem(
+			"sunspec",
+			"connection_common_block_read_failures_total",
+			"Total amount of failed common reads on SunSpec smart meters",
+		),
 		[]string{"device_name"},
 	)
 
 	SunSpecDeviceModbusModelCollectionSuccess = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: 	 NAMESPACE,
-			Name:        "connection_model_collection_successes_total",
-			Help:        "Total amount of successful model collection tasks on SunSpec smart meters",
-			ConstLabels: prometheus.Labels{"type": "sunspec"},
-		},
+		*newCounterOptsWithSubsystem(
+			"sunspec",
+			"connection_model_collection_successes_total",
+			"Total amount of successful model collection tasks on SunSpec smart meters",
+		),
 		[]string{"device_name"},
 	)
 
 	SunSpecDeviceModbusModelCollectionFailure = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: 	 NAMESPACE,
-			Name:		 "connection_model_collection_failures_total",
-			Help: 		 "Total amount of failed model collection tasks on SunSpec smart meters",
-			ConstLabels: prometheus.Labels{"type": "sunspec"},
-		},
+		*newCounterOptsWithSubsystem(
+			"sunspec",
+			"connection_model_collection_failures_total",
+			"Total amount of failed model collection tasks on SunSpec smart meters",
+		),
 		[]string{"device_name"},
 	)
 
