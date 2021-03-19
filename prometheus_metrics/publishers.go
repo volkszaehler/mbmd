@@ -5,9 +5,9 @@ import "github.com/prometheus/client_golang/prometheus"
 // publisherCollectors contains all Prometheus metrics about publishers like HTTP, MQTT, ...
 //
 // Implements collectable interface
-type publisherCollectors struct {}
+type publisherCollectors struct{}
 
-var labels = []string{"type"}
+var publisherMetricsLabels = []string{"type"}
 
 var (
 	PublisherCreated = prometheus.NewCounterVec(
@@ -15,7 +15,7 @@ var (
 			"publisher_created_total",
 			"Total count of publishers created for publishing smart meter measurement data.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 
 	PublisherDataPublished = prometheus.NewCounterVec(
@@ -23,7 +23,7 @@ var (
 			"publisher_data_published_total",
 			"Total count of publish processes where smart meter measurement data is published.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 
 	PublisherDataPublishAttempt = prometheus.NewCounterVec(
@@ -31,16 +31,15 @@ var (
 			"publisher_data_publish_attempts_total",
 			"Total count of publish attempts where smart meter measurement data is published.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
-
 
 	PublisherDataPublishedSize = prometheus.NewCounterVec(
 		*newCounterOpts(
 			"publisher_data_published_size_bytes_total",
 			"Total bytes of sent smart meter measurement data via publishers.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 
 	PublisherDataPublishedError = prometheus.NewCounterVec(
@@ -48,7 +47,7 @@ var (
 			"publisher_data_published_errors_total",
 			"Total failures of publish processes where smart meter measurement is published.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 
 	PublisherConnectionSuccess = prometheus.NewCounterVec(
@@ -56,7 +55,7 @@ var (
 			"publisher_connection_successes_total",
 			"Total successful connections to external databases/data storages via publishers.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 
 	PublisherConnectionFailure = prometheus.NewCounterVec(
@@ -64,7 +63,7 @@ var (
 			"publisher_connection_failures_total",
 			"Total failed connections to external databases/data storages via publishers.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 
 	PublisherConnectionFlush = prometheus.NewCounterVec(
@@ -72,7 +71,7 @@ var (
 			"publisher_connection_flushes_total",
 			"Total connection flushes to external databases/data storages via publishers. Flushing equals write operation to external database/storage.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 
 	PublisherConnectionTimeOut = prometheus.NewCounterVec(
@@ -80,7 +79,7 @@ var (
 			"publisher_connection_timeouts_total",
 			"Total connection timeouts during publish/flush processes.",
 		),
-		labels,
+		publisherMetricsLabels,
 	)
 )
 
@@ -97,4 +96,3 @@ func (c publisherCollectors) Collect() []prometheus.Collector {
 		PublisherConnectionTimeOut,
 	}
 }
-
