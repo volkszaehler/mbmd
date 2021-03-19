@@ -96,7 +96,7 @@ var (
 	DeviceInfoDetails = prometheus.NewGaugeVec(
 		*newGaugeOpts(
 			"device_info",
-			"Registered smart meter devices of which Prometheus metrics will be collected",
+			"Additional Information about meters",
 		),
 		deviceInfoMetricLabels,
 	)
