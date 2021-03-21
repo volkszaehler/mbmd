@@ -73,7 +73,6 @@ func (m *Influx) Run(in <-chan QuerySnip) {
 		// write asynchronously
 		p := influxdb.NewPoint(m.measurement, tags, fields, time.Now())
 		m.writer.WritePoint(p)
-		// prometheus_metrics.PublisherDataPublishedSize.WithLabelValues("influx").Add(float64(len(p)))
 		prometheus_metrics.PublisherDataPublished.WithLabelValues("influx").Inc()
 	}
 
