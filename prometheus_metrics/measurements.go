@@ -33,6 +33,7 @@
 package prometheus_metrics
 
 import (
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/volkszaehler/mbmd/meters"
 	"log"
@@ -89,6 +90,7 @@ var measurementMetricsLabels = []string{"device_name", "serial_number"}
 // the affected prometheus.Metric will be omitted.
 func CreateMeasurementMetrics() {
 	for _, measurement := range meters.MeasurementValues() {
+		fmt.Printf("%s - %s\n", measurement.PrometheusName(), measurement.PrometheusDescription())
 		switch measurement.PrometheusMetricType() {
 		case meters.Gauge:
 			newGauge := prometheus.NewGaugeVec(

@@ -199,7 +199,7 @@ const (
 )
 
 var iec = map[Measurement]*measurement{
-	Frequency:        newInternalMeasurement(withDescription("Frequency"), withPrometheusDescription("Frequency of the power line in Hertz"), withUnit(Hertz), withMetricType(Gauge)),
+	Frequency:        newInternalMeasurement(withDescription("Frequency"), withPrometheusHelpText("Frequency of the power line in Hertz"), withUnit(Hertz), withMetricType(Gauge)),
 	Current:          newInternalMeasurement(withDescription("Current"), withUnit(Ampere), withMetricType(Gauge)),
 	CurrentL1:        newInternalMeasurement(withDescription("L1 Current"), withUnit(Ampere), withMetricType(Gauge)),
 	CurrentL2:        newInternalMeasurement(withDescription("L2 Current"), withUnit(Ampere), withMetricType(Gauge)),
@@ -228,50 +228,50 @@ var iec = map[Measurement]*measurement{
 	ApparentPowerL1:  newInternalMeasurement(withDescription("L1 Apparent Power"), withUnit(VoltAmpere), withMetricType(Gauge)),
 	ApparentPowerL2:  newInternalMeasurement(withDescription("L2 Apparent Power"), withUnit(VoltAmpere), withMetricType(Gauge)),
 	ApparentPowerL3:  newInternalMeasurement(withDescription("L3 Apparent Power"), withUnit(VoltAmpere), withMetricType(Gauge)),
-	Cosphi:           newInternalMeasurement(withDescription("Cosphi"), withMetricType(Gauge)),
-	CosphiL1:         newInternalMeasurement(withDescription("L1 Cosphi"), withMetricType(Gauge)),
-	CosphiL2:         newInternalMeasurement(withDescription("L2 Cosphi"), withMetricType(Gauge)),
-	CosphiL3:         newInternalMeasurement(withDescription("L3 Cosphi"), withMetricType(Gauge)),
+	Cosphi:           newInternalMeasurement(withDescription("Power Factor Cosphi"), withMetricType(Gauge)),
+	CosphiL1:         newInternalMeasurement(withDescription("L1 Power Factor Cosphi"), withMetricType(Gauge)),
+	CosphiL2:         newInternalMeasurement(withDescription("L2 Power Factor Cosphi"), withMetricType(Gauge)),
+	CosphiL3:         newInternalMeasurement(withDescription("L3 Power Factor Cosphi"), withMetricType(Gauge)),
 	THD:              newInternalMeasurement(withDescription("Average voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
 	THDL1:            newInternalMeasurement(withDescription("L1 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
 	THDL2:            newInternalMeasurement(withDescription("L2 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
 	THDL3:            newInternalMeasurement(withDescription("L3 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
-	Sum:              newInternalMeasurement(withDescription("Total Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumT1:            newInternalMeasurement(withDescription("Tariff 1 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumT2:            newInternalMeasurement(withDescription("Tariff 2 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumL1:            newInternalMeasurement(withDescription("L1 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumL2:            newInternalMeasurement(withDescription("L2 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumL3:            newInternalMeasurement(withDescription("L3 Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	Import:           newInternalMeasurement(withDescription("Total Import"), withPrometheusName("energy_import"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportT1:         newInternalMeasurement(withDescription("Tariff 1 Import"), withPrometheusName("tariff_1_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportT2:         newInternalMeasurement(withDescription("Tariff 2 Import"), withPrometheusName("tariff_2_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportL1:         newInternalMeasurement(withDescription("L1 Import"), withPrometheusName("l1_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportL2:         newInternalMeasurement(withDescription("L2 Import"), withPrometheusName("l2_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportL3:         newInternalMeasurement(withDescription("L3 Import"), withPrometheusName("l3_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	Export:           newInternalMeasurement(withDescription("Total Export"), withPrometheusName("energy_export"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportT1:         newInternalMeasurement(withDescription("Tariff 1 Export"), withPrometheusName("tariff_1_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportT2:         newInternalMeasurement(withDescription("Tariff 2 Export"), withPrometheusName("tariff_2_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportL1:         newInternalMeasurement(withDescription("L1 Export"), withPrometheusName("l1_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportL2:         newInternalMeasurement(withDescription("L2 Export"), withPrometheusName("l2_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportL3:         newInternalMeasurement(withDescription("L3 Export"), withPrometheusName("l3_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ReactiveSum:      newInternalMeasurement(withDescription("Total Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveSumT1:    newInternalMeasurement(withDescription("Tariff 1 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveSumT2:    newInternalMeasurement(withDescription("Tariff 2 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveSumL1:    newInternalMeasurement(withDescription("L1 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveSumL2:    newInternalMeasurement(withDescription("L2 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveSumL3:    newInternalMeasurement(withDescription("L3 Reactive"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveImport:   newInternalMeasurement(withDescription("Reactive Import"), withPrometheusName("reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveImportT1: newInternalMeasurement(withDescription("Tariff 1 Reactive Import"), withPrometheusName("tariff_2_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveImportT2: newInternalMeasurement(withDescription("Tariff 2 Reactive Import"), withPrometheusName("tariff_1_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveImportL1: newInternalMeasurement(withDescription("L1 Reactive Import"), withPrometheusName("l1_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveImportL2: newInternalMeasurement(withDescription("L2 Reactive Import"), withPrometheusName("l2_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveImportL3: newInternalMeasurement(withDescription("L3 Reactive Import"), withPrometheusName("l3_reactive_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveExport:   newInternalMeasurement(withDescription("Reactive Export"), withPrometheusName("reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveExportT1: newInternalMeasurement(withDescription("Tariff 1 Reactive Export"), withPrometheusName("tariff_1_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveExportT2: newInternalMeasurement(withDescription("Tariff 2 Reactive Export"), withPrometheusName("tariff_2_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveExportL1: newInternalMeasurement(withDescription("L1 Reactive Export"), withPrometheusName("l1_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveExportL2: newInternalMeasurement(withDescription("L2 Reactive Export"), withPrometheusName("l2_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
-	ReactiveExportL3: newInternalMeasurement(withDescription("L3 Reactive Export"), withPrometheusName("l3_reactive_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	Sum:              newInternalMeasurement(withDescription("Total Energy Sum"), withPrometheusName("energy_sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumT1:            newInternalMeasurement(withDescription("Tariff 1 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumT2:            newInternalMeasurement(withDescription("Tariff 2 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumL1:            newInternalMeasurement(withDescription("L1 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumL2:            newInternalMeasurement(withDescription("L2 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	SumL3:            newInternalMeasurement(withDescription("L3 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	Import:           newInternalMeasurement(withDescription("Total Import Energy"), withPrometheusName("energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportT1:         newInternalMeasurement(withDescription("Tariff 1 Import Energy"), withPrometheusName("tariff_1_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportT2:         newInternalMeasurement(withDescription("Tariff 2 Import Energy"), withPrometheusName("tariff_2_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportL1:         newInternalMeasurement(withDescription("L1 Import Energy"), withPrometheusName("l1_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportL2:         newInternalMeasurement(withDescription("L2 Import Energy"), withPrometheusName("l2_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ImportL3:         newInternalMeasurement(withDescription("L3 Import Energy"), withPrometheusName("l3_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	Export:           newInternalMeasurement(withDescription("Total Export Energy"), withPrometheusName("energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportT1:         newInternalMeasurement(withDescription("Tariff 1 Export Energy"), withPrometheusName("tariff_1_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportT2:         newInternalMeasurement(withDescription("Tariff 2 Export Energy"), withPrometheusName("tariff_2_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportL1:         newInternalMeasurement(withDescription("L1 Export Energy"), withPrometheusName("l1_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportL2:         newInternalMeasurement(withDescription("L2 Export Energy"), withPrometheusName("l2_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ExportL3:         newInternalMeasurement(withDescription("L3 Export Energy"), withPrometheusName("l3_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	ReactiveSum:      newInternalMeasurement(withDescription("Total Reactive Energy"), withPrometheusName("reactive_energy"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumT1:    newInternalMeasurement(withDescription("Tariff 1 Reactive Energy"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumT2:    newInternalMeasurement(withDescription("Tariff 2 Reactive Energy"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumL1:    newInternalMeasurement(withDescription("L1 Reactive Energy"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumL2:    newInternalMeasurement(withDescription("L2 Reactive Energy"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveSumL3:    newInternalMeasurement(withDescription("L3 Reactive Energy"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImport:   newInternalMeasurement(withDescription("Reactive Import Energy"), withPrometheusName("reactive_energy_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportT1: newInternalMeasurement(withDescription("Tariff 1 Reactive Import Energy"), withPrometheusName("tariff_2_reactive_energy_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportT2: newInternalMeasurement(withDescription("Tariff 2 Reactive Import Energy"), withPrometheusName("tariff_1_reactive_energy_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportL1: newInternalMeasurement(withDescription("L1 Reactive Import Energy"), withPrometheusName("l1_reactive_energy_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportL2: newInternalMeasurement(withDescription("L2 Reactive Import Energy"), withPrometheusName("l2_reactive_energy_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveImportL3: newInternalMeasurement(withDescription("L3 Reactive Import Energy"), withPrometheusName("l3_reactive_energy_imported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExport:   newInternalMeasurement(withDescription("Reactive Export Energy"), withPrometheusName("reactive_energy_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportT1: newInternalMeasurement(withDescription("Tariff 1 Reactive Export Energy"), withPrometheusName("tariff_1_reactive_energy_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportT2: newInternalMeasurement(withDescription("Tariff 2 Reactive Export Energy"), withPrometheusName("tariff_2_reactive_energy_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportL1: newInternalMeasurement(withDescription("L1 Reactive Export Energy"), withPrometheusName("l1_reactive_energy_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportL2: newInternalMeasurement(withDescription("L2 Reactive Export Energy"), withPrometheusName("l2_reactive_energy_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
+	ReactiveExportL3: newInternalMeasurement(withDescription("L3 Reactive Export Energy"), withPrometheusName("l3_reactive_energy_exported"), withUnit(KiloVarHour), withMetricType(Counter)),
 	DCCurrent:        newInternalMeasurement(withDescription("DC Current"), withUnit(Ampere), withMetricType(Gauge)),
 	DCVoltage:        newInternalMeasurement(withDescription("DC Voltage"), withUnit(Volt), withMetricType(Gauge)),
 	DCPower:          newInternalMeasurement(withDescription("DC Power"), withUnit(Watt), withMetricType(Gauge)),
@@ -370,7 +370,7 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	}
 
 	if m.PrometheusInfo.Description == "" {
-		withGenericPrometheusDescription()(m)
+		withGenericPrometheusHelpText()(m)
 	}
 
 	if m.PrometheusInfo.Name == "" {
@@ -397,15 +397,15 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	return m
 }
 
-// withPrometheusDescription enables setting a Prometheus description of a Measurement
-func withPrometheusDescription(description string) measurementOptions {
+// withPrometheusHelpText enables setting a Prometheus description of a Measurement
+func withPrometheusHelpText(description string) measurementOptions {
 	return func(m *measurement) {
 		m.PrometheusInfo.Description = description
 	}
 }
 
-// withGenericPrometheusDescription sets the Prometheus description to a generated, more generic format
-func withGenericPrometheusDescription() measurementOptions {
+// withGenericPrometheusHelpText sets the Prometheus description to a generated, more generic format
+func withGenericPrometheusHelpText() measurementOptions {
 	return func(m *measurement) {
 		var displayUnit *Unit
 		if m.PrometheusInfo.Unit != nil {
@@ -415,9 +415,9 @@ func withGenericPrometheusDescription() measurementOptions {
 		}
 
 		if displayUnit != nil {
-			m.PrometheusInfo.Description = generatePrometheusDescription(m.Description, displayUnit.FullName())
+			m.PrometheusInfo.Description = generatePrometheusHelpText(m.Description, displayUnit.FullName())
 		} else {
-			m.PrometheusInfo.Description = generatePrometheusDescription(m.Description, "")
+			m.PrometheusInfo.Description = generatePrometheusHelpText(m.Description, "")
 		}
 	}
 }
@@ -477,7 +477,7 @@ func withDescription(description string) measurementOptions {
 	}
 }
 
-func generatePrometheusDescription(description string, unit string) string {
+func generatePrometheusHelpText(description string, unit string) string {
 	if unit != "" {
 		return fmt.Sprintf("%s in %s", description, unit)
 	} else {

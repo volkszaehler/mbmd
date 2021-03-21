@@ -41,7 +41,7 @@ func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testi
 func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 	measurement := newInternalMeasurement(
 		withDescription("My Test Measurement"),
-		withPrometheusDescription("My custom description for my measurement"),
+		withPrometheusHelpText("My custom description for my measurement"),
 		withPrometheusName("my_custom_name_for_my_test_measurement"),
 		withUnit(Ampere),
 		withMetricType(Gauge),
@@ -69,7 +69,7 @@ func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 func TestMeasurementCreation_WithUnitInPrometheusSpecified(t *testing.T) {
 	measurement := newInternalMeasurement(
 		withDescription("My Test Measurement"),
-		withPrometheusDescription("My custom description for my measurement"),
+		withPrometheusHelpText("My custom description for my measurement"),
 		withPrometheusName("my_custom_name_for_my_test_measurement"),
 		withUnit(KiloWattHour),
 		withUnitInPrometheus(Joule),
