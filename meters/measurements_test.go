@@ -2,7 +2,6 @@ package meters
 
 import (
 	"testing"
-	"time"
 )
 
 func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testing.T) {
@@ -66,65 +65,65 @@ func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 	}
 }
 
-func TestMeasurementCreation_WithUnitInPrometheusSpecified(t *testing.T) {
-	measurement := newInternalMeasurement(
-		withDescription("My Test Measurement"),
+func TestInternalMeasurement_AutoConvertToElementaryUnit(t *testing.T) {
+	measurementKwh := newInternalMeasurement(
+		withDescription("My Test Measurement with kWh"),
 		withPrometheusHelpText("My custom description for my measurement"),
-		withPrometheusName("my_custom_name_for_my_test_measurement"),
+		withPrometheusName("my_custom_name_for_my_test_measurement_energy"),
 		withUnit(KiloWattHour),
-		withUnitInPrometheus(Joule),
-		withMetricType(Counter),
+		withMetricType(Gauge),
 	)
 
-	expectedPrometheusName := "measurement_my_custom_name_for_my_test_measurement_joules_total"
-	expectedDescription := "My custom description for my measurement"
+	measurementKvarh := newInternalMeasurement(
+		withDescription("My Test Measurement"),
+		withPrometheusHelpText("My custom description for my measurement"),
+		withPrometheusName("my_custom_name_for_my_test_measurement_energy"),
+		withUnit(KiloWattHour),
+		withMetricType(Gauge),
+	)
 
-	if measurement.PrometheusInfo.Name != expectedPrometheusName {
+	expectedConvertedUnit := Joule
+
+	if *measurementKwh.PrometheusInfo.Unit != expectedConvertedUnit {
+		actualConvertedUnit := measurementKwh.PrometheusInfo.Unit
 		t.Errorf(
-			"Prometheus metric name '%s' does not equal expected '%s'",
-			measurement.PrometheusInfo.Name,
-			expectedPrometheusName,
+			"measurement_kWh could not be converted to elementary unit %s automatically (actual: %s)",
+			expectedConvertedUnit.FullName(),
+			actualConvertedUnit.FullName(),
 		)
 	}
 
-	if measurement.PrometheusInfo.Description != expectedDescription {
-		t.Errorf("Prometheus description '%s' does not equal expected '%s'",
-			measurement.PrometheusInfo.Description,
-			expectedDescription,
+	if *measurementKvarh.PrometheusInfo.Unit != expectedConvertedUnit {
+		actualConvertedUnit := measurementKwh.PrometheusInfo.Unit
+		t.Errorf("measurement_kvarh could not be converted to elementary unit %s automatically (actual: %s)",
+			expectedConvertedUnit.FullName(),
+			actualConvertedUnit.FullName(),
 		)
 	}
 }
 
-func TestMeasurementResult_ConvertValueTo(t *testing.T) {
+func TestConvertValueToElementaryUnit(t *testing.T) {
 	measurementResult := &MeasurementResult{
 		Measurement: Export,
 		Value:       100.0,
-		Timestamp:   time.Time{},
 	}
 
-	expected := 360_000_000.0
-	actual := measurementResult.ConvertValueTo(Joule)
+	expectedConvertedUnit, expectedConvertedValue := Joule, 360_000_000.0
+	actualConvertedUnit, actualConvertedValue := ConvertValueToElementaryUnit(*measurementResult.Measurement.Unit(), measurementResult.Value)
 
-	if expected != actual {
-		t.Errorf("Expected conversion value '%f' does not equal actual value '%f'",
-			expected,
-			actual)
-	}
-}
-
-func TestMeasurementResult_ConvertValueTo_NonExistingConversionFunc(t *testing.T) {
-	measurementResult := &MeasurementResult{
-		Measurement: Export,
-		Value:       100.0,
-		Timestamp:   time.Time{},
+	if actualConvertedUnit != expectedConvertedUnit {
+		t.Errorf(
+			"Actual converted unit '%s' does not equal expected unit '%s'",
+			actualConvertedUnit,
+			expectedConvertedUnit,
+		)
 	}
 
-	expected := 0.0
-	actual := measurementResult.ConvertValueTo(NoUnit)
-
-	if expected != actual {
-		t.Errorf("Expected conversion value '%f' does not equal actual value '%f'",
-			expected,
-			actual)
+	if actualConvertedValue != expectedConvertedValue {
+		t.Errorf(
+			"Actual converted value '%f' does not equal expected value '%f'",
+			actualConvertedValue,
+			expectedConvertedValue,
+		)
 	}
 }
