@@ -67,15 +67,13 @@ func UpdateMeasurementMetric(
 		deviceSerial = SSN_MISSING
 	}
 
+	_, elementaryValue := meters.ConvertValueToElementaryUnit(*measurement.Unit(), measurement.Value)
+
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
-		gauge.WithLabelValues(deviceName, deviceSerial).Set(measurement.Value)
+		gauge.WithLabelValues(deviceName, deviceSerial).Set(elementaryValue)
 		return ok
 	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
-		if unit := measurement.Unit(); unit != nil && *unit == meters.KiloWattHour {
-			counter.WithLabelValues(deviceName, deviceSerial).Add(measurement.ConvertValueTo(meters.Joule))
-		} else {
-			counter.WithLabelValues(deviceName, deviceSerial).Add(measurement.Value)
-		}
+		counter.WithLabelValues(deviceName, deviceSerial).Add(elementaryValue)
 		return ok
 	} else {
 		return ok
