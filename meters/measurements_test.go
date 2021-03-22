@@ -1,18 +1,19 @@
 package meters
 
 import (
+	"github.com/volkszaehler/mbmd/meters/units"
 	"testing"
 )
 
 func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testing.T) {
 	measurement := newInternalMeasurement(
 		withDescription("My Test Measurement"),
-		withUnit(Ampere),
+		withUnit(units.Ampere),
 		withMetricType(Counter),
 	)
 
 	expectedPrometheusName := "measurement_my_test_measurement_amperes_total"
-	expectedDescription := "Measurement of My Test Measurement in A"
+	expectedDescription := "My Test Measurement in Amperes"
 
 	if measurement.PrometheusInfo.Name != expectedPrometheusName {
 		t.Errorf(
@@ -22,17 +23,17 @@ func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testi
 		)
 	}
 
-	if measurement.PrometheusInfo.Description != expectedDescription {
+	if measurement.PrometheusInfo.HelpText != expectedDescription {
 		t.Errorf("Prometheus description '%s' does not equal expected '%s'",
-			measurement.PrometheusInfo.Description,
+			measurement.PrometheusInfo.HelpText,
 			expectedDescription,
 		)
 	}
 
-	if *measurement.Unit != Ampere {
+	if *measurement.Unit != units.Ampere {
 		t.Errorf("Prometheus unit '%s' does not equal expected '%s'",
 			measurement.Unit,
-			Ampere,
+			units.Ampere,
 		)
 	}
 }
@@ -42,7 +43,7 @@ func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 		withDescription("My Test Measurement"),
 		withPrometheusHelpText("My custom description for my measurement"),
 		withPrometheusName("my_custom_name_for_my_test_measurement"),
-		withUnit(Ampere),
+		withUnit(units.Ampere),
 		withMetricType(Gauge),
 	)
 
@@ -57,9 +58,9 @@ func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 		)
 	}
 
-	if measurement.PrometheusInfo.Description != expectedDescription {
+	if measurement.PrometheusInfo.HelpText != expectedDescription {
 		t.Errorf("Prometheus description '%s' does not equal expected '%s'",
-			measurement.PrometheusInfo.Description,
+			measurement.PrometheusInfo.HelpText,
 			expectedDescription,
 		)
 	}
@@ -70,7 +71,7 @@ func TestInternalMeasurement_AutoConvertToElementaryUnit(t *testing.T) {
 		withDescription("My Test Measurement with kWh"),
 		withPrometheusHelpText("My custom description for my measurement"),
 		withPrometheusName("my_custom_name_for_my_test_measurement_energy"),
-		withUnit(KiloWattHour),
+		withUnit(units.KiloWattHour),
 		withMetricType(Gauge),
 	)
 
@@ -78,52 +79,31 @@ func TestInternalMeasurement_AutoConvertToElementaryUnit(t *testing.T) {
 		withDescription("My Test Measurement"),
 		withPrometheusHelpText("My custom description for my measurement"),
 		withPrometheusName("my_custom_name_for_my_test_measurement_energy"),
-		withUnit(KiloWattHour),
+		withUnit(units.KiloWattHour),
 		withMetricType(Gauge),
 	)
 
-	expectedConvertedUnit := Joule
+	expectedConvertedUnit := units.Joule
+	_, expectedConvertedUnitPluralForm := expectedConvertedUnit.Name()
 
 	if *measurementKwh.PrometheusInfo.Unit != expectedConvertedUnit {
 		actualConvertedUnit := measurementKwh.PrometheusInfo.Unit
+		_, actualConvertedUnitPluralForm := actualConvertedUnit.Name()
+
 		t.Errorf(
-			"measurement_kWh could not be converted to elementary unit %s automatically (actual: %s)",
-			expectedConvertedUnit.FullName(),
-			actualConvertedUnit.FullName(),
+			"measurement_kWh could not be converted to elementary unit '%s' automatically (actual: %s)",
+			expectedConvertedUnitPluralForm,
+			actualConvertedUnitPluralForm,
 		)
 	}
 
 	if *measurementKvarh.PrometheusInfo.Unit != expectedConvertedUnit {
 		actualConvertedUnit := measurementKwh.PrometheusInfo.Unit
-		t.Errorf("measurement_kvarh could not be converted to elementary unit %s automatically (actual: %s)",
-			expectedConvertedUnit.FullName(),
-			actualConvertedUnit.FullName(),
-		)
-	}
-}
+		_, actualConvertedUnitPluralForm := actualConvertedUnit.Name()
 
-func TestConvertValueToElementaryUnit(t *testing.T) {
-	measurementResult := &MeasurementResult{
-		Measurement: Export,
-		Value:       100.0,
-	}
-
-	expectedConvertedUnit, expectedConvertedValue := Joule, 360_000_000.0
-	actualConvertedUnit, actualConvertedValue := ConvertValueToElementaryUnit(*measurementResult.Measurement.Unit(), measurementResult.Value)
-
-	if actualConvertedUnit != expectedConvertedUnit {
-		t.Errorf(
-			"Actual converted unit '%s' does not equal expected unit '%s'",
-			actualConvertedUnit,
-			expectedConvertedUnit,
-		)
-	}
-
-	if actualConvertedValue != expectedConvertedValue {
-		t.Errorf(
-			"Actual converted value '%f' does not equal expected value '%f'",
-			actualConvertedValue,
-			expectedConvertedValue,
+		t.Errorf("measurement_kvarh could not be converted to elementary unit '%s' automatically (actual: %s)",
+			expectedConvertedUnitPluralForm,
+			actualConvertedUnitPluralForm,
 		)
 	}
 }

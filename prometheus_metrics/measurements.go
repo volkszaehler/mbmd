@@ -36,6 +36,7 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters/units"
 	"log"
 )
 
@@ -67,7 +68,7 @@ func UpdateMeasurementMetric(
 		deviceSerial = SSN_MISSING
 	}
 
-	_, elementaryValue := meters.ConvertValueToElementaryUnit(*measurement.Unit(), measurement.Value)
+	_, elementaryValue := units.ConvertValueToElementaryUnit(*measurement.Unit(), measurement.Value)
 
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
 		gauge.WithLabelValues(deviceName, deviceSerial).Set(elementaryValue)
@@ -88,13 +89,13 @@ var measurementMetricsLabels = []string{"device_name", "serial_number"}
 // the affected prometheus.Metric will be omitted.
 func CreateMeasurementMetrics() {
 	for _, measurement := range meters.MeasurementValues() {
-		fmt.Printf("%s - %s\n", measurement.PrometheusName(), measurement.PrometheusDescription())
+		fmt.Printf("%s - %s\n", measurement.PrometheusName(), measurement.PrometheusHelpText())
 		switch measurement.PrometheusMetricType() {
 		case meters.Gauge:
 			newGauge := prometheus.NewGaugeVec(
 				*newGaugeOpts(
 					measurement.PrometheusName(),
-					measurement.PrometheusDescription(),
+					measurement.PrometheusHelpText(),
 				),
 				measurementMetricsLabels,
 			)
@@ -112,7 +113,7 @@ func CreateMeasurementMetrics() {
 			newCounter := prometheus.NewCounterVec(
 				*newCounterOpts(
 					measurement.PrometheusName(),
-					measurement.PrometheusDescription(),
+					measurement.PrometheusHelpText(),
 				),
 				measurementMetricsLabels,
 			)
