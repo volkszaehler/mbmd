@@ -1,6 +1,8 @@
 // Package prometheus_metrics
 //
 // These functions take care of registering and updating counters/gauges.
+// General naming convention: `mbmd_<NAME_IN_LOWER_CASE_WITH_UNDERSCORES>[_<UNIT>]['_total']`
+
 // For instance: A counter for total connection attempts
 // => Name for newCounterOpts: `smart_meter_connection_attempt_total`
 // => Metric type: Counter
@@ -11,24 +13,26 @@
 // If a new measurement prometheus.Metric is created, it follows this convention:
 // For instance: "L1 Export Power" with unit `W`
 // => Name: `l1_export_power`
-// => Subsystem (device manufacturer): `sunspec`
 // => Metric type: Gauge
+// => Check if unit `W` can be converted to its elementary unit (see units.ConvertValueToElementaryUnit)
 // => After prometheus.Metric creation:
-//	- Name: `mbmd_l1_export_power_watts`
-//	- Labels: {"serial_number"}
+//	- Name: `mbmd_measurement_l1_export_power_watts`
+//	- Labels: {"device_name", "serial_number"}
 //
-// General naming convention: `mbmd_<NAME_IN_LOWER_CASE_WITH_UNDERSCORES>_<UNIT>['_total']`
-// Measurement metrics are treated slightly differently and are maintained in measurement.go
-// It ensures that extensibility and customization of Prometheus names and descriptions is easy.
-// By default, if no custom Prometheus name is given, the measurement name is transformed to lower case
+// Measurement metrics are treated slightly differently and are maintained in prometheus_metrics/measurement.go
+// It ensures that extensibility and customization of Prometheus names and help texts is easy.
+// By default, if no custom Prometheus name is given, the measurement's description is transformed to lower case
 // and whitespaces are replaced with underscores.
+// Afterwards, the measurement's elementary units.Unit and `total` (if meters.MetricType equals meters.Counter) are appended
+// in a snake-case fashion.
 //
 // Besides dynamic measurement metrics, some static metrics have been introduced
 // and can be found in the file respectively, for instance: metrics for devices -> devices.go
 //
 // If you want to add new metrics, make sure your metric details comply to the usual Prometheus naming conventions
 // e. g.: Amount of connection attempts
-//	-> Most fitting metric type: Counter -> Name (in newCounterOpts): `smart_meter_connection_attempt_total`
+//	-> Most fitting metric type: Counter
+//	-> Name (in newCounterOpts): `smart_meter_connection_attempt_total`
 // For more information regarding naming conventions and best practices, see https://prometheus.io/docs/practices/naming/
 package prometheus_metrics
 
@@ -40,7 +44,11 @@ import (
 	"log"
 )
 
+// SSN_MISSING is used for mocked smart meters
 const SSN_MISSING = "NOT_AVAILABLE"
+
+// measurementMetricsLabels are the Prometheus labels commonly used for meters.Measurement metrics
+var measurementMetricsLabels = []string{"device_name", "serial_number"}
 
 // counterVecMap contains all meters.Measurement that are associated with a prometheus.Counter
 //
@@ -54,7 +62,7 @@ var counterVecMap = map[meters.Measurement]*prometheus.CounterVec{}
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
 var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
 
-// UpdateMeasurementMetric updates a counter or gauge based by passed measurement
+// UpdateMeasurementMetric updates a counter or gauge based on passed measurement
 //
 // Returns false if the associated prometheus.Metric does not exist
 func UpdateMeasurementMetric(
@@ -80,8 +88,6 @@ func UpdateMeasurementMetric(
 		return ok
 	}
 }
-
-var measurementMetricsLabels = []string{"device_name", "serial_number"}
 
 // CreateMeasurementMetrics initializes all existing meters.Measurement
 //
