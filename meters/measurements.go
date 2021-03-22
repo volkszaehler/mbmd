@@ -236,24 +236,24 @@ var iec = map[Measurement]*measurement{
 	THDL1:            newInternalMeasurement(withDescription("L1 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
 	THDL2:            newInternalMeasurement(withDescription("L2 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
 	THDL3:            newInternalMeasurement(withDescription("L3 Voltage to neutral THD"), withUnit(Percent), withMetricType(Gauge)),
-	Sum:              newInternalMeasurement(withDescription("Total Energy Sum"), withPrometheusName("energy_sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumT1:            newInternalMeasurement(withDescription("Tariff 1 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumT2:            newInternalMeasurement(withDescription("Tariff 2 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumL1:            newInternalMeasurement(withDescription("L1 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumL2:            newInternalMeasurement(withDescription("L2 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	SumL3:            newInternalMeasurement(withDescription("L3 Energy Sum"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	Import:           newInternalMeasurement(withDescription("Total Import Energy"), withPrometheusName("energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportT1:         newInternalMeasurement(withDescription("Tariff 1 Import Energy"), withPrometheusName("tariff_1_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportT2:         newInternalMeasurement(withDescription("Tariff 2 Import Energy"), withPrometheusName("tariff_2_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportL1:         newInternalMeasurement(withDescription("L1 Import Energy"), withPrometheusName("l1_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportL2:         newInternalMeasurement(withDescription("L2 Import Energy"), withPrometheusName("l2_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ImportL3:         newInternalMeasurement(withDescription("L3 Import Energy"), withPrometheusName("l3_energy_imported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	Export:           newInternalMeasurement(withDescription("Total Export Energy"), withPrometheusName("energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportT1:         newInternalMeasurement(withDescription("Tariff 1 Export Energy"), withPrometheusName("tariff_1_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportT2:         newInternalMeasurement(withDescription("Tariff 2 Export Energy"), withPrometheusName("tariff_2_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportL1:         newInternalMeasurement(withDescription("L1 Export Energy"), withPrometheusName("l1_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportL2:         newInternalMeasurement(withDescription("L2 Export Energy"), withPrometheusName("l2_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
-	ExportL3:         newInternalMeasurement(withDescription("L3 Export Energy"), withPrometheusName("l3_energy_exported"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	Sum:              newInternalMeasurement(withDescription("Total Energy Sum"), withPrometheusName("energy_sum"), withUnit(KiloWattHour), withMetricType(Counter)),
+	SumT1:            newInternalMeasurement(withDescription("Tariff 1 Energy Sum"), withUnit(KiloWattHour), withMetricType(Counter)),
+	SumT2:            newInternalMeasurement(withDescription("Tariff 2 Energy Sum"), withUnit(KiloWattHour), withMetricType(Counter)),
+	SumL1:            newInternalMeasurement(withDescription("L1 Energy Sum"), withUnit(KiloWattHour), withMetricType(Counter)),
+	SumL2:            newInternalMeasurement(withDescription("L2 Energy Sum"), withUnit(KiloWattHour), withMetricType(Counter)),
+	SumL3:            newInternalMeasurement(withDescription("L3 Energy Sum"), withUnit(KiloWattHour), withMetricType(Counter)),
+	Import:           newInternalMeasurement(withDescription("Total Import Energy"), withPrometheusName("energy_imported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ImportT1:         newInternalMeasurement(withDescription("Tariff 1 Import Energy"), withPrometheusName("tariff_1_energy_imported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ImportT2:         newInternalMeasurement(withDescription("Tariff 2 Import Energy"), withPrometheusName("tariff_2_energy_imported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ImportL1:         newInternalMeasurement(withDescription("L1 Import Energy"), withPrometheusName("l1_energy_imported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ImportL2:         newInternalMeasurement(withDescription("L2 Import Energy"), withPrometheusName("l2_energy_imported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ImportL3:         newInternalMeasurement(withDescription("L3 Import Energy"), withPrometheusName("l3_energy_imported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	Export:           newInternalMeasurement(withDescription("Total Export Energy"), withPrometheusName("energy_exported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ExportT1:         newInternalMeasurement(withDescription("Tariff 1 Export Energy"), withPrometheusName("tariff_1_energy_exported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ExportT2:         newInternalMeasurement(withDescription("Tariff 2 Export Energy"), withPrometheusName("tariff_2_energy_exported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ExportL1:         newInternalMeasurement(withDescription("L1 Export Energy"), withPrometheusName("l1_energy_exported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ExportL2:         newInternalMeasurement(withDescription("L2 Export Energy"), withPrometheusName("l2_energy_exported"), withUnit(KiloWattHour), withMetricType(Counter)),
+	ExportL3:         newInternalMeasurement(withDescription("L3 Export Energy"), withPrometheusName("l3_energy_exported"), withUnit(KiloWattHour), withMetricType(Counter)),
 	ReactiveSum:      newInternalMeasurement(withDescription("Total Reactive Energy"), withPrometheusName("reactive_energy"), withUnit(KiloVarHour), withMetricType(Counter)),
 	ReactiveSumT1:    newInternalMeasurement(withDescription("Tariff 1 Reactive Energy"), withUnit(KiloVarHour), withMetricType(Counter)),
 	ReactiveSumT2:    newInternalMeasurement(withDescription("Tariff 2 Reactive Energy"), withUnit(KiloVarHour), withMetricType(Counter)),
@@ -279,15 +279,15 @@ var iec = map[Measurement]*measurement{
 	DCCurrentS1:      newInternalMeasurement(withDescription("String 1 Current"), withUnit(Ampere), withMetricType(Gauge)),
 	DCVoltageS1:      newInternalMeasurement(withDescription("String 1 Voltage"), withUnit(Volt), withMetricType(Gauge)),
 	DCPowerS1:        newInternalMeasurement(withDescription("String 1 Power"), withUnit(Watt), withMetricType(Gauge)),
-	DCEnergyS1:       newInternalMeasurement(withDescription("String 1 Generation"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	DCEnergyS1:       newInternalMeasurement(withDescription("String 1 Generation"), withUnit(KiloWattHour), withMetricType(Counter)),
 	DCCurrentS2:      newInternalMeasurement(withDescription("String 2 Current"), withUnit(Ampere), withMetricType(Gauge)),
 	DCVoltageS2:      newInternalMeasurement(withDescription("String 2 Voltage"), withUnit(Volt), withMetricType(Gauge)),
 	DCPowerS2:        newInternalMeasurement(withDescription("String 2 Power"), withUnit(Watt), withMetricType(Gauge)),
-	DCEnergyS2:       newInternalMeasurement(withDescription("String 2 Generation"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	DCEnergyS2:       newInternalMeasurement(withDescription("String 2 Generation"), withUnit(KiloWattHour), withMetricType(Counter)),
 	DCCurrentS3:      newInternalMeasurement(withDescription("String 3 Current"), withUnit(Ampere), withMetricType(Gauge)),
 	DCVoltageS3:      newInternalMeasurement(withDescription("String 3 Voltage"), withUnit(Volt), withMetricType(Gauge)),
 	DCPowerS3:        newInternalMeasurement(withDescription("String 3 Power"), withUnit(Watt), withMetricType(Gauge)),
-	DCEnergyS3:       newInternalMeasurement(withDescription("String 3 Generation"), withUnit(KiloWattHour), withUnitInPrometheus(Joule), withMetricType(Counter)),
+	DCEnergyS3:       newInternalMeasurement(withDescription("String 3 Generation"), withUnit(KiloWattHour), withMetricType(Counter)),
 	DCCurrentS4:      {"String 4 Current", "A"},
 	DCVoltageS4:      {"String 4 Voltage", "V"},
 	DCPowerS4:        {"String 4 Power", "W"},
@@ -367,6 +367,9 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 
 	if m.Unit == nil {
 		withUnit(NoUnit)(m)
+	} else {
+		elementaryUnit, _ := ConvertValueToElementaryUnit(*m.Unit, 0.0)
+		m.PrometheusInfo.Unit = &elementaryUnit
 	}
 
 	if m.PrometheusInfo.Description == "" {
@@ -376,21 +379,10 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	if m.PrometheusInfo.Name == "" {
 		withGenericPrometheusName()(m)
 	} else {
-		var displayUnit *Unit
-		if m.PrometheusInfo.Unit != nil {
-			displayUnit = m.PrometheusInfo.Unit
-		} else if m.Unit != nil {
-			displayUnit = m.Unit
-		}
-
-		if displayUnit != nil {
-			if m.PrometheusInfo.MetricType == Counter {
-				m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, displayUnit.PrometheusName()+"_total")
-			} else {
-				m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, displayUnit.PrometheusName())
-			}
+		if m.PrometheusInfo.MetricType == Counter {
+			m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, m.Unit.PrometheusName()+"_total")
 		} else {
-			m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, "")
+			m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, m.Unit.PrometheusName())
 		}
 	}
 
@@ -407,18 +399,7 @@ func withPrometheusHelpText(description string) measurementOptions {
 // withGenericPrometheusHelpText sets the Prometheus description to a generated, more generic format
 func withGenericPrometheusHelpText() measurementOptions {
 	return func(m *measurement) {
-		var displayUnit *Unit
-		if m.PrometheusInfo.Unit != nil {
-			displayUnit = m.PrometheusInfo.Unit
-		} else if m.Unit != nil {
-			displayUnit = m.Unit
-		}
-
-		if displayUnit != nil {
-			m.PrometheusInfo.Description = generatePrometheusHelpText(m.Description, displayUnit.FullName())
-		} else {
-			m.PrometheusInfo.Description = generatePrometheusHelpText(m.Description, "")
-		}
+		m.PrometheusInfo.Description = generatePrometheusHelpText(m.Description, m.Unit.FullName())
 	}
 }
 
@@ -430,14 +411,6 @@ func withUnit(u Unit) measurementOptions {
 	}
 }
 
-// withUnitInPrometheus set the Unit to be displayed in Prometheus
-// If u is set, any incoming measurements are automatically converted to specified u
-func withUnitInPrometheus(u Unit) measurementOptions {
-	return func(m *measurement) {
-		m.PrometheusInfo.Unit = &u
-	}
-}
-
 func withPrometheusName(name string) measurementOptions {
 	return func(m *measurement) {
 		m.PrometheusInfo.Name = name
@@ -446,21 +419,10 @@ func withPrometheusName(name string) measurementOptions {
 
 func withGenericPrometheusName() measurementOptions {
 	return func(m *measurement) {
-		var displayUnit *Unit
-		if m.PrometheusInfo.Unit != nil {
-			displayUnit = m.PrometheusInfo.Unit
-		} else if m.Unit != nil {
-			displayUnit = m.Unit
-		}
-
-		if displayUnit != nil {
-			if m.PrometheusInfo.MetricType == Counter {
-				m.PrometheusInfo.Name = generatePrometheusName(m.Description, displayUnit.PrometheusName()+"_total")
-			} else {
-				m.PrometheusInfo.Name = generatePrometheusName(m.Description, displayUnit.PrometheusName())
-			}
+		if m.PrometheusInfo.MetricType == Counter {
+			m.PrometheusInfo.Name = generatePrometheusName(m.Description, m.Unit.PrometheusName()+"_total")
 		} else {
-			m.PrometheusInfo.Name = generatePrometheusName(m.Description, "")
+			m.PrometheusInfo.Name = generatePrometheusName(m.Description, m.Unit.PrometheusName())
 		}
 	}
 }
@@ -500,19 +462,15 @@ func generatePrometheusName(name string, unit string) string {
 	)
 }
 
-// ConvertValueTo queries the targetUnit's conversion func from a conversion map
-// and converts it to the defined Unit
-//
-// If a conversionFunc cannot be found, this func will return 0.0
-// as the source Unit cannot be converted to target Unit via non-defined conversion function!
-func (r *MeasurementResult) ConvertValueTo(targetUnit Unit) float64 {
-	if r.Value == 0.0 {
-		return 0.0
+// ConvertValueToElementaryUnit converts a sourceUnit and a sourceValue to their elementary unit if possible
+// Otherwise, sourceUnit and sourceValue are returned again.
+func ConvertValueToElementaryUnit(sourceUnit Unit, sourceValue float64) (Unit, float64) {
+	switch sourceUnit {
+	case KiloWattHour:
+		fallthrough
+	case KiloVarHour:
+		return Joule, sourceValue * 1_000 * 3_600
 	}
 
-	if conversionFunc, ok := conversionMap[targetUnit]; ok {
-		return conversionFunc(r.Value)
-	}
-
-	return 0.0
+	return sourceUnit, sourceValue
 }
