@@ -189,7 +189,6 @@ func (h *Handler) queryDevice(
 	}
 
 	log.Printf("device '%s' (%s) is offline", dev.Descriptor().Name, deviceID)
-	//prometheusManager.CurrentDevicesActive.WithLabelValues(deviceID).Dec()
 
 	// close connection to force modbus client to reopen
 	h.Manager.Conn.Close()
