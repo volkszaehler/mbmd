@@ -1,6 +1,8 @@
-package prometheus_metrics
+package prometheus
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // publisherCollectors contains all Prometheus metrics about publishers like HTTP, MQTT, ...
 //

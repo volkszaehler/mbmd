@@ -3,12 +3,11 @@ package sunspec
 import (
 	"errors"
 	"fmt"
+	"github.com/volkszaehler/mbmd/prometheus"
 	"math"
 	"sort"
 	"strings"
 	"time"
-
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
@@ -48,12 +47,12 @@ func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 		dev = subdevice[0]
 	}
 
-	prometheusManager.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
+	prometheus.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
 
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
-			Name:		  name,
+			Name:         name,
 			Type:         meterType,
 			Manufacturer: meterType,
 			SubDevice:    dev,
@@ -67,11 +66,11 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	in, err := sunspecbus.Open(client)
 
 	deviceName := d.descriptor.Name
-	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
+	prometheus.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
 
 	if err != nil {
 		if in == nil {
-			prometheusManager.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
+			prometheus.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
 			return err
 		}
 
@@ -79,18 +78,18 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	}
 
 	if partiallyOpen {
-		prometheusManager.DeviceModbusConnectionPartialSuccess.WithLabelValues(deviceName).Inc()
+		prometheus.DeviceModbusConnectionPartialSuccess.WithLabelValues(deviceName).Inc()
 	} else {
-		prometheusManager.DeviceModbusConnectionSuccess.WithLabelValues(deviceName).Inc()
+		prometheus.DeviceModbusConnectionSuccess.WithLabelValues(deviceName).Inc()
 	}
 
 	devices := in.Collect(sunspec.AllDevices)
 	if len(devices) == 0 {
-		prometheusManager.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
+		prometheus.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return errors.New("sunspec: device not found")
 	}
 	if len(devices) <= d.subdevice {
-		prometheusManager.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
+		prometheus.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
@@ -98,23 +97,22 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
-		prometheusManager.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
+		prometheus.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	prometheusManager.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
+	prometheus.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
 
 	// collect relevant models
 	if err := d.collectModels(device); err != nil {
-		prometheusManager.SunSpecDeviceModbusModelCollectionFailure.WithLabelValues(deviceName).Inc()
+		prometheus.SunSpecDeviceModbusModelCollectionFailure.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	prometheusManager.SunSpecDeviceModbusModelCollectionSuccess.WithLabelValues(deviceName).Inc()
+	prometheus.SunSpecDeviceModbusModelCollectionSuccess.WithLabelValues(deviceName).Inc()
 
 	// return partial open error if everything else went fine
 	if partiallyOpen {
 		err = fmt.Errorf("%w", meters.ErrPartiallyOpened)
 	}
-
 
 	return err
 }

@@ -1,8 +1,14 @@
-// Package prometheus_metrics
-//
+package prometheus
+
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/volkszaehler/mbmd/meters"
+	"github.com/volkszaehler/mbmd/meters/units"
+)
+
 // These functions take care of registering and updating counters/gauges.
 // General naming convention: `mbmd_<NAME_IN_LOWER_CASE_WITH_UNDERSCORES>[_<UNIT>]['_total']`
-
+//
 // For instance: A counter for total connection attempts
 // => Name for newCounterOpts: `smart_meter_connection_attempt_total`
 // => Metric type: Counter
@@ -19,7 +25,7 @@
 //	- Name: `mbmd_measurement_l1_export_power_watts`
 //	- Labels: {"device_name", "serial_number"}
 //
-// Measurement metrics are treated slightly differently and are maintained in prometheus_metrics/measurement.go
+// Measurement metrics are treated slightly differently and are maintained in prometheus/measurement.go
 // It ensures that extensibility and customization of Prometheus names and help texts is easy.
 // By default, if no custom Prometheus name is given, the measurement's description is transformed to lower case
 // and whitespaces are replaced with underscores.
@@ -34,15 +40,6 @@
 //	-> Most fitting metric type: Counter
 //	-> Name (in newCounterOpts): `smart_meter_connection_attempt_total`
 // For more information regarding naming conventions and best practices, see https://prometheus.io/docs/practices/naming/
-package prometheus_metrics
-
-import (
-	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/volkszaehler/mbmd/meters"
-	"github.com/volkszaehler/mbmd/meters/units"
-	"log"
-)
 
 // SSN_MISSING is used for mocked smart meters
 const SSN_MISSING = "NOT_AVAILABLE"
@@ -86,53 +83,5 @@ func UpdateMeasurementMetric(
 		return ok
 	} else {
 		return ok
-	}
-}
-
-// CreateMeasurementMetrics initializes all existing meters.Measurement
-//
-// If a prometheus.Metric could not be registered (see prometheus.Register),
-// the affected prometheus.Metric will be omitted.
-func CreateMeasurementMetrics() {
-	for _, measurement := range meters.MeasurementValues() {
-		fmt.Printf("%s - %s\n", measurement.PrometheusName(), measurement.PrometheusHelpText())
-		switch measurement.PrometheusMetricType() {
-		case meters.Gauge:
-			newGauge := prometheus.NewGaugeVec(
-				*newGaugeOpts(
-					measurement.PrometheusName(),
-					measurement.PrometheusHelpText(),
-				),
-				measurementMetricsLabels,
-			)
-
-			if err := prometheus.Register(newGauge); err != nil {
-				log.Printf(
-					"Could not register gauge for measurement '%s'. Omitting... (Error: %s)\n",
-					measurement,
-					err,
-				)
-			} else {
-				gaugeVecMap[measurement] = newGauge
-			}
-		case meters.Counter:
-			newCounter := prometheus.NewCounterVec(
-				*newCounterOpts(
-					measurement.PrometheusName(),
-					measurement.PrometheusHelpText(),
-				),
-				measurementMetricsLabels,
-			)
-
-			if err := prometheus.Register(newCounter); err != nil {
-				log.Printf(
-					"Could not register counter for measurement '%s'. Omitting... (Error: %s)\n",
-					measurement,
-					err,
-				)
-			} else {
-				counterVecMap[measurement] = newCounter
-			}
-		}
 	}
 }
