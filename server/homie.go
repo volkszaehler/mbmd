@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"github.com/volkszaehler/mbmd/prometheus_metrics"
+	"github.com/volkszaehler/mbmd/prometheus"
 	"log"
 	"sort"
 	"strings"
@@ -51,7 +51,7 @@ func NewHomieRunner(qe DeviceInfo, cc <-chan ControlSnip, options *MQTT.ClientOp
 		meters:    make(map[string]*homieMeter),
 	}
 
-	prometheus_metrics.PublisherCreated.WithLabelValues("homie").Inc()
+	prometheus.PublisherCreated.WithLabelValues("homie").Inc()
 
 	return hr
 }
@@ -192,7 +192,7 @@ func (hr *homieMeter) publishMessage(snip QuerySnip) {
 
 	message := fmt.Sprintf("%.3f", snip.Value)
 	go hr.Publish(topic, false, message)
-	prometheus_metrics.PublisherDataPublished.WithLabelValues("homie").Inc()
+	prometheus.PublisherDataPublished.WithLabelValues("homie").Inc()
 }
 
 func (hr *homieMeter) publishProperties() {

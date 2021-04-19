@@ -1,6 +1,8 @@
-package prometheus_metrics
+package prometheus
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	prometheusLib "github.com/prometheus/client_golang/prometheus"
+)
 
 // handlerCollectors contains all Prometheus metrics about modbus connection handlers
 //
@@ -8,28 +10,28 @@ import "github.com/prometheus/client_golang/prometheus"
 type handlerCollectors struct{}
 
 var (
-	ConnectionHandlerDeviceInitializationRoutineStarted = prometheus.NewCounter(
+	ConnectionHandlerDeviceInitializationRoutineStarted = prometheusLib.NewCounter(
 		*newCounterOpts(
 			"connection_handler_device_initialization_routine_starts_total",
 			"Total starts of routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
-	ConnectionHandlerDeviceInitializationFailure = prometheus.NewCounter(
+	ConnectionHandlerDeviceInitializationFailure = prometheusLib.NewCounter(
 		*newCounterOpts(
 			"connection_handler_device_initialization_failures_total",
 			"Total failures of routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
-	ConnectionHandlerDeviceInitializationSuccess = prometheus.NewCounter(
+	ConnectionHandlerDeviceInitializationSuccess = prometheusLib.NewCounter(
 		*newCounterOpts(
 			"connection_handler_device_initialization_successes_total",
 			"Total successful routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
-	ConnectionHandlerDeviceQueriesTotal = prometheus.NewCounterVec(
+	ConnectionHandlerDeviceQueriesTotal = prometheusLib.NewCounterVec(
 		*newCounterOpts(
 			"connection_handler_device_queries_total",
 			"Number of queries to a meter",
@@ -37,7 +39,7 @@ var (
 		[]string{"device_name", "serial_number"},
 	)
 
-	ConnectionHandlerDeviceQueriesErrorTotal = prometheus.NewCounterVec(
+	ConnectionHandlerDeviceQueriesErrorTotal = prometheusLib.NewCounterVec(
 		*newCounterOpts(
 			"connection_handler_device_queries_error_total",
 			"Errors occurred during smart meter query",
@@ -45,7 +47,7 @@ var (
 		[]string{"device_name", "serial_number"},
 	)
 
-	ConnectionHandlerDeviceQueriesSuccessTotal = prometheus.NewCounterVec(
+	ConnectionHandlerDeviceQueriesSuccessTotal = prometheusLib.NewCounterVec(
 		*newCounterOpts(
 			"connection_handler_device_queries_success_total",
 			"Successful smart meter query",
@@ -53,7 +55,7 @@ var (
 		[]string{"device_name", "serial_number"},
 	)
 
-	ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal = prometheus.NewCounterVec(
+	ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal = prometheusLib.NewCounterVec(
 		*newCounterOpts(
 			"connection_handler_device_queries_measurement_value_skipped_total",
 			"NaN measurement values found and skipped during smart meter query",
@@ -62,8 +64,8 @@ var (
 	)
 )
 
-func (h handlerCollectors) Collect() []prometheus.Collector {
-	return []prometheus.Collector{
+func (h handlerCollectors) Collect() []prometheusLib.Collector {
+	return []prometheusLib.Collector{
 		ConnectionHandlerDeviceInitializationRoutineStarted,
 		ConnectionHandlerDeviceInitializationFailure,
 		ConnectionHandlerDeviceInitializationSuccess,
