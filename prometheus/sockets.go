@@ -1,6 +1,8 @@
-package prometheus_metrics
+package prometheus
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // socketCollectors contains all Prometheus metrics about web sockets
 //

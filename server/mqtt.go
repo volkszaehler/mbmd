@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"github.com/volkszaehler/mbmd/prometheus_metrics"
+	"github.com/volkszaehler/mbmd/prometheus"
 	"log"
 	"regexp"
 	"strings"
@@ -54,17 +54,17 @@ func NewMqttClient(
 	client := MQTT.NewClient(options)
 
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		prometheus_metrics.PublisherConnectionFailure.WithLabelValues("mqtt").Inc()
+		prometheus.PublisherConnectionFailure.WithLabelValues("mqtt").Inc()
 		log.Fatalf("mqtt: error connecting: %s", token.Error())
 	} else if token.Wait() && token.Error() == nil {
-		prometheus_metrics.PublisherConnectionSuccess.WithLabelValues("mqtt").Inc()
+		prometheus.PublisherConnectionSuccess.WithLabelValues("mqtt").Inc()
 	}
 
 	if verbose {
 		log.Println("mqtt: connected")
 	}
 
-	prometheus_metrics.PublisherCreated.WithLabelValues("mqtt").Inc()
+	prometheus.PublisherCreated.WithLabelValues("mqtt").Inc()
 
 	return &MqttClient{
 		Client:  client,
@@ -76,7 +76,7 @@ func NewMqttClient(
 // Publish MQTT message with error handling
 func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
 	token := m.Client.Publish(topic, m.qos, retained, message)
-	prometheus_metrics.PublisherDataPublishAttempt.WithLabelValues("mqtt").Inc()
+	prometheus.PublisherDataPublishAttempt.WithLabelValues("mqtt").Inc()
 	if m.verbose {
 		log.Printf("mqtt: publish %s, message: %s", topic, message)
 	}
@@ -88,12 +88,12 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 	if token.WaitTimeout(publishTimeout) {
 		if token.Error() != nil {
 			log.Printf("mqtt: error: %s", token.Error())
-			prometheus_metrics.PublisherDataPublishedError.WithLabelValues("mqtt").Inc()
+			prometheus.PublisherDataPublishedError.WithLabelValues("mqtt").Inc()
 		} else {
-			prometheus_metrics.PublisherDataPublished.WithLabelValues("mqtt").Inc()
+			prometheus.PublisherDataPublished.WithLabelValues("mqtt").Inc()
 		}
 	} else {
-		prometheus_metrics.PublisherConnectionTimeOut.WithLabelValues("mqtt").Inc()
+		prometheus.PublisherConnectionTimeOut.WithLabelValues("mqtt").Inc()
 		if m.verbose {
 			log.Println("mqtt: timeout")
 		}
