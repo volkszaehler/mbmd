@@ -1,4 +1,4 @@
-package prometheus_metrics
+package prometheus
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -40,4 +40,3 @@ func newGaugeOptsWithSubsystem(subsystem string, name string, help string) *prom
 
 	return opts
 }
-
