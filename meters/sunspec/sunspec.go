@@ -3,12 +3,11 @@ package sunspec
 import (
 	"errors"
 	"fmt"
+	"github.com/volkszaehler/mbmd/prometheus"
 	"math"
 	"sort"
 	"strings"
 	"time"
-
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
@@ -67,12 +66,12 @@ func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 		dev = subdevice[0]
 	}
 
-	prometheusManager.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
+	prometheus.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
 
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
-			Name:		  name,
+			Name:         name,
 			Type:         meterType,
 			Manufacturer: meterType,
 			SubDevice:    dev,
@@ -85,10 +84,10 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	devices, err := DeviceTree(client)
 
 	deviceName := d.descriptor.Name
-	prometheusManager.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
+	prometheus.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
 
 	if err != nil && !errors.Is(err, meters.ErrPartiallyOpened) {
-			prometheusManager.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
+			prometheus.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
 		return err
 	}
 
@@ -104,7 +103,7 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 
 func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 	if len(devices) <= d.subdevice {
-		prometheusManager.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
+		prometheus.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
@@ -112,10 +111,10 @@ func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
-		prometheusManager.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
+		prometheus.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	prometheusManager.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
+	prometheus.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
 
 	// collect relevant models
 	return d.collectModels(device)

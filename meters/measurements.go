@@ -328,7 +328,7 @@ func (m *Measurement) PrometheusName() string {
 // (See https://prometheus.io/docs/practices/naming/)
 // Please also note that PrometheusInfo.Name does not equal the actual name of prometheus.Metric;
 // It's a partial name that will be concatenated together with a globally defined namespace (and for measurements with `measurement`)
-// (see also prometheus_metrics.CreateMeasurementMetrics and generatePrometheusName)
+// (see also prometheus.CreateMeasurementMetrics and generatePrometheusName)
 type measurement struct {
 	Description    string
 	Unit           *units.Unit

@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/volkszaehler/mbmd/prometheus"
 	"log"
 	"math"
 	"time"
-
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
 
 	"github.com/volkszaehler/mbmd/meters"
 )
@@ -94,7 +93,7 @@ func (h *Handler) initializeDevice(
 	dev meters.Device,
 ) (*RuntimeInfo, error) {
 	deviceID := h.deviceID(id, dev)
-	prometheusManager.ConnectionHandlerDeviceInitializationRoutineStarted.Inc()
+	prometheus.ConnectionHandlerDeviceInitializationRoutineStarted.Inc()
 
 	if err := dev.Initialize(h.Manager.Conn.ModbusClient()); err != nil {
 		if !errors.Is(err, meters.ErrPartiallyOpened) {
@@ -105,14 +104,14 @@ func (h *Handler) initializeDevice(
 			defer cancel()
 			<-ctx.Done()
 
-			prometheusManager.ConnectionHandlerDeviceInitializationFailure.Inc()
+			prometheus.ConnectionHandlerDeviceInitializationFailure.Inc()
 			return nil, err
 		}
 		log.Println(err) // log error but continue
 	}
 
 	log.Printf("initialized device '%s' (%s): %v", dev.Descriptor().Name, deviceID, dev.Descriptor())
-	prometheusManager.ConnectionHandlerDeviceInitializationSuccess.Inc()
+	prometheus.ConnectionHandlerDeviceInitializationSuccess.Inc()
 
 	// create status
 	status := &RuntimeInfo{Online: true}
@@ -125,7 +124,7 @@ func (h *Handler) initializeDevice(
 
 	descriptor := dev.Descriptor()
 
-	prometheusManager.RegisterDevice(&descriptor)
+	prometheus.RegisterDevice(&descriptor)
 
 	return status, nil
 }
@@ -143,7 +142,7 @@ func (h *Handler) queryDevice(
 
 	for retry := 0; retry < maxRetry; retry++ {
 		status.Requests++
-		prometheusManager.ConnectionHandlerDeviceQueriesTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
+		prometheus.ConnectionHandlerDeviceQueriesTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
 
 		measurements, err := dev.Query(h.Manager.Conn.ModbusClient())
 
@@ -154,13 +153,13 @@ func (h *Handler) queryDevice(
 				Device: deviceID,
 				Status: *status,
 			}
-			prometheusManager.ConnectionHandlerDeviceQueriesSuccessTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
+			prometheus.ConnectionHandlerDeviceQueriesSuccessTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
 
 			// send measurements
 			for _, r := range measurements {
 				if math.IsNaN(r.Value) {
 					log.Printf("device '%s' (%s) skipping NaN for %s", dev.Descriptor().Name, deviceID, r.Measurement.String())
-					prometheusManager.ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
+					prometheus.ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
 					continue
 				}
 
@@ -170,14 +169,14 @@ func (h *Handler) queryDevice(
 				}
 				results <- snip
 
-				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Name, deviceDescriptor.Serial, r)
+				prometheus.UpdateMeasurementMetric(deviceDescriptor.Name, deviceDescriptor.Serial, r)
 			}
 
 			return
 		}
 
 		status.Errors++
-		prometheusManager.ConnectionHandlerDeviceQueriesErrorTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
+		prometheus.ConnectionHandlerDeviceQueriesErrorTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
 		log.Printf("device '%s' (%s) did not respond (%d/%d): %v", dev.Descriptor().Name, deviceID, retry+1, maxRetry, err)
 
 		// wait for device to settle after error
