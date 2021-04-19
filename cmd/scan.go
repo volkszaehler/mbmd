@@ -7,8 +7,6 @@ import (
 	"os"
 	"time"
 
-	prometheusManager "github.com/volkszaehler/mbmd/prometheus_metrics"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -112,7 +110,6 @@ SCAN:
 					continue // devices
 				}
 
-				prometheusManager.BusScanDeviceInitializationErrorTotal.WithLabelValues(dev.Descriptor().Name).Inc()
 				log.Println(err) // log error but continue
 			}
 
@@ -126,13 +123,8 @@ SCAN:
 					mr.Value,
 				)
 
-				prometheusManager.UpdateMeasurementMetric(deviceDescriptor.Name, deviceDescriptor.Serial, mr)
-				prometheusManager.BusScanDeviceProbeSuccessfulTotal.WithLabelValues(deviceDescriptor.Name, deviceDescriptor.Serial).Inc()
-
 				deviceList[deviceID] = dev
 				continue SCAN
-			} else {
-				prometheusManager.BusScanDeviceProbeFailedTotal.WithLabelValues(dev.Descriptor().Name).Inc()
 			}
 		}
 
