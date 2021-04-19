@@ -1,7 +1,6 @@
 package prometheus
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/units"
 )
@@ -44,20 +43,17 @@ import (
 // SSN_MISSING is used for mocked smart meters
 const SSN_MISSING = "NOT_AVAILABLE"
 
-// measurementMetricsLabels are the Prometheus labels commonly used for meters.Measurement metrics
-var measurementMetricsLabels = []string{"device_name", "serial_number"}
-
 // counterVecMap contains all meters.Measurement that are associated with a prometheus.Counter
 //
 // If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
-var counterVecMap = map[meters.Measurement]*prometheus.CounterVec{}
+var counterVecMap = map[meters.Measurement]*MeasurementCounterCollector{}
 
 // gaugeVecMap contains all meters.Measurement that are associated with a prometheus.Gauge
 //
 // If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
 // or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
-var gaugeVecMap = map[meters.Measurement]*prometheus.GaugeVec{}
+var gaugeVecMap = map[meters.Measurement]*MeasurementGaugeCollector{}
 
 // UpdateMeasurementMetric updates a counter or gauge based on passed measurement
 //
@@ -66,7 +62,7 @@ func UpdateMeasurementMetric(
 	deviceName string,
 	deviceSerial string,
 	measurement meters.MeasurementResult,
-) (ok bool) {
+) bool {
 	// Handle empty device serial numbers (e. g. on mocks)
 	// TODO Better handling??
 	if deviceSerial == "" {
@@ -76,12 +72,12 @@ func UpdateMeasurementMetric(
 	_, elementaryValue := units.ConvertValueToElementaryUnit(*measurement.Unit(), measurement.Value)
 
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
-		gauge.WithLabelValues(deviceName, deviceSerial).Set(elementaryValue)
-		return ok
+		gauge.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
+		return true
 	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
-		counter.WithLabelValues(deviceName, deviceSerial).Add(elementaryValue)
-		return ok
-	} else {
-		return ok
+		counter.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
+		return true
 	}
+
+	return false
 }
