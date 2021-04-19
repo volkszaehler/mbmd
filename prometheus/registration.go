@@ -1,7 +1,8 @@
 package prometheus
 
 import (
-	prometheusLib "github.com/prometheus/client_golang/prometheus"
+	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/volkszaehler/mbmd/meters"
 	"log"
 )
@@ -21,7 +22,7 @@ func registerStatics() {
 
 	for _, collectable := range collectables {
 		for _, prometheusCollector := range collectable.Collect() {
-			if err := prometheusLib.Register(prometheusCollector); err != nil {
+			if err := prometheus.Register(prometheusCollector); err != nil {
 				log.Printf("Could not register a metric '%s' (%s)", prometheusCollector, err)
 			}
 		}
@@ -35,15 +36,14 @@ func createMeasurementMetrics() {
 	for _, measurement := range meters.MeasurementValues() {
 		switch measurement.PrometheusMetricType() {
 		case meters.Gauge:
-			newGauge := prometheusLib.NewGaugeVec(
+			newGauge := NewMeasurementGaugeCollector(
 				*newGaugeOpts(
 					measurement.PrometheusName(),
 					measurement.PrometheusHelpText(),
 				),
-				measurementMetricsLabels,
 			)
 
-			if err := prometheusLib.Register(newGauge); err != nil {
+			if err := prometheus.Register(newGauge); err != nil {
 				log.Printf(
 					"Could not register gauge for measurement '%s'. Omitting... (Error: %s)\n",
 					measurement,
@@ -53,22 +53,22 @@ func createMeasurementMetrics() {
 				gaugeVecMap[measurement] = newGauge
 			}
 		case meters.Counter:
-			newCounter := prometheusLib.NewCounterVec(
+			measurementCollector := NewMeasurementCounterCollector(
 				*newCounterOpts(
 					measurement.PrometheusName(),
 					measurement.PrometheusHelpText(),
 				),
-				measurementMetricsLabels,
 			)
 
-			if err := prometheusLib.Register(newCounter); err != nil {
+			if err := prometheus.Register(measurementCollector); err != nil {
 				log.Printf(
-					"Could not register counter for measurement '%s'. Omitting... (Error: %s)\n",
-					measurement,
-					err,
+					fmt.Errorf("could not register counter for measurement '%s'. omitting... (Error: %s)\n",
+						measurement,
+						err,
+					).Error(),
 				)
 			} else {
-				counterVecMap[measurement] = newCounter
+				counterVecMap[measurement] = measurementCollector
 			}
 		}
 	}
