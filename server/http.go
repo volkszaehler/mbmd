@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"html/template"
 	"log"
 	"net/http"
@@ -150,6 +152,16 @@ func jsonHandler(h http.Handler) http.Handler {
 	})
 }
 
+// prometheusHandler is a middleware that prepares Prometheus metrics for collection by HTTP request
+func (h *Httpd) prometheusHandler() http.Handler {
+	return promhttp.HandlerFor(
+		prometheus.DefaultGatherer,
+		promhttp.HandlerOpts{
+			EnableOpenMetrics: true,
+		},
+	)
+}
+
 // NewHttpd creates HTTP daemon
 func NewHttpd(qe DeviceInfo, mc *Cache) *Httpd {
 	return &Httpd{
@@ -177,6 +189,10 @@ func (h *Httpd) Run(
 		prefix := fmt.Sprintf("/%s/", folder)
 		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(devAssets, prefix))))
 	}
+
+	// Prometheus
+	prom := router.Path("/metrics")
+	prom.Handler(h.prometheusHandler())
 
 	// api
 	api := router.PathPrefix("/api").Subrouter()

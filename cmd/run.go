@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	latest "github.com/tcnksm/go-latest"
 
+	"github.com/volkszaehler/mbmd/prometheus"
 	"github.com/volkszaehler/mbmd/server"
 )
 
@@ -284,6 +285,9 @@ func run(cmd *cobra.Command, args []string) {
 		httpd := server.NewHttpd(qe, cache)
 		go httpd.Run(hub, status, viper.GetString("api"))
 	}
+
+	// Prometheus manager - Register all static metrics to default registry
+	prometheus.RegisterAllMetrics()
 
 	// MQTT client
 	if viper.GetString("mqtt.broker") != "" {

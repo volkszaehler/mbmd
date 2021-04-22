@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/volkszaehler/mbmd/prometheus"
 	"log"
 	"regexp"
 	"strings"
@@ -51,12 +52,19 @@ func NewMqttClient(
 	log.Printf("mqtt: connecting %s at %s", options.ClientID, options.Servers)
 
 	client := MQTT.NewClient(options)
+
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		prometheus.PublisherConnectionFailure.WithLabelValues("mqtt").Inc()
 		log.Fatalf("mqtt: error connecting: %s", token.Error())
+	} else if token.Wait() && token.Error() == nil {
+		prometheus.PublisherConnectionSuccess.WithLabelValues("mqtt").Inc()
 	}
+
 	if verbose {
 		log.Println("mqtt: connected")
 	}
+
+	prometheus.PublisherCreated.WithLabelValues("mqtt").Inc()
 
 	return &MqttClient{
 		Client:  client,
@@ -68,6 +76,7 @@ func NewMqttClient(
 // Publish MQTT message with error handling
 func (m *MqttClient) Publish(topic string, retained bool, message interface{}) {
 	token := m.Client.Publish(topic, m.qos, retained, message)
+	prometheus.PublisherDataPublishAttempt.WithLabelValues("mqtt").Inc()
 	if m.verbose {
 		log.Printf("mqtt: publish %s, message: %s", topic, message)
 	}
@@ -79,9 +88,15 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 	if token.WaitTimeout(publishTimeout) {
 		if token.Error() != nil {
 			log.Printf("mqtt: error: %s", token.Error())
+			prometheus.PublisherDataPublishedError.WithLabelValues("mqtt").Inc()
+		} else {
+			prometheus.PublisherDataPublished.WithLabelValues("mqtt").Inc()
 		}
-	} else if m.verbose {
-		log.Println("mqtt: timeout")
+	} else {
+		prometheus.PublisherConnectionTimeOut.WithLabelValues("mqtt").Inc()
+		if m.verbose {
+			log.Println("mqtt: timeout")
+		}
 	}
 }
 
