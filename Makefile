@@ -5,6 +5,9 @@ SHA := $(shell git rev-parse --short HEAD)
 VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
 BUILD_DATE := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
+BUILD_TAGS := -tags=release
+LD_FLAGS := -X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"
+BUILD_ARGS := -ldflags='$(LD_FLAGS)'
 
 default: clean install lint test build
 
@@ -24,7 +27,7 @@ test:
 
 build:
 	@echo Version: $(VERSION) $(BUILD_DATE)
-	go build -v -ldflags '-X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"'
+	go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 
 publish-images:
 	@echo Version: $(VERSION) $(BUILD_DATE)

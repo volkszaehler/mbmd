@@ -20,7 +20,6 @@ require (
 	github.com/influxdata/line-protocol v0.0.0-20201012155213-5f565037cbc9 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.4.0 // indirect
-	github.com/mjibson/esc v0.2.0
 	github.com/pascaldekloe/name v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
