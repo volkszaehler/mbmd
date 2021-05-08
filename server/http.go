@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -16,9 +17,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const devAssets = false
+// Assets is the embedded assets file system
+var Assets fs.FS
 
-//go:generate esc -private -o assets.go -pkg server -modtime 1566640112 -ignore .DS_Store -prefix ../assets ../assets
+// AssetsDir is the assets directory relative to the module root
+const AssetsDir = "assets"
 
 // Httpd is an http server
 type Httpd struct {
@@ -27,11 +30,11 @@ type Httpd struct {
 }
 
 func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
-	mainTemplate, err := _escFSString(devAssets, "/index.html")
+	mainTemplate, err := fs.ReadFile(Assets, "index.html")
 	if err != nil {
 		log.Fatal("httpd: failed to load embedded template: " + err.Error())
 	}
-	t, err := template.New("mbmd").Parse(mainTemplate)
+	t, err := template.New("mbmd").Parse(string(mainTemplate))
 	if err != nil {
 		log.Fatal("httpd: failed to create main page template: ", err.Error())
 	}
@@ -175,7 +178,12 @@ func (h *Httpd) Run(
 	static.HandleFunc("/", h.mkIndexHandler())
 	for _, folder := range []string{"js", "css"} {
 		prefix := fmt.Sprintf("/%s/", folder)
-		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(_escDir(devAssets, prefix))))
+		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(http.FS(Assets))))
+	}
+
+	static.HandleFunc("/", h.mkIndexHandler())
+	for _, dir := range []string{"css", "js", "ico"} {
+		static.PathPrefix("/" + dir).Handler(http.FileServer(http.FS(Assets)))
 	}
 
 	// api

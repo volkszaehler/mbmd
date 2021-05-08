@@ -1,4 +1,4 @@
-.PHONY: default clean install lint test assets build binaries publish-images test-release release
+.PHONY: default clean install lint test build binaries publish-images test-release release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
@@ -6,7 +6,7 @@ VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
 BUILD_DATE := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
-default: clean install assets lint test build
+default: clean install lint test build
 
 clean:
 	rm -rf dist/
@@ -21,10 +21,6 @@ lint:
 test:
 	@echo "Running testsuite"
 	go test ./...
-
-assets:
-	@echo "Generating embedded assets"
-	go generate ./...
 
 build:
 	@echo Version: $(VERSION) $(BUILD_DATE)

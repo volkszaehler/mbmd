@@ -1,10 +1,10 @@
 module github.com/volkszaehler/mbmd
 
-go 1.14
+go 1.16
 
 require (
 	github.com/alvaroloes/enumer v1.1.2
-	github.com/andig/gosunspec v0.0.0-20201103081418-ec9af6feefde
+	github.com/andig/gosunspec v0.0.0-20210401131709-cd89d66b502d
 	github.com/deepmap/oapi-codegen v1.4.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -39,5 +39,3 @@ require (
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-replace github.com/spf13/viper => github.com/andig/viper v1.6.3-0.20201123175942-a5af09afab5b
