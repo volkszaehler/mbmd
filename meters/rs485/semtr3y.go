@@ -67,28 +67,28 @@ func NewSEMTRProducer() Producer {
 //		EnergyApparentL1:	0x046E, // apparent energy l1
 //		EnergyApparentL2:	0x0470, // apparent energy l2
 //		EnergyApparentL3:	0x0472, // apparent energy l3 
-		Cosphi:			0x0474, // power factor
-		CosphiL1:		0x0476, // power factor l1
-		CosphiL2:		0x0478, // power factor l2
-		CosphiL3:		0x047A, // power factor l3
-		ReactivePower:		0x047C, // total reactive power
-		ReactivePowerL1:	0x047E, // reactive power l1
-		ReactivePowerL2:	0x0480, // reactive power l2
-		ReactivePowerL3:	0x0482, // reactive power l3
-		ApparentPower:		0x0484, // total apparent power
-		ApparentPowerL1:	0x0486, // apparent power l1
-		ApparentPowerL2:	0x0488, // apparent power l2
-		ApparentPowerL3:	0x048A, // apparent power l3
-		CurrentL1:		0x048C, // current l1
-		CurrentL2:		0x048E, // current l2
-		CurrentL3:		0x0490, // current l3
-//		PowerDemand:		0x0492, // demand power
-//		MinimumPowerDemand:	0x0494, // minimum demand power
-//		MaximumPowerDemand:	0x0496, // maximum demand power
-//		ApparentPowerDemand:	0x0498, // apparent demand power
-//		PowerDemandL1:		0x049A, // demand power l1
-//		PowerDemandL2:		0x049C, // demand power l2
-//		PowerDemandL3:		0x049E, // demand power l3 
+		Cosphi:			0x0472, // power factor
+		CosphiL1:		0x0474, // power factor l1
+		CosphiL2:		0x0476, // power factor l2
+		CosphiL3:		0x0478, // power factor l3
+		ReactivePower:		0x047A, // total reactive power
+		ReactivePowerL1:	0x047C, // reactive power l1
+		ReactivePowerL2:	0x047e, // reactive power l2
+		ReactivePowerL3:	0x0480, // reactive power l3
+		ApparentPower:		0x0482, // total apparent power
+		ApparentPowerL1:	0x0484, // apparent power l1
+		ApparentPowerL2:	0x0486, // apparent power l2
+		ApparentPowerL3:	0x0488, // apparent power l3
+		CurrentL1:		0x048A, // current l1
+		CurrentL2:		0x048C, // current l2
+		CurrentL3:		0x048E, // current l3
+//		PowerDemand:		0x0490, // demand power
+//		MinimumPowerDemand:	0x0492, // minimum demand power
+//		MaximumPowerDemand:	0x0494, // maximum demand power
+//		ApparentPowerDemand:	0x0496, // apparent demand power
+//		PowerDemandL1:		0x0498, // demand power l1
+//		PowerDemandL2:		0x049A, // demand power l2
+//		PowerDemandL3:		0x049C, // demand power l3 
 	}
 	return &SEMTRProducer{Opcodes: ops}
 }
