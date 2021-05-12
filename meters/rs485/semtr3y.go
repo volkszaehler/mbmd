@@ -2,7 +2,6 @@ package rs485
 
 import (
 	"math"
-
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -27,7 +26,6 @@ func NewSEMTRProducer() Producer {
 	 * directly via rs485 (e.g. if you have no inverter from solaredge).
 	 * Otherwise, the values can be accessed readily through the network
 	 * connection of the inverter via the sunspec protocol.
-	 *
 	 */
 	ops := Opcodes{
 		Sum:			0x03E8,	// total active energy
@@ -64,10 +62,10 @@ func NewSEMTRProducer() Producer {
 		ReactiveSumL1:		0x0464, // reactive energy l1
 		ReactiveSumL2:		0x0468, // reactive energy l2
 		ReactiveSumL3:		0x046A, // reactive energy l3
-/* 		EnergyApparent: 	0x046C, // total apparent energy
-		EnergyApparentL1: 	0x046E, // apparent energy l1
-		EnergyApparentL2: 	0x0470, // apparent energy l2
-		EnergyApparentL3: 	0x0472, // apparent energy l3 */
+//		EnergyApparent:		0x046C, // total apparent energy
+//		EnergyApparentL1:	0x046E, // apparent energy l1
+//		EnergyApparentL2:	0x0470, // apparent energy l2
+//		EnergyApparentL3:	0x0472, // apparent energy l3 
 		Cosphi:			0x0474, // power factor
 		CosphiL1:		0x0476, // power factor l1
 		CosphiL2:		0x0478, // power factor l2
@@ -83,13 +81,13 @@ func NewSEMTRProducer() Producer {
 		CurrentL1:		0x048C, // current l1
 		CurrentL2:		0x048E, // current l2
 		CurrentL3:		0x0490, // current l3
-/* 		PowerDemand: 		0x0492, // demand power
-		MinimumPowerDemand: 	0x0494, // minimum demand power
-		MaximumPowerDemand: 	0x0496, // maximum demand power
-		ApparentPowerDemand: 	0x0498, // apparent demand power
-		PowerDemandL1: 		0x049A, // demand power l1
-		PowerDemandL2: 		0x049C, // demand power l2
-		PowerDemandL3: 		0x049E, // demand power l3 */
+//		PowerDemand:		0x0492, // demand power
+//		MinimumPowerDemand:	0x0494, // minimum demand power
+//		MaximumPowerDemand:	0x0496, // maximum demand power
+//		ApparentPowerDemand:	0x0498, // apparent demand power
+//		PowerDemandL1:		0x049A, // demand power l1
+//		PowerDemandL2:		0x049C, // demand power l2
+//		PowerDemandL3:		0x049E, // demand power l3 
 	}
 	return &SEMTRProducer{Opcodes: ops}
 }
