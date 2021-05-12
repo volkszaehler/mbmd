@@ -21,6 +21,7 @@ func NewSEMTRProducer() Producer {
 	/**
 	 * Opcodes as defined by SolarEdge SE-MTR-3Y
 	 * reverse engineered from: https://github.com/nmakel/solaredge_meterproxy/blob/master/semp-rtu.py
+	 * Uses the modbus RTU protocol over RS485.
 	 *
 	 * These are only necessary, if you'd like to connect the power meter
 	 * directly via rs485 (e.g. if you have no inverter from solaredge).
