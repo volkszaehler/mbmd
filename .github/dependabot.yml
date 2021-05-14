@@ -1,0 +1,12 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: github.com/eclipse/paho.mqtt.golang
+    versions:
+    - 1.3.1
