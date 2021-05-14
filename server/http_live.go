@@ -1,0 +1,12 @@
+//go:build !release
+// +build !release
+
+package server
+
+import (
+	"os"
+)
+
+func init() {
+	Assets = os.DirFS(AssetsDir)
+}
