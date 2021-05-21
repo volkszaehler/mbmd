@@ -28,6 +28,7 @@ mbmd run [flags]
                                          SDM220    Eastron SDM220
                                          SDM230    Eastron SDM230
                                          SDM72     Eastron SDM72
+                                         SEMTR     SolarEdge SE-MTR-3Y
                                        TCP
                                          SUNS      Sunspec-compatible MODBUS TCP device (SMA, SolarEdge, KOSTAL, etc)
                                      To use an adapter different from default, append RTU device or TCP address separated by @.
