@@ -22,6 +22,11 @@ func NewSDM220Producer() Producer {
 	ops := Opcodes{
 		Voltage:        0x0000, // 220, 230
 		Current:        0x0006, // 220, 230
+		Power:			0x000c, // 220
+        ApparentPower:  0x0012, // 220
+        ReactivePower:  0x0018, // 220
+        Cosphi: 		0x0024, // 220
+        Frequency:      0x0046, // 220
 		Import:         0x0048, // 220, 230
 		Export:         0x004a, // 220, 230
 		Sum:            0x0156, // 220, 230
