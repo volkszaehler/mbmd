@@ -176,13 +176,7 @@ func (h *Httpd) Run(
 
 	// individual handlers per folder
 	static.HandleFunc("/", h.mkIndexHandler())
-	for _, folder := range []string{"js", "css"} {
-		prefix := fmt.Sprintf("/%s/", folder)
-		static.PathPrefix(prefix).Handler(http.StripPrefix(prefix, http.FileServer(http.FS(Assets))))
-	}
-
-	static.HandleFunc("/", h.mkIndexHandler())
-	for _, dir := range []string{"css", "js", "ico"} {
+	for _, dir := range []string{"css", "js"} {
 		static.PathPrefix("/" + dir).Handler(http.FileServer(http.FS(Assets)))
 	}
 

@@ -16,7 +16,6 @@ clean:
 
 install:
 	go install github.com/alvaroloes/enumer
-	go install github.com/mjibson/esc
 
 lint:
 	golangci-lint run
