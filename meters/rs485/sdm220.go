@@ -18,6 +18,7 @@ func NewSDM220Producer() Producer {
 	/**
 	 * Opcodes as defined by Eastron SDM220.
 	 * See https://bg-etech.de/download/manual/SDM220StandardDE.pdf
+	 * See extra codes at: https://www.aggsoft.com/serial-data-logger/tutorials/modbus-data-logging/eastron-sdm220.htm
 	 */
 	ops := Opcodes{
 		Voltage:        0x0000, // 220, 230
