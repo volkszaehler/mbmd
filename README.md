@@ -49,12 +49,6 @@ To cross-build for a different archtecture (e.g. Raspberry Pi), use
 
     GOOS=linux GOARCH=arm GOARM=5 make build
 
-Builds can also be done using docker in order to keep your personal environment clean. Hereby an example which builds mbmd for Raspberry Pi using docker, run this command from within the `mbmd` directory:
-
-```bash
-docker run --rm -e GOOS=linux -e GOARCH=arm -e GOARM=7 -v ${PWD}:/app --workdir=/app golang:1.16 /bin/bash -c "make install && make build"
-```
-
 ### Running
 
 To get help on the various command line options run
