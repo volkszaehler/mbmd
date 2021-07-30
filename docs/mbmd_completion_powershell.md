@@ -1,22 +1,27 @@
-## mbmd write
+## mbmd completion powershell
 
-Write register (EXPERIMENTAL)
+generate the autocompletion script for powershell
 
 ### Synopsis
 
-Write writes a single register (holding, coil). Write will ignore the
-config file and requires adapter configuration using command line.
+
+Generate the autocompletion script for powershell.
+
+To load completions in your current shell session:
+PS C:\> mbmd completion powershell | Out-String | Invoke-Expression
+
+To load completions for every new session, add the output of the above command
+to your powershell profile.
+
 
 ```
-mbmd write [flags] register length value
+mbmd completion powershell [flags]
 ```
 
 ### Options
 
 ```
-  -d, --device string     MODBUS device ID to query. Only single device allowed. (default "1")
-  -e, --encoding string   Data encoding: bit|int|uint|hex|float|string (default "int")
-  -t, --type string       Register type to write: holding|coil (default "holding")
+      --no-descriptions   disable completion descriptions
 ```
 
 ### Options inherited from parent commands
@@ -39,5 +44,5 @@ mbmd write [flags] register length value
 
 ### SEE ALSO
 
-* [mbmd](mbmd.md)	 - ModBus Measurement Daemon
+* [mbmd completion](mbmd_completion.md)	 - generate the autocompletion script for the specified shell
 

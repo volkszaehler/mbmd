@@ -34,7 +34,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile,
 		"config", "c",
 		"",
-		"Config file (default is $HOME/mbmd.yaml)",
+		"Config file (default is $HOME/mbmd.yaml, ./mbmd.yaml, /etc/mbmd.yaml)",
 	)
 	rootCmd.PersistentFlags().StringP(
 		"adapter", "a",

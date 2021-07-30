@@ -15,7 +15,7 @@ mbmd version [flags]
   -b, --baudrate int     Serial interface baud rate (default 9600)
       --comset string    Communication parameters for default adapter, either 8N1 or 8E1.
                          Only applicable if the default adapter is an RTU device (default "8N1")
-  -c, --config string    Config file (default is $HOME/mbmd.yaml)
+  -c, --config string    Config file (default is $HOME/mbmd.yaml, ./mbmd.yaml, /etc/mbmd.yaml)
   -h, --help             Help for mbmd
       --raw              Log raw device data
       --rtu              Use RTU over TCP for default adapter.

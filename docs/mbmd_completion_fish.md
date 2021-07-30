@@ -1,22 +1,29 @@
-## mbmd write
+## mbmd completion fish
 
-Write register (EXPERIMENTAL)
+generate the autocompletion script for fish
 
 ### Synopsis
 
-Write writes a single register (holding, coil). Write will ignore the
-config file and requires adapter configuration using command line.
+
+Generate the autocompletion script for the fish shell.
+
+To load completions in your current shell session:
+$ mbmd completion fish | source
+
+To load completions for every new session, execute once:
+$ mbmd completion fish > ~/.config/fish/completions/mbmd.fish
+
+You will need to start a new shell for this setup to take effect.
+
 
 ```
-mbmd write [flags] register length value
+mbmd completion fish [flags]
 ```
 
 ### Options
 
 ```
-  -d, --device string     MODBUS device ID to query. Only single device allowed. (default "1")
-  -e, --encoding string   Data encoding: bit|int|uint|hex|float|string (default "int")
-  -t, --type string       Register type to write: holding|coil (default "holding")
+      --no-descriptions   disable completion descriptions
 ```
 
 ### Options inherited from parent commands
@@ -39,5 +46,5 @@ mbmd write [flags] register length value
 
 ### SEE ALSO
 
-* [mbmd](mbmd.md)	 - ModBus Measurement Daemon
+* [mbmd completion](mbmd_completion.md)	 - generate the autocompletion script for the specified shell
 

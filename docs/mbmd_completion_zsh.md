@@ -1,22 +1,34 @@
-## mbmd write
+## mbmd completion zsh
 
-Write register (EXPERIMENTAL)
+generate the autocompletion script for zsh
 
 ### Synopsis
 
-Write writes a single register (holding, coil). Write will ignore the
-config file and requires adapter configuration using command line.
+
+Generate the autocompletion script for the zsh shell.
+
+If shell completion is not already enabled in your environment you will need
+to enable it.  You can execute the following once:
+
+$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+To load completions for every new session, execute once:
+# Linux:
+$ mbmd completion zsh > "${fpath[1]}/_mbmd"
+# macOS:
+$ mbmd completion zsh > /usr/local/share/zsh/site-functions/_mbmd
+
+You will need to start a new shell for this setup to take effect.
+
 
 ```
-mbmd write [flags] register length value
+mbmd completion zsh [flags]
 ```
 
 ### Options
 
 ```
-  -d, --device string     MODBUS device ID to query. Only single device allowed. (default "1")
-  -e, --encoding string   Data encoding: bit|int|uint|hex|float|string (default "int")
-  -t, --type string       Register type to write: holding|coil (default "holding")
+      --no-descriptions   disable completion descriptions
 ```
 
 ### Options inherited from parent commands
@@ -39,5 +51,5 @@ mbmd write [flags] register length value
 
 ### SEE ALSO
 
-* [mbmd](mbmd.md)	 - ModBus Measurement Daemon
+* [mbmd completion](mbmd_completion.md)	 - generate the autocompletion script for the specified shell
 

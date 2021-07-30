@@ -1,23 +1,13 @@
-## mbmd write
+## mbmd completion
 
-Write register (EXPERIMENTAL)
+generate the autocompletion script for the specified shell
 
 ### Synopsis
 
-Write writes a single register (holding, coil). Write will ignore the
-config file and requires adapter configuration using command line.
 
-```
-mbmd write [flags] register length value
-```
+Generate the autocompletion script for mbmd for the specified shell.
+See each sub-command's help for details on how to use the generated script.
 
-### Options
-
-```
-  -d, --device string     MODBUS device ID to query. Only single device allowed. (default "1")
-  -e, --encoding string   Data encoding: bit|int|uint|hex|float|string (default "int")
-  -t, --type string       Register type to write: holding|coil (default "holding")
-```
 
 ### Options inherited from parent commands
 
@@ -40,4 +30,8 @@ mbmd write [flags] register length value
 ### SEE ALSO
 
 * [mbmd](mbmd.md)	 - ModBus Measurement Daemon
+* [mbmd completion bash](mbmd_completion_bash.md)	 - generate the autocompletion script for bash
+* [mbmd completion fish](mbmd_completion_fish.md)	 - generate the autocompletion script for fish
+* [mbmd completion powershell](mbmd_completion_powershell.md)	 - generate the autocompletion script for powershell
+* [mbmd completion zsh](mbmd_completion_zsh.md)	 - generate the autocompletion script for zsh
 
