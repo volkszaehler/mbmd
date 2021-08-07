@@ -6,7 +6,7 @@ import (
 	"github.com/grid-x/modbus"
 )
 
-// RTUOverTCP is an RTU encoder over a TCP modbus connection
+// RTUOverTCP is a RTU encoder over a TCP modbus connection
 type RTUOverTCP struct {
 	address string
 	Client  modbus.Client
@@ -14,7 +14,7 @@ type RTUOverTCP struct {
 	prevID  uint8
 }
 
-// NewRTUOverTCPClientHandler creates a TCP modbus handler
+// NewRTUOverTCPClientHandler creates a RTU over TCP modbus handler
 func NewRTUOverTCPClientHandler(device string) *modbus.RTUOverTCPClientHandler {
 	handler := modbus.NewRTUOverTCPClientHandler(device)
 

@@ -6,7 +6,7 @@ import (
 	"github.com/grid-x/modbus"
 )
 
-// ASCIIOverTCP is an RTU encoder over a TCP modbus connection
+// ASCIIOverTCP is an ASCII encoder over a TCP modbus connection
 type ASCIIOverTCP struct {
 	address string
 	Client  modbus.Client
