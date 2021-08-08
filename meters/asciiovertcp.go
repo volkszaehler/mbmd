@@ -6,17 +6,17 @@ import (
 	"github.com/grid-x/modbus"
 )
 
-// RTUOverTCP is a RTU encoder over a TCP modbus connection
-type RTUOverTCP struct {
+// ASCIIOverTCP is an ASCII encoder over a TCP modbus connection
+type ASCIIOverTCP struct {
 	address string
 	Client  modbus.Client
-	Handler *modbus.RTUOverTCPClientHandler
+	Handler *modbus.ASCIIOverTCPClientHandler
 	prevID  uint8
 }
 
-// NewRTUOverTCPClientHandler creates a RTU over TCP modbus handler
-func NewRTUOverTCPClientHandler(device string) *modbus.RTUOverTCPClientHandler {
-	handler := modbus.NewRTUOverTCPClientHandler(device)
+// NewASCIIOverTCPClientHandler creates a TCP modbus handler
+func NewASCIIOverTCPClientHandler(device string) *modbus.ASCIIOverTCPClientHandler {
+	handler := modbus.NewASCIIOverTCPClientHandler(device)
 
 	// set default timings
 	handler.Timeout = 1 * time.Second
@@ -26,12 +26,12 @@ func NewRTUOverTCPClientHandler(device string) *modbus.RTUOverTCPClientHandler {
 	return handler
 }
 
-// NewRTUOverTCP creates a TCP modbus client
-func NewRTUOverTCP(address string) Connection {
-	handler := NewRTUOverTCPClientHandler(address)
+// NewASCIIOverTCP creates a TCP modbus client
+func NewASCIIOverTCP(address string) Connection {
+	handler := NewASCIIOverTCPClientHandler(address)
 	client := modbus.NewClient(handler)
 
-	b := &RTUOverTCP{
+	b := &ASCIIOverTCP{
 		address: address,
 		Client:  client,
 		Handler: handler,
@@ -41,22 +41,22 @@ func NewRTUOverTCP(address string) Connection {
 }
 
 // String returns the bus connection address (TCP)
-func (b *RTUOverTCP) String() string {
+func (b *ASCIIOverTCP) String() string {
 	return b.address
 }
 
 // ModbusClient returns the TCP modbus client
-func (b *RTUOverTCP) ModbusClient() modbus.Client {
+func (b *ASCIIOverTCP) ModbusClient() modbus.Client {
 	return b.Client
 }
 
 // Logger sets a logging instance for physical bus operations
-func (b *RTUOverTCP) Logger(l Logger) {
+func (b *ASCIIOverTCP) Logger(l Logger) {
 	b.Handler.Logger = l
 }
 
 // Slave sets the modbus device id for the following operations
-func (b *RTUOverTCP) Slave(deviceID uint8) {
+func (b *ASCIIOverTCP) Slave(deviceID uint8) {
 	// Some devices like SDM need to have a little pause between querying different device ids
 	if b.prevID != 0 && deviceID != b.prevID {
 		time.Sleep(time.Duration(100) * time.Millisecond)
@@ -67,7 +67,7 @@ func (b *RTUOverTCP) Slave(deviceID uint8) {
 }
 
 // Timeout sets the modbus timeout
-func (b *RTUOverTCP) Timeout(timeout time.Duration) time.Duration {
+func (b *ASCIIOverTCP) Timeout(timeout time.Duration) time.Duration {
 	t := b.Handler.Timeout
 	b.Handler.Timeout = timeout
 	return t
@@ -75,6 +75,6 @@ func (b *RTUOverTCP) Timeout(timeout time.Duration) time.Duration {
 
 // Close closes the modbus connection.
 // This forces the modbus client to reopen the connection before the next bus operations.
-func (b *RTUOverTCP) Close() {
+func (b *ASCIIOverTCP) Close() {
 	b.Handler.Close()
 }
