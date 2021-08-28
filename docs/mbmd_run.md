@@ -15,6 +15,7 @@ mbmd run [flags]
                                      Valid types are:
                                        RTU
                                          ABB       ABB A/B-Series meters
+                                         DDM       DDM18SD
                                          DZG       DZG Metering GmbH DVH4013 meters
                                          IEM3000   Schneider Electric iEM3000 series
                                          INEPRO    Inepro Metering Pro 380
