@@ -11,13 +11,21 @@ mqtt:
   qos: 0
   homie: homie
 
-# influxdb config
+# influxdb_v1 config
 influx:
   url: http://localhost:8086
   database: data
   measurement: mbmd
   user:
   password:
+
+# influxdb_v2 config
+influx:
+  url: http://localhost:8086
+  database: data
+  measurement: mbmd
+  organization:
+  token:
 
 # adapters are referenced by device
 adapters:
