@@ -105,7 +105,7 @@ start `mbmd` as service (put this into ``/etc/systemd/system``):
     [Install]
     WantedBy=multi-user.target
 
-You might need to adjust the ``-s`` parameter depending on where your
+You might need to adjust the ``-a`` parameter depending on where your
 RS485 adapter is connected. Then, use
 
     systemctl start mbmd
