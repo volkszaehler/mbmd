@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/alvaroloes/enumer v1.1.2
-	github.com/andig/gosunspec v0.0.0-20210511114617-aa30cf9b7a3f
+	github.com/andig/gosunspec v0.0.0-20211108155140-af2e73b86e71
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.5
