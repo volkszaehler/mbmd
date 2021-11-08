@@ -94,7 +94,7 @@ To mount the config file into the docker container use `-v $(pwd)/mbmd.yaml:/etc
 
 Download the ARM package for usage with Raspberry Pi and copy the binary
 into `/usr/local/bin`. The following sytemd unit can be used to
-start `mbmd` as service (put this into ``/etc/systemd/system``):
+start `mbmd` as service (put this into a new file ``/etc/systemd/system/mbmd.service``):
 
     [Unit]
     Description=mbmd
