@@ -48,7 +48,7 @@ type validator struct {
 }
 
 func (v validator) check(f float64) bool {
-	tolerance := 0.1 // 10%
+	tolerance := 0.22 // 22%
 	for _, ref := range v.refs {
 		if f >= (1-tolerance)*ref && f <= (1+tolerance)*ref {
 			return true
@@ -94,8 +94,8 @@ func scan(cmd *cobra.Command, args []string) {
 	deviceList := make(map[int]meters.Device)
 	log.Printf("starting bus scan on %s", adapter)
 
-	// validate against 110V and 230V to make detection reliable
-	v := validator{[]float64{110, 230}}
+	// validate against battery voltage and 110V and 230V to make detection reliable
+	v := validator{[]float64{12, 24, 36, 48, 110, 230}}
 
 SCAN:
 	// loop over all valid slave addresses

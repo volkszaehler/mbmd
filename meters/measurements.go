@@ -138,8 +138,26 @@ const (
 	// Battery
 	ChargeState
 	BatteryVoltage
-
+	BatteryCurrent
+	BatteryPower
 	PhaseAngle
+	LoadVoltage
+	LoadCurrent
+	LoadPower
+	BatteryTemperature
+	InsideTemperature
+	MaxPVVoltage
+	MinPVVoltage
+	MaxBattVoltage
+	MinBattVoltage
+	ConsumedEnergyToday
+	ConsumedEnergyMonth
+	ConsumedEnergyYear
+	ConsumedEnergyTotal
+	GeneratedEnergyToday
+	GeneratedEnergyMonth
+	GeneratedEnergyYear
+	GeneratedEnergyTotal
 )
 
 var iec = map[Measurement][]string{
@@ -234,7 +252,26 @@ var iec = map[Measurement][]string{
 	DCEnergyS3:       {"String 3 Generation", "kWh"},
 	ChargeState:      {"Charge State", "%"},
 	BatteryVoltage:   {"Battery Voltage", "V"},
+	BatteryCurrent:   {"Battery Current", "A"},
+	BatteryPower:     {"Battery Power", "W"},
 	PhaseAngle:       {"Phase Angle", "°"},
+	LoadVoltage:      {"Load Voltage", "V"},
+	LoadCurrent:      {"Load Current", "A"},
+	LoadPower:        {"Load Power", "W"},
+	BatteryTemperature: {"Battery Temperature", "°C"},
+	InsideTemperature: {"Battery Temperature", "°C"},
+	MaxPVVoltage:      {"max PV Voltage today", "V"},
+	MinPVVoltage:      {"min PV Voltage today", "V"},
+	MaxBattVoltage:      {"max Battery Voltage today", "V"},
+	MinBattVoltage:      {"min Battery Voltage today", "V"},
+	ConsumedEnergyToday: {"Consumed Energy Today", "kWh"},
+	ConsumedEnergyMonth: {"Consumed Energy Month", "kWh"},
+	ConsumedEnergyYear: {"Consumed Energy Year", "kWh"},
+	ConsumedEnergyTotal: {"Consumed Energy Total", "kWh"},
+	GeneratedEnergyToday: {"Consumed Energy Today", "kWh"},
+	GeneratedEnergyMonth: {"Consumed Energy Month", "kWh"},
+	GeneratedEnergyYear: {"Consumed Energy Year", "kWh"},
+	GeneratedEnergyTotal: {"Consumed Energy Total", "kWh"},
 }
 
 // MarshalText implements encoding.TextMarshaler
