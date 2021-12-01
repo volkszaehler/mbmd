@@ -94,7 +94,7 @@ func scan(cmd *cobra.Command, args []string) {
 	deviceList := make(map[int]meters.Device)
 	log.Printf("starting bus scan on %s", adapter)
 
-	// validate against battery voltage and 110V and 230V to make detection reliable
+	// validate against 110V and 230V to make detection reliable
 	v := validator{[]float64{110, 230}}
 
 SCAN:
