@@ -72,9 +72,9 @@ func (b *RTU) Slave(deviceID uint8) {
 	// Some devices like SDM need to have a little pause between querying different device ids
 	if b.prevID != 0 && deviceID != b.prevID {
 		time.Sleep(time.Duration(100) * time.Millisecond)
-		b.prevID = deviceID
 	}
 
+	b.prevID = deviceID
 	b.Handler.SetSlave(deviceID)
 }
 
