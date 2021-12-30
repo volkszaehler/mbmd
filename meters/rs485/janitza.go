@@ -17,7 +17,7 @@ type JanitzaProducer struct {
 func NewJanitzaProducer() Producer {
 	/**
 	 * Opcodes for Janitza B23.
-	 * See https://www.janitza.de/betriebsanleitungen.html?file=files/download/manuals/current/B-Series/MID-Energy-Meters-Product-Manual.pdf
+	 * See https://www.janitza.de/betriebsanleitungen.html?file=files/download/manuals/current/B-Series/janitza-bhb-b2x-en.pdf
 	 */
 	ops := Opcodes{
 		VoltageL1: 0x4A38,
