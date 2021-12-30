@@ -85,6 +85,11 @@ func (b *ASCII) Timeout(timeout time.Duration) time.Duration {
 	return t
 }
 
+// ConnectDelay sets the the initial delay after connecting before starting communication
+func (b *ASCII) ConnectDelay(delay time.Duration) {
+	// nop
+}
+
 // Close closes the modbus connection.
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *ASCII) Close() {

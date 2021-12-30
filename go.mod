@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
-	github.com/grid-x/modbus v0.0.0-20210714071042-7af2b65ec03b
+	github.com/grid-x/modbus v0.0.0-20211229160110-3feef1c6833e
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/influxdata/influxdb-client-go v1.4.0
 	github.com/influxdata/line-protocol v0.0.0-20210311194329-9aa0e372d097 // indirect
