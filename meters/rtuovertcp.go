@@ -73,6 +73,11 @@ func (b *RTUOverTCP) Timeout(timeout time.Duration) time.Duration {
 	return t
 }
 
+// ConnectDelay sets the the initial delay after connecting before starting communication
+func (b *RTUOverTCP) ConnectDelay(delay time.Duration) {
+	b.Handler.ConnectDelay = delay
+}
+
 // Close closes the modbus connection.
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *RTUOverTCP) Close() {
