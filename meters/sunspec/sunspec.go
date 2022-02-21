@@ -127,7 +127,7 @@ func (d *SunSpec) collectModels(device sunspec.Device) error {
 	// 	return errors.New("sunspec: could not find supported model")
 	// }
 
-	// sanitizeModels()
+	d.sanitizeModels()
 	return nil
 }
 
@@ -140,15 +140,19 @@ func (d *SunSpec) relevantModelIds() []sunspec.ModelId {
 	return modelIds
 }
 
-// remove model 101 if model 103 found
+// remove model 113 if model 103 found
 func (d *SunSpec) sanitizeModels() {
-	m101 := -1
+	m103 := -1
+	m113 := -1
 	for i, m := range d.models {
-		if m.Id() == sunspec.ModelId(101) {
-			m101 = i
+		if m.Id() == sunspec.ModelId(103) {
+			m103 = i
 		}
-		if m101 >= 0 && m.Id() == sunspec.ModelId(103) {
-			d.models = append(d.models[0:m101], d.models[m101+1:]...)
+		if m.Id() == sunspec.ModelId(113) {
+			m113 = i
+		}
+		if m113 >= 0 && m103 >= 0 {
+			d.models = append(d.models[0:m113], d.models[m113+1:]...)
 			break
 		}
 	}
