@@ -18,7 +18,7 @@ install:
 	go install github.com/alvaroloes/enumer
 
 lint:
-	golangci-lint run
+	golangci-lint run --timeout 5m
 
 test:
 	@echo "Running testsuite"
