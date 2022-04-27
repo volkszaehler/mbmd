@@ -18,9 +18,6 @@ type Operation struct {
 // Producer is the interface that produces query snips which represent
 // modbus operations
 type Producer interface {
-	// Type returns device type, typically static
-	Type() string
-
 	// Type returns device description, typically static
 	Description() string
 

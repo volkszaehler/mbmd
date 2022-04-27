@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewDZGProducer)
+	Register("DZG", NewDZGProducer)
 }
-
-const (
-	METERTYPE_DZG = "DZG"
-)
 
 type DZGProducer struct {
 	Opcodes
@@ -50,11 +46,6 @@ func NewDZGProducer() Producer {
 		// ExportPower:0x0016, // exception '2' (illegal data address)
 	}
 	return &DZGProducer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *DZGProducer) Type() string {
-	return METERTYPE_DZG
 }
 
 // Description implements Producer interface

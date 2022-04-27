@@ -1,17 +1,14 @@
 package rs485
 
 import (
-	. "github.com/volkszaehler/mbmd/meters"
 	"math"
+
+	. "github.com/volkszaehler/mbmd/meters"
 )
 
 func init() {
-	Register(NewSEMTRProducer)
+	Register("SEMTR", NewSEMTRProducer)
 }
-
-const (
-	METERTYPE_SEMTR = "SEMTR"
-)
 
 type SEMTRProducer struct {
 	Opcodes
@@ -90,10 +87,6 @@ func NewSEMTRProducer() Producer {
 		//		PowerDemandL3:		0x049C, // demand power l3
 	}
 	return &SEMTRProducer{Opcodes: ops}
-}
-
-func (p *SEMTRProducer) Type() string {
-	return METERTYPE_SEMTR
 }
 
 func (p *SEMTRProducer) Description() string {

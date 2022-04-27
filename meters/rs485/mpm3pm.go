@@ -5,15 +5,11 @@ import (
 )
 
 func init() {
-	Register(NewMPM3MPProducer)
+	Register("MPM", NewMPM3MPProducer)
 }
 
-const (
-	METERTYPE_MPM = "MPM"
-)
-
 type MPM3MPProducer struct {
-	Opcodes map[Measurement]uint16
+	Opcodes
 }
 
 func NewMPM3MPProducer() Producer {
@@ -46,11 +42,6 @@ func NewMPM3MPProducer() Producer {
 		Frequency:       0x2C,
 	}
 	return &MPM3MPProducer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *MPM3MPProducer) Type() string {
-	return METERTYPE_MPM
 }
 
 // Description implements Producer interface

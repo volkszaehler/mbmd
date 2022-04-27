@@ -7,19 +7,18 @@ import (
 )
 
 func init() {
-	Register(NewABBProducer)
+	Register("ABB", NewABBProducer)
 }
 
 type signedness int
 
 const (
-	METERTYPE_ABB            = "ABB"
-	unsigned      signedness = iota
+	unsigned signedness = iota
 	signed
 )
 
 type ABBProducer struct {
-	Opcodes map[Measurement]uint16
+	Opcodes
 }
 
 func NewABBProducer() Producer {
@@ -58,11 +57,6 @@ func NewABBProducer() Producer {
 		Frequency: 0x5B2C,
 	}
 	return &ABBProducer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *ABBProducer) Type() string {
-	return METERTYPE_ABB
 }
 
 // Description implements Producer interface
