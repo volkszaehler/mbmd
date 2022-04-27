@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	Register("CarloGavazzi", NewCarloGavazziProducer)
+	Register("CGEM24", NewCarloGavazziProducer)
 }
 
 type CarloGavazziProducer struct {

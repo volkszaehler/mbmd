@@ -1,9 +1,8 @@
 ## mbmd completion bash
 
-generate the autocompletion script for bash
+Generate the autocompletion script for bash
 
 ### Synopsis
-
 
 Generate the autocompletion script for the bash shell.
 
@@ -11,16 +10,21 @@ This script depends on the 'bash-completion' package.
 If it is not installed already, you can install it via your OS's package manager.
 
 To load completions in your current shell session:
-$ source <(mbmd completion bash)
+
+	source <(mbmd completion bash)
 
 To load completions for every new session, execute once:
-Linux:
-  $ mbmd completion bash > /etc/bash_completion.d/mbmd
-MacOS:
-  $ mbmd completion bash > /usr/local/etc/bash_completion.d/mbmd
+
+#### Linux:
+
+	mbmd completion bash > /etc/bash_completion.d/mbmd
+
+#### macOS:
+
+	mbmd completion bash > /usr/local/etc/bash_completion.d/mbmd
 
 You will need to start a new shell for this setup to take effect.
-  
+
 
 ```
 mbmd completion bash
@@ -52,5 +56,5 @@ mbmd completion bash
 
 ### SEE ALSO
 
-* [mbmd completion](mbmd_completion.md)	 - generate the autocompletion script for the specified shell
+* [mbmd completion](mbmd_completion.md)	 - Generate the autocompletion script for the specified shell
 
