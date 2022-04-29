@@ -47,7 +47,6 @@ func NewRTU(device string, baudrate int, comset string) Connection {
 		device:  device,
 		Client:  client,
 		Handler: handler,
-		prevID: 0,
 	}
 
 	return b
