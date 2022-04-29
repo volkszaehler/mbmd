@@ -53,13 +53,13 @@ func (p *PacProducer) snip32(iec Measurement) Operation {
 	return operation
 }
 
-func (p *PacProducer) snip64(iec Measurement) Operation {
+func (p *PacProducer) snip64(iec Measurement, scaler float64) Operation {
 	operation := Operation{
 		FuncCode:  ReadInputReg,
 		OpCode:    p.Opcode(iec),
 		ReadLen:   4,
 		IEC61850:  iec,
-		Transform: RTUFloat64ToFloat64,
+		Transform: MakeScaledTransform(RTUFloat64ToFloat64, scaler),
 	}
 	return operation
 }
@@ -72,7 +72,7 @@ func (p *PacProducer) Produce() (res []Operation) {
 	for op := range p.Opcodes {
 		switch op {
 		case Import, Export:
-			res = append(res, p.snip64(op))
+			res = append(res, p.snip64(op, 1e3))
 		default:
 			res = append(res, p.snip32(op))
 		}
