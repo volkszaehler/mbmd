@@ -70,12 +70,11 @@ func (b *RTU) Logger(l Logger) {
 // Slave sets the modbus device id for the following operations
 func (b *RTU) Slave(deviceID uint8) {
 	// Some devices like SDM need to have a little pause between querying different device ids
-	if b.prevID != 0 && deviceID != b.prevID {
-		time.Sleep(time.Duration(100) * time.Millisecond)
+	if b.prevID == 0 || deviceID != b.prevID {
+		b.prevID = deviceID
+		b.Handler.SetSlave(deviceID)
+		time.Sleep(200 * time.Millisecond)
 	}
-
-	b.prevID = deviceID
-	b.Handler.SetSlave(deviceID)
 }
 
 // Timeout sets the modbus timeout
