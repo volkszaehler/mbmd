@@ -73,7 +73,7 @@ func (b *RTU) Slave(deviceID uint8) {
 	if b.prevID == 0 || deviceID != b.prevID {
 		b.prevID = deviceID
 		b.Handler.SetSlave(deviceID)
-		time.Sleep(time.Duration(200) * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 	}
 }
 
