@@ -33,7 +33,7 @@ func NewClientHandler(device string, baudrate int, comset string) *modbus.RTUCli
 		log.Fatalf("Invalid communication set specified: %s. See -h for help.", comset)
 	}
 
-	handler.Timeout = 300 * time.Millisecond
+	handler.Timeout = 600 * time.Millisecond
 
 	return handler
 }
