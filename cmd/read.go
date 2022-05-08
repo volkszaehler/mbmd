@@ -146,8 +146,8 @@ func decode(b []byte, length int, enc string) string {
 		if length != 2 {
 			log.Fatal("Invalid length for int32(swapped) encoding")
 		}
-		u := encoding.BigEndianUint32Swapped(b)
-		return strconv.FormatInt(int64(int32(u)), 10)
+		u := encoding.Int32LswFirst(b)
+		return strconv.FormatInt(int64(u), 10)
 	case "uint":
 		u := bytes2uint(b, length)
 		return strconv.FormatUint(u, 10)
@@ -155,14 +155,14 @@ func decode(b []byte, length int, enc string) string {
 		if length != 2 {
 			log.Fatal("Invalid length for uint32(swapped) encoding")
 		}
-		u := encoding.BigEndianUint32Swapped(b)
-		return strconv.FormatUint(uint64(uint32(u)), 10)
+		u := encoding.Uint32LswFirst(b)
+		return strconv.FormatUint(uint64(u), 10)
 	case "hex":
 		return fmt.Sprintf("%02x", b)
 	case "string":
 		return string(b)
 	case "stringswapped", "strings":
-		return encoding.StringSwapped(b)
+		return encoding.StringLsbFirst(b)
 	case "float":
 		f := bytes2float(b, length)
 		return fmt.Sprintf("%f", f)
