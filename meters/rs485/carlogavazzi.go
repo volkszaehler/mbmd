@@ -17,30 +17,26 @@ func NewCarloGavazziProducer() Producer {
 	 * https://www.aggsoft.com/serial-data-logger/tutorials/modbus-data-logging/carlo-gavazzi-em24.htm
 	 */
 	ops := Opcodes{
-		VoltageL1: 00,
-		VoltageL2: 02,
-		VoltageL3: 04,
-
-		CurrentL1: 12,
-		CurrentL2: 14,
-		CurrentL3: 16,
-
-		PowerL1: 18,
-		PowerL2: 20,
-		PowerL3: 22,
-		Power:   40,
-
-		ImportL1: 70,
-		ImportL2: 72,
-		ImportL3: 74,
-		Import:   62,
-
-		Cosphi:   53,
-		CosphiL1: 50,
-		CosphiL2: 51,
-		CosphiL3: 52,
-
-		Frequency: 55,
+		VoltageL1: 0x00,
+		VoltageL2: 0x02,
+		VoltageL3: 0x04,
+		CurrentL1: 0x0C,
+		CurrentL2: 0x0E,
+		CurrentL3: 0x10,
+		PowerL1:   0x12,
+		PowerL2:   0x14,
+		PowerL3:   0x16,
+		Power:     0x28,
+		CosphiL1:  0x2E,
+		CosphiL2:  0x2F,
+		CosphiL3:  0x30,
+		Cosphi:    0x31,
+		Frequency: 0x33,
+		Import:    0x34,
+		ImportL1:  0x40,
+		ImportL2:  0x42,
+		ImportL3:  0x44,
+		Export:    0x4E,
 	}
 	return &CarloGavazziProducer{Opcodes: ops}
 }
@@ -67,7 +63,7 @@ func (p *CarloGavazziProducer) snip16(iec Measurement, scaler ...float64) Operat
 }
 
 func (p *CarloGavazziProducer) snip32(iec Measurement, scaler ...float64) Operation {
-	transform := RTUInt32ToFloat64 // default conversion
+	transform := RTUInt32ToFloat64Swapped // default conversion
 	if len(scaler) > 0 {
 		transform = MakeScaledTransform(transform, scaler[0])
 	}
@@ -104,7 +100,7 @@ func (p *CarloGavazziProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		Cosphi, CosphiL1, CosphiL2, CosphiL3,
 	} {
-		res = append(res, p.snip16(op, 100))
+		res = append(res, p.snip16(op, 1000))
 	}
 
 	for _, op := range []Measurement{
@@ -116,11 +112,12 @@ func (p *CarloGavazziProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		Power, PowerL1, PowerL2, PowerL3,
 	} {
-		res = append(res, p.snip32(op, 100))
+		res = append(res, p.snip32(op, 10))
 	}
 
 	for _, op := range []Measurement{
 		Import, ImportL1, ImportL2, ImportL3,
+		Export,
 	} {
 		res = append(res, p.snip32(op, 10))
 	}
