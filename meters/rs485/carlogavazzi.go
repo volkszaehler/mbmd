@@ -43,7 +43,7 @@ func NewCarloGavazziProducer() Producer {
 
 // Description implements Producer interface
 func (p *CarloGavazziProducer) Description() string {
-	return "Carlo Gavazzi EM24"
+	return "Carlo Gavazzi EM24/ET340"
 }
 
 func (p *CarloGavazziProducer) snip16(iec Measurement, scaler ...float64) Operation {
