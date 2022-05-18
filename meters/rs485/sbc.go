@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewSBCProducer)
+	Register("SBC", NewSBCProducer)
 }
-
-const (
-	METERTYPE_SBC = "SBC"
-)
 
 type SBCProducer struct {
 	Opcodes
@@ -47,11 +43,6 @@ func NewSBCProducer() Producer {
 		ReactivePower: 52, // scaler 100
 	}
 	return &SBCProducer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *SBCProducer) Type() string {
-	return METERTYPE_SBC
 }
 
 // Description implements Producer interface

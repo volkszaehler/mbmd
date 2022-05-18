@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewDDMProducer)
+	Register("DDM", NewDDMProducer)
 }
-
-const (
-	METERTYPE_DDM = "DDM"
-)
 
 type DDMProducer struct {
 	Opcodes
@@ -26,10 +22,6 @@ func NewDDMProducer() Producer {
 		ReactiveSum:     0x0400,
 	}
 	return &DDMProducer{Opcodes: ops}
-}
-
-func (p *DDMProducer) Type() string {
-	return METERTYPE_DDM
 }
 
 func (p *DDMProducer) Description() string {

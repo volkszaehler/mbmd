@@ -15,15 +15,16 @@ mbmd run [flags]
                                      Valid types are:
                                        RTU
                                          ABB       ABB A/B-Series meters
+                                         CGEM24    Carlo Gavazzi EM24
                                          DDM       DDM18SD
                                          DZG       DZG Metering GmbH DVH4013 meters
                                          IEM3000   Schneider Electric iEM3000 series
                                          INEPRO    Inepro Metering Pro 380
                                          JANITZA   Janitza B-Series meters
                                          MPM       Bernecker Engineering MPM3PM meters
-                                         ORNO1P    ORNO WE-514 & WE-515
                                          ORNO1P504 ORNO WE-504
-                                         ORNO3P    ORNO WE-516 & WE-517
+                                         ORNO1p    ORNO WE-514 & WE-515
+                                         ORNO3p    ORNO WE-516 & WE-517
                                          SBC       Saia Burgess Controls ALE3 meters
                                          SDM       Eastron SDM630
                                          SDM220    Eastron SDM220

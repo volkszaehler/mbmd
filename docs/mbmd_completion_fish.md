@@ -1,17 +1,18 @@
 ## mbmd completion fish
 
-generate the autocompletion script for fish
+Generate the autocompletion script for fish
 
 ### Synopsis
-
 
 Generate the autocompletion script for the fish shell.
 
 To load completions in your current shell session:
-$ mbmd completion fish | source
+
+	mbmd completion fish | source
 
 To load completions for every new session, execute once:
-$ mbmd completion fish > ~/.config/fish/completions/mbmd.fish
+
+	mbmd completion fish > ~/.config/fish/completions/mbmd.fish
 
 You will need to start a new shell for this setup to take effect.
 
@@ -46,5 +47,5 @@ mbmd completion fish [flags]
 
 ### SEE ALSO
 
-* [mbmd completion](mbmd_completion.md)	 - generate the autocompletion script for the specified shell
+* [mbmd completion](mbmd_completion.md)	 - Generate the autocompletion script for the specified shell
 

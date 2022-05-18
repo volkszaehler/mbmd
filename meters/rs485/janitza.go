@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewJanitzaProducer)
+	Register("JANITZA", NewJanitzaProducer)
 }
-
-const (
-	METERTYPE_JANITZA = "JANITZA"
-)
 
 type JanitzaProducer struct {
 	Opcodes
@@ -42,11 +38,6 @@ func NewJanitzaProducer() Producer {
 		CosphiL3:  0x4A68,
 	}
 	return &JanitzaProducer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *JanitzaProducer) Type() string {
-	return METERTYPE_JANITZA
 }
 
 // Description implements Producer interface
