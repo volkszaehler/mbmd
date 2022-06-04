@@ -31,7 +31,7 @@ func NewInfluxClient(
 		token = fmt.Sprintf("%s:%s", user, password)
 	}
 
-	client := influxdb.NewClient(url, token)
+	client := influxdb.NewClientWithOptions(url, token, influxdb.DefaultOptions().SetHTTPRequestTimeout(30))
 
 	if database == "" {
 		log.Fatal("influx: missing database")
