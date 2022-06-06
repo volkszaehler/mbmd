@@ -6,7 +6,7 @@ require (
 	github.com/alvaroloes/enumer v1.1.2
 	github.com/andig/gosunspec v0.0.0-20211108155140-af2e73b86e71
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
-	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
