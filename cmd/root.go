@@ -54,6 +54,11 @@ The default adapter can be overridden per device`,
 		`Communication parameters for default adapter, either 8N1 or 8E1.
 Only applicable if the default adapter is an RTU device`,
 	)
+	rootCmd.PersistentFlags().IntP(
+		"timeout", "t",
+		300,
+		`Timeout modbus RTU`,
+	)
 	rootCmd.PersistentFlags().Bool(
 		"rtu",
 		false,

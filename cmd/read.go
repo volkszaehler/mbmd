@@ -56,7 +56,7 @@ func modbusClient() (meters.Connection, modbus.Client) {
 	}
 
 	// connection
-	conn := createConnection(adapter, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"))
+	conn := createConnection(adapter, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"), viper.GetInt("timeout"))
 	client := conn.ModbusClient()
 
 	// raw log

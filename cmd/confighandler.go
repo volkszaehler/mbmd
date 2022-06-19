@@ -78,7 +78,7 @@ func NewDeviceConfigHandler() *DeviceConfigHandler {
 }
 
 // createConnection parses adapter string to create TCP or RTU connection
-func createConnection(device string, rtu bool, baudrate int, comset string) (res meters.Connection) {
+func createConnection(device string, rtu bool, baudrate int, comset string, timeout int) (res meters.Connection) {
 	if device == "mock" {
 		res = meters.NewMock(device) // mocked connection
 	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
@@ -98,16 +98,16 @@ func createConnection(device string, rtu bool, baudrate int, comset string) (res
 		if _, err := os.Stat(device); err != nil {
 			log.Fatal(err)
 		}
-		res = meters.NewRTU(device, baudrate, comset) // serial connection
+		res = meters.NewRTU(device, baudrate, comset, timeout) // serial connection
 	}
 	return res
 }
 
 // ConnectionManager returns connection manager from cache or creates new connection wrapped by manager
-func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string) *meters.Manager {
+func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string, timeout int) *meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
-		conn := createConnection(connSpec, rtu, baudrate, comset)
+		conn := createConnection(connSpec, rtu, baudrate, comset, timeout)
 		manager = meters.NewManager(conn)
 		conf.Managers[connSpec] = manager
 	}
@@ -222,7 +222,7 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 
 	// If this is an RTU over TCP device, a default RTU over TCP should already
 	// have been created of the --rtu flag was specified. We'll not re-check this here.
-	manager := conf.ConnectionManager(connSpec, false, 0, "")
+	manager := conf.ConnectionManager(connSpec, false, 0, "", 300)
 
 	meter := conf.createDeviceForManager(manager, meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {
