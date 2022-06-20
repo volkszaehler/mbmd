@@ -33,7 +33,7 @@ func NewClientHandler(device string, baudrate int, comset string, timeout time.D
 		log.Fatalf("Invalid communication set specified: %s. See -h for help.", comset)
 	}
 
-	handler.Timeout = timeout * time.Millisecond
+	handler.Timeout = timeout
 
 	return handler
 }

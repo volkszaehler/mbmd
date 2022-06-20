@@ -222,7 +222,7 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 
 	// If this is an RTU over TCP device, a default RTU over TCP should already
 	// have been created of the --rtu flag was specified. We'll not re-check this here.
-	manager := conf.ConnectionManager(connSpec, false, 0, "", 300)
+	manager := conf.ConnectionManager(connSpec, false, 0, "", DefaultTimeout)
 
 	meter := conf.createDeviceForManager(manager, meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {
