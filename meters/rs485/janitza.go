@@ -25,6 +25,7 @@ func NewJanitzaProducer() Producer {
 		PowerL1:   0x4A4C,
 		PowerL2:   0x4A4E,
 		PowerL3:   0x4A50,
+		Power:     0x4A52,
 		ImportL1:  0x4A76,
 		ImportL2:  0x4A78,
 		ImportL3:  0x4A7A,
@@ -36,6 +37,7 @@ func NewJanitzaProducer() Producer {
 		CosphiL1:  0x4A64,
 		CosphiL2:  0x4A66,
 		CosphiL3:  0x4A68,
+		Frequency: 0x4A6A,
 	}
 	return &JanitzaProducer{Opcodes: ops}
 }
