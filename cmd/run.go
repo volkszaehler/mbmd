@@ -206,7 +206,7 @@ func run(cmd *cobra.Command, args []string) {
 	defaultDevice := viper.GetString("adapter")
 	if defaultDevice != "" {
 		confHandler.DefaultDevice = defaultDevice
-		confHandler.ConnectionManager(defaultDevice, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"), viper.GetInt("timeout"))
+		confHandler.ConnectionManager(defaultDevice, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"), viper.GetDuration("timeout"))
 	}
 
 	// create devices from command line
@@ -233,7 +233,7 @@ func run(cmd *cobra.Command, args []string) {
 		if len(devices) == 0 {
 			// add adapters from configuration
 			for _, a := range conf.Adapters {
-				confHandler.ConnectionManager(a.Device, a.RTU, a.Baudrate, a.Comset, viper.GetInt("timeout"))
+				confHandler.ConnectionManager(a.Device, a.RTU, a.Baudrate, a.Comset, viper.GetDuration("timeout"))
 			}
 
 			// add devices from configuration

@@ -78,7 +78,7 @@ func NewDeviceConfigHandler() *DeviceConfigHandler {
 }
 
 // createConnection parses adapter string to create TCP or RTU connection
-func createConnection(device string, rtu bool, baudrate int, comset string, timeout int) (res meters.Connection) {
+func createConnection(device string, rtu bool, baudrate int, comset string, timeout time.Duration) (res meters.Connection) {
 	if device == "mock" {
 		res = meters.NewMock(device) // mocked connection
 	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
@@ -104,7 +104,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string, time
 }
 
 // ConnectionManager returns connection manager from cache or creates new connection wrapped by manager
-func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string, timeout int) *meters.Manager {
+func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string, timeout time.Duration) *meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
 		conn := createConnection(connSpec, rtu, baudrate, comset, timeout)
