@@ -57,7 +57,7 @@ Only applicable if the default adapter is an RTU device`,
 	rootCmd.PersistentFlags().DurationP(
 		"timeout", "t",
 		DefaultTimeout,
-		`Modbus RTU timeout in ms`,
+		`Modbus RTU timeout`,
 	)
 	rootCmd.PersistentFlags().Bool(
 		"rtu",
