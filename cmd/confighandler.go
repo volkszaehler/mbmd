@@ -89,6 +89,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string, time
 		} else {
 			log.Printf("config: creating TCP connection for %s", device)
 			res = meters.NewTCP(device) // tcp connection
+      res.Timeout(timeout)
 		}
 	} else {
 		log.Printf("config: creating RTU connection for %s (%dbaud, %s)", device, baudrate, comset)
@@ -98,7 +99,8 @@ func createConnection(device string, rtu bool, baudrate int, comset string, time
 		if _, err := os.Stat(device); err != nil {
 			log.Fatal(err)
 		}
-		res = meters.NewRTU(device, baudrate, comset, timeout) // serial connection
+		res = meters.NewRTU(device, baudrate, comset) // serial connection
+    res.Timeout(timeout)
 	}
 	return res
 }

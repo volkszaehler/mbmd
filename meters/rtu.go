@@ -17,7 +17,7 @@ type RTU struct {
 }
 
 // NewClientHandler creates a serial line RTU modbus handler
-func NewClientHandler(device string, baudrate int, comset string, timeout time.Duration) *modbus.RTUClientHandler {
+func NewClientHandler(device string, baudrate int, comset string) *modbus.RTUClientHandler {
 	handler := modbus.NewRTUClientHandler(device)
 
 	handler.BaudRate = baudrate
@@ -33,14 +33,14 @@ func NewClientHandler(device string, baudrate int, comset string, timeout time.D
 		log.Fatalf("Invalid communication set specified: %s. See -h for help.", comset)
 	}
 
-	handler.Timeout = timeout
+	handler.Timeout = 300 * time.Millisecond
 
 	return handler
 }
 
 // NewRTU creates a RTU modbus client
-func NewRTU(device string, baudrate int, comset string, timeout time.Duration) Connection {
-	handler := NewClientHandler(device, baudrate, comset, timeout)
+func NewRTU(device string, baudrate int, comset string) Connection {
+	handler := NewClientHandler(device, baudrate, comset)
 	client := modbus.NewClient(handler)
 
 	b := &RTU{
