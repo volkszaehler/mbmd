@@ -213,7 +213,7 @@ func run(cmd *cobra.Command, args []string) {
 	devices, _ := cmd.PersistentFlags().GetStringSlice("devices")
 	for _, dev := range devices {
 		if dev != "" {
-			confHandler.CreateDeviceFromSpec(dev)
+			confHandler.CreateDeviceFromSpec(dev, viper.GetDuration("timeout"))
 		}
 	}
 

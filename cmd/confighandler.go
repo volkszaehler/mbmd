@@ -89,7 +89,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string, time
 		} else {
 			log.Printf("config: creating TCP connection for %s", device)
 			res = meters.NewTCP(device) // tcp connection
-      res.Timeout(timeout)
+			res.Timeout(timeout)
 		}
 	} else {
 		log.Printf("config: creating RTU connection for %s (%dbaud, %s)", device, baudrate, comset)
@@ -100,7 +100,7 @@ func createConnection(device string, rtu bool, baudrate int, comset string, time
 			log.Fatal(err)
 		}
 		res = meters.NewRTU(device, baudrate, comset) // serial connection
-    res.Timeout(timeout)
+		res.Timeout(timeout)
 	}
 	return res
 }
@@ -179,7 +179,7 @@ func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 
 // CreateDeviceFromSpec creates new device from specification string and adds
 // it to the connection manager
-func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
+func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout time.Duration) {
 	deviceSplit := strings.Split(deviceDef, "@")
 	if len(deviceSplit) == 0 || len(deviceSplit) > 2 {
 		log.Fatalf("Cannot parse connect string %s. See -h for help.", deviceDef)
@@ -224,7 +224,7 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string) {
 
 	// If this is an RTU over TCP device, a default RTU over TCP should already
 	// have been created of the --rtu flag was specified. We'll not re-check this here.
-	manager := conf.ConnectionManager(connSpec, false, 0, "", DefaultTimeout)
+	manager := conf.ConnectionManager(connSpec, false, 0, "", timeout)
 
 	meter := conf.createDeviceForManager(manager, meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {

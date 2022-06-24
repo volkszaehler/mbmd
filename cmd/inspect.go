@@ -154,7 +154,7 @@ func inspect(cmd *cobra.Command, args []string) {
 	}
 	for _, dev := range devices {
 		if dev != "" {
-			confHandler.CreateDeviceFromSpec(dev)
+			confHandler.CreateDeviceFromSpec(dev, viper.GetDuration("timeout"))
 		}
 	}
 
