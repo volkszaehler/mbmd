@@ -5,7 +5,7 @@ import (
 	golog "log"
 	"os"
 	"sort"
-  "time"
+	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/rs485"
