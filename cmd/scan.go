@@ -68,7 +68,7 @@ func scan(cmd *cobra.Command, args []string) {
 		log.Fatal("missing adapter configuration")
 	}
 
-	conn := createConnection(adapter, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"))
+	conn := createConnection(adapter, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"), viper.GetDuration("timeout"))
 	client := conn.ModbusClient()
 
 	// raw log

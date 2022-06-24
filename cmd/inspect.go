@@ -143,7 +143,7 @@ func inspect(cmd *cobra.Command, args []string) {
 	defaultDevice := viper.GetString("adapter")
 	if defaultDevice != "" {
 		confHandler.DefaultDevice = defaultDevice
-		confHandler.ConnectionManager(defaultDevice, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"))
+		confHandler.ConnectionManager(defaultDevice, viper.GetBool("rtu"), viper.GetInt("baudrate"), viper.GetString("comset"), viper.GetDuration("timeout"))
 	}
 
 	// create devices from command line
@@ -154,7 +154,7 @@ func inspect(cmd *cobra.Command, args []string) {
 	}
 	for _, dev := range devices {
 		if dev != "" {
-			confHandler.CreateDeviceFromSpec(dev)
+			confHandler.CreateDeviceFromSpec(dev, viper.GetDuration("timeout"))
 		}
 	}
 
