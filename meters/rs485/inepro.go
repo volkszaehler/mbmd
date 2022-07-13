@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewIneproProducer)
+	Register("INEPRO", NewIneproProducer)
 }
-
-const (
-	METERTYPE_INEPRO = "INEPRO"
-)
 
 type IneproProducer struct {
 	Opcodes
@@ -90,11 +86,6 @@ func NewIneproProducer() Producer {
 		ReactiveExportL3: 0x6046,
 	}
 	return &IneproProducer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *IneproProducer) Type() string {
-	return METERTYPE_INEPRO
 }
 
 // Description implements Producer interface

@@ -2,6 +2,7 @@ package rs485
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/grid-x/modbus"
@@ -15,21 +16,25 @@ const (
 
 // RS485 implements meters.Device
 type RS485 struct {
+	typ      string
 	producer Producer
 	ops      chan Operation
 	inflight Operation
 }
 
 // NewDevice creates a device who's type must exist in the producer registry
-func NewDevice(typeid string) (*RS485, error) {
-	if factory, ok := Producers[typeid]; ok {
-		device := &RS485{
-			producer: factory(),
+func NewDevice(typ string) (*RS485, error) {
+	for t, factory := range Producers {
+		if strings.EqualFold(t, typ) {
+			device := &RS485{
+				typ:      typ,
+				producer: factory(),
+			}
+			return device, nil
 		}
-		return device, nil
 	}
 
-	return nil, fmt.Errorf("unknown meter type %s", typeid)
+	return nil, fmt.Errorf("unknown meter type: %s", typ)
 }
 
 // Initialize prepares the device for usage. Any setup or initialization should be done here.
@@ -45,10 +50,9 @@ func (d *RS485) Producer() Producer {
 // Descriptor returns the device descriptor. Since this method does not have bus access the descriptor should be
 // prepared during initialization.
 func (d *RS485) Descriptor() meters.DeviceDescriptor {
-	typ := d.producer.Type()
 	return meters.DeviceDescriptor{
-		Type:         typ,
-		Manufacturer: typ,
+		Type:         d.typ,
+		Manufacturer: d.typ,
 		Model:        d.producer.Description(),
 	}
 }

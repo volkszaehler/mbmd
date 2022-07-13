@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewORNO1P504Producer)
+	Register("ORNO1P504", NewORNO1P504Producer)
 }
-
-const (
-	METERTYPE_ORNO1P504 = "ORNO1P504"
-)
 
 var ops1p504 Opcodes = Opcodes{
 
@@ -30,11 +26,6 @@ type ORNO1P504Producer struct {
 
 func NewORNO1P504Producer() Producer {
 	return &ORNO1P504Producer{Opcodes: ops1p504}
-}
-
-// Type implements Producer interface
-func (p *ORNO1P504Producer) Type() string {
-	return METERTYPE_ORNO1P504
 }
 
 // Description implements Producer interface

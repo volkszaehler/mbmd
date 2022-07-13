@@ -26,7 +26,7 @@ Easily read and distribute data from ModBus meters and grid inverters
 
 ### SEE ALSO
 
-* [mbmd completion](mbmd_completion.md)	 - generate the autocompletion script for the specified shell
+* [mbmd completion](mbmd_completion.md)	 - Generate the autocompletion script for the specified shell
 * [mbmd inspect](mbmd_inspect.md)	 - Inspect SunSpec device models and implemented values
 * [mbmd read](mbmd_read.md)	 - Read register (EXPERIMENTAL)
 * [mbmd run](mbmd_run.md)	 - Read and publish measurements from all configured devices

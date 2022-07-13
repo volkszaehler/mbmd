@@ -17,6 +17,9 @@ type Connection interface {
 	// Timeout sets the modbus timeout
 	Timeout(timeout time.Duration) time.Duration
 
+	// ConnectDelay sets the the initial delay after connecting before starting communication
+	ConnectDelay(delay time.Duration)
+
 	// Close closes the modbus connection.
 	// This forces the modbus client to reopen the connection before the next bus operations.
 	Close()

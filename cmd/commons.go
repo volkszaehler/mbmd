@@ -5,10 +5,13 @@ import (
 	golog "log"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/rs485"
 )
+
+const DefaultTimeout = 300 * time.Millisecond
 
 // logger is the golang compatible logger interface used by all commands
 type logger interface {

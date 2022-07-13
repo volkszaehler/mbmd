@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewIEM3000Producer)
+	Register("IEM3000", NewIEM3000Producer)
 }
-
-const (
-	METERTYPE_IEM3000 = "IEM3000"
-)
 
 type IEM3000Producer struct {
 	Opcodes
@@ -50,11 +46,6 @@ func NewIEM3000Producer() Producer {
 		ReactiveExport: 0x0C97,
 	}
 	return &IEM3000Producer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *IEM3000Producer) Type() string {
-	return METERTYPE_IEM3000
 }
 
 // Description implements Producer interface

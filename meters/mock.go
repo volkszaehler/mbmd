@@ -53,6 +53,11 @@ func (b *Mock) Timeout(timeout time.Duration) time.Duration {
 	return timeout
 }
 
+// ConnectDelay sets the the initial delay after connecting before starting communication
+func (b *Mock) ConnectDelay(delay time.Duration) {
+	// nop
+}
+
 // Close closes the modbus connection.
 func (b *Mock) Close() {
 }

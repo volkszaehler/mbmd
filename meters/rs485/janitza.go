@@ -3,12 +3,8 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register(NewJanitzaProducer)
+	Register("JANITZA", NewJanitzaProducer)
 }
-
-const (
-	METERTYPE_JANITZA = "JANITZA"
-)
 
 type JanitzaProducer struct {
 	Opcodes
@@ -17,7 +13,7 @@ type JanitzaProducer struct {
 func NewJanitzaProducer() Producer {
 	/**
 	 * Opcodes for Janitza B23.
-	 * See https://www.janitza.de/betriebsanleitungen.html?file=files/download/manuals/current/B-Series/MID-Energy-Meters-Product-Manual.pdf
+	 * See https://www.janitza.de/betriebsanleitungen.html?file=files/download/manuals/current/B-Series/janitza-bhb-b2x-en.pdf
 	 */
 	ops := Opcodes{
 		VoltageL1: 0x4A38,
@@ -29,6 +25,7 @@ func NewJanitzaProducer() Producer {
 		PowerL1:   0x4A4C,
 		PowerL2:   0x4A4E,
 		PowerL3:   0x4A50,
+		Power:     0x4A52,
 		ImportL1:  0x4A76,
 		ImportL2:  0x4A78,
 		ImportL3:  0x4A7A,
@@ -40,13 +37,9 @@ func NewJanitzaProducer() Producer {
 		CosphiL1:  0x4A64,
 		CosphiL2:  0x4A66,
 		CosphiL3:  0x4A68,
+		Frequency: 0x4A6A,
 	}
 	return &JanitzaProducer{Opcodes: ops}
-}
-
-// Type implements Producer interface
-func (p *JanitzaProducer) Type() string {
-	return METERTYPE_JANITZA
 }
 
 // Description implements Producer interface
