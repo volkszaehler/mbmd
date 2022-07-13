@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	Register(NewSun2000Producer)
+	Register("Sun2000", NewSun2000Producer)
 }
 
 const (

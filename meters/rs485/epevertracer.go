@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	Register(NewEpeverProducer)
+	Register("Epever", NewEpeverProducer)
 }
 
 const (
