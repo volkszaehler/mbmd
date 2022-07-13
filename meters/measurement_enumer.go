@@ -7,9 +7,9 @@ import (
 	"fmt"
 )
 
-const _MeasurementName = "FrequencyCurrentCurrentL1CurrentL2CurrentL3VoltageVoltageL1VoltageL2VoltageL3PowerPowerL1PowerL2PowerL3ImportPowerImportPowerL1ImportPowerL2ImportPowerL3ExportPowerExportPowerL1ExportPowerL2ExportPowerL3ReactivePowerReactivePowerL1ReactivePowerL2ReactivePowerL3ApparentPowerApparentPowerL1ApparentPowerL2ApparentPowerL3CosphiCosphiL1CosphiL2CosphiL3THDTHDL1THDL2THDL3SumSumT1SumT2SumL1SumL2SumL3ImportImportT1ImportT2ImportL1ImportL2ImportL3ExportExportT1ExportT2ExportL1ExportL2ExportL3ReactiveSumReactiveSumT1ReactiveSumT2ReactiveSumL1ReactiveSumL2ReactiveSumL3ReactiveImportReactiveImportT1ReactiveImportT2ReactiveImportL1ReactiveImportL2ReactiveImportL3ReactiveExportReactiveExportT1ReactiveExportT2ReactiveExportL1ReactiveExportL2ReactiveExportL3DCCurrentDCVoltageDCPowerHeatSinkTempDCCurrentS1DCVoltageS1DCPowerS1DCEnergyS1DCCurrentS2DCVoltageS2DCPowerS2DCEnergyS2DCCurrentS3DCVoltageS3DCPowerS3DCEnergyS3ChargeStateBatteryVoltageBatteryCurrentBatteryPowerPhaseAngleLoadVoltageLoadCurrentLoadPowerBatteryTemperatureInsideTemperatureMaxPVVoltageMinPVVoltageMaxBattVoltageMinBattVoltageConsumedEnergyTodayConsumedEnergyMonthConsumedEnergyYearConsumedEnergyTotalGeneratedEnergyTodayGeneratedEnergyMonthGeneratedEnergyYearGeneratedEnergyTotal"
+const _MeasurementName = "FrequencyCurrentCurrentL1CurrentL2CurrentL3VoltageVoltageL1VoltageL2VoltageL3PowerPowerL1PowerL2PowerL3ImportPowerImportPowerL1ImportPowerL2ImportPowerL3ExportPowerExportPowerL1ExportPowerL2ExportPowerL3ReactivePowerReactivePowerL1ReactivePowerL2ReactivePowerL3ApparentPowerApparentPowerL1ApparentPowerL2ApparentPowerL3CosphiCosphiL1CosphiL2CosphiL3THDTHDL1THDL2THDL3SumSumT1SumT2SumL1SumL2SumL3ImportImportT1ImportT2ImportL1ImportL2ImportL3ExportExportT1ExportT2ExportL1ExportL2ExportL3ReactiveSumReactiveSumT1ReactiveSumT2ReactiveSumL1ReactiveSumL2ReactiveSumL3ReactiveImportReactiveImportT1ReactiveImportT2ReactiveImportL1ReactiveImportL2ReactiveImportL3ReactiveExportReactiveExportT1ReactiveExportT2ReactiveExportL1ReactiveExportL2ReactiveExportL3DCCurrentDCVoltageDCPowerHeatSinkTempDCCurrentS1DCVoltageS1DCPowerS1DCEnergyS1DCCurrentS2DCVoltageS2DCPowerS2DCEnergyS2DCCurrentS3DCVoltageS3DCPowerS3DCEnergyS3ChargeStateBatteryVoltageBatteryCurrentBatteryPowerPhaseAngleLoadVoltageLoadCurrentLoadPowerBatteryTemperatureInsideTemperatureMaxPVVoltageMinPVVoltageMaxBattVoltageMinBattVoltageConsumedEnergyTodayConsumedEnergyMonthConsumedEnergyYearConsumedEnergyTotalGeneratedEnergyTodayGeneratedEnergyMonthGeneratedEnergyYearGeneratedEnergyTotalEfficiencyPeakPower"
 
-var _MeasurementIndex = [...]uint16{0, 9, 16, 25, 34, 43, 50, 59, 68, 77, 82, 89, 96, 103, 114, 127, 140, 153, 164, 177, 190, 203, 216, 231, 246, 261, 274, 289, 304, 319, 325, 333, 341, 349, 352, 357, 362, 367, 370, 375, 380, 385, 390, 395, 401, 409, 417, 425, 433, 441, 447, 455, 463, 471, 479, 487, 498, 511, 524, 537, 550, 563, 577, 593, 609, 625, 641, 657, 671, 687, 703, 719, 735, 751, 760, 769, 776, 788, 799, 810, 819, 829, 840, 851, 860, 870, 881, 892, 901, 911, 922, 936, 950, 962, 972, 983, 994, 1003, 1021, 1038, 1050, 1062, 1076, 1090, 1109, 1128, 1146, 1165, 1185, 1205, 1224, 1244}
+var _MeasurementIndex = [...]uint16{0, 9, 16, 25, 34, 43, 50, 59, 68, 77, 82, 89, 96, 103, 114, 127, 140, 153, 164, 177, 190, 203, 216, 231, 246, 261, 274, 289, 304, 319, 325, 333, 341, 349, 352, 357, 362, 367, 370, 375, 380, 385, 390, 395, 401, 409, 417, 425, 433, 441, 447, 455, 463, 471, 479, 487, 498, 511, 524, 537, 550, 563, 577, 593, 609, 625, 641, 657, 671, 687, 703, 719, 735, 751, 760, 769, 776, 788, 799, 810, 819, 829, 840, 851, 860, 870, 881, 892, 901, 911, 922, 936, 950, 962, 972, 983, 994, 1003, 1021, 1038, 1050, 1062, 1076, 1090, 1109, 1128, 1146, 1165, 1185, 1205, 1224, 1244, 1254, 1263}
 
 func (i Measurement) String() string {
 	i -= 1
@@ -19,7 +19,7 @@ func (i Measurement) String() string {
 	return _MeasurementName[_MeasurementIndex[i]:_MeasurementIndex[i+1]]
 }
 
-var _MeasurementValues = []Measurement{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111}
+var _MeasurementValues = []Measurement{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113}
 
 var _MeasurementNameToValueMap = map[string]Measurement{
 	_MeasurementName[0:9]:       1,
@@ -133,6 +133,8 @@ var _MeasurementNameToValueMap = map[string]Measurement{
 	_MeasurementName[1185:1205]: 109,
 	_MeasurementName[1205:1224]: 110,
 	_MeasurementName[1224:1244]: 111,
+	_MeasurementName[1244:1254]: 112,
+	_MeasurementName[1254:1263]: 113,
 }
 
 // MeasurementString retrieves an enum value from the enum constants string name.
