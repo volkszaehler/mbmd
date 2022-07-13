@@ -99,6 +99,7 @@ start `mbmd` as service (put this into a new file ``/etc/systemd/system/mbmd.ser
     [Unit]
     Description=mbmd
     After=syslog.target
+    After=network-online.target
     [Service]
     ExecStart=/usr/local/bin/mbmd run -a /dev/ttyAMA0
     Restart=always
