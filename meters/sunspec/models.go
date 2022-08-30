@@ -117,6 +117,12 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model160.DCW:  meters.DCPowerS3,
 			model160.DCWH: meters.DCEnergyS3,
 		},
+		4: {
+			model160.DCA:  meters.DCCurrentS4,
+			model160.DCV:  meters.DCVoltageS4,
+			model160.DCW:  meters.DCPowerS4,
+			model160.DCWH: meters.DCEnergyS4,
+		},
 	},
 	// single phase (AN or AB) meter
 	model201.ModelID: {
