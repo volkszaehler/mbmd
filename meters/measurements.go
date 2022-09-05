@@ -134,6 +134,10 @@ const (
 	DCVoltageS3
 	DCPowerS3
 	DCEnergyS3
+	DCCurrentS4
+	DCVoltageS4
+	DCPowerS4
+	DCEnergyS4
 
 	// Battery
 	ChargeState
@@ -232,6 +236,10 @@ var iec = map[Measurement][]string{
 	DCVoltageS3:      {"String 3 Voltage", "V"},
 	DCPowerS3:        {"String 3 Power", "W"},
 	DCEnergyS3:       {"String 3 Generation", "kWh"},
+	DCCurrentS4:      {"String 4 Current", "A"},
+	DCVoltageS4:      {"String 4 Voltage", "V"},
+	DCPowerS4:        {"String 4 Power", "W"},
+	DCEnergyS4:       {"String 4 Generation", "kWh"},
 	ChargeState:      {"Charge State", "%"},
 	BatteryVoltage:   {"Battery Voltage", "V"},
 	PhaseAngle:       {"Phase Angle", "°"},
