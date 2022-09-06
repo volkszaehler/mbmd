@@ -29,6 +29,7 @@ jobs:
         run: |
           gofmt -w -l $(find . -name '*.go')
           go mod tidy
+          make docs
           test -z "$(git status --porcelain)" || (git status; git diff; false)
 
   build:

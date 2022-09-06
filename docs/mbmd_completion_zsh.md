@@ -11,6 +11,10 @@ to enable it.  You can execute the following once:
 
 	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
+To load completions in your current shell session:
+
+	source <(mbmd completion zsh); compdef _mbmd mbmd
+
 To load completions for every new session, execute once:
 
 #### Linux:
@@ -19,7 +23,7 @@ To load completions for every new session, execute once:
 
 #### macOS:
 
-	mbmd completion zsh > /usr/local/share/zsh/site-functions/_mbmd
+	mbmd completion zsh > $(brew --prefix)/share/zsh/site-functions/_mbmd
 
 You will need to start a new shell for this setup to take effect.
 

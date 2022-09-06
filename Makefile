@@ -1,4 +1,4 @@
-.PHONY: default clean install lint test build binaries publish-images test-release release
+.PHONY: default clean docs install lint test build publish-images test-release release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
@@ -6,13 +6,17 @@ VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
 BUILD_DATE := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 BUILD_TAGS := -tags=release
-LD_FLAGS := -X "github.com/volkszaehler/mbmd/server.Version=${VERSION}" -X "github.com/volkszaehler/mbmd/server.Commit=${SHA}"
+MODULE := github.com/volkszaehler/mbmd
+LD_FLAGS := -X "${MODULE}/server.Version=${VERSION}" -X "${MODULE}/server.Commit=${SHA}"
 BUILD_ARGS := -ldflags='$(LD_FLAGS)'
 
 default: clean install lint test build
 
 clean:
 	rm -rf dist/
+
+docs:
+	go run $(MODULE) doc
 
 install:
 	go install github.com/alvaroloes/enumer
