@@ -263,13 +263,13 @@ func (d *SunSpec) QueryPointAny(client modbus.Client, modelID, blockID int, poin
 }
 
 // QueryPoint executes a single query operation for model/block/point on the bus
-func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID string) (res meters.MeasurementResult, err error) {
+func (d *SunSpec) QueryPoint(client modbus.Client, modelID, blockID int, pointID string, measurement meters.Measurement) (res meters.MeasurementResult, err error) {
 	block, point, err := d.QueryPointAny(client, modelID, blockID, pointID)
 	if err != nil {
 		return res, err
 	}
 
-	return d.convertPoint(block, point, meters.Measurement(0))
+	return d.convertPoint(block, point, measurement)
 }
 
 // QueryOp queries all models and blocks until measurement is found
@@ -291,9 +291,7 @@ func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) 
 
 				for pointID, m := range pointMap {
 					if m == measurement {
-						mr, err := d.QueryPoint(client, int(modelID), blockID, pointID)
-						mr.Measurement = measurement
-						return mr, err
+						return d.QueryPoint(client, int(modelID), blockID, pointID, measurement)
 					}
 				}
 			}
