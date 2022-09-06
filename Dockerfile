@@ -1,9 +1,7 @@
-# syntax=docker/dockerfile:1.0-experimental
-
 ############################
 # STEP 1 build executable binary
 ############################
-FROM golang:1.16-alpine as builder
+FROM golang:1.18-alpine as builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
