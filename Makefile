@@ -1,4 +1,4 @@
-.PHONY: default clean docs install lint test build publish-images test-release release
+.PHONY: default clean docs install assets lint test build publish-images test-release release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
@@ -19,7 +19,10 @@ docs:
 	go run $(MODULE) doc
 
 install:
-	go install github.com/alvaroloes/enumer
+	go install $$(go list -f '{{join .Imports " "}}' tools.go)
+
+assets:
+	go generate ./...
 
 lint:
 	golangci-lint run
