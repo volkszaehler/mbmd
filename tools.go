@@ -4,5 +4,5 @@
 package main
 
 import (
-	_ "github.com/alvaroloes/enumer"
+	_ "github.com/dmarkham/enumer"
 )
