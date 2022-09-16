@@ -1,4 +1,4 @@
-.PHONY: default clean docs install assets lint test build publish-images test-release release
+.PHONY: default clean docs porcelain install assets lint test build publish-images test-release release
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse --short HEAD)
@@ -17,6 +17,11 @@ clean:
 
 docs:
 	go run $(MODULE) doc
+
+porcelain:
+	gofmt -w -l $$(find . -name '*.go')
+	go mod tidy
+	test -z "$$(git status --porcelain)" || (git status; git diff; false)
 
 install:
 	go install $$(go list -f '{{join .Imports " "}}' tools.go)

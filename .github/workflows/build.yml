@@ -19,18 +19,16 @@ jobs:
           cache: true
         id: go
 
-      # - name: Install tools
-      #   run: make install
+      - name: Install tools
+        run: make install
 
-      # - name: Assets
-      #   run: make assets
+      - name: Assets
+        run: make assets
 
       - name: Porcelain
         run: |
-          gofmt -w -l $(find . -name '*.go')
-          go mod tidy
           make docs
-          test -z "$(git status --porcelain)" || (git status; git diff; false)
+          make porcelain
 
   build:
     name: Build
