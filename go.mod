@@ -11,7 +11,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/grid-x/modbus v0.0.0-20220829110112-006eee73392e
 	github.com/influxdata/influxdb-client-go v1.4.0
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.13.0
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
