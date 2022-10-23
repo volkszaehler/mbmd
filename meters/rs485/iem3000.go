@@ -15,35 +15,35 @@ func NewIEM3000Producer() Producer {
 	 * https://download.schneider-electric.com/files?p_enDocType=User+guide&p_File_Name=DOCA0005DE-12.pdf&p_Doc_Ref=DOCA0005DE#page49
 	 */
 	ops := Opcodes{
-		VoltageL1: 0x0BD3,
-		VoltageL2: 0x0BD5,
-		VoltageL3: 0x0BD7,
-		Voltage:   0x0BDB,
+		VoltageL1: 0x0BD4,
+		VoltageL2: 0x0BD6,
+		VoltageL3: 0x0BD8,
+		Voltage:   0x0BDC,
 
-		CurrentL1: 0x0BB7,
-		CurrentL2: 0x0BB9,
-		CurrentL3: 0x0BBB,
-		Current:   0x0BC1,
+		CurrentL1: 0x0BB8,
+		CurrentL2: 0x0BBA,
+		CurrentL3: 0x0BBC,
+		Current:   0x0BC2,
 
-		PowerL1: 0x0BED,
-		PowerL2: 0x0BEF,
-		PowerL3: 0x0BF1,
-		Power:   0x0BF3,
+		PowerL1: 0x0BEE,
+		PowerL2: 0x0BF0,
+		PowerL3: 0x0BF2,
+		Power:   0x0BF4,
 
-		ReactivePower: 0x0BFB,
-		ApparentPower: 0x0C03,
+		ReactivePower: 0x0BFC,
+		ApparentPower: 0x0C04,
 
-		// PowerFactor: 0x0C0B,
-		Frequency: 0x0C25,
+		// PowerFactor: 0x0C0C,
+		Frequency: 0x0C26,
 
-		Import:   0x0C83,
-		ImportL1: 0x0DBD,
-		ImportL2: 0x0DC1,
-		ImportL3: 0x0DC5,
-		Export:   0x0C87,
+		Import:   0x0C84,
+		ImportL1: 0x0DBE,
+		ImportL2: 0x0DC2,
+		ImportL3: 0x0DC6,
+		Export:   0x0C88,
 
-		ReactiveImport: 0x0C93,
-		ReactiveExport: 0x0C97,
+		ReactiveImport: 0x0C94,
+		ReactiveExport: 0x0C98,
 	}
 	return &IEM3000Producer{Opcodes: ops}
 }
