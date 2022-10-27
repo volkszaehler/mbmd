@@ -25,8 +25,9 @@ const AssetsDir = "assets"
 
 // Httpd is an http server
 type Httpd struct {
-	mc *Cache
-	qe DeviceInfo
+	router *mux.Router
+	mc     *Cache
+	qe     DeviceInfo
 }
 
 func (h *Httpd) mkIndexHandler() func(http.ResponseWriter, *http.Request) {
@@ -156,9 +157,15 @@ func jsonHandler(h http.Handler) http.Handler {
 // NewHttpd creates HTTP daemon
 func NewHttpd(qe DeviceInfo, mc *Cache) *Httpd {
 	return &Httpd{
-		qe: qe,
-		mc: mc,
+		router: mux.NewRouter().StrictSlash(true),
+		qe:     qe,
+		mc:     mc,
 	}
+}
+
+// Router returns the root router
+func (h *Httpd) Router() *mux.Router {
+	return h.router
 }
 
 // Run executes the http server
@@ -168,10 +175,9 @@ func (h *Httpd) Run(
 	url string,
 ) {
 	log.Printf("httpd: starting api at %s", url)
-	router := mux.NewRouter().StrictSlash(true)
 
 	// static
-	static := router.PathPrefix("/").Subrouter()
+	static := h.router.PathPrefix("/").Subrouter()
 	static.Use(handlers.CompressHandler)
 
 	// individual handlers per folder
@@ -181,7 +187,7 @@ func (h *Httpd) Run(
 	}
 
 	// api
-	api := router.PathPrefix("/api").Subrouter()
+	api := h.router.PathPrefix("/api").Subrouter()
 	api.Use(jsonHandler)
 	api.Use(handlers.CompressHandler)
 
@@ -192,14 +198,14 @@ func (h *Httpd) Run(
 	api.HandleFunc("/status", h.mkStatusHandler(s))
 
 	// websocket
-	router.HandleFunc("/ws", h.mkSocketHandler(hub))
+	h.router.HandleFunc("/ws", h.mkSocketHandler(hub))
 
 	// debug logger
 	_ = log.New(debugLogger{"superfluous"}, "", 0)
 
 	srv := http.Server{
 		Addr:         url,
-		Handler:      router,
+		Handler:      h.router,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
