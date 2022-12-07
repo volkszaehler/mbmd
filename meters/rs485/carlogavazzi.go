@@ -31,12 +31,12 @@ func NewCarloGavazziProducer() Producer {
 		CosphiL2:  0x2F,
 		CosphiL3:  0x30,
 		Cosphi:    0x31,
-		Frequency: 0x33,
-		Import:    0x34,
-		ImportL1:  0x40,
-		ImportL2:  0x42,
-		ImportL3:  0x44,
-		Export:    0x4E,
+		Frequency: 0x37,
+		Import:    0x42,
+		ImportL1:  0x46,
+		ImportL2:  0x48,
+		ImportL3:  0x4A,
+		Export:    0x5C,
 	}
 	return &CarloGavazziProducer{Opcodes: ops}
 }
