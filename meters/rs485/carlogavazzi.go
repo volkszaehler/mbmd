@@ -14,6 +14,8 @@ type CarloGavazziProducer struct {
 
 func NewCarloGavazziProducer() Producer {
 	/***
+	 * https://gavazzi.se/app/uploads/2020/11/em24_is_cp.pdf
+	 * alternative
 	 * https://www.aggsoft.com/serial-data-logger/tutorials/modbus-data-logging/carlo-gavazzi-em24.htm
 	 */
 	ops := Opcodes{
