@@ -14,6 +14,8 @@ type CarloGavazziProducer struct {
 
 func NewCarloGavazziProducer() Producer {
 	/***
+	 * https://gavazzi.se/app/uploads/2020/11/em24_is_cp.pdf
+	 * alternative
 	 * https://www.aggsoft.com/serial-data-logger/tutorials/modbus-data-logging/carlo-gavazzi-em24.htm
 	 */
 	ops := Opcodes{
@@ -27,16 +29,16 @@ func NewCarloGavazziProducer() Producer {
 		PowerL2:   0x14,
 		PowerL3:   0x16,
 		Power:     0x28,
-		CosphiL1:  0x2E,
-		CosphiL2:  0x2F,
-		CosphiL3:  0x30,
-		Cosphi:    0x31,
-		Frequency: 0x33,
-		Import:    0x34,
-		ImportL1:  0x40,
-		ImportL2:  0x42,
-		ImportL3:  0x44,
-		Export:    0x4E,
+		CosphiL1:  0x32,
+		CosphiL2:  0x33,
+		CosphiL3:  0x34,
+		Cosphi:    0x35,
+		Frequency: 0x37,
+		Import:    0x42,
+		ImportL1:  0x46,
+		ImportL2:  0x48,
+		ImportL3:  0x4A,
+		Export:    0x5C,
 	}
 	return &CarloGavazziProducer{Opcodes: ops}
 }
