@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	golog "log"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -79,6 +80,11 @@ any type is considered valid.
 		"api",
 		"0.0.0.0:8080",
 		"REST API url. Use 127.0.0.1:8080 to limit to localhost.",
+	)
+	runCmd.PersistentFlags().String(
+		"profile",
+		"",
+		"Add pprof debug information",
 	)
 	runCmd.PersistentFlags().StringP(
 		"mqtt-broker", "m",
@@ -283,6 +289,12 @@ func run(cmd *cobra.Command, args []string) {
 		// http daemon
 		httpd := server.NewHttpd(qe, cache)
 		go httpd.Run(hub, status, viper.GetString("api"))
+
+		if viper.GetBool("profile") {
+			mux := httpd.Router()
+			mux.HandleFunc("/debug/pprof/", pprof.Index)
+			mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		}
 	}
 
 	// MQTT client
