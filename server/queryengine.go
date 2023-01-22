@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
+	"golang.org/x/exp/maps"
 )
 
 // DeviceInfo returns device descriptor by device id
@@ -25,10 +26,7 @@ func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
 	handlers := make(map[string]*Handler)
 
 	// sort handlers by name
-	keys := make([]string, 0, len(managers))
-	for conn := range managers {
-		keys = append(keys, conn)
-	}
+	keys := maps.Keys(managers)
 	sort.Strings(keys)
 
 	for _, conn := range keys {

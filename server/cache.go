@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/volkszaehler/mbmd/meters"
+	"golang.org/x/exp/maps"
 )
 
 // all these measurements are logged in verbose mode
@@ -72,11 +73,9 @@ func (mc *Cache) SortedIDs() []string {
 	mc.Lock()
 	defer mc.Unlock()
 
-	keys := make([]string, 0, len(mc.readings))
-	for k := range mc.readings {
-		keys = append(keys, k)
-	}
+	keys := maps.Keys(mc.readings)
 	sort.Strings(keys)
+
 	return keys
 }
 
