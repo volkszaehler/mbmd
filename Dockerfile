@@ -1,7 +1,7 @@
 ############################
 # STEP 1 build executable binary
 ############################
-FROM golang:1.18-alpine as builder
+FROM golang:alpine as builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -31,6 +31,10 @@ COPY --from=builder /etc/passwd /etc/passwd
 
 # Copy our static executable
 COPY --from=builder /build/mbmd /usr/local/bin/mbmd
+
+# Run as nonroot
+RUN adduser -S mbmd -G dialout
+USER mbmd
 
 EXPOSE 8080
 
