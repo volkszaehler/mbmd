@@ -20,7 +20,8 @@ mbmd inspect [flags]
                           Valid types are:
                             RTU
                               ABB       ABB A/B-Series meters
-                              CGEM24    Carlo Gavazzi EM24/ET340
+                              CGEM24    Carlo Gavazzi EM24
+                              CGEX3X0   Carlo Gavazzi EM/ET 330/340
                               DDM       DDM18SD
                               DZG       DZG Metering GmbH DVH4013 meters
                               IEM3000   Schneider Electric iEM3000 series
