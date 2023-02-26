@@ -3,6 +3,7 @@ package server_test
 import (
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -34,6 +35,7 @@ func TestAssetTestSuite(t *testing.T) {
 
 type HTTPTestSuite struct {
 	suite.Suite
+	httpd *server.Httpd
 }
 
 func (suite *HTTPTestSuite) SetupSuite() {
@@ -53,38 +55,29 @@ func (suite *HTTPTestSuite) SetupSuite() {
 	tee.AttachRunner(server.NewSnipRunner(cache.Run))
 	hub := server.NewSocketHub(status)
 	tee.AttachRunner(server.NewSnipRunner(hub.Run))
-	httpd := server.NewHttpd(qe, cache)
-	go httpd.Run(hub, status, "localhost:8080")
-
-	for {
-		resp, err := http.Get("http://localhost:8080/")
-		if err == nil && resp.StatusCode == http.StatusOK {
-			break
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
+	suite.httpd = server.NewHttpd(hub, status, qe, cache)
 }
 
 func (suite *HTTPTestSuite) TestAccessAssetsFromRoot() {
-	resp, err := http.Get("http://localhost:8080/css/app.css")
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/css/app.css", nil)
 	suite.Require().NoError(err)
-	suite.Equal(resp.StatusCode, http.StatusOK)
-	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	suite.Require().NoError(err)
-	suite.NotEmpty(body)
+	suite.httpd.Router().ServeHTTP(rr, req)
+
+	suite.Equal(http.StatusOK, rr.Code)
+	suite.NotEmpty(rr.Body.String())
 }
 
 func (suite *HTTPTestSuite) TestAccessAssetsFromCSS() {
-	resp, err := http.Get("http://localhost:8080/css/css/app.css")
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/css/css/app.css", nil)
 	suite.Require().NoError(err)
-	suite.Equal(resp.StatusCode, http.StatusNotFound)
-	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	suite.Require().NoError(err)
-	suite.Equal("404 page not found\n", string(body))
+	suite.httpd.Router().ServeHTTP(rr, req)
+
+	suite.Equal(http.StatusNotFound, rr.Code)
+	suite.Equal("404 page not found\n", rr.Body.String())
 }
 
 func TestHTTPTestSuite(t *testing.T) {

@@ -155,12 +155,38 @@ func jsonHandler(h http.Handler) http.Handler {
 }
 
 // NewHttpd creates HTTP daemon
-func NewHttpd(qe DeviceInfo, mc *Cache) *Httpd {
-	return &Httpd{
+func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache) *Httpd {
+	result := &Httpd{
 		router: mux.NewRouter().StrictSlash(true),
 		qe:     qe,
 		mc:     mc,
 	}
+
+	// static
+	static := result.router.PathPrefix("/").Subrouter()
+	static.Use(handlers.CompressHandler)
+
+	// individual handlers per folder
+	static.HandleFunc("/", result.mkIndexHandler())
+	for _, dir := range []string{"css", "js"} {
+		static.PathPrefix("/" + dir).Handler(http.FileServer(http.FS(Assets)))
+	}
+
+	// api
+	api := result.router.PathPrefix("/api").Subrouter()
+	api.Use(jsonHandler)
+	api.Use(handlers.CompressHandler)
+
+	api.HandleFunc("/last", result.allDevicesHandler(result.mc.Current))
+	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", result.singleDeviceHandler(result.mc.Current))
+	api.HandleFunc("/avg", result.allDevicesHandler(result.mc.Average))
+	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", result.singleDeviceHandler(result.mc.Average))
+	api.HandleFunc("/status", result.mkStatusHandler(s))
+
+	// websocket
+	result.router.HandleFunc("/ws", result.mkSocketHandler(hub))
+
+	return result
 }
 
 // Router returns the root router
@@ -170,35 +196,9 @@ func (h *Httpd) Router() *mux.Router {
 
 // Run executes the http server
 func (h *Httpd) Run(
-	hub *SocketHub,
-	s *Status,
 	url string,
 ) {
 	log.Printf("httpd: starting api at %s", url)
-
-	// static
-	static := h.router.PathPrefix("/").Subrouter()
-	static.Use(handlers.CompressHandler)
-
-	// individual handlers per folder
-	static.HandleFunc("/", h.mkIndexHandler())
-	for _, dir := range []string{"css", "js"} {
-		static.PathPrefix("/" + dir).Handler(http.FileServer(http.FS(Assets)))
-	}
-
-	// api
-	api := h.router.PathPrefix("/api").Subrouter()
-	api.Use(jsonHandler)
-	api.Use(handlers.CompressHandler)
-
-	api.HandleFunc("/last", h.allDevicesHandler(h.mc.Current))
-	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Current))
-	api.HandleFunc("/avg", h.allDevicesHandler(h.mc.Average))
-	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", h.singleDeviceHandler(h.mc.Average))
-	api.HandleFunc("/status", h.mkStatusHandler(s))
-
-	// websocket
-	h.router.HandleFunc("/ws", h.mkSocketHandler(hub))
 
 	// debug logger
 	_ = log.New(debugLogger{"superfluous"}, "", 0)
