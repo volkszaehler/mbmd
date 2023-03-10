@@ -105,6 +105,8 @@ func (p *SBCProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		PowerL1, PowerL2, PowerL3,
 		CosphiL1, CosphiL2, CosphiL3,
+		ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
+		Power, ReactivePower,
 	} {
 		res = append(res, p.snip16(op, 100))
 	}
