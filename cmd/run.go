@@ -287,8 +287,8 @@ func run(cmd *cobra.Command, args []string) {
 		tee.AttachRunner(server.NewSnipRunner(hub.Run))
 
 		// http daemon
-		httpd := server.NewHttpd(qe, cache)
-		go httpd.Run(hub, status, viper.GetString("api"))
+		httpd := server.NewHttpd(hub, status, qe, cache)
+		go httpd.Run(viper.GetString("api"))
 
 		if viper.GetBool("profile") {
 			mux := httpd.Router()
