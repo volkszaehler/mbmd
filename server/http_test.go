@@ -1,7 +1,7 @@
 package server_test
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -24,9 +24,9 @@ func (suite *AssetTestSuite) TestOpenAsset() {
 	suite.Require().NoError(err)
 	defer fh.Close()
 
-	app_cs, err := ioutil.ReadAll(fh)
+	appCss, err := io.ReadAll(fh)
 	suite.NoError(err)
-	suite.NotEmpty(app_cs)
+	suite.NotEmpty(appCss)
 }
 
 func TestAssetTestSuite(t *testing.T) {

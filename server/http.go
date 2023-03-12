@@ -156,37 +156,37 @@ func jsonHandler(h http.Handler) http.Handler {
 
 // NewHttpd creates HTTP daemon
 func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache) *Httpd {
-	result := &Httpd{
+	srv := &Httpd{
 		router: mux.NewRouter().StrictSlash(true),
 		qe:     qe,
 		mc:     mc,
 	}
 
 	// static
-	static := result.router.PathPrefix("/").Subrouter()
+	static := srv.router.PathPrefix("/").Subrouter()
 	static.Use(handlers.CompressHandler)
 
 	// individual handlers per folder
-	static.HandleFunc("/", result.mkIndexHandler())
+	static.HandleFunc("/", srv.mkIndexHandler())
 	for _, dir := range []string{"css", "js"} {
 		static.PathPrefix("/" + dir).Handler(http.FileServer(http.FS(Assets)))
 	}
 
 	// api
-	api := result.router.PathPrefix("/api").Subrouter()
+	api := srv.router.PathPrefix("/api").Subrouter()
 	api.Use(jsonHandler)
 	api.Use(handlers.CompressHandler)
 
-	api.HandleFunc("/last", result.allDevicesHandler(result.mc.Current))
-	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", result.singleDeviceHandler(result.mc.Current))
-	api.HandleFunc("/avg", result.allDevicesHandler(result.mc.Average))
-	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", result.singleDeviceHandler(result.mc.Average))
-	api.HandleFunc("/status", result.mkStatusHandler(s))
+	api.HandleFunc("/last", srv.allDevicesHandler(srv.mc.Current))
+	api.HandleFunc("/last/{id:[a-zA-Z0-9.]+}", srv.singleDeviceHandler(srv.mc.Current))
+	api.HandleFunc("/avg", srv.allDevicesHandler(srv.mc.Average))
+	api.HandleFunc("/avg/{id:[a-zA-Z0-9.]+}", srv.singleDeviceHandler(srv.mc.Average))
+	api.HandleFunc("/status", srv.mkStatusHandler(s))
 
 	// websocket
-	result.router.HandleFunc("/ws", result.mkSocketHandler(hub))
+	srv.router.HandleFunc("/ws", srv.mkSocketHandler(hub))
 
-	return result
+	return srv
 }
 
 // Router returns the root router
@@ -195,9 +195,7 @@ func (h *Httpd) Router() *mux.Router {
 }
 
 // Run executes the http server
-func (h *Httpd) Run(
-	url string,
-) {
+func (h *Httpd) Run(url string) {
 	log.Printf("httpd: starting api at %s", url)
 
 	// debug logger
