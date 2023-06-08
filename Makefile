@@ -45,7 +45,7 @@ publish-images:
 	seihon publish -v "$(TAG_NAME)" -v "latest" --image-name volkszaehler/mbmd --base-runtime-image alpine --dry-run=false
 
 test-release:
-	goreleaser --snapshot --skip-publish --rm-dist
+	goreleaser --snapshot --skip-publish --clean
 
 release:
-	goreleaser --rm-dist
+	goreleaser --clean
