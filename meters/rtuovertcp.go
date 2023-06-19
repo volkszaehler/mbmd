@@ -19,7 +19,6 @@ func NewRTUOverTCPClientHandler(device string) *modbus.RTUOverTCPClientHandler {
 	handler := modbus.NewRTUOverTCPClientHandler(device)
 
 	// set default timings
-	handler.Timeout = 1 * time.Second
 	handler.ProtocolRecoveryTimeout = 10 * time.Second // not used
 	handler.LinkRecoveryTimeout = 15 * time.Second     // not used
 

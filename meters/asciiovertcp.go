@@ -19,7 +19,6 @@ func NewASCIIOverTCPClientHandler(device string) *modbus.ASCIIOverTCPClientHandl
 	handler := modbus.NewASCIIOverTCPClientHandler(device)
 
 	// set default timings
-	handler.Timeout = 1 * time.Second
 	handler.ProtocolRecoveryTimeout = 10 * time.Second // not used
 	handler.LinkRecoveryTimeout = 15 * time.Second     // not used
 
