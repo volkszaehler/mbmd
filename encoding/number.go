@@ -61,3 +61,20 @@ func Int32LswFirst(b []byte) int32 {
 func Float32LswFirst(b []byte) float32 {
 	return math.Float32frombits(Uint32LswFirst(b))
 }
+
+// Uint64LswFirst decodes bytes as uint64 in network byte order (big endian) with least significant word first
+func Uint64LswFirst(b []byte) uint64 {
+	_ = b[7] // bounds check hint to compiler; see golang.org/issue/14808
+	return uint64(b[6])<<56 | uint64(b[7])<<48 | uint64(b[4])<<40 | uint64(b[5])<<32 | uint64(b[2])<<24 | uint64(b[3])<<16 | uint64(b[0])<<8 | uint64(b[1])
+}
+
+// Int64LswFirst decodes bytes as int64 in network byte order (big endian) with least significant word first
+func Int64LswFirst(b []byte) int64 {
+	_ = b[7] // bounds check hint to compiler; see golang.org/issue/14808
+	return int64(b[6])<<56 | int64(b[7])<<48 | int64(b[4])<<40 | int64(b[5])<<32 | int64(b[2])<<24 | int64(b[3])<<16 | int64(b[0])<<8 | int64(b[1])
+}
+
+// Float64LswFirst decodes bytes as float64 in network byte order (big endian) with least significant word first
+func Float64LswFirst(b []byte) float64 {
+	return math.Float64frombits(Uint64LswFirst(b))
+}
