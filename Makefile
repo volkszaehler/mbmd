@@ -24,7 +24,7 @@ porcelain:
 	test -z "$$(git status --porcelain)" || (git status; git diff; false)
 
 install:
-	go install $$(go list -f '{{join .Imports " "}}' tools.go)
+	go install $$(go list -e -f '{{join .Imports " "}}' tools.go)
 
 assets:
 	go generate ./...
