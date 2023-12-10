@@ -27,6 +27,9 @@ func NewClientHandler(device string, baudrate int, comset string) *modbus.RTUCli
 	switch strings.ToUpper(comset) {
 	case "8N1":
 		handler.Parity = "N"
+	case "8N2":
+		handler.Parity = "N"
+		handler.StopBits = 2
 	case "8E1":
 		handler.Parity = "E"
 	default:
