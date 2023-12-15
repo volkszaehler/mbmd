@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	influxdb "github.com/influxdata/influxdb-client-go"
-	api "github.com/influxdata/influxdb-client-go/api"
+	influxdb "github.com/influxdata/influxdb-client-go/v2"
+	api "github.com/influxdata/influxdb-client-go/v2/api"
 )
 
 // Influx is an InfluxDB v2 publisher
@@ -43,7 +43,7 @@ func NewInfluxClient(
 	return &Influx{
 		client:      client,
 		measurement: measurement,
-		writer:      client.WriteApi(org, database),
+		writer:      client.WriteAPI(org, database),
 	}
 }
 

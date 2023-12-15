@@ -86,6 +86,7 @@ func (c *MockClient) fail() bool {
 
 func (c *MockClient) random(quantity uint16) (results []byte, err error) {
 	bytes := make([]byte, quantity*2)
+	//nolint:staticcheck // SA1019
 	rand.Read(bytes)
 	return bytes, nil
 }
