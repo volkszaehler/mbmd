@@ -13,7 +13,7 @@ to enable it.  You can execute the following once:
 
 To load completions in your current shell session:
 
-	source <(mbmd completion zsh); compdef _mbmd mbmd
+	source <(mbmd completion zsh)
 
 To load completions for every new session, execute once:
 
