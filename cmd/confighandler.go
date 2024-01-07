@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -117,6 +116,18 @@ func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, ba
 	return manager
 }
 
+var sunspecTypes = map[string]bool{
+	"FRONIUS":   true,
+	"KACO":      true,
+	"KOSTAL":    true,
+	"SE":        true,
+	"SMA":       true,
+	"SOLAREDGE": true,
+	"STECA":     true,
+	"SUNS":      true,
+	"SUNSPEC":   true,
+}
+
 func (conf *DeviceConfigHandler) createDeviceForManager(
 	manager *meters.Manager,
 	name string,
@@ -126,17 +137,7 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 	var meter meters.Device
 	meterType = strings.ToUpper(meterType)
 
-	var isSunspec bool
-	sunspecTypes := []string{"FRONIUS", "KOSTAL", "KACO", "SE", "SMA", "SOLAREDGE", "STECA", "SUNS", "SUNSPEC"}
-	for _, t := range sunspecTypes {
-		if t == meterType {
-			isSunspec = true
-			break
-		}
-	}
-
-	sort.SearchStrings(sunspecTypes, meterType)
-	if isSunspec {
+	if sunspecTypes[meterType] {
 		meter = sunspec.NewDevice(name, meterType, subdevice)
 	} else {
 		if subdevice > 0 {
