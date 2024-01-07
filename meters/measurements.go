@@ -24,11 +24,9 @@ func (r MeasurementResult) String() string {
 // Measurement is the type of measurement, i.e. the physical property being measured in common notation
 type Measurement int
 
-//go:generate enumer -type=Measurement
+//go:generate go run github.com/dmarkham/enumer -type=Measurement
 const (
-	_ Measurement = iota
-
-	Frequency
+	Frequency Measurement = iota + 1
 
 	Current
 	CurrentL1
@@ -250,13 +248,13 @@ var iec = map[Measurement]*measurement{
 }
 
 // MarshalText implements encoding.TextMarshaler
-func (m *Measurement) MarshalText() (text []byte, err error) {
+func (m Measurement) MarshalText() ([]byte, error) {
 	return []byte(m.String()), nil
 }
 
 // DescriptionAndUnit returns a measurements human-readable name and its unit
-func (m *Measurement) DescriptionAndUnit() (string, string) {
-	if details, ok := iec[*m]; ok {
+func (m Measurement) DescriptionAndUnit() (string, string) {
+	if details, ok := iec[m]; ok {
 		unit := details.Unit
 		description := details.Description
 		return description, unit.Abbreviation()
@@ -264,16 +262,16 @@ func (m *Measurement) DescriptionAndUnit() (string, string) {
 	return m.String(), ""
 }
 
-func (m *Measurement) Unit() *units.Unit {
-	if details, ok := iec[*m]; ok {
+func (m Measurement) Unit() units.Unit {
+	if details, ok := iec[m]; ok {
 		return details.Unit
 	}
 
-	return nil
+	return 0
 }
 
 // Description returns a measurements human-readable name
-func (m *Measurement) Description() string {
+func (m Measurement) Description() string {
 	description, unit := m.DescriptionAndUnit()
 	if unit != "" {
 		description = description + " (" + unit + ")"
@@ -282,24 +280,24 @@ func (m *Measurement) Description() string {
 }
 
 // PrometheusMetricType returns the Measurement's associated prometheus.Metric type
-func (m *Measurement) PrometheusMetricType() MetricType {
-	if measurement, ok := iec[*m]; ok {
+func (m Measurement) PrometheusMetricType() MetricType {
+	if measurement, ok := iec[m]; ok {
 		return measurement.PrometheusInfo.MetricType
 	}
 	return 0
 }
 
 // PrometheusHelpText returns a description text appropriate for prometheus.Metric
-func (m *Measurement) PrometheusHelpText() string {
-	if measurement, ok := iec[*m]; ok {
+func (m Measurement) PrometheusHelpText() string {
+	if measurement, ok := iec[m]; ok {
 		return measurement.PrometheusInfo.HelpText
 	}
 	return ""
 }
 
 // PrometheusName returns a name and its associated unit for Prometheus counters0
-func (m *Measurement) PrometheusName() string {
-	if details, ok := iec[*m]; ok {
+func (m Measurement) PrometheusName() string {
+	if details, ok := iec[m]; ok {
 		return details.PrometheusInfo.Name
 	}
 	return ""
@@ -334,7 +332,7 @@ func (m *Measurement) PrometheusName() string {
 // (see also prometheus.CreateMeasurementMetrics and generatePrometheusName)
 type measurement struct {
 	Description    string
-	Unit           *units.Unit
+	Unit           units.Unit
 	PrometheusInfo *PrometheusInfo
 }
 
@@ -346,15 +344,14 @@ type PrometheusInfo struct {
 	Name       string
 	HelpText   string
 	MetricType MetricType
-	Unit       *units.Unit
+	Unit       units.Unit
 }
 
 // MetricType is the type of a measurement's prometheus.Metric to be used
 type MetricType int
 
 const (
-	_ MetricType = iota
-	Gauge
+	Gauge MetricType = iota + 1
 	Counter
 )
 
@@ -383,7 +380,7 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 		)
 	}
 
-	if m.Unit == nil {
+	if m.Unit == 0 {
 		withUnit(units.NoUnit)(m)
 	}
 
@@ -418,10 +415,10 @@ func withGenericPrometheusHelpText() measurementOptions {
 // If u is nil, the unit will be set to NoUnit
 func withUnit(u units.Unit) measurementOptions {
 	return func(m *measurement) {
-		m.Unit = &u
+		m.Unit = u
 
-		elementaryUnit, _ := units.ConvertValueToElementaryUnit(*m.Unit, 0.0)
-		m.PrometheusInfo.Unit = &elementaryUnit
+		elementaryUnit, _ := units.ConvertValueToElementaryUnit(m.Unit, 0.0)
+		m.PrometheusInfo.Unit = elementaryUnit
 	}
 }
 
@@ -443,15 +440,15 @@ func withDescription(description string) measurementOptions {
 	}
 }
 
-func generatePrometheusHelpText(description string, unit *units.Unit) string {
-	if unit != nil && *unit != units.NoUnit {
+func generatePrometheusHelpText(description string, unit units.Unit) string {
+	if unit > 0 && unit < units.NoUnit {
 		_, pluralForm := unit.Name()
 		return fmt.Sprintf("%s in %s", description, pluralForm)
 	}
 	return description
 }
 
-func generatePrometheusName(name string, unit *units.Unit, metricType MetricType) string {
+func generatePrometheusName(name string, unit units.Unit, metricType MetricType) string {
 	measurementName := strings.ToLower(name)
 	prometheusUnit := strings.ToLower(unit.PrometheusForm())
 
