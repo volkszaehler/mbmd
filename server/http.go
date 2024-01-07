@@ -3,8 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"html/template"
 	"io/fs"
 	"log"
@@ -14,6 +12,9 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -185,8 +186,8 @@ func NewHttpd(hub *SocketHub, s *Status, qe DeviceInfo, mc *Cache) *Httpd {
 	}
 
 	// Prometheus
-	prom := router.Path("/metrics")
-	prom.Handler(h.prometheusHandler())
+	prom := srv.router.Path("/metrics")
+	prom.Handler(srv.prometheusHandler())
 
 	// api
 	api := srv.router.PathPrefix("/api").Subrouter()

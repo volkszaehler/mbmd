@@ -2,10 +2,11 @@ package meters
 
 import (
 	"fmt"
-	"github.com/volkszaehler/mbmd/meters/units"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/volkszaehler/mbmd/meters/units"
 )
 
 // MeasurementResult is the result of modbus read operation
@@ -239,10 +240,10 @@ var iec = map[Measurement]*measurement{
 	DCVoltageS3:      newInternalMeasurement(withDescription("String 3 Voltage"), withUnit(units.Volt), withMetricType(Gauge)),
 	DCPowerS3:        newInternalMeasurement(withDescription("String 3 Power"), withUnit(units.Watt), withMetricType(Gauge)),
 	DCEnergyS3:       newInternalMeasurement(withDescription("String 3 Generation"), withPrometheusName("string_3_energy_generated"), withUnit(units.KiloWattHour), withMetricType(Counter)),
-	DCCurrentS4:      {"String 4 Current", "A"},
-	DCVoltageS4:      {"String 4 Voltage", "V"},
-	DCPowerS4:        {"String 4 Power", "W"},
-	DCEnergyS4:       {"String 4 Generation", "kWh"},
+	DCCurrentS4:      newInternalMeasurement(withDescription("String 4 Current"), withUnit(units.Ampere)),
+	DCVoltageS4:      newInternalMeasurement(withDescription("String 4 Voltage"), withUnit(units.Volt)),
+	DCPowerS4:        newInternalMeasurement(withDescription("String 4 Power"), withUnit(units.Watt)),
+	DCEnergyS4:       newInternalMeasurement(withDescription("String 4 Generation"), withUnit(units.KiloWattHour)),
 	ChargeState:      newInternalMeasurement(withDescription("Charge State"), withUnit(units.Percent), withMetricType(Gauge)),
 	BatteryVoltage:   newInternalMeasurement(withDescription("Battery Voltage"), withUnit(units.Volt), withMetricType(Gauge)),
 	PhaseAngle:       newInternalMeasurement(withDescription("Phase Angle"), withUnit(units.Degree), withMetricType(Gauge)),
@@ -313,12 +314,14 @@ func (m *Measurement) PrometheusName() string {
 // <Unit>			::= <measurementOption.withUnit()> // Elementary unit!
 // <CounterTotal>	::= "total" // if metric type is Counter
 // E. g.:
-//		newInternalMeasurement(withDescription("Frequency Test With Some Text"), withUnit(Hertz), withMetricType(Counter))
-//	=> Name (before creating prometheus.Metric): "measurement_frequency_test_with_some_text_hertz_total"
-//  => Description: "Frequency Test With Some Text in Hertz"
+//
+//			newInternalMeasurement(withDescription("Frequency Test With Some Text"), withUnit(Hertz), withMetricType(Counter))
+//		=> Name (before creating prometheus.Metric): "measurement_frequency_test_with_some_text_hertz_total"
+//	 => Description: "Frequency Test With Some Text in Hertz"
 //
 // In Prometheus context: If Unit is set, then it will be automatically converted to its elementary unit.
-//							(see units.ConvertValueToElementaryUnit)
+//
+//	(see units.ConvertValueToElementaryUnit)
 //
 // You can set custom Prometheus names and help texts by using the measurementOptions
 // to override the "auto-generated" name and help text
@@ -358,8 +361,9 @@ const (
 // newInternalMeasurement generates an internal measurement object based on passed options
 //
 // If one of the following options are not passed:
-//	- withDescription
-//	- withMetricType
+//   - withDescription
+//   - withMetricType
+//
 // the app will panic!
 func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	promInfo := &PrometheusInfo{}
