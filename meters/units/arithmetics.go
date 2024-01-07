@@ -4,11 +4,9 @@ package units
 // Otherwise, sourceUnit and sourceValue are returned again.
 func ConvertValueToElementaryUnit(sourceUnit Unit, sourceValue float64) (Unit, float64) {
 	switch sourceUnit {
-	case KiloWattHour:
-		fallthrough
-	case KiloVarHour:
+	case KiloWattHour, KiloVarHour:
 		return Joule, sourceValue * 1_000 * 3_600
+	default:
+		return sourceUnit, sourceValue
 	}
-
-	return sourceUnit, sourceValue
 }

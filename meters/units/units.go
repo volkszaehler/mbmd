@@ -3,11 +3,9 @@ package units
 // Unit is used to represent measurements
 type Unit int
 
-//go:generate enumer -type=Unit -transform=snake
+//go:generate go run github.com/dmarkham/enumer -type=Unit -transform=snake
 const (
-	_ Unit = iota
-
-	KiloVarHour
+	KiloVarHour Unit = iota + 1
 	KiloWattHour
 	Joule
 
@@ -25,7 +23,7 @@ const (
 
 	Percent
 
-	NoUnit
+	NoUnit // max value
 )
 
 type unit struct {
@@ -130,12 +128,12 @@ var units = map[Unit]*unit{
 }
 
 // PrometheusForm returns Prometheus form of the Unit's associated elementary unit
-func (u *Unit) PrometheusForm() string {
-	if u == nil || *u == NoUnit {
+func (u Unit) PrometheusForm() string {
+	if u == 0 || u == NoUnit {
 		return ""
 	}
 
-	elementaryUnit, _ := ConvertValueToElementaryUnit(*u, 0.0)
+	elementaryUnit, _ := ConvertValueToElementaryUnit(u, 0.0)
 
 	if unit, ok := units[elementaryUnit]; ok {
 		return unit.name.PrometheusForm
@@ -145,16 +143,16 @@ func (u *Unit) PrometheusForm() string {
 }
 
 // Abbreviation returns the matching abbreviation of a Unit if it exists
-func (u *Unit) Abbreviation() string {
-	if unit, ok := units[*u]; ok {
+func (u Unit) Abbreviation() string {
+	if unit, ok := units[u]; ok {
 		return unit.abbreviation.Default
 	}
 	return ""
 }
 
 // AlternativeAbbreviation returns the matching alternative abbreviation of a Unit if it exists
-func (u *Unit) AlternativeAbbreviation() string {
-	if unit, ok := units[*u]; ok {
+func (u Unit) AlternativeAbbreviation() string {
+	if unit, ok := units[u]; ok {
 		alternative := unit.abbreviation.Alternative
 		if alternative != "" {
 			return alternative
@@ -164,8 +162,8 @@ func (u *Unit) AlternativeAbbreviation() string {
 }
 
 // Name returns the singular and plural form of a Unit's name
-func (u *Unit) Name() (string, string) {
-	if unit, ok := units[*u]; ok {
+func (u Unit) Name() (string, string) {
+	if unit, ok := units[u]; ok {
 		return unit.name.Singular, unit.name.Plural
 	}
 	return "", ""
@@ -174,9 +172,6 @@ func (u *Unit) Name() (string, string) {
 // newInternalUnit is a factory method for instantiating internal unit struct
 func newInternalUnit(associatedUnit Unit, opts ...internalUnitOption) *unit {
 	unit := &unit{}
-
-	unit.abbreviation = unitAbbreviation{}
-	unit.name = unitName{}
 
 	// Early return for NoUnit as we do not want to specify anything for "nothing"
 	if associatedUnit == NoUnit {

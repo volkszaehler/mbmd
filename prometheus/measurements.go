@@ -72,7 +72,7 @@ func UpdateMeasurementMetric(
 		deviceSerial = SSN_MISSING
 	}
 
-	_, elementaryValue := units.ConvertValueToElementaryUnit(*measurement.Unit(), measurement.Value)
+	_, elementaryValue := units.ConvertValueToElementaryUnit(measurement.Unit(), measurement.Value)
 
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
 		gauge.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
