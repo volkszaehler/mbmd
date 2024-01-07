@@ -1,10 +1,10 @@
 package prometheus
 
 import (
-	"fmt"
+	"log"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/volkszaehler/mbmd/meters"
-	"log"
 )
 
 // RegisterAllMetrics registers all static metrics and dynamically created measurement metrics
@@ -23,7 +23,7 @@ func registerStatics() {
 	for _, collectable := range collectables {
 		for _, prometheusCollector := range collectable.Collect() {
 			if err := prometheus.Register(prometheusCollector); err != nil {
-				log.Printf("Could not register a metric '%s' (%s)", prometheusCollector, err)
+				log.Printf("Could not register a metric '%s' (Error: %s)", prometheusCollector, err)
 			}
 		}
 	}
@@ -37,7 +37,7 @@ func createMeasurementMetrics() {
 		switch measurement.PrometheusMetricType() {
 		case meters.Gauge:
 			newGauge := NewMeasurementGaugeCollector(
-				*newGaugeOpts(
+				newGaugeOpts(
 					measurement.PrometheusName(),
 					measurement.PrometheusHelpText(),
 				),
@@ -54,18 +54,16 @@ func createMeasurementMetrics() {
 			}
 		case meters.Counter:
 			measurementCollector := NewMeasurementCounterCollector(
-				*newCounterOpts(
+				newCounterOpts(
 					measurement.PrometheusName(),
 					measurement.PrometheusHelpText(),
 				),
 			)
 
 			if err := prometheus.Register(measurementCollector); err != nil {
-				log.Printf(
-					fmt.Errorf("could not register counter for measurement '%s'. omitting... (Error: %s)\n",
-						measurement,
-						err,
-					).Error(),
+				log.Printf("could not register counter for measurement '%s'. omitting... (Error: %s)\n",
+					measurement,
+					err,
 				)
 			} else {
 				counterVecMap[measurement] = measurementCollector

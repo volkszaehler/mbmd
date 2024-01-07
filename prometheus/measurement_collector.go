@@ -2,11 +2,12 @@ package prometheus
 
 import (
 	"errors"
-	"github.com/prometheus/client_golang/prometheus"
 	"log"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // MeasurementCounterCollector is a struct which takes care of collecting prometheus.Counter metrics
@@ -15,10 +16,12 @@ import (
 type MeasurementCounterCollector struct {
 	metricsMap *prometheus.MetricVec
 	desc       *prometheus.Desc
-	mtx        sync.RWMutex                  // Protects values
-	values     map[string]*measurementResult // Contains latest value of meters.MeasurementResult
-	fqName     string
-	opts       prometheus.CounterOpts
+	values     struct {
+		sync.RWMutex
+		data map[string]*measurementResult // Contains latest value of meters.MeasurementResult
+	}
+	fqName string
+	opts   prometheus.CounterOpts
 }
 
 func NewMeasurementCounterCollector(opts prometheus.CounterOpts) *MeasurementCounterCollector {
@@ -33,9 +36,8 @@ func NewMeasurementCounterCollector(opts prometheus.CounterOpts) *MeasurementCou
 			measurementCollectorVariableLabels,
 			nil,
 		),
-		values: map[string]*measurementResult{},
 	}
-
+	collector.values.data = map[string]*measurementResult{}
 	collector.metricsMap = prometheus.NewMetricVec(
 		collector.desc,
 		collector.newMetric,
@@ -51,10 +53,10 @@ func (c *MeasurementCounterCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector's Collect
 func (c *MeasurementCounterCollector) Collect(ch chan<- prometheus.Metric) {
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
+	c.values.RLock()
+	defer c.values.RUnlock()
 
-	for sKey, value := range c.values {
+	for sKey, value := range c.values.data {
 		lvs := strings.Split(sKey, keySeparator)
 
 		ch <- prometheus.NewMetricWithTimestamp(value.timestamp,
@@ -77,26 +79,29 @@ func (c *MeasurementCounterCollector) Set(timestamp time.Time, value float64, la
 		log.Fatalln("counters cannot decrease in its value")
 	}
 
-	c.mtx.Lock()
-	defer c.mtx.Unlock()
+	c.values.Lock()
+	defer c.values.Unlock()
 
 	lvs := strings.Join(labelValues, keySeparator)
-	c.values[lvs] = &measurementResult{
+	c.values.data[lvs] = &measurementResult{
 		value:     value,
 		timestamp: timestamp,
 	}
 }
 
-// MeasurementCounterCollector is a struct which takes care of collecting prometheus.Gauge metrics
-// Whenever prometheus.Collect is called, all values of MeasurementGaugeCollector.values are flushed
-// and sent to the collector channel.
+// MeasurementGaugeCollector is a struct which takes care of collecting
+// prometheus.Gauge metrics Whenever prometheus.Collect is called, all values of
+// MeasurementGaugeCollector.values are flushed and sent to the collector
+// channel.
 type MeasurementGaugeCollector struct {
 	metricsMap *prometheus.MetricVec
 	desc       *prometheus.Desc
-	mtx        sync.RWMutex                  // Protects values
-	values     map[string]*measurementResult // Contains latest value of meters.MeasurementResult
-	fqName     string
-	opts       prometheus.GaugeOpts
+	values     struct {
+		sync.RWMutex
+		data map[string]*measurementResult // Contains latest value of meters.MeasurementResult
+	}
+	fqName string
+	opts   prometheus.GaugeOpts
 }
 
 func NewMeasurementGaugeCollector(opts prometheus.GaugeOpts) *MeasurementGaugeCollector {
@@ -111,9 +116,8 @@ func NewMeasurementGaugeCollector(opts prometheus.GaugeOpts) *MeasurementGaugeCo
 			measurementCollectorVariableLabels,
 			nil,
 		),
-		values: map[string]*measurementResult{},
 	}
-
+	collector.values.data = map[string]*measurementResult{}
 	collector.metricsMap = prometheus.NewMetricVec(
 		collector.desc,
 		collector.newMetric,
@@ -129,10 +133,10 @@ func (c *MeasurementGaugeCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector's Collect
 func (c *MeasurementGaugeCollector) Collect(ch chan<- prometheus.Metric) {
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
+	c.values.RLock()
+	defer c.values.RUnlock()
 
-	for sKey, value := range c.values {
+	for sKey, value := range c.values.data {
 		lvs := strings.Split(sKey, keySeparator)
 
 		ch <- prometheus.NewMetricWithTimestamp(value.timestamp,
@@ -155,11 +159,11 @@ func (c *MeasurementGaugeCollector) Set(timestamp time.Time, value float64, labe
 		log.Fatalln("counters cannot decrease in its value")
 	}
 
-	c.mtx.Lock()
-	defer c.mtx.Unlock()
+	c.values.Lock()
+	defer c.values.Unlock()
 
 	lvs := strings.Join(labelValues, keySeparator)
-	c.values[lvs] = &measurementResult{
+	c.values.data[lvs] = &measurementResult{
 		value:     value,
 		timestamp: timestamp,
 	}

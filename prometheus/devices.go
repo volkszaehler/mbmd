@@ -1,16 +1,17 @@
 package prometheus
 
 import (
+	"strconv"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/volkszaehler/mbmd/meters"
-	"strconv"
 )
 
 type deviceCollectors struct{}
 
 var (
 	DevicesCreatedTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"devices_created_total",
 			"Number of smart meter devices created/registered",
 		),
@@ -18,7 +19,7 @@ var (
 	)
 
 	DeviceModbusConnectionAttemptTotal = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"device_connection_attempts_total",
 			"Number of a smart meter's connection attempts",
 		),
@@ -26,7 +27,7 @@ var (
 	)
 
 	DeviceModbusConnectionFailure = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"device_connection_failures_total",
 			"Amount of a smart meter's connection failures",
 		),
@@ -34,7 +35,7 @@ var (
 	)
 
 	DeviceModbusConnectionSuccess = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"device_connection_successes_total",
 			"Amount of a smart meter's successful connection ",
 		),
@@ -42,7 +43,7 @@ var (
 	)
 
 	DeviceModbusConnectionPartialSuccess = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"device_connection_partial_successes_total",
 			"Amount of a smart meter's partial opened connection",
 		),
@@ -50,7 +51,7 @@ var (
 	)
 
 	DeviceByConfigNotFound = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"device_not_found_by_config_total",
 			"Amount of devices defined by config yaml not found",
 		),
@@ -58,7 +59,7 @@ var (
 	)
 
 	SunSpecDeviceModbusCommonBlockReadsSuccess = prometheus.NewCounterVec(
-		*newCounterOptsWithSubsystem(
+		newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_common_block_read_successes_total",
 			"Number of successful common reads on SunSpec smart meters",
@@ -67,7 +68,7 @@ var (
 	)
 
 	SunSpecDeviceModbusCommonBlockReadsFailures = prometheus.NewCounterVec(
-		*newCounterOptsWithSubsystem(
+		newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_common_block_read_failures_total",
 			"Number of failed common reads on SunSpec smart meters",
@@ -76,7 +77,7 @@ var (
 	)
 
 	SunSpecDeviceModbusModelCollectionSuccess = prometheus.NewCounterVec(
-		*newCounterOptsWithSubsystem(
+		newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_model_collection_successes_total",
 			"Number of successful model collection tasks on SunSpec smart meters",
@@ -85,7 +86,7 @@ var (
 	)
 
 	SunSpecDeviceModbusModelCollectionFailure = prometheus.NewCounterVec(
-		*newCounterOptsWithSubsystem(
+		newCounterOptsWithSubsystem(
 			"sunspec",
 			"connection_model_collection_failures_total",
 			"Number of failed model collection tasks on SunSpec smart meters",
@@ -94,7 +95,7 @@ var (
 	)
 
 	DeviceInfoDetails = prometheus.NewGaugeVec(
-		*newGaugeOpts(
+		newGaugeOpts(
 			"device_info",
 			"Additional information about a meter",
 		),
@@ -102,7 +103,7 @@ var (
 	)
 )
 
-func (d deviceCollectors) Collect() []prometheus.Collector {
+func (deviceCollectors) Collect() []prometheus.Collector {
 	return []prometheus.Collector{
 		DevicesCreatedTotal,
 		DeviceModbusConnectionAttemptTotal,
