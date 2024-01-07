@@ -11,28 +11,28 @@ type handlerCollectors struct{}
 
 var (
 	ConnectionHandlerDeviceInitializationRoutineStarted = prometheusLib.NewCounter(
-		*newCounterOpts(
+		newCounterOpts(
 			"connection_handler_device_initialization_routine_starts_total",
 			"Total starts of routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
 	ConnectionHandlerDeviceInitializationFailure = prometheusLib.NewCounter(
-		*newCounterOpts(
+		newCounterOpts(
 			"connection_handler_device_initialization_failures_total",
 			"Total failures of routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
 	ConnectionHandlerDeviceInitializationSuccess = prometheusLib.NewCounter(
-		*newCounterOpts(
+		newCounterOpts(
 			"connection_handler_device_initialization_successes_total",
 			"Total successful routines where a device is initialized (e. g. initial ModBus connection and retrieving device information)",
 		),
 	)
 
 	ConnectionHandlerDeviceQueriesTotal = prometheusLib.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"connection_handler_device_queries_total",
 			"Number of queries to a meter",
 		),
@@ -40,7 +40,7 @@ var (
 	)
 
 	ConnectionHandlerDeviceQueriesErrorTotal = prometheusLib.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"connection_handler_device_queries_error_total",
 			"Errors occurred during smart meter query",
 		),
@@ -48,7 +48,7 @@ var (
 	)
 
 	ConnectionHandlerDeviceQueriesSuccessTotal = prometheusLib.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"connection_handler_device_queries_success_total",
 			"Successful smart meter query",
 		),
@@ -56,7 +56,7 @@ var (
 	)
 
 	ConnectionHandlerDeviceQueryMeasurementValueSkippedTotal = prometheusLib.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"connection_handler_device_queries_measurement_value_skipped_total",
 			"NaN measurement values found and skipped during smart meter query",
 		),
@@ -64,7 +64,7 @@ var (
 	)
 )
 
-func (h handlerCollectors) Collect() []prometheusLib.Collector {
+func (handlerCollectors) Collect() []prometheusLib.Collector {
 	return []prometheusLib.Collector{
 		ConnectionHandlerDeviceInitializationRoutineStarted,
 		ConnectionHandlerDeviceInitializationFailure,
