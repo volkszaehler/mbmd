@@ -240,10 +240,10 @@ var iec = map[Measurement]*measurement{
 	DCVoltageS3:      newInternalMeasurement(withDescription("String 3 Voltage"), withUnit(units.Volt), withMetricType(Gauge)),
 	DCPowerS3:        newInternalMeasurement(withDescription("String 3 Power"), withUnit(units.Watt), withMetricType(Gauge)),
 	DCEnergyS3:       newInternalMeasurement(withDescription("String 3 Generation"), withPrometheusName("string_3_energy_generated"), withUnit(units.KiloWattHour), withMetricType(Counter)),
-	DCCurrentS4:      newInternalMeasurement(withDescription("String 4 Current"), withUnit(units.Ampere)),
-	DCVoltageS4:      newInternalMeasurement(withDescription("String 4 Voltage"), withUnit(units.Volt)),
-	DCPowerS4:        newInternalMeasurement(withDescription("String 4 Power"), withUnit(units.Watt)),
-	DCEnergyS4:       newInternalMeasurement(withDescription("String 4 Generation"), withUnit(units.KiloWattHour)),
+	DCCurrentS4:      newInternalMeasurement(withDescription("String 4 Current"), withUnit(units.Ampere), withMetricType(Gauge)),
+	DCVoltageS4:      newInternalMeasurement(withDescription("String 4 Voltage"), withUnit(units.Volt), withMetricType(Gauge)),
+	DCPowerS4:        newInternalMeasurement(withDescription("String 4 Power"), withUnit(units.Watt), withMetricType(Gauge)),
+	DCEnergyS4:       newInternalMeasurement(withDescription("String 4 Generation"), withUnit(units.KiloWattHour), withMetricType(Gauge)),
 	ChargeState:      newInternalMeasurement(withDescription("Charge State"), withUnit(units.Percent), withMetricType(Gauge)),
 	BatteryVoltage:   newInternalMeasurement(withDescription("Battery Voltage"), withUnit(units.Volt), withMetricType(Gauge)),
 	PhaseAngle:       newInternalMeasurement(withDescription("Phase Angle"), withUnit(units.Degree), withMetricType(Gauge)),
@@ -447,9 +447,8 @@ func generatePrometheusHelpText(description string, unit *units.Unit) string {
 	if unit != nil && *unit != units.NoUnit {
 		_, pluralForm := unit.Name()
 		return fmt.Sprintf("%s in %s", description, pluralForm)
-	} else {
-		return fmt.Sprintf("%s", description)
 	}
+	return description
 }
 
 func generatePrometheusName(name string, unit *units.Unit, metricType MetricType) string {
