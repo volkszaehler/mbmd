@@ -13,7 +13,7 @@ var publisherMetricsLabels = []string{"type"}
 
 var (
 	PublisherCreated = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_created_total",
 			"Total count of publishers created for publishing smart meter measurement data.",
 		),
@@ -21,7 +21,7 @@ var (
 	)
 
 	PublisherDataPublished = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_data_published_total",
 			"Total count of publish processes where smart meter measurement data is published.",
 		),
@@ -29,7 +29,7 @@ var (
 	)
 
 	PublisherDataPublishAttempt = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_data_publish_attempts_total",
 			"Total count of publish attempts where smart meter measurement data is published.",
 		),
@@ -37,7 +37,7 @@ var (
 	)
 
 	PublisherDataPublishedSize = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_data_published_size_bytes_total",
 			"Total bytes of sent smart meter measurement data via publishers.",
 		),
@@ -45,7 +45,7 @@ var (
 	)
 
 	PublisherDataPublishedError = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_data_published_errors_total",
 			"Total failures of publish processes where smart meter measurement is published.",
 		),
@@ -53,7 +53,7 @@ var (
 	)
 
 	PublisherConnectionSuccess = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_connection_successes_total",
 			"Total successful connections to external databases/data storages via publishers.",
 		),
@@ -61,7 +61,7 @@ var (
 	)
 
 	PublisherConnectionFailure = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_connection_failures_total",
 			"Total failed connections to external databases/data storages via publishers.",
 		),
@@ -69,7 +69,7 @@ var (
 	)
 
 	PublisherConnectionFlush = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_connection_flushes_total",
 			"Total connection flushes to external databases/data storages via publishers. Flushing equals write operation to external database/storage.",
 		),
@@ -77,7 +77,7 @@ var (
 	)
 
 	PublisherConnectionTimeOut = prometheus.NewCounterVec(
-		*newCounterOpts(
+		newCounterOpts(
 			"publisher_connection_timeouts_total",
 			"Total connection timeouts during publish/flush processes.",
 		),
@@ -85,7 +85,7 @@ var (
 	)
 )
 
-func (c publisherCollectors) Collect() []prometheus.Collector {
+func (publisherCollectors) Collect() []prometheus.Collector {
 	return []prometheus.Collector{
 		PublisherCreated,
 		PublisherDataPublished,

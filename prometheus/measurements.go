@@ -24,21 +24,24 @@ import (
 //	- Name: `mbmd_measurement_l1_export_power_watts`
 //	- Labels: {"device_name", "serial_number"}
 //
-// Measurement metrics are treated slightly differently and are maintained in prometheus/measurement.go
-// It ensures that extensibility and customization of Prometheus names and help texts is easy.
-// By default, if no custom Prometheus name is given, the measurement's description is transformed to lower case
-// and whitespaces are replaced with underscores.
-// Afterwards, the measurement's elementary units.Unit and `total` (if meters.MetricType equals meters.Counter) are appended
-// in a snake-case fashion.
+// Measurement metrics are treated slightly differently and are maintained in
+// prometheus/measurement.go. It ensures that extensibility and customization of
+// Prometheus names and help texts is easy. By default, if no custom Prometheus
+// name is given, the measurement's description is transformed to lower case and
+// whitespaces are replaced with underscores. Afterward, the measurement's
+// elementary units.Unit and `total` (if meters.MetricType equals
+// meters.Counter) are appended in a snake-case fashion.
 //
 // Besides dynamic measurement metrics, some static metrics have been introduced
-// and can be found in the file respectively, for instance: metrics for devices -> devices.go
+// and can be found in the file respectively, for instance: metrics for devices
+// -> devices.go
 //
-// If you want to add new metrics, make sure your metric details comply to the usual Prometheus naming conventions
-// e. g.: Amount of connection attempts
+// If you want to add new metrics, make sure your metric details comply to the
+// usual Prometheus naming conventions e.g.: Amount of connection attempts
 //	-> Most fitting metric type: Counter
 //	-> Name (in newCounterOpts): `smart_meter_connection_attempt_total`
-// For more information regarding naming conventions and best practices, see https://prometheus.io/docs/practices/naming/
+// For more information regarding naming conventions and best practices, see
+// https://prometheus.io/docs/practices/naming/
 
 // SSN_MISSING is used for mocked smart meters
 const SSN_MISSING = "NOT_AVAILABLE"
@@ -74,7 +77,8 @@ func UpdateMeasurementMetric(
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
 		gauge.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
 		return true
-	} else if counter, ok := counterVecMap[measurement.Measurement]; ok {
+	}
+	if counter, ok := counterVecMap[measurement.Measurement]; ok {
 		counter.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
 		return true
 	}
