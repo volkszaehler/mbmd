@@ -8,3 +8,4 @@ linux-*.Dockerfile
 mbmd
 !entrypoint.sh
 !mbmd.dist.yaml
+vendor/
