@@ -16,17 +16,19 @@ const (
 
 // RS485 implements meters.Device
 type RS485 struct {
+	name     string
 	typ      string
 	producer Producer
 	ops      chan Operation
 	inflight Operation
 }
 
-// NewDevice creates a device who's type must exist in the producer registry
-func NewDevice(typ string) (*RS485, error) {
+// NewDevice creates a device whose type must exist in the producer registry.
+func NewDevice(name, typ string) (*RS485, error) {
 	for t, factory := range Producers {
 		if strings.EqualFold(t, typ) {
 			device := &RS485{
+				name:     name,
 				typ:      typ,
 				producer: factory(),
 			}
@@ -34,7 +36,7 @@ func NewDevice(typ string) (*RS485, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("unknown meter type: %s", typ)
+	return nil, fmt.Errorf("unknown meter type: %s with name: %s", typ, name)
 }
 
 // Initialize prepares the device for usage. Any setup or initialization should be done here.
@@ -51,7 +53,7 @@ func (d *RS485) Producer() Producer {
 // prepared during initialization.
 func (d *RS485) Descriptor() meters.DeviceDescriptor {
 	return meters.DeviceDescriptor{
-		Name: 		  d.name,
+		Name:         d.name,
 		Type:         d.typ,
 		Manufacturer: d.typ,
 		Model:        d.producer.Description(),
