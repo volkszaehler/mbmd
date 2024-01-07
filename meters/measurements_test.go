@@ -1,8 +1,9 @@
 package meters
 
 import (
-	"github.com/volkszaehler/mbmd/meters/units"
 	"testing"
+
+	"github.com/volkszaehler/mbmd/meters/units"
 )
 
 func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testing.T) {
@@ -30,7 +31,7 @@ func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testi
 		)
 	}
 
-	if *measurement.Unit != units.Ampere {
+	if measurement.Unit != units.Ampere {
 		t.Errorf("Prometheus unit '%s' does not equal expected '%s'",
 			measurement.Unit,
 			units.Ampere,
@@ -86,7 +87,7 @@ func TestInternalMeasurement_AutoConvertToElementaryUnit(t *testing.T) {
 	expectedConvertedUnit := units.Joule
 	_, expectedConvertedUnitPluralForm := expectedConvertedUnit.Name()
 
-	if *measurementKwh.PrometheusInfo.Unit != expectedConvertedUnit {
+	if measurementKwh.PrometheusInfo.Unit != expectedConvertedUnit {
 		actualConvertedUnit := measurementKwh.PrometheusInfo.Unit
 		_, actualConvertedUnitPluralForm := actualConvertedUnit.Name()
 
@@ -97,7 +98,7 @@ func TestInternalMeasurement_AutoConvertToElementaryUnit(t *testing.T) {
 		)
 	}
 
-	if *measurementKvarh.PrometheusInfo.Unit != expectedConvertedUnit {
+	if measurementKvarh.PrometheusInfo.Unit != expectedConvertedUnit {
 		actualConvertedUnit := measurementKwh.PrometheusInfo.Unit
 		_, actualConvertedUnitPluralForm := actualConvertedUnit.Name()
 
