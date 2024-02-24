@@ -132,7 +132,7 @@ function connectSocket() {
 	var ws, loc = window.location;
 	var protocol = loc.protocol == "https:" ? "wss:" : "ws:"
 
-	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + "/ws");
+	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + loc.pathname + "/ws");
 
 	ws.onerror = function(evt) {
 		ws.close();
