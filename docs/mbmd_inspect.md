@@ -23,6 +23,7 @@ mbmd inspect [flags]
                               CGEM24    Carlo Gavazzi EM24
                               CGEX3X0   Carlo Gavazzi EM/ET 330/340
                               DDM       DDM18SD
+                              DMG610    Lovato DMG610
                               DZG       DZG Metering GmbH DVH4013 meters
                               IEM3000   Schneider Electric iEM3000 series
                               INEPRO    Inepro Metering Pro 380
