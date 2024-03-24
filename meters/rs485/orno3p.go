@@ -44,49 +44,49 @@ func NewORNO3PProducer() Producer {
 		ApparentPower: 0x002C, // 32 bit, kva
 		Cosphi:        0x0034, // 32 bit, XX,X(literal)
 
-		Sum:   0x0100, //32 Bit, kwh
-		SumL1: 0x0102, //32 Bit, kwh
-		SumL2: 0x0104, //32 Bit, kwh
-		SumL3: 0x0106, //32 Bit, kwh
+		Sum:   0x0100, // 32 Bit, kwh
+		SumL1: 0x0102, // 32 Bit, kwh
+		SumL2: 0x0104, // 32 Bit, kwh
+		SumL3: 0x0106, // 32 Bit, kwh
 
-		Import:   0x0108, //32 Bit, kwh
-		ImportL1: 0x010A, //32 Bit, kwh
-		ImportL2: 0x010C, //32 Bit, kwh
-		ImportL3: 0x010E, //32 Bit, kwh
+		Import:   0x0108, // 32 Bit, kwh
+		ImportL1: 0x010A, // 32 Bit, kwh
+		ImportL2: 0x010C, // 32 Bit, kwh
+		ImportL3: 0x010E, // 32 Bit, kwh
 
-		Export:   0x0110, //32 Bit, kwh
-		ExportL1: 0x0112, //32 Bit, kwh
-		ExportL2: 0x0114, //32 Bit, kwh
-		ExportL3: 0x0116, //32 Bit, kwh
+		Export:   0x0110, // 32 Bit, kwh
+		ExportL1: 0x0112, // 32 Bit, kwh
+		ExportL2: 0x0114, // 32 Bit, kwh
+		ExportL3: 0x0116, // 32 Bit, kwh
 
-		ReactiveSum:   0x0118, //32 Bit, kvarh
-		ReactiveSumL1: 0x011A, //32 Bit, kvarh
-		ReactiveSumL2: 0x011C, //32 Bit, kvarh
-		ReactiveSumL3: 0x011E, //32 Bit, kvarh
+		ReactiveSum:   0x0118, // 32 Bit, kvarh
+		ReactiveSumL1: 0x011A, // 32 Bit, kvarh
+		ReactiveSumL2: 0x011C, // 32 Bit, kvarh
+		ReactiveSumL3: 0x011E, // 32 Bit, kvarh
 
-		ReactiveImport:   0x0120, //32 Bit, kvarh
-		ReactiveImportL1: 0x0122, //32 Bit, kvarh
-		ReactiveImportL2: 0x0124, //32 Bit, kvarh
-		ReactiveImportL3: 0x0126, //32 Bit, kvarh
+		ReactiveImport:   0x0120, // 32 Bit, kvarh
+		ReactiveImportL1: 0x0122, // 32 Bit, kvarh
+		ReactiveImportL2: 0x0124, // 32 Bit, kvarh
+		ReactiveImportL3: 0x0126, // 32 Bit, kvarh
 
-		ReactiveExport:   0x0128, //32 Bit, kvarh
-		ReactiveExportL1: 0x012A, //32 Bit, kvarh
-		ReactiveExportL2: 0x012C, //32 Bit, kvarh
-		ReactiveExportL3: 0x012E, //32 Bit, kvarh
+		ReactiveExport:   0x0128, // 32 Bit, kvarh
+		ReactiveExportL1: 0x012A, // 32 Bit, kvarh
+		ReactiveExportL2: 0x012C, // 32 Bit, kvarh
+		ReactiveExportL3: 0x012E, // 32 Bit, kvarh
 
-		SumT1:            0x0130, //32 Bit, kwh
-		ImportT1:         0x0132, //32 Bit, kwh
-		ExportT1:         0x0134, //32 Bit, kwh
-		ReactiveSumT1:    0x0136, //32 Bit, kvarh
-		ReactiveImportT1: 0x0138, //32 Bit, kvarh
-		ReactiveExportT1: 0x013A, //32 Bit, kvarh
+		SumT1:            0x0130, // 32 Bit, kwh
+		ImportT1:         0x0132, // 32 Bit, kwh
+		ExportT1:         0x0134, // 32 Bit, kwh
+		ReactiveSumT1:    0x0136, // 32 Bit, kvarh
+		ReactiveImportT1: 0x0138, // 32 Bit, kvarh
+		ReactiveExportT1: 0x013A, // 32 Bit, kvarh
 
-		SumT2:            0x013C, //32 Bit, kwh
-		ImportT2:         0x013E, //32 Bit, kwh
-		ExportT2:         0x0140, //32 Bit, kwh
-		ReactiveSumT2:    0x0142, //32 Bit, kvarh
-		ReactiveImportT2: 0x0144, //32 Bit, kvarh
-		ReactiveExportT2: 0x0146, //32 Bit, kvarh
+		SumT2:            0x013C, // 32 Bit, kwh
+		ImportT2:         0x013E, // 32 Bit, kwh
+		ExportT2:         0x0140, // 32 Bit, kwh
+		ReactiveSumT2:    0x0142, // 32 Bit, kvarh
+		ReactiveImportT2: 0x0144, // 32 Bit, kvarh
+		ReactiveExportT2: 0x0146, // 32 Bit, kvarh
 
 		/* // Curently not supported
 		SumT3:           0x0148, //32 Bit, kwh
