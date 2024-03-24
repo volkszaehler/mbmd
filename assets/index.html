@@ -390,6 +390,8 @@
 					<tr>
 						<th>Meter</th>
 						<th>Type</th>
+						<th>Model</th>
+						<th>Serial</th>
 						<th>Status</th>
 					</tr>
 				</thead>
@@ -397,6 +399,8 @@
 					<tr v-for="(m, idx) in sorted(meters)">
 						<td>${ idx }</td>
 						<td>${ m.Type }</td>
+						<td>${ m.Model }</td>
+						<td>${ m.Serial }</td>
 						<td>${ m.Status }</td>
 					</tr>
 				</tbody>
