@@ -224,7 +224,15 @@ By default, readings are published at `/mbmd/<unique id>/<reading>`. Rate limiti
 
 ## InfluxDB support
 
-There is also the option to directly insert the data into an influxdb database by using the command-line options available. InfluxDB 1.8 and 2.0 are currently supported. to enable this, add the `--influx-database` and the `--influx-url` commandline parameter. More advanced configuration is available, to learn more checkout the [mbmd_run.md](docs/mbmd_run.md) documentation
+There is also the option to directly insert the data into an influxdb database
+by using the command-line options available. InfluxDB 1.8 and 2.0 are currently
+supported. to enable this, add the `--influx-database` and the `--influx-url`
+commandline parameter. More advanced configuration is available, to learn more
+checkout the [mbmd_run.md](docs/mbmd_run.md) documentation
+
+## Prometheus support
+
+There is also the option to pull prometheus data via the `/metrics` endpoint.
 
 # Supported Devices
 
@@ -309,7 +317,7 @@ Apart from meters, SunSpec-compatible grid inverters connected over TCP
 are supported, too. SunSpec defines a default register layout for accessing
 the devices.
 
-Supported inverters include popular devices from SolarEdge (SE3000, SE9000)
+Supported inverters include popular devices from SolarEdge (SE3000, SE9000, SE17K, SE10K-RWS)
 and SMA (Sunny Boy and Sunny TriPower).
 
 In case of TCP connection, the adapter parameter becomes the hostname and port:
