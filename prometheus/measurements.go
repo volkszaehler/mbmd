@@ -65,9 +65,8 @@ func UpdateMeasurementMetric(
 	deviceName string,
 	deviceSerial string,
 	measurement meters.MeasurementResult,
-) bool {
-	// Handle empty device serial numbers (e. g. on mocks)
-	// TODO Better handling??
+) {
+	// Handle empty device serial numbers (e.g. on mocks)
 	if deviceSerial == "" {
 		deviceSerial = SSN_MISSING
 	}
@@ -76,12 +75,9 @@ func UpdateMeasurementMetric(
 
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
 		gauge.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
-		return true
+		return
 	}
 	if counter, ok := counterVecMap[measurement.Measurement]; ok {
 		counter.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
-		return true
 	}
-
-	return false
 }

@@ -14,13 +14,20 @@ import (
 
 // Config describes the entire configuration
 type Config struct {
-	API      string
-	Rate     time.Duration
-	Mqtt     MqttConfig
-	Influx   InfluxConfig
-	Adapters []AdapterConfig
-	Devices  []DeviceConfig
-	Other    map[string]interface{} `mapstructure:",remain"`
+	API        string
+	Rate       time.Duration
+	Mqtt       MqttConfig
+	Influx     InfluxConfig
+	Adapters   []AdapterConfig
+	Devices    []DeviceConfig
+	Prometheus PrometheusConfig
+	Other      map[string]interface{} `mapstructure:",remain"`
+}
+
+type PrometheusConfig struct {
+	Enable                 bool // defaults to yes
+	EnableProcessCollector bool
+	EnableGoCollector      bool
 }
 
 // MqttConfig describes the mqtt broker configuration

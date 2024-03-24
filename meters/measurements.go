@@ -363,9 +363,9 @@ const (
 //
 // the app will panic!
 func newInternalMeasurement(opts ...measurementOptions) *measurement {
-	promInfo := &PrometheusInfo{}
-	m := &measurement{}
-	m.PrometheusInfo = promInfo
+	m := &measurement{
+		PrometheusInfo: &PrometheusInfo{},
+	}
 
 	for _, opt := range opts {
 		opt(m)
@@ -452,7 +452,7 @@ func generatePrometheusName(name string, unit units.Unit, metricType MetricType)
 	measurementName := strings.ToLower(name)
 	prometheusUnit := strings.ToLower(unit.PrometheusForm())
 
-	measurementName = strings.Trim(strings.ReplaceAll(strings.ToLower(measurementName), " ", "_"), "_")
+	measurementName = strings.Trim(strings.ReplaceAll(measurementName, " ", "_"), "_")
 
 	var counterSuffix string
 	if metricType == Counter {

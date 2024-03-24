@@ -3,7 +3,6 @@ package sunspec
 import (
 	"errors"
 	"fmt"
-	"github.com/volkszaehler/mbmd/prometheus"
 	"math"
 	"sort"
 	"strings"
@@ -66,8 +65,6 @@ func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 		dev = subdevice[0]
 	}
 
-	prometheus.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
-
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
@@ -82,12 +79,7 @@ func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 // Initialize implements the Device interface
 func (d *SunSpec) Initialize(client modbus.Client) error {
 	devices, err := DeviceTree(client)
-
-	deviceName := d.descriptor.Name
-	prometheus.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
-
 	if err != nil && !errors.Is(err, meters.ErrPartiallyOpened) {
-			prometheus.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
 		return err
 	}
 
@@ -103,7 +95,6 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 
 func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 	if len(devices) <= d.subdevice {
-		prometheus.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
@@ -111,10 +102,8 @@ func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
-		prometheus.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	prometheus.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
 
 	// collect relevant models
 	return d.collectModels(device)
