@@ -5,12 +5,11 @@ import (
 )
 
 func Test_makeInternalUnit(t *testing.T) {
-	internalUnit :=
-		newInternalUnit(
-			Ampere,
-			withName("Ampere", ""),
-			withAbbreviation("A", ""),
-		)
+	internalUnit := newInternalUnit(
+		Ampere,
+		withName("Ampere", ""),
+		withAbbreviation("A", ""),
+	)
 
 	if internalUnit.name.Singular != "Ampere" {
 		t.Errorf(
