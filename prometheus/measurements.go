@@ -6,7 +6,7 @@ import (
 )
 
 // These functions take care of registering and updating counters/gauges.
-// General naming convention: `mbmd_<NAME_IN_LOWER_CASE_WITH_UNDERSCORES>[_<UNIT>]['_total']`
+// General naming convention: `mbmd_<NAME_IN_LOWER_CASE_WITH_UNDERSCORES>['_total']`
 //
 // For instance: A counter for total connection attempts
 // => Name for newCounterOpts: `smart_meter_connection_attempt_total`
@@ -19,10 +19,9 @@ import (
 // For instance: "L1 Export Power" with unit `W`
 // => Name: `l1_export_power`
 // => Metric type: Gauge
-// => Check if unit `W` can be converted to its elementary unit (see units.ConvertValueToElementaryUnit)
 // => After prometheus.Metric creation:
-//	- Name: `mbmd_measurement_l1_export_power_watts`
-//	- Labels: {"device_name", "serial_number"}
+//	- Name: `mbmd_measurement_l1_export_power`
+//	- Labels: {"device_name", "serial_number", "unit"}
 //
 // Measurement metrics are treated slightly differently and are maintained in
 // prometheus/measurement.go. It ensures that extensibility and customization of
@@ -46,21 +45,23 @@ import (
 // SSN_MISSING is used for mocked smart meters
 const SSN_MISSING = "NOT_AVAILABLE"
 
-// counterVecMap contains all meters.Measurement that are associated with a prometheus.Counter
+// counterVecMap contains all meters.Measurement that are associated with a
+// prometheus.Counter
 //
-// If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
-// or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
+// If a new meters.Measurement is introduced, it needs to be added either to
+// counterVecMap or to gaugeVecMap - Otherwise Prometheus won't keep track of
+// the newly added meters.Measurement
 var counterVecMap = map[meters.Measurement]*MeasurementCounterCollector{}
 
-// gaugeVecMap contains all meters.Measurement that are associated with a prometheus.Gauge
+// gaugeVecMap contains all meters.Measurement that are associated with a
+// prometheus.Gauge
 //
-// If a new meters.Measurement is introduced, it needs to be added either to counterVecMap
-// or to gaugeVecMap - Otherwise Prometheus won't keep track of the newly added meters.Measurement
+// If a new meters.Measurement is introduced, it needs to be added either to
+// counterVecMap or to gaugeVecMap - Otherwise Prometheus won't keep track of
+// the newly added meters.Measurement
 var gaugeVecMap = map[meters.Measurement]*MeasurementGaugeCollector{}
 
-// UpdateMeasurementMetric updates a counter or gauge based on passed measurement
-//
-// Returns false if the associated prometheus.Metric does not exist
+// UpdateMeasurementMetric updates a counter or gauge based on passed measurement.
 func UpdateMeasurementMetric(
 	deviceName string,
 	deviceSerial string,
@@ -74,10 +75,10 @@ func UpdateMeasurementMetric(
 	_, elementaryValue := units.ConvertValueToElementaryUnit(measurement.Unit(), measurement.Value)
 
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
-		gauge.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
+		gauge.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial, measurement.Unit().Abbreviation())
 		return
 	}
 	if counter, ok := counterVecMap[measurement.Measurement]; ok {
-		counter.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial)
+		counter.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial, measurement.Unit().Abbreviation())
 	}
 }

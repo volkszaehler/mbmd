@@ -71,7 +71,7 @@ func (c *MeasurementCounterCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 // Set sets the specified value for provided labelValues at a specified timestamp.
-// value must be higher than 0. Otherwise a panic will occur.
+// value must be higher than 0. Otherwise, en error will be logged.
 //
 // This function is thread-safe.
 func (c *MeasurementCounterCollector) Set(timestamp time.Time, value float64, labelValues ...string) {
@@ -176,8 +176,8 @@ const keySeparator = ";"
 // Copied from prometheus/labels.go for consistency purposes
 var errInconsistentCardinality = errors.New("inconsistent label cardinality")
 
-// Labels for every measurement prometheus.CounterVec
-var measurementCollectorVariableLabels = []string{"device_name", "serial_number"}
+// Labels for every measurement prometheus.CounterVec/ unit as e.g. C, F, hertz
+var measurementCollectorVariableLabels = []string{"device_name", "serial_number", "unit"}
 
 type MetricFactory interface {
 	newMetric(lvs ...string)
