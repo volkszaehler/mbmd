@@ -4,28 +4,30 @@ import (
 	"log"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/volkszaehler/mbmd/meters"
 )
 
-// RegisterAllMetrics registers all static metrics and dynamically created measurement metrics
-// to the Prometheus Default registry.
-func RegisterAllMetrics() {
-	registerStatics()
-	createMeasurementMetrics()
+var MBMDRegistry = prometheus.NewRegistry()
+
+type Config struct {
+	Enable                 bool // defaults to yes
+	EnableProcessCollector bool
+	EnableGoCollector      bool
 }
 
-// registerStatics registers all globally defined static metrics to Prometheus library's default registry
-//
-// If you add a new collectable, make sure to add it to getAllCollectors to have them registered on startup.
-func registerStatics() {
-	collectables := getAllCollectors()
-
-	for _, collectable := range collectables {
-		for _, prometheusCollector := range collectable.Collect() {
-			if err := prometheus.Register(prometheusCollector); err != nil {
-				log.Printf("Could not register a metric '%s' (Error: %s)", prometheusCollector, err)
-			}
-		}
+// RegisterAllMetrics registers all static metrics and dynamically created measurement metrics
+// to the Prometheus Default registry.
+func RegisterAllMetrics(c Config) {
+	if !c.Enable {
+		return
+	}
+	createMeasurementMetrics()
+	if c.EnableProcessCollector {
+		MBMDRegistry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	}
+	if c.EnableGoCollector {
+		MBMDRegistry.MustRegister(collectors.NewGoCollector())
 	}
 }
 
@@ -43,7 +45,7 @@ func createMeasurementMetrics() {
 				),
 			)
 
-			if err := prometheus.Register(newGauge); err != nil {
+			if err := MBMDRegistry.Register(newGauge); err != nil {
 				log.Printf(
 					"Could not register gauge for measurement '%s'. Omitting... (Error: %s)\n",
 					measurement,
@@ -60,7 +62,7 @@ func createMeasurementMetrics() {
 				),
 			)
 
-			if err := prometheus.Register(measurementCollector); err != nil {
+			if err := MBMDRegistry.Register(measurementCollector); err != nil {
 				log.Printf("could not register counter for measurement '%s'. omitting... (Error: %s)\n",
 					measurement,
 					err,
@@ -69,14 +71,5 @@ func createMeasurementMetrics() {
 				counterVecMap[measurement] = measurementCollector
 			}
 		}
-	}
-}
-
-func getAllCollectors() []collectable {
-	return []collectable{
-		socketCollectors{},
-		publisherCollectors{},
-		handlerCollectors{},
-		deviceCollectors{},
 	}
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/volkszaehler/mbmd/prometheus"
 	"log"
 	"net/http"
 	"time"
@@ -39,19 +38,15 @@ type SocketClient struct {
 func (c *SocketClient) writePump() {
 	defer func() {
 		c.conn.Close()
-		prometheus.WebSocketClientConnectionClose.Inc()
 	}()
 	for {
 		msg := <-c.send
 		if err := c.conn.SetWriteDeadline(time.Now().Add(socketWriteWait)); err != nil {
-			prometheus.WebSocketClientMessageSendFailure.Inc()
 			return
 		}
 		if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-			prometheus.WebSocketClientMessageSendFailure.Inc()
 			return
 		}
-		prometheus.WebSocketClientMessageSendSuccess.Inc()
 	}
 }
 
@@ -60,7 +55,6 @@ func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
-		prometheus.WebSocketClientCreationFailure.WithLabelValues("upgrade").Inc()
 		return
 	}
 	client := &SocketClient{hub: hub, conn: conn, send: make(chan []byte, 256)}
@@ -68,7 +62,6 @@ func ServeWebsocket(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 
 	// run writing to client in goroutine
 	go client.writePump()
-	prometheus.WebSocketClientCreationSuccess.WithLabelValues("upgrade").Inc()
 }
 
 // SocketHub maintains the set of active clients and broadcasts messages to the
@@ -109,7 +102,6 @@ func (h *SocketHub) broadcast(i interface{}) {
 			select {
 			case client.send <- message:
 			default:
-				prometheus.WebSocketMessageBytesSent.Add(float64(len(message)))
 				close(client.send)
 				delete(h.clients, client)
 			}
