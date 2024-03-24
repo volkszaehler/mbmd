@@ -1,8 +1,6 @@
 package prometheus
 
 import (
-	"strings"
-
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -17,15 +15,6 @@ func newCounterOpts(name string, help string) prometheus.CounterOpts {
 	}
 }
 
-// newCounterOptsWithSubsystem acts the same as newCounterOpts, but specifies a
-// subsystem for Prometheus fully qualified name.
-func newCounterOptsWithSubsystem(subsystem string, name string, help string) prometheus.CounterOpts {
-	opts := newCounterOpts(name, help)
-	opts.Subsystem = strings.ToLower(subsystem)
-
-	return opts
-}
-
 // newGaugeOpts creates a GaugeOpts object, but with a predefined namespace
 func newGaugeOpts(name string, help string) prometheus.GaugeOpts {
 	return prometheus.GaugeOpts{
@@ -33,13 +22,4 @@ func newGaugeOpts(name string, help string) prometheus.GaugeOpts {
 		Name:      name,
 		Help:      help,
 	}
-}
-
-// newGaugeOptsWithSubsystem acts the same as newGaugeOpts, but specifies a
-// subsystem for Prometheus fully qualified name.
-func newGaugeOptsWithSubsystem(subsystem string, name string, help string) prometheus.GaugeOpts {
-	opts := newGaugeOpts(name, help)
-	opts.Subsystem = strings.ToLower(subsystem)
-
-	return opts
 }
