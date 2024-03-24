@@ -309,7 +309,7 @@ func (m Measurement) PrometheusName() string {
 // A measurement object is built by using the builder function newInternalMeasurement.
 //
 // A Prometheus name and help text is "auto-generated". The format is:
-// <Name>			::=	measurement_<HelpText>_<Unit>[_<CounterTotal>]
+// <Name>			::=	measurement_<HelpText>[_<CounterTotal>]
 // <HelpText>		::= <measurementOption.withDescription()> | <measurementOption.WithCustomDescription()>
 // <Unit>			::= <measurementOption.withUnit()> // Elementary unit!
 // <CounterTotal>	::= "total" // if metric type is Counter
@@ -391,9 +391,9 @@ func newInternalMeasurement(opts ...measurementOptions) *measurement {
 	}
 
 	if m.PrometheusInfo.Name == "" {
-		m.PrometheusInfo.Name = generatePrometheusName(m.Description, m.PrometheusInfo.Unit, m.PrometheusInfo.MetricType)
+		m.PrometheusInfo.Name = generatePrometheusName(m.Description, m.PrometheusInfo.MetricType)
 	} else {
-		m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, m.PrometheusInfo.Unit, m.PrometheusInfo.MetricType)
+		m.PrometheusInfo.Name = generatePrometheusName(m.PrometheusInfo.Name, m.PrometheusInfo.MetricType)
 	}
 
 	return m
@@ -450,9 +450,8 @@ func generatePrometheusHelpText(description string, unit units.Unit) string {
 	return description
 }
 
-func generatePrometheusName(name string, unit units.Unit, metricType MetricType) string {
+func generatePrometheusName(name string, metricType MetricType) string {
 	measurementName := strings.ToLower(name)
-	prometheusUnit := strings.ToLower(unit.PrometheusForm())
 
 	measurementName = strings.Trim(strings.ReplaceAll(measurementName, " ", "_"), "_")
 
@@ -463,7 +462,7 @@ func generatePrometheusName(name string, unit units.Unit, metricType MetricType)
 
 	return strings.Trim( // Trim trailing underscore (e. g. when unit string is empty)
 		strings.Join(
-			[]string{"measurement", measurementName, prometheusUnit, counterSuffix},
+			[]string{"measurement", measurementName, counterSuffix},
 			"_",
 		),
 		"_",
