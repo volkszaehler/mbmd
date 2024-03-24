@@ -33,7 +33,8 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model101.DCA:    meters.DCCurrent,
 			model101.DCV:    meters.DCVoltage,
 			model101.DCW:    meters.DCPower,
-			model101.TmpCab: meters.HeatSinkTemp,
+			model101.TmpCab: meters.CabinetTemp,
+			model101.TmpSnk: meters.HeatSinkTemp,
 		},
 	},
 	// single phase inverter - float
@@ -51,7 +52,8 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model111.DCA:    meters.DCCurrent,
 			model111.DCV:    meters.DCVoltage,
 			model111.DCW:    meters.DCPower,
-			model111.TmpCab: meters.HeatSinkTemp,
+			model111.TmpCab: meters.CabinetTemp,
+			model111.TmpSnk: meters.HeatSinkTemp,
 		},
 	},
 	// three phase inverter
@@ -73,7 +75,8 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model103.DCA:    meters.DCCurrent,
 			model103.DCV:    meters.DCVoltage,
 			model103.DCW:    meters.DCPower,
-			model103.TmpCab: meters.HeatSinkTemp,
+			model103.TmpSnk: meters.HeatSinkTemp,
+			model103.TmpCab: meters.CabinetTemp,
 		},
 	},
 	// three phase inverter - float
@@ -95,7 +98,8 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model113.DCA:    meters.DCCurrent,
 			model113.DCV:    meters.DCVoltage,
 			model113.DCW:    meters.DCPower,
-			model113.TmpCab: meters.HeatSinkTemp,
+			model113.TmpSnk: meters.HeatSinkTemp,
+			model113.TmpCab: meters.CabinetTemp,
 		},
 	},
 	model160.ModelID: {
