@@ -3,7 +3,6 @@ package sunspec
 import (
 	"errors"
 	"fmt"
-	"github.com/volkszaehler/mbmd/prometheus"
 	"math"
 	"sort"
 	"strings"
@@ -47,8 +46,6 @@ func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 		dev = subdevice[0]
 	}
 
-	prometheus.DevicesCreatedTotal.WithLabelValues(meterType).Inc()
-
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
@@ -64,32 +61,19 @@ func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 func (d *SunSpec) Initialize(client modbus.Client) error {
 	var partiallyOpen bool
 	in, err := sunspecbus.Open(client)
-
-	deviceName := d.descriptor.Name
-	prometheus.DeviceModbusConnectionAttemptTotal.WithLabelValues(deviceName).Inc()
-
 	if err != nil {
 		if in == nil {
-			prometheus.DeviceModbusConnectionFailure.WithLabelValues(deviceName).Inc()
 			return err
 		}
 
 		partiallyOpen = true
 	}
 
-	if partiallyOpen {
-		prometheus.DeviceModbusConnectionPartialSuccess.WithLabelValues(deviceName).Inc()
-	} else {
-		prometheus.DeviceModbusConnectionSuccess.WithLabelValues(deviceName).Inc()
-	}
-
 	devices := in.Collect(sunspec.AllDevices)
 	if len(devices) == 0 {
-		prometheus.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return errors.New("sunspec: device not found")
 	}
 	if len(devices) <= d.subdevice {
-		prometheus.DeviceByConfigNotFound.WithLabelValues(deviceName).Inc()
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
 
@@ -97,17 +81,13 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 
 	// read common block
 	if err := d.readCommonBlock(device); err != nil {
-		prometheus.SunSpecDeviceModbusCommonBlockReadsFailures.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	prometheus.SunSpecDeviceModbusCommonBlockReadsSuccess.WithLabelValues(deviceName).Inc()
 
 	// collect relevant models
 	if err := d.collectModels(device); err != nil {
-		prometheus.SunSpecDeviceModbusModelCollectionFailure.WithLabelValues(deviceName).Inc()
 		return err
 	}
-	prometheus.SunSpecDeviceModbusModelCollectionSuccess.WithLabelValues(deviceName).Inc()
 
 	// return partial open error if everything else went fine
 	if partiallyOpen {

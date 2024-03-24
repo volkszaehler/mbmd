@@ -13,11 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	mbmd_prometheus "github.com/volkszaehler/mbmd/prometheus"
 )
 
 // Assets is the embedded assets file system
@@ -94,7 +93,7 @@ func (h *Httpd) allDevicesHandler(
 func (h *Httpd) singleDeviceHandler(
 	readingsProvider func(id string) (*Readings, error),
 ) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
 		id, ok := vars["id"]
@@ -116,17 +115,17 @@ func (h *Httpd) singleDeviceHandler(
 		if err := json.NewEncoder(w).Encode(data); err != nil {
 			log.Printf("httpd: failed to encode JSON %s", err.Error())
 		}
-	})
+	}
 }
 
 // mkSocketHandler attaches status handler to uri
 func (h *Httpd) mkStatusHandler(s *Status) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(s); err != nil {
 			log.Printf("httpd: failed to encode JSON: %s", err.Error())
 		}
-	})
+	}
 }
 
 // mkSocketHandler attaches websocket handler to uri
@@ -160,7 +159,7 @@ func jsonHandler(h http.Handler) http.Handler {
 // prometheusHandler is a middleware that prepares Prometheus metrics for collection by HTTP request
 func (h *Httpd) prometheusHandler() http.Handler {
 	return promhttp.HandlerFor(
-		prometheus.DefaultGatherer,
+		mbmd_prometheus.MBMDRegistry,
 		promhttp.HandlerOpts{
 			EnableOpenMetrics: true,
 		},
