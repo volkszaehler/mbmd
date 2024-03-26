@@ -147,6 +147,10 @@ const (
 	BatteryVoltage
 
 	PhaseAngle
+
+	// Status
+	Status
+	StatusVendor
 )
 
 var iec = map[Measurement]*measurement{
@@ -247,6 +251,8 @@ var iec = map[Measurement]*measurement{
 	ChargeState:      newInternalMeasurement(withDescription("Charge State"), withUnit(units.Percent), withMetricType(Gauge)),
 	BatteryVoltage:   newInternalMeasurement(withDescription("Battery Voltage"), withUnit(units.Volt), withMetricType(Gauge)),
 	PhaseAngle:       newInternalMeasurement(withDescription("Phase Angle"), withUnit(units.Degree), withMetricType(Gauge)),
+	Status:           newInternalMeasurement(withDescription("Status"), withMetricType(Gauge)),        // Operating State
+	StatusVendor:     newInternalMeasurement(withDescription("Status Vendor"), withMetricType(Gauge)), // Vendor-defined operating state and error codes.
 }
 
 // MarshalText implements encoding.TextMarshaler

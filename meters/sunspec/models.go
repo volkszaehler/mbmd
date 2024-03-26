@@ -77,6 +77,8 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model103.DCW:    meters.DCPower,
 			model103.TmpSnk: meters.HeatSinkTemp,
 			model103.TmpCab: meters.CabinetTemp,
+			model103.St:     meters.Status,
+			model103.StVnd:  meters.StatusVendor,
 		},
 	},
 	// three phase inverter - float
@@ -100,6 +102,8 @@ var modelMap = map[sunspec.ModelId]map[int]map[string]meters.Measurement{
 			model113.DCW:    meters.DCPower,
 			model113.TmpSnk: meters.HeatSinkTemp,
 			model113.TmpCab: meters.CabinetTemp,
+			model113.St:     meters.Status,
+			model113.StVnd:  meters.StatusVendor,
 		},
 	},
 	model160.ModelID: {
