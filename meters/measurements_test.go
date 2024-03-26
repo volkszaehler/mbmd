@@ -13,7 +13,7 @@ func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testi
 		withMetricType(Counter),
 	)
 
-	expectedPrometheusName := "measurement_my_test_measurement_amperes_total"
+	expectedPrometheusName := "measurement_my_test_measurement_total"
 	expectedDescription := "My Test Measurement in Amperes"
 
 	if measurement.PrometheusInfo.Name != expectedPrometheusName {
@@ -48,7 +48,7 @@ func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 		withMetricType(Gauge),
 	)
 
-	expectedPrometheusName := "measurement_my_custom_name_for_my_test_measurement_amperes"
+	expectedPrometheusName := "measurement_my_custom_name_for_my_test_measurement"
 	expectedDescription := "My custom description for my measurement"
 
 	if measurement.PrometheusInfo.Name != expectedPrometheusName {
