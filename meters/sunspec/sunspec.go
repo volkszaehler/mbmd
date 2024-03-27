@@ -10,11 +10,11 @@ import (
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
-	"github.com/grid-x/modbus"
-
 	_ "github.com/andig/gosunspec/models" // device tree parsing requires all models
 	"github.com/andig/gosunspec/models/model1"
 	"github.com/andig/gosunspec/models/model101"
+	"github.com/andig/gosunspec/typelabel"
+	"github.com/grid-x/modbus"
 	"github.com/volkszaehler/mbmd/meters"
 )
 
@@ -215,6 +215,17 @@ func (d *SunSpec) notInitialized() bool {
 func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point) (float64, error) {
 	if d.descriptor.Manufacturer == "KOSTAL" {
 		FixKostal(p)
+	}
+
+	switch p.Type() {
+	case typelabel.Enum16:
+		return float64(p.Enum16()), nil
+	case typelabel.Enum32:
+		return float64(p.Enum32()), nil
+	case typelabel.Bitfield16:
+		return float64(p.Bitfield16()), nil
+	case typelabel.Bitfield32:
+		return float64(p.Bitfield32()), nil
 	}
 
 	v := p.ScaledValue()
