@@ -16,7 +16,6 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
-RUN make install
 RUN make build
 
 #############################
