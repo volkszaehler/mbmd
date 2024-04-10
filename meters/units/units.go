@@ -7,7 +7,6 @@ type Unit int
 const (
 	KiloVarHour Unit = iota + 1
 	KiloWattHour
-	Joule
 
 	Ampere
 	Volt
@@ -118,12 +117,6 @@ var units = map[Unit]*unit{
 		withNameInPrometheusForm("percent"),
 	),
 
-	Joule: newInternalUnit(
-		Joule,
-		withName("Joule", ""),
-		withAbbreviation("J", ""),
-	),
-
 	NoUnit: newInternalUnit(NoUnit),
 }
 
@@ -133,9 +126,7 @@ func (u Unit) PrometheusForm() string {
 		return ""
 	}
 
-	elementaryUnit, _ := ConvertValueToElementaryUnit(u, 0.0)
-
-	if unit, ok := units[elementaryUnit]; ok {
+	if unit, ok := units[u]; ok {
 		return unit.name.PrometheusForm
 	}
 
