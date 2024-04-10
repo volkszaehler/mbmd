@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-const _UnitName = "kilo_var_hourkilo_watt_hourjouleamperevoltwattvoltamperevardegreedegree_celsiushertzpercentno_unit"
+const _UnitName = "kilo_var_hourkilo_watt_houramperevoltwattvoltamperevardegreedegree_celsiushertzpercentno_unit"
 
-var _UnitIndex = [...]uint8{0, 13, 27, 32, 38, 42, 46, 56, 59, 65, 79, 84, 91, 98}
+var _UnitIndex = [...]uint8{0, 13, 27, 33, 37, 41, 51, 54, 60, 74, 79, 86, 93}
 
-const _UnitLowerName = "kilo_var_hourkilo_watt_hourjouleamperevoltwattvoltamperevardegreedegree_celsiushertzpercentno_unit"
+const _UnitLowerName = "kilo_var_hourkilo_watt_houramperevoltwattvoltamperevardegreedegree_celsiushertzpercentno_unit"
 
 func (i Unit) String() string {
 	i -= 1
@@ -27,64 +27,60 @@ func _UnitNoOp() {
 	var x [1]struct{}
 	_ = x[KiloVarHour-(1)]
 	_ = x[KiloWattHour-(2)]
-	_ = x[Joule-(3)]
-	_ = x[Ampere-(4)]
-	_ = x[Volt-(5)]
-	_ = x[Watt-(6)]
-	_ = x[Voltampere-(7)]
-	_ = x[Var-(8)]
-	_ = x[Degree-(9)]
-	_ = x[DegreeCelsius-(10)]
-	_ = x[Hertz-(11)]
-	_ = x[Percent-(12)]
-	_ = x[NoUnit-(13)]
+	_ = x[Ampere-(3)]
+	_ = x[Volt-(4)]
+	_ = x[Watt-(5)]
+	_ = x[Voltampere-(6)]
+	_ = x[Var-(7)]
+	_ = x[Degree-(8)]
+	_ = x[DegreeCelsius-(9)]
+	_ = x[Hertz-(10)]
+	_ = x[Percent-(11)]
+	_ = x[NoUnit-(12)]
 }
 
-var _UnitValues = []Unit{KiloVarHour, KiloWattHour, Joule, Ampere, Volt, Watt, Voltampere, Var, Degree, DegreeCelsius, Hertz, Percent, NoUnit}
+var _UnitValues = []Unit{KiloVarHour, KiloWattHour, Ampere, Volt, Watt, Voltampere, Var, Degree, DegreeCelsius, Hertz, Percent, NoUnit}
 
 var _UnitNameToValueMap = map[string]Unit{
 	_UnitName[0:13]:       KiloVarHour,
 	_UnitLowerName[0:13]:  KiloVarHour,
 	_UnitName[13:27]:      KiloWattHour,
 	_UnitLowerName[13:27]: KiloWattHour,
-	_UnitName[27:32]:      Joule,
-	_UnitLowerName[27:32]: Joule,
-	_UnitName[32:38]:      Ampere,
-	_UnitLowerName[32:38]: Ampere,
-	_UnitName[38:42]:      Volt,
-	_UnitLowerName[38:42]: Volt,
-	_UnitName[42:46]:      Watt,
-	_UnitLowerName[42:46]: Watt,
-	_UnitName[46:56]:      Voltampere,
-	_UnitLowerName[46:56]: Voltampere,
-	_UnitName[56:59]:      Var,
-	_UnitLowerName[56:59]: Var,
-	_UnitName[59:65]:      Degree,
-	_UnitLowerName[59:65]: Degree,
-	_UnitName[65:79]:      DegreeCelsius,
-	_UnitLowerName[65:79]: DegreeCelsius,
-	_UnitName[79:84]:      Hertz,
-	_UnitLowerName[79:84]: Hertz,
-	_UnitName[84:91]:      Percent,
-	_UnitLowerName[84:91]: Percent,
-	_UnitName[91:98]:      NoUnit,
-	_UnitLowerName[91:98]: NoUnit,
+	_UnitName[27:33]:      Ampere,
+	_UnitLowerName[27:33]: Ampere,
+	_UnitName[33:37]:      Volt,
+	_UnitLowerName[33:37]: Volt,
+	_UnitName[37:41]:      Watt,
+	_UnitLowerName[37:41]: Watt,
+	_UnitName[41:51]:      Voltampere,
+	_UnitLowerName[41:51]: Voltampere,
+	_UnitName[51:54]:      Var,
+	_UnitLowerName[51:54]: Var,
+	_UnitName[54:60]:      Degree,
+	_UnitLowerName[54:60]: Degree,
+	_UnitName[60:74]:      DegreeCelsius,
+	_UnitLowerName[60:74]: DegreeCelsius,
+	_UnitName[74:79]:      Hertz,
+	_UnitLowerName[74:79]: Hertz,
+	_UnitName[79:86]:      Percent,
+	_UnitLowerName[79:86]: Percent,
+	_UnitName[86:93]:      NoUnit,
+	_UnitLowerName[86:93]: NoUnit,
 }
 
 var _UnitNames = []string{
 	_UnitName[0:13],
 	_UnitName[13:27],
-	_UnitName[27:32],
-	_UnitName[32:38],
-	_UnitName[38:42],
-	_UnitName[42:46],
-	_UnitName[46:56],
-	_UnitName[56:59],
-	_UnitName[59:65],
-	_UnitName[65:79],
-	_UnitName[79:84],
-	_UnitName[84:91],
-	_UnitName[91:98],
+	_UnitName[27:33],
+	_UnitName[33:37],
+	_UnitName[37:41],
+	_UnitName[41:51],
+	_UnitName[51:54],
+	_UnitName[54:60],
+	_UnitName[60:74],
+	_UnitName[74:79],
+	_UnitName[79:86],
+	_UnitName[86:93],
 }
 
 // UnitString retrieves an enum value from the enum constants string name.

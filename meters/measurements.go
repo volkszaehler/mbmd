@@ -424,9 +424,7 @@ func withGenericPrometheusHelpText() measurementOptions {
 func withUnit(u units.Unit) measurementOptions {
 	return func(m *measurement) {
 		m.Unit = u
-
-		elementaryUnit, _ := units.ConvertValueToElementaryUnit(m.Unit, 0.0)
-		m.PrometheusInfo.Unit = elementaryUnit
+		m.PrometheusInfo.Unit = m.Unit
 	}
 }
 
