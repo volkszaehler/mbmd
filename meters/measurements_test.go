@@ -84,7 +84,7 @@ func TestInternalMeasurement_AutoConvertToElementaryUnit(t *testing.T) {
 		withMetricType(Gauge),
 	)
 
-	expectedConvertedUnit := units.Joule
+	expectedConvertedUnit := units.KiloWattHour
 	_, expectedConvertedUnitPluralForm := expectedConvertedUnit.Name()
 
 	if measurementKwh.PrometheusInfo.Unit != expectedConvertedUnit {

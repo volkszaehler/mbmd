@@ -2,7 +2,6 @@ package prometheus
 
 import (
 	"github.com/volkszaehler/mbmd/meters"
-	"github.com/volkszaehler/mbmd/meters/units"
 )
 
 // These functions take care of registering and updating counters/gauges.
@@ -72,13 +71,11 @@ func UpdateMeasurementMetric(
 		deviceSerial = SSN_MISSING
 	}
 
-	_, elementaryValue := units.ConvertValueToElementaryUnit(measurement.Unit(), measurement.Value)
-
 	if gauge, ok := gaugeVecMap[measurement.Measurement]; ok {
-		gauge.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial, measurement.Unit().Abbreviation())
+		gauge.Set(measurement.Timestamp, measurement.Value, deviceName, deviceSerial, measurement.Unit().Abbreviation())
 		return
 	}
 	if counter, ok := counterVecMap[measurement.Measurement]; ok {
-		counter.Set(measurement.Timestamp, elementaryValue, deviceName, deviceSerial, measurement.Unit().Abbreviation())
+		counter.Set(measurement.Timestamp, measurement.Value, deviceName, deviceSerial, measurement.Unit().Abbreviation())
 	}
 }
