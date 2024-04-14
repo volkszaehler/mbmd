@@ -7,8 +7,8 @@ import (
 )
 
 func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testing.T) {
-	measurement := newInternalMeasurement(
-		withDescription("My Test Measurement"),
+	measurement := newMeasurement(
+		withDesc("My Test Measurement"),
 		withUnit(units.Ampere),
 		withMetricType(Counter),
 	)
@@ -40,10 +40,10 @@ func TestMeasurementCreation_WithRequiredOptions_WithMetricType_Counter(t *testi
 }
 
 func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
-	measurement := newInternalMeasurement(
-		withDescription("My Test Measurement"),
+	measurement := newMeasurement(
+		withDesc("My Test Measurement"),
 		withPrometheusHelpText("My custom description for my measurement"),
-		withPrometheusName("my_custom_name_for_my_test_measurement"),
+		withPromName("my_custom_name_for_my_test_measurement"),
 		withUnit(units.Ampere),
 		withMetricType(Gauge),
 	)
@@ -68,18 +68,18 @@ func TestMeasurementCreation_WithCustomName_AndDescription(t *testing.T) {
 }
 
 func TestInternalMeasurement_AutoConvertToElementaryUnit(t *testing.T) {
-	measurementKwh := newInternalMeasurement(
-		withDescription("My Test Measurement with kWh"),
+	measurementKwh := newMeasurement(
+		withDesc("My Test Measurement with kWh"),
 		withPrometheusHelpText("My custom description for my measurement"),
-		withPrometheusName("my_custom_name_for_my_test_measurement_energy"),
+		withPromName("my_custom_name_for_my_test_measurement_energy"),
 		withUnit(units.KiloWattHour),
 		withMetricType(Gauge),
 	)
 
-	measurementKvarh := newInternalMeasurement(
-		withDescription("My Test Measurement"),
+	measurementKvarh := newMeasurement(
+		withDesc("My Test Measurement"),
 		withPrometheusHelpText("My custom description for my measurement"),
-		withPrometheusName("my_custom_name_for_my_test_measurement_energy"),
+		withPromName("my_custom_name_for_my_test_measurement_energy"),
 		withUnit(units.KiloWattHour),
 		withMetricType(Gauge),
 	)
