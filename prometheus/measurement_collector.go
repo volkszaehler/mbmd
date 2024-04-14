@@ -76,7 +76,7 @@ func (c *MeasurementCounterCollector) Collect(ch chan<- prometheus.Metric) {
 // This function is thread-safe.
 func (c *MeasurementCounterCollector) Set(timestamp time.Time, value float64, labelValues ...string) {
 	if value < 0 {
-		log.Println("[ERROR] counters cannot decrease in its value. ignoring.", c.fqName)
+		log.Println("[ERROR] counters cannot decrease in its value. ignoring.", c.fqName, "value", value)
 		return
 	}
 
