@@ -75,6 +75,12 @@ func (b *RTUOverUDP) Close() {
 }
 
 // Clone clones the modbus connection.
-func (b *RTUOverUDP) Clone() {
-	b.Handler.Clone()
+func (b *RTUOverUDP) Clone(deviceID byte) Connection {
+	handler := b.Handler.Clone()
+	handler.SetSlave(deviceID)
+
+	return &RTUOverUDP{
+		Client:  modbus.NewClient(handler),
+		Handler: handler,
+	}
 }
