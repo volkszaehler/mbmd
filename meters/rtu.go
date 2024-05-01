@@ -95,3 +95,8 @@ func (b *RTU) ConnectDelay(delay time.Duration) {
 func (b *RTU) Close() {
 	b.Handler.Close()
 }
+
+// Clone clones the modbus connection.
+func (b *RTU) Clone() {
+	b.Handler.Clone()
+}

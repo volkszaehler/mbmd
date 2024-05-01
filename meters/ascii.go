@@ -96,3 +96,8 @@ func (b *ASCII) ConnectDelay(delay time.Duration) {
 func (b *ASCII) Close() {
 	b.Handler.Close()
 }
+
+// Clone clones the modbus connection.
+func (b *ASCII) Clone() {
+	b.Handler.Clone()
+}

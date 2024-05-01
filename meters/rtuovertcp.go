@@ -82,3 +82,8 @@ func (b *RTUOverTCP) ConnectDelay(delay time.Duration) {
 func (b *RTUOverTCP) Close() {
 	b.Handler.Close()
 }
+
+// Clone clones the modbus connection.
+func (b *RTUOverTCP) Clone() {
+	b.Handler.Clone()
+}

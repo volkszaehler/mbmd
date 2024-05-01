@@ -75,3 +75,8 @@ func (b *TCP) ConnectDelay(delay time.Duration) {
 func (b *TCP) Close() {
 	b.Handler.Close()
 }
+
+// Clone clones the modbus connection.
+func (b *TCP) Clone() {
+	b.Handler.Clone()
+}

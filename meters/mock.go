@@ -62,6 +62,10 @@ func (b *Mock) ConnectDelay(delay time.Duration) {
 func (b *Mock) Close() {
 }
 
+// Clone clones the modbus connection.
+func (b *Mock) Clone() {
+}
+
 // MockClient is a mock modbus client for testing that
 // is able to simulate devices and errors
 type MockClient struct {
