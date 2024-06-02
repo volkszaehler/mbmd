@@ -70,8 +70,9 @@ func (c *MeasurementCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-// Set sets the specified value for provided labelValues at a specified timestamp.
-// value must be higher than 0. Otherwise, en error will be logged.
+// Set sets the specified value for provided labelValues at a specified
+// timestamp. value must be higher than 0 and higher than the previous value.
+// Otherwise, en error will be logged.
 //
 // This function is thread-safe.
 func (c *MeasurementCounterCollector) Set(timestamp time.Time, value float64, labelValues ...string) {
@@ -84,6 +85,16 @@ func (c *MeasurementCounterCollector) Set(timestamp time.Time, value float64, la
 	defer c.values.Unlock()
 
 	lvs := strings.Join(labelValues, keySeparator)
+	var prevValue float64
+	if prev, ok := c.values.data[lvs]; ok && prev.value > 0 {
+		prevValue = prev.value
+	}
+
+	if prevValue > 0 && value < prevValue {
+		log.Println("[WARN] counters cannot decrease in its value. ignoring.", c.fqName, "value", value, "prevValue", prevValue)
+		return
+	}
+
 	c.values.data[lvs] = &measurementResult{
 		value:     value,
 		timestamp: timestamp,

@@ -137,7 +137,6 @@ func (h *Handler) queryDevice(
 		status.Requests++
 
 		measurements, err := dev.Query(h.Manager.Conn.ModbusClient())
-
 		if err == nil {
 			// send ok status
 			status.Available(true)
