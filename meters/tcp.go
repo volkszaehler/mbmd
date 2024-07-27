@@ -8,7 +8,6 @@ import (
 
 // TCP is a TCP modbus connection
 type TCP struct {
-	address string
 	Client  modbus.Client
 	Handler *modbus.TCPClientHandler
 }
@@ -30,7 +29,6 @@ func NewTCP(address string) Connection {
 	client := modbus.NewClient(handler)
 
 	b := &TCP{
-		address: address,
 		Client:  client,
 		Handler: handler,
 	}
@@ -40,7 +38,7 @@ func NewTCP(address string) Connection {
 
 // String returns the bus connection address (TCP)
 func (b *TCP) String() string {
-	return b.address
+	return b.Handler.Address
 }
 
 // ModbusClient returns the TCP modbus client
@@ -74,4 +72,15 @@ func (b *TCP) ConnectDelay(delay time.Duration) {
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *TCP) Close() {
 	b.Handler.Close()
+}
+
+// Clone clones the modbus connection.
+func (b *TCP) Clone(deviceID byte) Connection {
+	handler := b.Handler.Clone()
+	handler.SetSlave(deviceID)
+
+	return &TCP{
+		Client:  modbus.NewClient(handler),
+		Handler: handler,
+	}
 }

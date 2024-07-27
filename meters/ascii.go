@@ -10,7 +10,6 @@ import (
 
 // ASCII is an ASCII modbus connection
 type ASCII struct {
-	device  string
 	Client  modbus.Client
 	Handler *modbus.ASCIIClientHandler
 	prevID  uint8
@@ -45,7 +44,6 @@ func NewASCII(device string, baudrate int, comset string) Connection {
 	client := modbus.NewClient(handler)
 
 	b := &ASCII{
-		device:  device,
 		Client:  client,
 		Handler: handler,
 	}
@@ -55,7 +53,7 @@ func NewASCII(device string, baudrate int, comset string) Connection {
 
 // String returns the bus device
 func (b *ASCII) String() string {
-	return b.device
+	return b.Handler.Address
 }
 
 // ModbusClient returns the RTU modbus client
@@ -95,4 +93,15 @@ func (b *ASCII) ConnectDelay(delay time.Duration) {
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *ASCII) Close() {
 	b.Handler.Close()
+}
+
+// Clone clones the modbus connection.
+func (b *ASCII) Clone(deviceID byte) Connection {
+	handler := b.Handler.Clone()
+	handler.SetSlave(deviceID)
+
+	return &ASCII{
+		Client:  modbus.NewClient(handler),
+		Handler: handler,
+	}
 }

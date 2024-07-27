@@ -8,7 +8,6 @@ import (
 
 // RTUOverTCP is a RTU encoder over a TCP modbus connection
 type RTUOverTCP struct {
-	address string
 	Client  modbus.Client
 	Handler *modbus.RTUOverTCPClientHandler
 	prevID  uint8
@@ -31,7 +30,6 @@ func NewRTUOverTCP(address string) Connection {
 	client := modbus.NewClient(handler)
 
 	b := &RTUOverTCP{
-		address: address,
 		Client:  client,
 		Handler: handler,
 	}
@@ -41,7 +39,7 @@ func NewRTUOverTCP(address string) Connection {
 
 // String returns the bus connection address (TCP)
 func (b *RTUOverTCP) String() string {
-	return b.address
+	return b.Handler.Address
 }
 
 // ModbusClient returns the TCP modbus client
@@ -81,4 +79,15 @@ func (b *RTUOverTCP) ConnectDelay(delay time.Duration) {
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *RTUOverTCP) Close() {
 	b.Handler.Close()
+}
+
+// Clone clones the modbus connection.
+func (b *RTUOverTCP) Clone(deviceID byte) Connection {
+	handler := b.Handler.Clone()
+	handler.SetSlave(deviceID)
+
+	return &RTUOverTCP{
+		Client:  modbus.NewClient(handler),
+		Handler: handler,
+	}
 }

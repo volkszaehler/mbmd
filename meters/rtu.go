@@ -10,7 +10,6 @@ import (
 
 // RTU is an RTU modbus connection
 type RTU struct {
-	device  string
 	Client  modbus.Client
 	Handler *modbus.RTUClientHandler
 	prevID  uint8
@@ -45,7 +44,6 @@ func NewRTU(device string, baudrate int, comset string) Connection {
 	client := modbus.NewClient(handler)
 
 	b := &RTU{
-		device:  device,
 		Client:  client,
 		Handler: handler,
 	}
@@ -55,7 +53,7 @@ func NewRTU(device string, baudrate int, comset string) Connection {
 
 // String returns the bus device
 func (b *RTU) String() string {
-	return b.device
+	return b.Handler.Address
 }
 
 // ModbusClient returns the RTU modbus client
@@ -94,4 +92,15 @@ func (b *RTU) ConnectDelay(delay time.Duration) {
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *RTU) Close() {
 	b.Handler.Close()
+}
+
+// Clone clones the modbus connection.
+func (b *RTU) Clone(deviceID byte) Connection {
+	handler := b.Handler.Clone()
+	handler.SetSlave(deviceID)
+
+	return &RTU{
+		Client:  modbus.NewClient(handler),
+		Handler: handler,
+	}
 }

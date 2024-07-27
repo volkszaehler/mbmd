@@ -8,7 +8,6 @@ import (
 
 // ASCIIOverTCP is an ASCII encoder over a TCP modbus connection
 type ASCIIOverTCP struct {
-	address string
 	Client  modbus.Client
 	Handler *modbus.ASCIIOverTCPClientHandler
 	prevID  uint8
@@ -31,7 +30,6 @@ func NewASCIIOverTCP(address string) Connection {
 	client := modbus.NewClient(handler)
 
 	b := &ASCIIOverTCP{
-		address: address,
 		Client:  client,
 		Handler: handler,
 	}
@@ -41,7 +39,7 @@ func NewASCIIOverTCP(address string) Connection {
 
 // String returns the bus connection address (TCP)
 func (b *ASCIIOverTCP) String() string {
-	return b.address
+	return b.Handler.Address
 }
 
 // ModbusClient returns the TCP modbus client
@@ -81,4 +79,15 @@ func (b *ASCIIOverTCP) ConnectDelay(delay time.Duration) {
 // This forces the modbus client to reopen the connection before the next bus operations.
 func (b *ASCIIOverTCP) Close() {
 	b.Handler.Close()
+}
+
+// Clone clones the modbus connection.
+func (b *ASCIIOverTCP) Clone(deviceID byte) Connection {
+	handler := b.Handler.Clone()
+	handler.SetSlave(deviceID)
+
+	return &ASCIIOverTCP{
+		Client:  modbus.NewClient(handler),
+		Handler: handler,
+	}
 }

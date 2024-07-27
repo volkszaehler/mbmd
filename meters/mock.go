@@ -45,7 +45,7 @@ func (b *Mock) Logger(l Logger) {
 }
 
 // Slave sets the modbus device id for the following operations
-func (b *Mock) Slave(deviceID uint8) {
+func (b *Mock) Slave(_ uint8) {
 }
 
 // Timeout sets the modbus timeout
@@ -54,12 +54,16 @@ func (b *Mock) Timeout(timeout time.Duration) time.Duration {
 }
 
 // ConnectDelay sets the the initial delay after connecting before starting communication
-func (b *Mock) ConnectDelay(delay time.Duration) {
-	// nop
+func (b *Mock) ConnectDelay(_ time.Duration) {
 }
 
 // Close closes the modbus connection.
 func (b *Mock) Close() {
+}
+
+// Clone clones the modbus connection.
+func (b *Mock) Clone(_ byte) Connection {
+	return b
 }
 
 // MockClient is a mock modbus client for testing that
