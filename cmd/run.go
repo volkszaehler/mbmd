@@ -156,6 +156,26 @@ any type is considered valid.
 		"",
 		"InfluxDB password (optional)",
 	)
+	runCmd.PersistentFlags().String(
+		"mysql-host",
+		"",
+		"MySQL host",
+	)
+	runCmd.PersistentFlags().String(
+		"mysql-user",
+		"",
+		"MySQL user",
+	)
+	runCmd.PersistentFlags().String(
+		"mysql-password",
+		"",
+		"MySQL password",
+	)
+	runCmd.PersistentFlags().String(
+		"mysql-database",
+		"",
+		"MySQL database",
+	)
 
 	pflags := runCmd.PersistentFlags()
 
@@ -167,6 +187,9 @@ any type is considered valid.
 
 	// influx
 	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "organization", "token", "user", "password")
+
+	// mysql
+	bindPFlagsWithPrefix(pflags, "mysql", "host", "user", "password", "database")
 }
 
 // checkVersion validates if updates are available
@@ -341,6 +364,18 @@ func run(cmd *cobra.Command, args []string) {
 		)
 
 		tee.AttachRunner(server.NewSnipRunner(influx.Run))
+	}
+
+	// MySQL client
+	if viper.GetString("mysql.host") != "" {
+		mysql := server.NewMySQLClient(
+			viper.GetString("mysql.host"),
+			viper.GetString("mysql.user"),
+			viper.GetString("mysql.password"),
+			viper.GetString("mysql.database"),
+		)
+
+		tee.AttachRunner(server.NewSnipRunner(mysql.Run))
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
