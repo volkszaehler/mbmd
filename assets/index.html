@@ -379,6 +379,13 @@
 						<td class="col-2">&mdash;</td>
 						<td class="col-3">${ m.HeatsinkTemp }</td>
 					</tr>
+					<tr class="d-flex" v-if="pop(m.Tariff)">
+						<td class="col-3">Tariff</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-2">&mdash;</td>
+						<td class="col-3">${ m.Tariff }</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>
