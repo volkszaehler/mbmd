@@ -61,4 +61,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/grid-x/modbus => github.com/evcc-io/modbus v0.0.0-20240419133105-829633e7c6b0
+replace github.com/grid-x/modbus => github.com/evcc-io/modbus v0.0.0-20240915144537-980a0405c373
