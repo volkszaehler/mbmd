@@ -39,6 +39,25 @@ func FixKostal(p sunspec.Point) {
 	}
 }
 
+// Initialize reads the device tree
+func DeviceTree(client modbus.Client) ([]sunspec.Device, error) {
+	in, err := sunspecbus.Open(client)
+	if err != nil {
+		if in == nil {
+			return nil, err
+		}
+
+		err = meters.ErrPartiallyOpened
+	}
+
+	devices := in.Collect(sunspec.AllDevices)
+	if len(devices) == 0 {
+		return nil, errors.New("sunspec: device not found")
+	}
+
+	return devices, err
+}
+
 // NewDevice creates a Sunspec device
 func NewDevice(meterType string, subdevice ...int) *SunSpec {
 	var dev int
@@ -58,20 +77,20 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 
 // Initialize implements the Device interface
 func (d *SunSpec) Initialize(client modbus.Client) error {
-	var partiallyOpen bool
-	in, err := sunspecbus.Open(client)
-	if err != nil {
-		if in == nil {
-			return err
-		}
-
-		partiallyOpen = true
+	devices, err := DeviceTree(client)
+	if err != nil && !errors.Is(err, meters.ErrPartiallyOpened) {
+		return err
 	}
 
-	devices := in.Collect(sunspec.AllDevices)
-	if len(devices) == 0 {
-		return errors.New("sunspec: device not found")
+	if err := d.InitializeWithTree(devices); err != nil {
+		return err
 	}
+
+	// this may be ErrPartiallyOpened
+	return err
+}
+
+func (d *SunSpec) InitializeWithTree(devices []sunspec.Device) error {
 	if len(devices) <= d.subdevice {
 		return fmt.Errorf("sunspec: subdevice %d not found", d.subdevice)
 	}
@@ -84,16 +103,7 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	}
 
 	// collect relevant models
-	if err := d.collectModels(device); err != nil {
-		return err
-	}
-
-	// return partial open error if everything else went fine
-	if partiallyOpen {
-		err = fmt.Errorf("%w", meters.ErrPartiallyOpened)
-	}
-
-	return err
+	return d.collectModels(device)
 }
 
 func stringVal(b sunspec.Block, point string) string {
