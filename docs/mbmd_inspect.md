@@ -37,8 +37,8 @@ mbmd inspect [flags]
                               SDM       Eastron SDM630
                               SDM220    Eastron SDM220
                               SDM230    Eastron SDM230
-                              SDM72     Eastron SDM72
                               SDM54     Eastron SDM54
+                              SDM72     Eastron SDM72
                               SEMTR     SolarEdge SE-MTR-3Y
                               X961A     Eastron SMART X96-1A
                             TCP
