@@ -35,29 +35,29 @@ func (p *WS100Producer) Description() string {
 }
 
 func (p *WS100Producer) snip(iec Measurement, readlen uint16, sign signedness, transform RTUTransform, scaler ...float64) Operation {
-        snip := Operation{
-                FuncCode:  ReadHoldingReg,
-                OpCode:    p.Opcodes[iec],
-                ReadLen:   readlen,
-                Transform: transform,
-                IEC61850:  iec,
-        }
+	snip := Operation{
+		FuncCode:  ReadHoldingReg,
+		OpCode:    p.Opcodes[iec],
+		ReadLen:   readlen,
+		Transform: transform,
+		IEC61850:  iec,
+	}
 
-        if len(scaler) > 0 {
-                snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
-        }
+	if len(scaler) > 0 {
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
+	}
 
-        return snip
+	return snip
 }
 
 // snip16u creates modbus operation for single register
 func (p *WS100Producer) snip16u(iec Measurement, scaler ...float64) Operation {
-        return p.snip(iec, 1, unsigned, RTUUint16ToFloat64, scaler...)
+	return p.snip(iec, 1, unsigned, RTUUint16ToFloat64, scaler...)
 }
 
 // snip32u creates modbus operation for double register
 func (p *WS100Producer) snip32u(iec Measurement, scaler ...float64) Operation {
-        return p.snip(iec, 2, unsigned, RTUUint32ToFloat64, scaler...)
+	return p.snip(iec, 2, unsigned, RTUUint32ToFloat64, scaler...)
 }
 
 func (p *WS100Producer) Probe() Operation {
@@ -65,35 +65,35 @@ func (p *WS100Producer) Probe() Operation {
 }
 
 func (p *WS100Producer) Produce() (res []Operation) {
-        for _, op := range []Measurement{
-                Voltage, Current,
-        } {
-                res = append(res, p.snip32u(op, 1000))
-        }
+	for _, op := range []Measurement{
+		Voltage, Current,
+	} {
+		res = append(res, p.snip32u(op, 1000))
+	}
 
-        for _, op := range []Measurement{
-                Power, ApparentPower, ReactivePower,
-        } {
-                res = append(res, p.snip32u(op, 1))
-        }
+	for _, op := range []Measurement{
+		Power, ApparentPower, ReactivePower,
+	} {
+		res = append(res, p.snip32u(op, 1))
+	}
 
-        for _, op := range []Measurement{
-                Import, Export, Sum,
-        } {
-                res = append(res, p.snip32u(op, 100))
-        }
+	for _, op := range []Measurement{
+		Import, Export, Sum,
+	} {
+		res = append(res, p.snip32u(op, 100))
+	}
 
-        for _, op := range []Measurement{
-                Frequency,
-        } {
-                res = append(res, p.snip16u(op, 10))
-        }
+	for _, op := range []Measurement{
+		Frequency,
+	} {
+		res = append(res, p.snip16u(op, 10))
+	}
 
-        for _, op := range []Measurement{
-                Cosphi,
-        } {
-                res = append(res, p.snip16u(op, 1000))
-        }
+	for _, op := range []Measurement{
+		Cosphi,
+	} {
+		res = append(res, p.snip16u(op, 1000))
+	}
 
 	return res
 }
