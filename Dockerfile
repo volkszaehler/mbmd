@@ -1,7 +1,7 @@
 ############################
 # STEP 1 build executable binary
 ############################
-FROM golang:alpine as builder
+FROM golang:alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
