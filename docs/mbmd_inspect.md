@@ -25,6 +25,7 @@ mbmd inspect [flags]
                               DDM       DDM18SD
                               DMG610    Lovato DMG610
                               DZG       DZG Metering GmbH DVH4013 meters
+                              DTSU666   Chint DTSU666
                               IEM3000   Schneider Electric iEM3000 series
                               INEPRO    Inepro Metering Pro 380
                               JANITZA   Janitza B-Series meters
