@@ -15,9 +15,7 @@ const (
 	publishTimeout = 2000 * time.Millisecond
 )
 
-var (
-	topicRE = regexp.MustCompile(`(\w+)([LTS]\d)`)
-)
+var topicRE = regexp.MustCompile(`(\w+)([LTS]\d)`)
 
 // MqttClient is a MQTT publisher
 type MqttClient struct {
