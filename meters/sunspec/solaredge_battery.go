@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/grid-x/modbus"
@@ -38,10 +39,62 @@ func NewSolarEdgeBatteryDevice(subdevice int) *SolarEdgeBattery {
 	return dev
 }
 
+// readStringFromRegisters reads a string from Modbus registers
+func readStringFromRegisters(data []byte) string {
+	result := ""
+
+	// Process each byte individually
+	for i := 0; i < len(data); i++ {
+		// Only add non-null bytes to the string
+		if data[i] != 0 {
+			result += string(data[i])
+		}
+	}
+
+	return strings.TrimSpace(result)
+}
+
 // Initialize implements the meters.Device interface
 func (d *SolarEdgeBattery) Initialize(client modbus.Client) error {
-	// Nothing to initialize for SolarEdge battery
-	return nil
+    baseAddr := d.getBaseAddress()
+
+    // Read manufacturer name (16 registers)
+    manufacturerData, err := client.ReadHoldingRegisters(baseAddr, 16)
+    if err == nil && len(manufacturerData) >= 32 {
+        manufacturer := readStringFromRegisters(manufacturerData)
+        if len(manufacturer) > 0 {
+            d.descriptor.Manufacturer = manufacturer
+        }
+    }
+
+    // Read model name (16 registers)
+    modelData, err := client.ReadHoldingRegisters(baseAddr + 16, 16)
+    if err == nil && len(modelData) >= 32 {
+        model := readStringFromRegisters(modelData)
+        if len(model) > 0 {
+            d.descriptor.Model = model
+        }
+    }
+
+    // Read firmware version (16 registers)
+    versionData, err := client.ReadHoldingRegisters(baseAddr + 32, 16)
+    if err == nil && len(versionData) >= 32 {
+        version := readStringFromRegisters(versionData)
+        if len(version) > 0 {
+            d.descriptor.Version = version
+        }
+    }
+
+    // Read serial number (16 registers)
+    serialData, err := client.ReadHoldingRegisters(baseAddr + 48, 16)
+    if err == nil && len(serialData) >= 32 {
+        serial := readStringFromRegisters(serialData)
+        if len(serial) > 0 {
+            d.descriptor.Serial = serial
+        }
+    }
+
+    return nil
 }
 
 // getBaseAddress returns the correct base register address for the battery
