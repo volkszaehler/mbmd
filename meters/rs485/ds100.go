@@ -48,21 +48,21 @@ func NewDS100Producer() Producer {
 		PhaseL1PowerFactor:					0x0436,
 		PhaseL2PowerFactor:					0x0437,
 		PhaseL3PowerFactor:					0x0438,
-		PhasePowerFactor:					0x0439, #implemented from beginning till 0x0439 - 60 Registers so far
-		ImportL1:							0x050A, #A phase forward active energy
-		ImportL2:							0x056E, #B phase forward active energy
-		ImportL3:							0x05D2, #C phase forward active energy
-		Import:								0x010E, #  total forward active energy
-		ExportL1:     						0x0514, #A phase reverse active energy
-		ExportL2:      						0x0578, #B phase reverse active energy
-		ExportL3:      						0x05DC, #C phase reverse active energy
-		Export:        						0x118A, #  total reverse active energy
-		SumL1:         						0x0500, #A phase total active energy
-		SumL2:         						0x0564, #B phase total active energy
-		SumL3:         						0x05C8, #C phase total active energy
-		Sum:           						0x0122, #  total total active energy
+		PhasePowerFactor:					0x0439, //implemented from beginning till 0x0439 - 60 Registers so far
+		ImportL1:							0x050A, //A phase forward active energy
+		ImportL2:							0x056E, //B phase forward active energy
+		ImportL3:							0x05D2, //C phase forward active energy
+		Import:								0x010E, //  total forward active energy
+		ExportL1:     						0x0514, //A phase reverse active energy
+		ExportL2:      						0x0578, //B phase reverse active energy
+		ExportL3:      						0x05DC, //C phase reverse active energy
+		Export:        						0x118A, //  total reverse active energy
+		SumL1:         						0x0500, //A phase total active energy
+		SumL2:         						0x0564, //B phase total active energy
+		SumL3:         						0x05C8, //C phase total active energy
+		Sum:           						0x0122, //  total total active energy
 
-		//THDL1:         0x00ea, // voltage # to be checked
+		//THDL1:         0x00ea, // voltage to be checked
 		//THDL2:         0x00ec, // voltage
 		//THDL3:         0x00ee, // voltage
 		//THD:           0x00F8, // voltage
