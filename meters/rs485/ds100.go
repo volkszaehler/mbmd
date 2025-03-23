@@ -19,16 +19,16 @@ func NewDS100Producer() Producer {
 		VoltageL1:     						0x0400,
 		VoltageL2:     						0x0402,
 		VoltageL3:    						0x0404,
-		VoltageL1_L2:   					0x0406,
-		VoltageL2_L3:     					0x0408,
-		VoltageL3_L1:     					0x040A,
-		VoltageL1_N_average:     			0x040C,
-		VoltageL_L_average:     			0x040E,
+		//VoltageL1_L2:   						0x0406, //mbmd doenst know this
+		//VoltageL2_L3:     					0x0408, //mbmd doenst know this
+		//VoltageL3_L1:     					0x040A, //mbmd doenst know this
+		//VoltageL1_N_average:     				0x040C, //mbmd doenst know this
+		//VoltageL_L_average:     				0x040E, //mbmd doenst know this
 		CurrentL1:     						0x0410,
 		CurrentL2:     						0x0412,
 		CurrentL3:     						0x0414,
 		Current:      						0x0416,
-		ThreePhase_Vector_Current: 	    	0x0418,
+		//ThreePhase_Vector_Current: 	    	0x0418, //mbmd doenst know this
 		PowerL1:       						0x041A,
 		PowerL2:       						0x041C,
 		PowerL3:       						0x041E,
@@ -45,10 +45,10 @@ func NewDS100Producer() Producer {
 		FrequencyL2:						0x0433,
 		FrequencyL3:						0x0434,
 		Frequency:							0x0435,
-		PhaseL1PowerFactor:					0x0436,
-		PhaseL2PowerFactor:					0x0437,
-		PhaseL3PowerFactor:					0x0438,
-		PhasePowerFactor:					0x0439, //implemented from beginning till 0x0439 - 60 Registers so far
+		CosphiL1:							0x0436,
+		CosphiL2:							0x0437,
+		CosphiL3:							0x0438,
+		Cosphi:								0x0439, //implemented from beginning till 0x0439 - 60 Registers so far
 		ImportL1:							0x050A, //A phase forward active energy
 		ImportL2:							0x056E, //B phase forward active energy
 		ImportL3:							0x05D2, //C phase forward active energy
