@@ -24,10 +24,10 @@ type Measurement int
 const (
 	_ Measurement = iota
 
+	Frequency
 	FrequencyL1
 	FrequencyL2
 	FrequencyL3
-	Frequency
 
 	Current
 	CurrentL1
@@ -173,7 +173,7 @@ var iec = map[Measurement][]string{
 	VoltageL2_L3:     {"L2 to L3 Voltage", "V"},
 	VoltageL3_L1:     {"L3 to L1 Voltage", "V"},
 	VoltageL_N_avg:   {"L to N average Voltage", "V"},
-	VoltageL_L_avg:   {"L1 to L2 average Voltage", "V"},
+	VoltageL_L_avg:   {"L to L average Voltage", "V"},
 	Power:            {"Power", "W"},
 	PowerL1:          {"L1 Power", "W"},
 	PowerL2:          {"L2 Power", "W"},
