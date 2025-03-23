@@ -13,7 +13,7 @@ type SDMProducer struct {
 func NewSDMProducer() Producer {
 	/**
 	 * Opcodes as defined by Eastron SDM630.
-	 * See http://bg-etech.de/download/manual/SDM630Register.pdf
+	 * See https://www.eastroneurope.com/images/uploads/products/protocol/SDM630_MODBUS_Protocol.pdf
 	 * This is to a large extent a superset of all SDM devices, however there are
 	 * subtle differences (see 220, 230). Some opcodes might not work on some devices.
 	 */
