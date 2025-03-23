@@ -41,9 +41,9 @@ func NewDS100Producer() Producer {
 		ReactivePowerL2:					0x042C,
 		ReactivePowerL3:					0x042E,
 		ReactivePower:						0x0430,
-		FrequencyL1:						0x0432,
-		FrequencyL2:						0x0433,
-		FrequencyL3:						0x0434,
+		//FrequencyL1:						0x0432, //mbmd doenst know this
+		//FrequencyL2:						0x0433, //mbmd doenst know this
+		//FrequencyL3:						0x0434, //mbmd doenst know this
 		Frequency:							0x0435,
 		CosphiL1:							0x0436,
 		CosphiL2:							0x0437,
