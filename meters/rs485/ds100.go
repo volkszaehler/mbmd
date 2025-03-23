@@ -19,16 +19,16 @@ func NewDS100Producer() Producer {
 		VoltageL1: 0x0400,
 		VoltageL2: 0x0402,
 		VoltageL3: 0x0404,
-		VoltageL1_L2:   						0x0406, //mbmd doenst know this yet?
-		VoltageL2_L3:     					0x0408, //mbmd doenst know this yet?
-		VoltageL3_L1:     					0x040A, //mbmd doenst know this yet?
-		VoltageL_N_avg:     					0x040C, //mbmd doenst know this yet?
-		VoltageL_L_avg:     					0x040E, //mbmd doenst know this yet?
+		//VoltageL1_L2:   						0x0406, //mbmd doenst know this yet?
+		//VoltageL2_L3:     					0x0408, //mbmd doenst know this yet?
+		//VoltageL3_L1:     					0x040A, //mbmd doenst know this yet?
+		//VoltageL_N_avg:     					0x040C, //mbmd doenst know this yet?
+		//VoltageL_L_avg:     					0x040E, //mbmd doenst know this yet?
 		CurrentL1: 0x0410,
 		CurrentL2: 0x0412,
 		CurrentL3: 0x0414,
 		Current:   0x0416,
-		ThreePhase_Vec_A: 	    	0x0418, //mbmd doenst know this
+		//ThreePhase_Vec_A: 	    	0x0418, //mbmd doenst know this
 		PowerL1:         0x041A,
 		PowerL2:         0x041C,
 		PowerL3:         0x041E,
@@ -41,9 +41,9 @@ func NewDS100Producer() Producer {
 		ReactivePowerL2: 0x042C,
 		ReactivePowerL3: 0x042E,
 		ReactivePower:   0x0430,
-		FrequencyL1:						0x0432, //mbmd doenst know this yet?
-		FrequencyL2:						0x0433, //mbmd doenst know this yet?
-		FrequencyL3:						0x0434, //mbmd doenst know this yet?
+		//FrequencyL1:						0x0432, //mbmd doenst know this yet?
+		//FrequencyL2:						0x0433, //mbmd doenst know this yet?
+		//FrequencyL3:						0x0434, //mbmd doenst know this yet?
 		Frequency: 0x0435,
 		CosphiL1:  0x0436,
 		CosphiL2:  0x0437,
