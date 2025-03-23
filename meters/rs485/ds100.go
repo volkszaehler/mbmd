@@ -16,51 +16,51 @@ func NewDS100Producer() Producer {
 	 * See https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf
 	 */
 	ops := Opcodes{
-		VoltageL1:     						0x0400,
-		VoltageL2:     						0x0402,
-		VoltageL3:    						0x0404,
+		VoltageL1: 0x0400,
+		VoltageL2: 0x0402,
+		VoltageL3: 0x0404,
 		//VoltageL1_L2:   						0x0406, //mbmd doenst know this
 		//VoltageL2_L3:     					0x0408, //mbmd doenst know this
 		//VoltageL3_L1:     					0x040A, //mbmd doenst know this
 		//VoltageL1_N_average:     				0x040C, //mbmd doenst know this
 		//VoltageL_L_average:     				0x040E, //mbmd doenst know this
-		CurrentL1:     						0x0410,
-		CurrentL2:     						0x0412,
-		CurrentL3:     						0x0414,
-		Current:      						0x0416,
+		CurrentL1: 0x0410,
+		CurrentL2: 0x0412,
+		CurrentL3: 0x0414,
+		Current:   0x0416,
 		//ThreePhase_Vector_Current: 	    	0x0418, //mbmd doenst know this
-		PowerL1:       						0x041A,
-		PowerL2:       						0x041C,
-		PowerL3:       						0x041E,
-		Power:         						0x0420,
-		ApparentPowerL1:					0x0422,
-		ApparentPowerL2:					0x0424,
-		ApparentPowerL3:					0x0426,
-		ApparentPower:						0x0428,
-		ReactivePowerL1:					0x042A,
-		ReactivePowerL2:					0x042C,
-		ReactivePowerL3:					0x042E,
-		ReactivePower:						0x0430,
+		PowerL1:         0x041A,
+		PowerL2:         0x041C,
+		PowerL3:         0x041E,
+		Power:           0x0420,
+		ApparentPowerL1: 0x0422,
+		ApparentPowerL2: 0x0424,
+		ApparentPowerL3: 0x0426,
+		ApparentPower:   0x0428,
+		ReactivePowerL1: 0x042A,
+		ReactivePowerL2: 0x042C,
+		ReactivePowerL3: 0x042E,
+		ReactivePower:   0x0430,
 		//FrequencyL1:						0x0432, //mbmd doenst know this
 		//FrequencyL2:						0x0433, //mbmd doenst know this
 		//FrequencyL3:						0x0434, //mbmd doenst know this
-		Frequency:							0x0435,
-		CosphiL1:							0x0436,
-		CosphiL2:							0x0437,
-		CosphiL3:							0x0438,
-		Cosphi:								0x0439, //implemented from beginning till 0x0439 - 60 Registers so far
-		ImportL1:							0x050A, //A phase forward active energy
-		ImportL2:							0x056E, //B phase forward active energy
-		ImportL3:							0x05D2, //C phase forward active energy
-		Import:								0x010E, //  total forward active energy
-		ExportL1:     						0x0514, //A phase reverse active energy
-		ExportL2:      						0x0578, //B phase reverse active energy
-		ExportL3:      						0x05DC, //C phase reverse active energy
-		Export:        						0x118A, //  total reverse active energy
-		SumL1:         						0x0500, //A phase total active energy
-		SumL2:         						0x0564, //B phase total active energy
-		SumL3:         						0x05C8, //C phase total active energy
-		Sum:           						0x0122, //  total total active energy
+		Frequency: 0x0435,
+		CosphiL1:  0x0436,
+		CosphiL2:  0x0437,
+		CosphiL3:  0x0438,
+		Cosphi:    0x0439, //implemented from beginning till 0x0439 - 60 Registers so far
+		ImportL1:  0x050A, //A phase forward active energy
+		ImportL2:  0x056E, //B phase forward active energy
+		ImportL3:  0x05D2, //C phase forward active energy
+		Import:    0x010E, //  total forward active energy
+		ExportL1:  0x0514, //A phase reverse active energy
+		ExportL2:  0x0578, //B phase reverse active energy
+		ExportL3:  0x05DC, //C phase reverse active energy
+		Export:    0x118A, //  total reverse active energy
+		SumL1:     0x0500, //A phase total active energy
+		SumL2:     0x0564, //B phase total active energy
+		SumL3:     0x05C8, //C phase total active energy
+		Sum:       0x0122, //  total total active energy
 
 		//THDL1:         0x00ea, // voltage to be checked
 		//THDL2:         0x00ec, // voltage
