@@ -27,7 +27,7 @@ func NewDS100Producer() Producer {
 		CurrentL1:     						0x0410,
 		CurrentL2:     						0x0412,
 		CurrentL3:     						0x0414,
-		CurrentN:      						0x0416,
+		Current:      						0x0416,
 		ThreePhase_Vector_Current: 	    	0x0418,
 		PowerL1:       						0x041A,
 		PowerL2:       						0x041C,
