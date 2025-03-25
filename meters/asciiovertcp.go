@@ -24,8 +24,10 @@ func NewASCIIOverTCPClientHandler(device string) *modbus.ASCIIOverTCPClientHandl
 	return handler
 }
 
+var _ Connection = (*ASCIIOverTCP)(nil)
+
 // NewASCIIOverTCP creates a TCP modbus client
-func NewASCIIOverTCP(address string) Connection {
+func NewASCIIOverTCP(address string) *ASCIIOverTCP {
 	handler := NewASCIIOverTCPClientHandler(address)
 	client := modbus.NewClient(handler)
 

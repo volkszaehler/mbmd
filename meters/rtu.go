@@ -38,8 +38,10 @@ func NewClientHandler(device string, baudrate int, comset string) *modbus.RTUCli
 	return handler
 }
 
+var _ Connection = (*RTU)(nil)
+
 // NewRTU creates a RTU modbus client
-func NewRTU(device string, baudrate int, comset string) Connection {
+func NewRTU(device string, baudrate int, comset string) *RTU {
 	handler := NewClientHandler(device, baudrate, comset)
 	client := modbus.NewClient(handler)
 

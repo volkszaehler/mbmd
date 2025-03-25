@@ -38,8 +38,10 @@ func NewASCIIClientHandler(device string, baudrate int, comset string) *modbus.A
 	return handler
 }
 
+var _ Connection = (*ASCII)(nil)
+
 // NewASCII creates a RTU modbus client
-func NewASCII(device string, baudrate int, comset string) Connection {
+func NewASCII(device string, baudrate int, comset string) *ASCII {
 	handler := NewASCIIClientHandler(device, baudrate, comset)
 	client := modbus.NewClient(handler)
 

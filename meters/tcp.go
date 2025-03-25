@@ -23,8 +23,10 @@ func NewTCPClientHandler(device string) *modbus.TCPClientHandler {
 	return handler
 }
 
+var _ Connection = (*TCP)(nil)
+
 // NewTCP creates a TCP modbus client
-func NewTCP(address string) Connection {
+func NewTCP(address string) *TCP {
 	handler := NewTCPClientHandler(address)
 	client := modbus.NewClient(handler)
 

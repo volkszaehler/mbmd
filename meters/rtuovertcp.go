@@ -24,8 +24,10 @@ func NewRTUOverTCPClientHandler(device string) *modbus.RTUOverTCPClientHandler {
 	return handler
 }
 
+var _ Connection = (*RTUOverTCP)(nil)
+
 // NewRTUOverTCP creates a TCP modbus client
-func NewRTUOverTCP(address string) Connection {
+func NewRTUOverTCP(address string) *RTUOverTCP {
 	handler := NewRTUOverTCPClientHandler(address)
 	client := modbus.NewClient(handler)
 
