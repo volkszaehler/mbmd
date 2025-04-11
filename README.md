@@ -256,6 +256,7 @@ manuals for definitive guidance):
 | ORNO WE-516/517 | 3 | + | + | + | + | + | + | + | - |
 | iEM3000 Series | 3 | + | + | + | + | + | + | (+) | + |
 | B+G e-tech WS100 | 1 | + | + | + | - | + | + | - | - |
+| B+G e-tech DS100 | 3 | + | + | + | + | + | + | + | + |
 
 - **SDM54**: Compact (3TE), 3P meter with a lot of features. Can be configured using the builtin display.
 - **SDM72**: Compact (4TE), 3P meter with bare minium of total measurements, no currents. Can be configured using the builtin display.
@@ -292,6 +293,10 @@ By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, 
 WE-517 has a lithium battery and multi-tariff support, WE-516 does not support tariff zones.
 - **Schneider Electric iEM3000 Series**: Professional meter with loads of configurable max/average measurements with timestamp functionality.
 - **B+G e-tech WS100**: Cheap and small (1TE), 1P MID meter.
+- **B+G e-tech DS100**: Looks to be similar potent as SDM630 if not better, very cheap in Germany (below 50€)
+Able to set higher Baudrate than SDM630 so measurements can be taken more often.
+There is also a MID Version and Multi Traif ("-30B") Version.
+(https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)
 
 ## Modbus TCP Grid Inverters
 
