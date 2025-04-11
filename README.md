@@ -254,6 +254,7 @@ manuals for definitive guidance):
 | KOSTAL Smart Energy Meter | 3 | + | + | + | + | + | + | + | - |
 | ORNO WE-504/514/515 | 1 | + | + | + | + | + | - | - | - |
 | ORNO WE-516/517 | 3 | + | + | + | + | + | + | + | - |
+| ORNO WE-525/526 | 1 | + | + | + | + | + | + | - | - |
 | iEM3000 Series | 3 | + | + | + | + | + | + | (+) | + |
 | B+G e-tech WS100 | 1 | + | + | + | - | + | + | - | - |
 | B+G e-tech DS100 | 3 | + | + | + | + | + | + | + | + |

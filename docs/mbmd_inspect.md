@@ -32,6 +32,7 @@ mbmd inspect [flags]
                               MPM       Bernecker Engineering MPM3PM meters
                               ORNO1P504 ORNO WE-504
                               ORNO1p    ORNO WE-514 & WE-515
+                              ORNO1p525 ORNO WE-525 & WE-526
                               ORNO3p    ORNO WE-516 & WE-517
                               PAC2200   Siemens PAC2200
                               SBC       Saia Burgess Controls ALE3 meters
