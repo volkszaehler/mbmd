@@ -15,7 +15,6 @@ type CarloGavazziEM24_E1Producer struct {
 func NewCarloGavazziEM24_E1Producer() Producer {
 	/***
 	 * Note: Carlo Gavazzi EM24_E1 (Ethernet)
-	 * have different register map.
 	 * Doc for EM24_E1: https://www.enika.eu/data/files/produkty/energy%20m/CP/em24%20ethernet%20cp.pdf
 	 */
 	ops := Opcodes{
