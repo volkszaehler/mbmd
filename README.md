@@ -261,8 +261,8 @@ manuals for definitive guidance):
 | B+G e-tech WS100 | 1 | + | + | + | - | + | + | - | - |
 | B+G e-tech DS100 | 3 | + | + | + | + | + | + | + | + |
 
-- **EM24-DIN**: Compact (4TE), 3P meter with RS-485 interface. Note: EM24 RS485 and Ethernet variant use different modbus registers.
-- **EM24-DIN_E1**: Compact (4TE), 3P meter with Ethernet interface. Note: EM24 RS485 and Ethernet variant use different modbus registers.
+- **EM24**: Compact (4TE), 3P meter with RS-485 interface.
+- **EM24_E1**: Compact (4TE), 3P meter with Ethernet interface.
 - **SDM54**: Compact (3TE), 3P meter with a lot of features. Can be configured using the builtin display.
 - **SDM72**: Compact (4TE), 3P meter with bare minium of total measurements, no currents. Can be configured using the builtin display.
 - **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
