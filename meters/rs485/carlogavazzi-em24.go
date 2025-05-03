@@ -14,7 +14,7 @@ type CarloGavazziEM24Producer struct {
 
 func NewCarloGavazziEM24Producer() Producer {
 	/***
-	 * Note: Carlo Gavazzi EM24 (RS-485 interface) and EM24_E1 (Ethernet interface)
+	 * Note: Carlo Gavazzi EM24 (RS-485)
 	 * have different register map.
 	 * Doc for EM24: https://www.ccontrols.com/support/dp/CarloGavazziEM24.pdf
 	 */
