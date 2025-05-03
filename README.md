@@ -239,6 +239,8 @@ manuals for definitive guidance):
 
 | Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
 |---|---|---|---|---|---|---|---|---|---|
+| EM24 | 3 | + | + | + | + | + | + |  +/- | - |
+| EM24_E1 | 3 | + | + | + | + | + | + | +/- | - |
 | SDM54 | 3 | + | + | + | + | + | + | + | + |
 | SDM72 | 3 | - | - | + | - | + | + | - | - |
 | SDM120/220 | 1 | + | + | + | + | + | + | - | - |
@@ -259,6 +261,8 @@ manuals for definitive guidance):
 | B+G e-tech WS100 | 1 | + | + | + | - | + | + | - | - |
 | B+G e-tech DS100 | 3 | + | + | + | + | + | + | + | + |
 
+- **EM24-DIN**: Compact (4TE), 3P meter with RS-485 interface. Note: EM24 RS485 and Ethernet variant use different modbus registers.
+- **EM24-DIN_E1**: Compact (4TE), 3P meter with Ethernet interface. Note: EM24 RS485 and Ethernet variant use different modbus registers.
 - **SDM54**: Compact (3TE), 3P meter with a lot of features. Can be configured using the builtin display.
 - **SDM72**: Compact (4TE), 3P meter with bare minium of total measurements, no currents. Can be configured using the builtin display.
 - **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.

@@ -5,18 +5,18 @@ import (
 )
 
 func init() {
-	Register("CGEM24", NewCarloGavazziEM24Producer)
+	Register("CGEM24_E1", NewCarloGavazziEM24_E1Producer)
 }
 
-type CarloGavazziEM24Producer struct {
+type CarloGavazziEM24_E1Producer struct {
 	Opcodes
 }
 
-func NewCarloGavazziEM24Producer() Producer {
+func NewCarloGavazziEM24_E1Producer() Producer {
 	/***
 	 * Note: Carlo Gavazzi EM24 (RS-485 interface) and EM24_E1 (Ethernet interface)
 	 * have different register map.
-	 * Doc for EM24: https://www.ccontrols.com/support/dp/CarloGavazziEM24.pdf
+	 * Doc for EM24_E1: https://www.enika.eu/data/files/produkty/energy%20m/CP/em24%20ethernet%20cp.pdf
 	 */
 	ops := Opcodes{
 		VoltageL1: 0x00,
@@ -29,26 +29,26 @@ func NewCarloGavazziEM24Producer() Producer {
 		PowerL2:   0x14,
 		PowerL3:   0x16,
 		Power:     0x28,
-		CosphiL1:  0x32,
-		CosphiL2:  0x33,
-		CosphiL3:  0x34,
-		Cosphi:    0x35,
-		Frequency: 0x37,
-		Import:    0x42,
-		ImportL1:  0x46,
-		ImportL2:  0x48,
-		ImportL3:  0x4A,
-		Export:    0x5C,
+		CosphiL1:  0x2E,
+		CosphiL2:  0x2F,
+		CosphiL3:  0x30,
+		Cosphi:    0x31,
+		Frequency: 0x33,
+		Import:    0x34,
+		ImportL1:  0x40,
+		ImportL2:  0x42,
+		ImportL3:  0x44,
+		Export:    0x4E,
 	}
-	return &CarloGavazziEM24Producer{Opcodes: ops}
+	return &CarloGavazziEM24_E1Producer{Opcodes: ops}
 }
 
 // Description implements Producer interface
-func (p *CarloGavazziEM24Producer) Description() string {
-	return "Carlo Gavazzi EM24"
+func (p *CarloGavazziEM24_E1Producer) Description() string {
+	return "Carlo Gavazzi EM24_E1"
 }
 
-func (p *CarloGavazziEM24Producer) snip16(iec Measurement, scaler ...float64) Operation {
+func (p *CarloGavazziEM24_E1Producer) snip16(iec Measurement, scaler ...float64) Operation {
 	transform := RTUInt16ToFloat64 // default conversion
 	if len(scaler) > 0 {
 		transform = MakeScaledTransform(transform, scaler[0])
@@ -64,7 +64,7 @@ func (p *CarloGavazziEM24Producer) snip16(iec Measurement, scaler ...float64) Op
 	return operation
 }
 
-func (p *CarloGavazziEM24Producer) snip32(iec Measurement, scaler ...float64) Operation {
+func (p *CarloGavazziEM24_E1Producer) snip32(iec Measurement, scaler ...float64) Operation {
 	transform := RTUInt32ToFloat64Swapped // default conversion
 	if len(scaler) > 0 {
 		transform = MakeScaledTransform(transform, scaler[0])
@@ -81,12 +81,12 @@ func (p *CarloGavazziEM24Producer) snip32(iec Measurement, scaler ...float64) Op
 }
 
 // Probe implements Producer interface
-func (p *CarloGavazziEM24Producer) Probe() Operation {
+func (p *CarloGavazziEM24_E1Producer) Probe() Operation {
 	return p.snip32(VoltageL1, 10)
 }
 
 // Produce implements Producer interface
-func (p *CarloGavazziEM24Producer) Produce() (res []Operation) {
+func (p *CarloGavazziEM24_E1Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,
 	} {

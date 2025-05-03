@@ -21,6 +21,7 @@ mbmd inspect [flags]
                             RTU
                               ABB       ABB A/B-Series meters
                               CGEM24    Carlo Gavazzi EM24
+                              CGEM24_E1 Carlo Gavazzi EM24_E1
                               CGEX3X0   Carlo Gavazzi EM/ET 330/340
                               DDM       DDM18SD
                               DMG610    Lovato DMG610
