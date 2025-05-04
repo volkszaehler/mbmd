@@ -39,6 +39,7 @@ func NewDevice(typ string) (*RS485, error) {
 
 // Initialize prepares the device for usage. Any setup or initialization should be done here.
 func (d *RS485) Initialize(client modbus.Client) error {
+	d.producer.Initialize(client)
 	return nil
 }
 

@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("SBC", NewSBCProducer)
@@ -43,6 +46,11 @@ func NewSBCProducer() Producer {
 		ReactivePower: 52, // scaler 100
 	}
 	return &SBCProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *SBCProducer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

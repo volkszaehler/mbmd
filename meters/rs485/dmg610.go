@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("DMG610", NewDMG610Producer)
@@ -51,6 +54,11 @@ func NewDMG610Producer() Producer {
 		ReactiveExport:  0x1B2B, // Total exp. Reactive Energy
 	}
 	return &DMG610Producer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *DMG610Producer) Initialize(client modbus.Client) {
+
 }
 
 func (p *DMG610Producer) Description() string {

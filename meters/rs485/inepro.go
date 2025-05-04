@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("INEPRO", NewIneproProducer)
@@ -86,6 +89,11 @@ func NewIneproProducer() Producer {
 		ReactiveExportL3: 0x6046,
 	}
 	return &IneproProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *IneproProducer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

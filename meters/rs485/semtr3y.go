@@ -3,6 +3,7 @@ package rs485
 import (
 	"math"
 
+	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -87,6 +88,11 @@ func NewSEMTRProducer() Producer {
 		//		PowerDemandL3:		0x049C, // demand power l3
 	}
 	return &SEMTRProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *SEMTRProducer) Initialize(client modbus.Client) {
+
 }
 
 func (p *SEMTRProducer) Description() string {

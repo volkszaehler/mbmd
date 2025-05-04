@@ -3,6 +3,7 @@ package rs485
 import (
 	"math"
 
+	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -57,6 +58,11 @@ func NewABBProducer() Producer {
 		Frequency: 0x5B2C,
 	}
 	return &ABBProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *ABBProducer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

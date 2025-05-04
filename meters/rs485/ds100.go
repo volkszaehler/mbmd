@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("DS100", NewDS100Producer)
@@ -73,6 +76,11 @@ func NewDS100Producer() Producer {
 		//ApparentImportPower: 0x0064,
 	}
 	return &DS100Producer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *DS100Producer) Initialize(client modbus.Client) {
+
 }
 
 func (p *DS100Producer) Description() string {

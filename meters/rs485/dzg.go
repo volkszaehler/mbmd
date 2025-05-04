@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("DZG", NewDZGProducer)
@@ -46,6 +49,11 @@ func NewDZGProducer() Producer {
 		// ExportPower:0x0016, // exception '2' (illegal data address)
 	}
 	return &DZGProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *DZGProducer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

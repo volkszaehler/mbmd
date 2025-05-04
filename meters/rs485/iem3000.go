@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("IEM3000", NewIEM3000Producer)
@@ -46,6 +49,11 @@ func NewIEM3000Producer() Producer {
 		ReactiveExport: 0x0C97,
 	}
 	return &IEM3000Producer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *IEM3000Producer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

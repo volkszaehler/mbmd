@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("X961A", NewX961AProducer)
@@ -66,6 +69,11 @@ func NewX961AProducer() Producer {
 		PhaseAngle:       0x0042, // Total system phase angle.
 	}
 	return &X961AProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *X961AProducer) Initialize(client modbus.Client) {
+
 }
 
 func (p *X961AProducer) Description() string {

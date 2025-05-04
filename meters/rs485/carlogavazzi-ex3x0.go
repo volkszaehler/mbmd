@@ -1,6 +1,7 @@
 package rs485
 
 import (
+	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -39,6 +40,11 @@ func NewCarloGavazziEx3xProducer() Producer {
 		Export:    0x4E,
 	}
 	return &CarloGavazziEx3xProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *CarloGavazziEx3xProducer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

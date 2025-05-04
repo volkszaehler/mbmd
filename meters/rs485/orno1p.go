@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("ORNO1p", NewORNO1PProducer)
@@ -57,6 +60,11 @@ func NewORNO1PProducer() Producer {
 	}
 
 	return &ORNO1PProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *ORNO1PProducer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

@@ -1,6 +1,7 @@
 package rs485
 
 import (
+	"github.com/grid-x/modbus"
 	. "github.com/volkszaehler/mbmd/meters"
 )
 
@@ -42,6 +43,11 @@ func NewMPM3MPProducer() Producer {
 		Frequency:       0x2C,
 	}
 	return &MPM3MPProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *MPM3MPProducer) Initialize(client modbus.Client) {
+
 }
 
 // Description implements Producer interface

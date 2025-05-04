@@ -1,6 +1,9 @@
 package rs485
 
-import . "github.com/volkszaehler/mbmd/meters"
+import (
+	"github.com/grid-x/modbus"
+	. "github.com/volkszaehler/mbmd/meters"
+)
 
 func init() {
 	Register("PAC2200", NewPacProducer)
@@ -36,6 +39,11 @@ func NewPacProducer() Producer {
 		Export:        809, // 2w
 	}
 	return &PacProducer{Opcodes: ops}
+}
+
+// Initialize implements Producer interface
+func (p *PacProducer) Initialize(client modbus.Client) {
+
 }
 
 func (p *PacProducer) Description() string {

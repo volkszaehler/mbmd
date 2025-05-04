@@ -3,6 +3,7 @@ package rs485
 import (
 	"fmt"
 
+	"github.com/grid-x/modbus"
 	"github.com/volkszaehler/mbmd/meters"
 )
 
@@ -27,6 +28,10 @@ type Producer interface {
 	// Produce creates a device operation suited to detect the device during
 	// scanning, typically a L1 voltage read operation
 	Probe() Operation
+
+	// Allow a device to do special things for initialization,
+	// like detecting a subtype for the EM24 from Carlo Gavazzi
+	Initialize(client modbus.Client)
 }
 
 // Opcodes map measurements to physical registers
