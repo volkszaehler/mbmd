@@ -7,20 +7,25 @@ import (
 )
 
 func init() {
-	Register("CGEM24", NewCarloGavazziEM24Producer)
+	Register("CGEM24", NewCarloGavazziEXProducer)
+	Register("CGEM24_E1", NewCarloGavazziEXProducer)
+	Register("CGEX3X0", NewCarloGavazziEXProducer)
 }
 
-type CarloGavazziEM24Producer struct {
+type CarloGavazziEXProducer struct {
 	ops_a Opcodes
 	ops_b Opcodes
 	t     int
 }
 
-func NewCarloGavazziEM24Producer() Producer {
+func NewCarloGavazziEXProducer() Producer {
 	/***
-	 * Note: Carlo Gavazzi EM24 (RS-485)
-	 * Doc for EM24: https://www.ccontrols.com/support/dp/CarloGavazziEM24.pdf
-	 */
+		 * Note: Carlo Gavazzi Generic
+		 * Doc for EM24:    https://www.ccontrols.com/support/dp/CarloGavazziEM24.pdf
+	     * Doc for EM24_E1: https://www.enika.eu/data/files/produkty/energy%20m/CP/em24%20ethernet%20cp.pdf
+		 * Doc for EM/ET:   https://github.com/volkszaehler/mbmd/files/10538388/EM330_EM340_ET330_ET340_CP.pdf
+
+	*/
 	ops_a := Opcodes{
 		VoltageL1: 0x00,
 		VoltageL2: 0x02,
@@ -66,11 +71,11 @@ func NewCarloGavazziEM24Producer() Producer {
 		ImportL3:  0x44,
 		Export:    0x4E,
 	}
-	return &CarloGavazziEM24Producer{ops_a, ops_b, 0}
+	return &CarloGavazziEXProducer{ops_a, ops_b, 0}
 }
 
 // Initialize implements Producer interface
-func (p *CarloGavazziEM24Producer) Initialize(client modbus.Client) {
+func (p *CarloGavazziEXProducer) Initialize(client modbus.Client) {
 	var bytes []byte
 	var err error
 	bytes, err = client.ReadHoldingRegisters(0x00b, 1)
@@ -99,7 +104,7 @@ func (p *CarloGavazziEM24Producer) Initialize(client modbus.Client) {
 }
 
 // Description implements Producer interface
-func (p *CarloGavazziEM24Producer) Description() string {
+func (p *CarloGavazziEXProducer) Description() string {
 	if p.t == 0 {
 		return "Carlo Gavazzi EM24"
 	} else if p.t == 1 {
@@ -116,7 +121,7 @@ func (p *CarloGavazziEM24Producer) Description() string {
 	return "Carlo Gavazzi EM24"
 }
 
-func (p *CarloGavazziEM24Producer) opCode(iec Measurement) uint16 {
+func (p *CarloGavazziEXProducer) opCode(iec Measurement) uint16 {
 	if p.t == 0 {
 		return p.ops_a.Opcode(iec)
 	} else {
@@ -124,7 +129,7 @@ func (p *CarloGavazziEM24Producer) opCode(iec Measurement) uint16 {
 	}
 }
 
-func (p *CarloGavazziEM24Producer) snip16(iec Measurement, scaler ...float64) Operation {
+func (p *CarloGavazziEXProducer) snip16(iec Measurement, scaler ...float64) Operation {
 	transform := RTUInt16ToFloat64 // default conversion
 	if len(scaler) > 0 {
 		transform = MakeScaledTransform(transform, scaler[0])
@@ -140,7 +145,7 @@ func (p *CarloGavazziEM24Producer) snip16(iec Measurement, scaler ...float64) Op
 	return operation
 }
 
-func (p *CarloGavazziEM24Producer) snip32(iec Measurement, scaler ...float64) Operation {
+func (p *CarloGavazziEXProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	transform := RTUInt32ToFloat64Swapped // default conversion
 	if len(scaler) > 0 {
 		transform = MakeScaledTransform(transform, scaler[0])
@@ -157,12 +162,12 @@ func (p *CarloGavazziEM24Producer) snip32(iec Measurement, scaler ...float64) Op
 }
 
 // Probe implements Producer interface
-func (p *CarloGavazziEM24Producer) Probe() Operation {
+func (p *CarloGavazziEXProducer) Probe() Operation {
 	return p.snip32(VoltageL1, 10)
 }
 
 // Produce implements Producer interface
-func (p *CarloGavazziEM24Producer) Produce() (res []Operation) {
+func (p *CarloGavazziEXProducer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,
 	} {
