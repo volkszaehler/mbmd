@@ -11,9 +11,9 @@ func init() {
 }
 
 type CarloGavazziEM24Producer struct {
-	ops_em24    Opcodes
-	ops_em24_e1 Opcodes
-	t           int
+	ops_a Opcodes
+	ops_b Opcodes
+	t     int
 }
 
 func NewCarloGavazziEM24Producer() Producer {
@@ -21,7 +21,7 @@ func NewCarloGavazziEM24Producer() Producer {
 	 * Note: Carlo Gavazzi EM24 (RS-485)
 	 * Doc for EM24: https://www.ccontrols.com/support/dp/CarloGavazziEM24.pdf
 	 */
-	ops_em24 := Opcodes{
+	ops_a := Opcodes{
 		VoltageL1: 0x00,
 		VoltageL2: 0x02,
 		VoltageL3: 0x04,
@@ -44,7 +44,7 @@ func NewCarloGavazziEM24Producer() Producer {
 		Export:    0x5C,
 	}
 
-	ops_em24_e1 := Opcodes{
+	ops_b := Opcodes{
 		VoltageL1: 0x00,
 		VoltageL2: 0x02,
 		VoltageL3: 0x04,
@@ -66,7 +66,7 @@ func NewCarloGavazziEM24Producer() Producer {
 		ImportL3:  0x44,
 		Export:    0x4E,
 	}
-	return &CarloGavazziEM24Producer{ops_em24, ops_em24_e1, 0}
+	return &CarloGavazziEM24Producer{ops_a, ops_b, 0}
 }
 
 // Initialize implements Producer interface
@@ -84,16 +84,16 @@ func (p *CarloGavazziEM24Producer) Initialize(client modbus.Client) {
 			p.t = 1
 		} else if (t >= 335) && (t <= 336) {
 			// ET330
-			p.t = 1
+			p.t = 2
 		} else if (t >= 331) && (t <= 345) {
 			// EM340
-			p.t = 1
+			p.t = 3
 		} else if (t >= 340) && (t <= 345) {
 			// ET340
-			p.t = 1
+			p.t = 4
 		} else if (t >= 1648) && (t <= 1653) {
 			// EM24_E1
-			p.t = 1
+			p.t = 5
 		}
 	}
 }
@@ -102,16 +102,25 @@ func (p *CarloGavazziEM24Producer) Initialize(client modbus.Client) {
 func (p *CarloGavazziEM24Producer) Description() string {
 	if p.t == 0 {
 		return "Carlo Gavazzi EM24"
-	} else {
+	} else if p.t == 1 {
+		return "Carlo Gavazzi EM330"
+	} else if p.t == 2 {
+		return "Carlo Gavazzi ET330"
+	} else if p.t == 3 {
+		return "Carlo Gavazzi EM340"
+	} else if p.t == 4 {
+		return "Carlo Gavazzi ET340"
+	} else if p.t == 5 {
 		return "Carlo Gavazzi EM24_E1"
 	}
+	return "Carlo Gavazzi EM24"
 }
 
 func (p *CarloGavazziEM24Producer) opCode(iec Measurement) uint16 {
 	if p.t == 0 {
-		return p.ops_em24.Opcode(iec)
+		return p.ops_a.Opcode(iec)
 	} else {
-		return p.ops_em24_e1.Opcode(iec)
+		return p.ops_b.Opcode(iec)
 	}
 }
 
