@@ -79,8 +79,19 @@ func (p *CarloGavazziEM24Producer) Initialize(client modbus.Client) {
 		if (t >= 45) && (t <= 48) {
 			// EM24
 			p.t = 0
-		}
-		if (t >= 1648) && (t <= 1653) {
+		} else if (t >= 331) && (t <= 332) {
+			// EM330
+			p.t = 1
+		} else if (t >= 335) && (t <= 336) {
+			// ET330
+			p.t = 1
+		} else if (t >= 331) && (t <= 345) {
+			// EM340
+			p.t = 1
+		} else if (t >= 340) && (t <= 345) {
+			// ET340
+			p.t = 1
+		} else if (t >= 1648) && (t <= 1653) {
 			// EM24_E1
 			p.t = 1
 		}
