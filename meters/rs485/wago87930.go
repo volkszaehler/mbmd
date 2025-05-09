@@ -50,7 +50,7 @@ func NewWago87930Producer() Producer {
 }
 
 func (p *Wago87930Producer) Description() string {
-	return "Wago 879-30X0"
+	return "Wago 879-30XX"
 }
 
 func (p *Wago87930Producer) snip(iec Measurement) Operation {
