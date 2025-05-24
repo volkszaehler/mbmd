@@ -43,6 +43,7 @@ mbmd inspect [flags]
                               SDM54     Eastron SDM54
                               SDM72     Eastron SDM72
                               SEMTR     SolarEdge SE-MTR-3Y
+                              WAGO87930 Wago 879-30XX
                               WS100     B+G e-tech WS100
                               X961A     Eastron SMART X96-1A
                             TCP
