@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -15,13 +14,20 @@ import (
 
 // Config describes the entire configuration
 type Config struct {
-	API      string
-	Rate     time.Duration
-	Mqtt     MqttConfig
-	Influx   InfluxConfig
-	Adapters []AdapterConfig
-	Devices  []DeviceConfig
-	Other    map[string]interface{} `mapstructure:",remain"`
+	API        string
+	Rate       time.Duration
+	Mqtt       MqttConfig
+	Influx     InfluxConfig
+	Adapters   []AdapterConfig
+	Devices    []DeviceConfig
+	Prometheus PrometheusConfig
+	Other      map[string]interface{} `mapstructure:",remain"`
+}
+
+type PrometheusConfig struct {
+	Enable                 bool // defaults to yes
+	EnableProcessCollector bool
+	EnableGoCollector      bool
 }
 
 // MqttConfig describes the mqtt broker configuration
@@ -117,35 +123,38 @@ func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, ba
 	return manager
 }
 
+var sunspecTypes = map[string]bool{
+	"FRONIUS":   true,
+	"KACO":      true,
+	"KOSTAL":    true,
+	"SE":        true,
+	"SMA":       true,
+	"SOLAREDGE": true,
+	"STECA":     true,
+	"SUNS":      true,
+	"SUNSPEC":   true,
+}
+
 func (conf *DeviceConfigHandler) createDeviceForManager(
 	manager *meters.Manager,
+	name string,
 	meterType string,
 	subdevice int,
 ) meters.Device {
 	var meter meters.Device
 	meterType = strings.ToUpper(meterType)
 
-	var isSunspec bool
-	sunspecTypes := []string{"FRONIUS", "KOSTAL", "KACO", "SE", "SMA", "SOLAREDGE", "STECA", "SUNS", "SUNSPEC"}
-	for _, t := range sunspecTypes {
-		if t == meterType {
-			isSunspec = true
-			break
-		}
-	}
-
-	sort.SearchStrings(sunspecTypes, meterType)
-	if isSunspec {
-		meter = sunspec.NewDevice(meterType, subdevice)
+	if sunspecTypes[meterType] {
+		meter = sunspec.NewDevice(name, meterType, subdevice)
 	} else {
 		if subdevice > 0 {
-			log.Fatalf("Invalid subdevice number for device %s: %d", meterType, subdevice)
+			log.Fatalf("Invalid subdevice number for device '%s' (%s): %d", name, meterType, subdevice)
 		}
 
 		var err error
-		meter, err = rs485.NewDevice(meterType)
+		meter, err = rs485.NewDevice(name, meterType)
 		if err != nil {
-			log.Fatalf("Error creating device %s: %v.", meterType, err)
+			log.Fatalf("Error creating device '%s' (%s): %v.", name, meterType, err)
 		}
 	}
 
@@ -170,7 +179,7 @@ func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 	if !ok {
 		log.Fatalf("Missing adapter configuration for device %v", devConf)
 	}
-	meter := conf.createDeviceForManager(manager, devConf.Type, devConf.SubDevice)
+	meter := conf.createDeviceForManager(manager, devConf.Name, devConf.Type, devConf.SubDevice)
 
 	if err := manager.Add(devConf.ID, meter); err != nil {
 		log.Fatalf("Error adding device %v: %v.", devConf, err)
@@ -226,7 +235,7 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout 
 	// have been created of the --rtu flag was specified. We'll not re-check this here.
 	manager := conf.ConnectionManager(connSpec, false, 0, "", timeout)
 
-	meter := conf.createDeviceForManager(manager, meterType, subdevice)
+	meter := conf.createDeviceForManager(manager, "", meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {
 		log.Fatalf("Error adding device %s: %v. See -h for help.", meterDef, err)
 	}

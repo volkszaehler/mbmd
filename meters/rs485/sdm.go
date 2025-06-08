@@ -52,11 +52,11 @@ func NewSDMProducer() Producer {
 		THDL3:         0x00ee, // voltage
 		THD:           0x00F8, // voltage
 		Frequency:     0x0046, //      230
-		//L1THDCurrent: 0x00F0, // current
-		//L2THDCurrent: 0x00F2, // current
-		//L3THDCurrent: 0x00F4, // current
-		//AvgTHDCurrent: 0x00Fa, // current
-		//ApparentImportPower: 0x0064,
+		// L1THDCurrent: 0x00F0, // current
+		// L2THDCurrent: 0x00F2, // current
+		// L3THDCurrent: 0x00F4, // current
+		// AvgTHDCurrent: 0x00Fa, // current
+		// ApparentImportPower: 0x0064,
 	}
 	return &SDMProducer{Opcodes: ops}
 }

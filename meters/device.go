@@ -6,6 +6,7 @@ import (
 
 // DeviceDescriptor describes a device
 type DeviceDescriptor struct {
+	Name         string
 	Type         string
 	Manufacturer string
 	Model        string
