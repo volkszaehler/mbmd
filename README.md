@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/volkszaehler/mbmd.svg?branch=master)](https://travis-ci.org/volkszaehler/mbmd)
 
-A daemon for collecting measurement data from smart meters and grid inverters over modbus.
+A daemon for collecting measurement data from smart meters, grid inverters and SolarEdge batteries over modbus.
 
 `mbmd` provides an http interface to smart meters and grid inverters with modbus interface.
 Meter readings are made accessible through REST API and MQTT.
@@ -27,7 +27,7 @@ Modbus communication is possible over RS485 connections as well as TCP sockets.
 ## Requirements
 
 You'll need:
-* A supported Modbus/RTU smart meter OR an supported Modbus/TCP SunSpec-compatible grid inverter.
+* A supported Modbus/RTU smart meter OR a supported Modbus/TCP SunSpec-compatible grid inverter.
 * In case of Modbus/RTU: A USB RS485 adapter. See [USB-ISO-RS485 project](https://github.com/gonium/usb-iso-rs485) for a home-grown adapter.
 * Optionally an RS485 to Ethernet converter (see [SO discussion](https://stackoverflow.com/questions/59459877/is-rtu-over-tcp-a-spec-conforming-modbus-application))
 
@@ -320,6 +320,9 @@ SunSpec devices can host multiple subdevices, e.g. to expose a meter attached to
 
 	./mbmd run -a 192.168.0.44:502 -d FRONIUS:1.0 -d FRONIUS:1.1
 
+SolarEdge batteries can be included with other devices:
+
+	./mbmd run -d SUNS:1,SUNS:1.1,SUNS:2,SE-BAT:1,SE-BAT:1.1 -a 192.168.168.168:1502 --timeout 10s --mqtt-clientid mbmd --mqtt-homie homie --mqtt-topic mbmd --mqtt-broker tcp://192.168.168.169:1883
 
 # Releases
 
