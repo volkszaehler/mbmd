@@ -7,7 +7,6 @@ func init() {
 }
 
 var ops1p504 Opcodes = Opcodes{
-
 	Frequency:     0x02, // 16 bit, Hz
 	Voltage:       0x00, // 16 bit, V
 	Current:       0x01, // 16 bit, A
@@ -16,8 +15,8 @@ var ops1p504 Opcodes = Opcodes{
 	ApparentPower: 0x05, // 16 bit, va
 	Cosphi:        0x06, // 16 bit,
 
-	Sum:         0x07, //32 Bit, wh
-	ReactiveSum: 0x09, //32 Bit, varh
+	Sum:         0x07, // 32 Bit, wh
+	ReactiveSum: 0x09, // 32 Bit, varh
 }
 
 type ORNO1P504Producer struct {
