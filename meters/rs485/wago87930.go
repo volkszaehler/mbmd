@@ -59,14 +59,19 @@ func (p *Wago87930Producer) Description() string {
 	return "Wago 879-30XX"
 }
 
-func (p *Wago87930Producer) snip(iec Measurement) Operation {
+func (p *Wago87930Producer) snip(iec Measurement, scaler ...float64) Operation {
+	transform := RTUIeee754ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		transform = MakeScaledTransform(transform, scaler[0])
+	}
 	operation := Operation{
 		FuncCode:  ReadHoldingReg,
 		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,
-		Transform: RTUIeee754ToFloat64,
+		Transform: transform,
 	}
+
 	return operation
 }
 
@@ -75,7 +80,19 @@ func (p *Wago87930Producer) Probe() Operation {
 }
 
 func (p *Wago87930Producer) Produce() (res []Operation) {
-	for op := range p.Opcodes {
+	for _, op := range []Measurement{
+		Voltage, VoltageL1, VoltageL2, VoltageL3, Frequency, Current, CurrentL1, CurrentL2, CurrentL3,
+	} {
+		res = append(res, p.snip(op))
+	}
+	for _, op := range []Measurement{
+		Power, PowerL1, PowerL2, PowerL3, ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3, ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3,
+	} {
+		res = append(res, p.snip(op, 0.001))
+	}
+	for _, op := range []Measurement{
+		Import, ImportL1, ImportL2, ImportL3, Export, ExportL1, ExportL2, ExportL3, CosphiL1, CosphiL2, CosphiL3, Cosphi,
+	} {
 		res = append(res, p.snip(op))
 	}
 
