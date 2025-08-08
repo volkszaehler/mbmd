@@ -27,18 +27,6 @@ func NewWago87930Producer() Producer {
 		CurrentL1:       0x500c,
 		CurrentL2:       0x500e,
 		CurrentL3:       0x5010,
-		Power:           0x5012,
-		PowerL1:         0x5014,
-		PowerL2:         0x5016,
-		PowerL3:         0x5018,
-		ReactivePower:   0x501a,
-		ReactivePowerL1: 0x501c,
-		ReactivePowerL2: 0x501e,
-		ReactivePowerL3: 0x5020,
-		ApparentPower:   0x5022,
-		ApparentPowerL1: 0x5024,
-		ApparentPowerL2: 0x5026,
-		ApparentPowerL3: 0x5028,
 		Import:          0x600c,
 		ImportL1:        0x6012,
 		ImportL2:        0x6014,
@@ -51,6 +39,18 @@ func NewWago87930Producer() Producer {
 		CosphiL2:        0x502e,
 		CosphiL3:        0x5030,
 		Cosphi:          0x502a,
+		Power:           0x5012,
+		PowerL1:         0x5014,
+		PowerL2:         0x5016,
+		PowerL3:         0x5018,
+		ReactivePower:   0x501a,
+		ReactivePowerL1: 0x501c,
+		ReactivePowerL2: 0x501e,
+		ReactivePowerL3: 0x5020,
+		ApparentPower:   0x5022,
+		ApparentPowerL1: 0x5024,
+		ApparentPowerL2: 0x5026,
+		ApparentPowerL3: 0x5028,
 	}
 	return &Wago87930Producer{Opcodes: ops}
 }
@@ -86,7 +86,7 @@ func (p *Wago87930Producer) Produce() (res []Operation) {
 	} {
 		res = append(res, p.snip(op))
 	}
-	
+
 	for _, op := range []Measurement{
 		Power, PowerL1, PowerL2, PowerL3, ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3, ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3,
 	} {
