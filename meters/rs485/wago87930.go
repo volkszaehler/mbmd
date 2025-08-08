@@ -82,18 +82,15 @@ func (p *Wago87930Producer) Probe() Operation {
 func (p *Wago87930Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		Voltage, VoltageL1, VoltageL2, VoltageL3, Frequency, Current, CurrentL1, CurrentL2, CurrentL3,
+		Import, ImportL1, ImportL2, ImportL3, Export, ExportL1, ExportL2, ExportL3, CosphiL1, CosphiL2, CosphiL3, Cosphi,
 	} {
 		res = append(res, p.snip(op))
 	}
+	
 	for _, op := range []Measurement{
 		Power, PowerL1, PowerL2, PowerL3, ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3, ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3,
 	} {
 		res = append(res, p.snip(op, 0.001))
-	}
-	for _, op := range []Measurement{
-		Import, ImportL1, ImportL2, ImportL3, Export, ExportL1, ExportL2, ExportL3, CosphiL1, CosphiL2, CosphiL3, Cosphi,
-	} {
-		res = append(res, p.snip(op))
 	}
 
 	return res
