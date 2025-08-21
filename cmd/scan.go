@@ -79,11 +79,11 @@ func scan(cmd *cobra.Command, args []string) {
 	// create devices
 	devices := make([]meters.Device, 0)
 	if _, ok := conn.(*meters.TCP); ok {
-		suns := sunspec.NewDevice("SUNS")
+		suns := sunspec.NewDevice("", "SUNS")
 		devices = append(devices, suns)
 	} else {
 		for t := range rs485.Producers {
-			dev, err := rs485.NewDevice(t)
+			dev, err := rs485.NewDevice("", t)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -109,14 +109,16 @@ SCAN:
 				if !errors.Is(err, meters.ErrPartiallyOpened) {
 					continue // devices
 				}
+
 				log.Println(err) // log error but continue
 			}
 
 			mr, err := dev.Probe(client)
 			if err == nil && v.check(mr.Value) {
+				deviceDescriptor := dev.Descriptor()
 				log.Printf("device %d: %s type device found, %s: %.2f\r\n",
 					deviceID,
-					dev.Descriptor().Manufacturer,
+					deviceDescriptor.Manufacturer,
 					mr.Measurement,
 					mr.Value,
 				)

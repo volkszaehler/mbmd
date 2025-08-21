@@ -130,9 +130,13 @@ function processMessage(data) {
 
 function connectSocket() {
 	var ws, loc = window.location;
-	var protocol = loc.protocol == "https:" ? "wss:" : "ws:"
+	var protocol = loc.protocol === "https:" ? "wss:" : "ws:"
+	var path = loc.pathname.replace(/\/$/, "")
+	if (path === "") {
+		path = "/"
+	}
 
-	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + loc.pathname.replace(/\/$/, "") + "/ws");
+	ws = new WebSocket(protocol + "//" + loc.hostname + (loc.port ? ":" + loc.port : "") + path + "ws");
 
 	ws.onerror = function(evt) {
 		ws.close();

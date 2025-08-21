@@ -44,14 +44,14 @@ func NewORNO1PProducer() Producer {
 		ApparentPower: 0x156, // 32 bit, 0.001kva
 		Cosphi:        0x15B, // 16 bit, 0.001
 
-		Sum:   0xA000, //32 Bit, 0.01kwh
-		SumT1: 0xA002, //32 Bit, 0.01kwh
-		SumT2: 0xA004, //32 Bit, 0.01kwh
+		Sum:   0xA000, // 32 Bit, 0.01kwh
+		SumT1: 0xA002, // 32 Bit, 0.01kwh
+		SumT2: 0xA004, // 32 Bit, 0.01kwh
 		//		SumT3:           0xA006, //32 Bit, 0.01kwh // currently not supported
 		//		SumT4:           0xA008, //32 Bit, 0.01kwh // currently not supported
-		ReactiveSum:   0xA01E, //32 Bit, 0.01kvarh
-		ReactiveSumT1: 0xA020, //32 Bit, 0.01kvarh
-		ReactiveSumT2: 0xA022, //32 Bit, 0.01kvarh
+		ReactiveSum:   0xA01E, // 32 Bit, 0.01kvarh
+		ReactiveSumT1: 0xA020, // 32 Bit, 0.01kvarh
+		ReactiveSumT2: 0xA022, // 32 Bit, 0.01kvarh
 		//		ReactiveSumT3:   0xA024, //32 Bit, 0.01kvarh // currently not supported
 		//		ReactiveSumT4:   0xA026, //32 Bit, 0.01kvarh // currently not supported
 	}
@@ -104,7 +104,6 @@ func (p *ORNO1PProducer) Probe() Operation {
 
 // Produce implements Producer interface
 func (p *ORNO1PProducer) Produce() (res []Operation) {
-
 	for _, op := range []Measurement{
 		VoltageL1,
 		Frequency,

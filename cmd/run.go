@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	latest "github.com/tcnksm/go-latest"
-
+	"github.com/volkszaehler/mbmd/prometheus"
 	"github.com/volkszaehler/mbmd/server"
 )
 
@@ -223,6 +223,7 @@ func run(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	promCfg := PrometheusConfig{Enable: true}
 	if cfgFile != "" {
 		// config file found
 		log.Printf("config: using %s", viper.ConfigFileUsed())
@@ -247,7 +248,14 @@ func run(cmd *cobra.Command, args []string) {
 				confHandler.CreateDevice(dev)
 			}
 		}
+		promCfg = conf.Prometheus
 	}
+	// Prometheus manager - Register all static metrics to default registry
+	prometheus.RegisterAllMetrics(prometheus.Config{
+		Enable:                 promCfg.Enable,
+		EnableProcessCollector: promCfg.EnableProcessCollector,
+		EnableGoCollector:      promCfg.EnableGoCollector,
+	})
 
 	if countDevices(confHandler.Managers) == 0 {
 		log.Fatal("config: no devices found - terminating")

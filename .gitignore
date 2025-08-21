@@ -1,4 +1,5 @@
 .vscode/
+.idea/
 *.json
 *.sh
 *.yaml
@@ -7,3 +8,4 @@ linux-*.Dockerfile
 mbmd
 !entrypoint.sh
 !mbmd.dist.yaml
+vendor/

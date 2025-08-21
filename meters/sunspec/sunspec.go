@@ -10,11 +10,11 @@ import (
 
 	sunspec "github.com/andig/gosunspec"
 	sunspecbus "github.com/andig/gosunspec/modbus"
-	"github.com/grid-x/modbus"
-
 	_ "github.com/andig/gosunspec/models" // device tree parsing requires all models
 	"github.com/andig/gosunspec/models/model1"
 	"github.com/andig/gosunspec/models/model101"
+	"github.com/andig/gosunspec/typelabel"
+	"github.com/grid-x/modbus"
 	"github.com/volkszaehler/mbmd/meters"
 )
 
@@ -59,7 +59,7 @@ func DeviceTree(client modbus.Client) ([]sunspec.Device, error) {
 }
 
 // NewDevice creates a Sunspec device
-func NewDevice(meterType string, subdevice ...int) *SunSpec {
+func NewDevice(name string, meterType string, subdevice ...int) *SunSpec {
 	var dev int
 	if len(subdevice) > 0 {
 		dev = subdevice[0]
@@ -68,6 +68,7 @@ func NewDevice(meterType string, subdevice ...int) *SunSpec {
 	return &SunSpec{
 		subdevice: dev,
 		descriptor: meters.DeviceDescriptor{
+			Name:         name,
 			Type:         meterType,
 			Manufacturer: meterType,
 			SubDevice:    dev,
@@ -85,6 +86,8 @@ func (d *SunSpec) Initialize(client modbus.Client) error {
 	if err := d.InitializeWithTree(devices); err != nil {
 		return err
 	}
+
+	// TODO prometheus: else DeviceModbusConnectionSuccess
 
 	// this may be ErrPartiallyOpened
 	return err
@@ -144,7 +147,7 @@ func (d *SunSpec) collectModels(device sunspec.Device) error {
 func (d *SunSpec) relevantModelIds() []sunspec.ModelId {
 	modelIds := make([]sunspec.ModelId, 0, len(modelMap))
 	for k := range modelMap {
-		modelIds = append(modelIds, sunspec.ModelId(k))
+		modelIds = append(modelIds, k)
 	}
 
 	return modelIds
@@ -212,6 +215,17 @@ func (d *SunSpec) notInitialized() bool {
 func (d *SunSpec) convertPoint(b sunspec.Block, p sunspec.Point) (float64, error) {
 	if d.descriptor.Manufacturer == "KOSTAL" {
 		FixKostal(p)
+	}
+
+	switch p.Type() {
+	case typelabel.Enum16:
+		return float64(p.Enum16()), nil
+	case typelabel.Enum32:
+		return float64(p.Enum32()), nil
+	case typelabel.Bitfield16:
+		return float64(p.Bitfield16()), nil
+	case typelabel.Bitfield32:
+		return float64(p.Bitfield32()), nil
 	}
 
 	v := p.ScaledValue()
@@ -295,27 +309,27 @@ func (d *SunSpec) QueryOp(client modbus.Client, measurement meters.Measurement) 
 	}
 
 	for _, model := range d.models {
-		for modelID, blockMap := range modelMap {
-			if modelID != model.Id() {
+		modelID := model.Id()
+		blockMap, ok := modelMap[modelID]
+		if !ok {
+			continue
+		}
+
+		for blockID, pointMap := range blockMap {
+			if blockID >= model.Blocks() {
 				continue
 			}
 
-			for blockID, pointMap := range blockMap {
-				if blockID >= model.Blocks() {
-					continue
-				}
+			for pointID, m := range pointMap {
+				if m == measurement {
+					v, err := d.QueryPoint(client, int(modelID), blockID, pointID)
 
-				for pointID, m := range pointMap {
-					if m == measurement {
-						v, err := d.QueryPoint(client, int(modelID), blockID, pointID)
-
-						var mr meters.MeasurementResult
-						if err == nil {
-							mr = makeResult(v, measurement)
-						}
-
-						return mr, err
+					var mr meters.MeasurementResult
+					if err == nil {
+						mr = makeResult(v, measurement)
 					}
+
+					return mr, err
 				}
 			}
 		}
@@ -332,44 +346,44 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 	}
 
 	for _, model := range d.models {
-		for modelID, blockMap := range modelMap {
-			if modelID != model.Id() {
+		blockMap, ok := modelMap[model.Id()]
+		if !ok {
+			continue
+		}
+
+		// sort blocks so block 0 is always read first
+		sortedBlocks := make([]int, 0, len(blockMap))
+		for k := range blockMap {
+			sortedBlocks = append(sortedBlocks, k)
+		}
+		sort.Ints(sortedBlocks)
+
+		// always add zero block
+		if sortedBlocks[0] != 0 {
+			sortedBlocks = append([]int{0}, sortedBlocks...)
+		}
+
+		for blockID := range sortedBlocks {
+			if blockID >= model.Blocks() {
 				continue
 			}
 
-			// sort blocks so block 0 is always read first
-			sortedBlocks := make([]int, 0, len(blockMap))
-			for k := range blockMap {
-				sortedBlocks = append(sortedBlocks, k)
-			}
-			sort.Ints(sortedBlocks)
+			pointMap := blockMap[blockID]
+			block := model.MustBlock(blockID)
 
-			// always add zero block
-			if sortedBlocks[0] != 0 {
-				sortedBlocks = append([]int{0}, sortedBlocks...)
+			if err := block.Read(); err != nil {
+				return res, err
 			}
 
-			for blockID := range sortedBlocks {
-				if blockID >= model.Blocks() {
-					continue
-				}
+			for pointID, m := range pointMap {
+				point := block.MustPoint(pointID)
 
-				pointMap := blockMap[blockID]
-				block := model.MustBlock(blockID)
-
-				if err := block.Read(); err != nil {
-					return res, err
-				}
-
-				for pointID, m := range pointMap {
-					point := block.MustPoint(pointID)
-
-					if v, err := d.convertPoint(block, point); err == nil {
-						res = append(res, makeResult(v, m))
-					}
+				if v, err := d.convertPoint(block, point); err == nil {
+					res = append(res, makeResult(v, m))
 				}
 			}
 		}
+
 	}
 
 	return res, nil
