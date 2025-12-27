@@ -47,9 +47,11 @@ func NewX961AProducer() Producer {
 		SumL1:            0x0166, // L1 total kWh
 		SumL2:            0x0168, // L2 total kWh
 		SumL3:            0x016A, // L3 total kWh
+		Import:           0x0048, // Total Import kWh
 		ImportL1:         0x015A, // L1 import kWh
 		ImportL2:         0x015C, // L2 import kWh
 		ImportL3:         0x015E, // L3 import kWh
+		Export:           0x004A, // Total Export kWh
 		ExportL1:         0x0160, // L1 export kWh
 		ExportL2:         0x0162, // L2 export kWh
 		ExportL3:         0x0164, // L3 export kWh
