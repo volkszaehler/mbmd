@@ -18,7 +18,7 @@ func NewORNO1PProducer() Producer {
 	ops := Opcodes{
 		Frequency:     0x130,  // 16 bit, 0.01Hz
 		Voltage:       0x131,  // 16 bit, 0.01V
-		Current:       0x139,  // 16 bit, 0.001A
+		Current:       0x139,  // 32 bit, 0.001A
 		Power:         0x140,  // 32 bit, 0.001kW
 		ReactivePower: 0x148,  // 32 bit, 0.001kvar
 		ApparentPower: 0x150,  // 32 bit, 0.001kva
