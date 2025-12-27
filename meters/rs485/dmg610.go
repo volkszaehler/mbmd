@@ -33,9 +33,9 @@ func NewDMG610Producer() Producer {
 		ApparentPowerL1: 0x001F, // L1 Apparent Power
 		ApparentPowerL2: 0x0021, // L2 Apparent Power
 		ApparentPowerL3: 0x0023, // L3 Apparent Power
-		CosphiL1:        0x0025, // L1 Power Factor
-		CosphiL2:        0x0027, // L2 Power Factor
-		CosphiL3:        0x0029, // L3 Power Factor
+		Power:           0x0039, // Active Power
+		ReactivePower:   0x003B, // Reactive Power
+		ApparentPower:   0x003D, // Apparent Power
 		THDL1:           0x0053, // L1 Voltage Thd
 		THDL2:           0x0055, // L2 Voltage Thd
 		THDL3:           0x0057, // L3 Voltage Thd
@@ -97,13 +97,11 @@ func (p *DMG610Producer) Produce() (res []Operation) {
 		case Frequency:
 			res = append(res, p.snip32u(op, 1000))
 		case VoltageL1, VoltageL2, VoltageL3,
-			ApparentPowerL1, ApparentPowerL2, ApparentPowerL3,
+			ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3,
 			THDL1, THDL2, THDL3:
 			res = append(res, p.snip32u(op, 100))
-		case CosphiL1, CosphiL2, CosphiL3:
-			res = append(res, p.snip32(op, 10000))
-		case PowerL1, PowerL2, PowerL3,
-			ReactivePowerL1, ReactivePowerL2, ReactivePowerL3:
+		case Power, PowerL1, PowerL2, PowerL3,
+			ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3:
 			res = append(res, p.snip32(op, 100))
 		default:
 			res = append(res, p.snip64u(op, 100))
