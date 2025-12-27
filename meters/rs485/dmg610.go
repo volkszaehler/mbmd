@@ -97,12 +97,11 @@ func (p *DMG610Producer) Produce() (res []Operation) {
 		case Frequency:
 			res = append(res, p.snip32u(op, 1000))
 		case VoltageL1, VoltageL2, VoltageL3,
-			ApparentPowerL1, ApparentPowerL2, ApparentPowerL3,
+			ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3,
 			THDL1, THDL2, THDL3:
 			res = append(res, p.snip32u(op, 100))
-		case PowerL1, PowerL2, PowerL3,
-			ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
-			Power, ReactivePower, ApparentPower:
+		case Power, PowerL1, PowerL2, PowerL3,
+			ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3:
 			res = append(res, p.snip32(op, 100))
 		default:
 			res = append(res, p.snip64u(op, 100))
