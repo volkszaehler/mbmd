@@ -16,44 +16,19 @@ func NewORNO1PProducer() Producer {
 	 * https://github.com/gituser-rk/orno-modbus-mqtt/blob/master/Register%20description%20OR-WE-514%26OR-WE-515.pdf
 	 */
 	ops := Opcodes{
-		Frequency: 0x130, // 16 bit, 0.01Hz
-
-		VoltageL1:       0x131, // 16 bit, 0.01V
-		CurrentL1:       0x139, // 16 bit, 0.001A
-		PowerL1:         0x140, // 32 bit, 0.001kW
-		ReactivePowerL1: 0x148, // 32 bit, 0.001kvar
-		ApparentPowerL1: 0x150, // 32 bit, 0.001kva
-		CosphiL1:        0x158, // 16 bit, 0,001
-
-		VoltageL2:       0x132, // 16 bit, 0.01V
-		CurrentL2:       0x13B, // 32 bit, 0.001A
-		PowerL2:         0x142, // 32 bit, 0.001kW
-		ReactivePowerL2: 0x14A, // 32 bit, 0.001kvar
-		ApparentPowerL2: 0x152, // 32 bit, 0.001kva
-		CosphiL2:        0x159, // 16 bit, 0,001
-
-		VoltageL3:       0x133, // 16 bit, 0.01V
-		CurrentL3:       0x13D, // 32 bit, 0.001A
-		PowerL3:         0x144, // 32 bit, 0.001kW
-		ReactivePowerL3: 0x14C, // 32 bit, 0.001kvar
-		ApparentPowerL3: 0x154, // 32 bit, 0.001kva
-		CosphiL3:        0x15A, // 16 bit, 0,001
-
-		Power:         0x146, // 32 bit, 0.001kW
-		ReactivePower: 0x14E, // 32 bit, 0.001kvar
-		ApparentPower: 0x156, // 32 bit, 0.001kva
-		Cosphi:        0x15B, // 16 bit, 0.001
-
-		Sum:   0xA000, //32 Bit, 0.01kwh
-		SumT1: 0xA002, //32 Bit, 0.01kwh
-		SumT2: 0xA004, //32 Bit, 0.01kwh
-		//		SumT3:           0xA006, //32 Bit, 0.01kwh // currently not supported
-		//		SumT4:           0xA008, //32 Bit, 0.01kwh // currently not supported
-		ReactiveSum:   0xA01E, //32 Bit, 0.01kvarh
-		ReactiveSumT1: 0xA020, //32 Bit, 0.01kvarh
-		ReactiveSumT2: 0xA022, //32 Bit, 0.01kvarh
-		//		ReactiveSumT3:   0xA024, //32 Bit, 0.01kvarh // currently not supported
-		//		ReactiveSumT4:   0xA026, //32 Bit, 0.01kvarh // currently not supported
+		Frequency:     0x130,  // 16 bit, 0.01Hz
+		Voltage:       0x131,  // 16 bit, 0.01V
+		Current:       0x139,  // 16 bit, 0.001A
+		Power:         0x140,  // 32 bit, 0.001kW
+		ReactivePower: 0x148,  // 32 bit, 0.001kvar
+		ApparentPower: 0x150,  // 32 bit, 0.001kva
+		Cosphi:        0x158,  // 16 bit, 0,001
+		Sum:           0xA000, // 32 Bit, 0.01kwh
+		SumT1:         0xA002, // 32 Bit, 0.01kwh
+		SumT2:         0xA004, // 32 Bit, 0.01kwh
+		ReactiveSum:   0xA01E, // 32 Bit, 0.01kvarh
+		ReactiveSumT1: 0xA020, // 32 Bit, 0.01kvarh
+		ReactiveSumT2: 0xA022, // 32 Bit, 0.01kvarh
 	}
 
 	return &ORNO1PProducer{Opcodes: ops}
@@ -99,33 +74,33 @@ func (p *ORNO1PProducer) snip32(iec Measurement, scaler ...float64) Operation {
 }
 
 func (p *ORNO1PProducer) Probe() Operation {
-	return p.snip16(VoltageL1, 100)
+	return p.snip16(Voltage, 100)
 }
 
 // Produce implements Producer interface
 func (p *ORNO1PProducer) Produce() (res []Operation) {
 
 	for _, op := range []Measurement{
-		VoltageL1,
+		Voltage,
 		Frequency,
 	} {
 		res = append(res, p.snip16(op, 100))
 	}
 
 	for _, op := range []Measurement{
-		CurrentL1,
+		Current,
 	} {
 		res = append(res, p.snip32(op, 1000))
 	}
 
 	for _, op := range []Measurement{
-		PowerL1, ReactivePowerL1, ApparentPowerL1,
+		Power, ReactivePower, ApparentPower,
 	} {
 		res = append(res, p.snip32(op, 1))
 	}
 
 	for _, op := range []Measurement{
-		CosphiL1,
+		Cosphi,
 	} {
 		res = append(res, p.snip16(op, 1000))
 	}
