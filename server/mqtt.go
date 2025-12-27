@@ -87,8 +87,8 @@ func (m *MqttClient) WaitForToken(token MQTT.Token) {
 
 // deviceTopic converts meter's device id to topic string
 func mqttDeviceTopic(deviceID string) string {
-	topic := strings.Replace(strings.ToLower(deviceID), "#", "", -1)
-	return strings.Replace(topic, ".", "-", -1)
+	topic := strings.ReplaceAll(strings.ToLower(deviceID), "#", "")
+	return strings.ReplaceAll(topic, ".", "-")
 }
 
 // MqttRunner allows to attach an MqttClient as broadcast receiver
@@ -127,7 +127,7 @@ func topicFromMeasurement(measurement meters.Measurement) string {
 // Run MqttClient publisher
 func (m *MqttRunner) Run(in <-chan QuerySnip) {
 	// notify connection and override will
-	m.MqttClient.Publish(fmt.Sprintf("%s/status", m.topic), true, "connected")
+	m.Publish(fmt.Sprintf("%s/status", m.topic), true, "connected")
 
 	for snip := range in {
 		subtopic := topicFromMeasurement(snip.Measurement)

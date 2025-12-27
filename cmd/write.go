@@ -103,11 +103,12 @@ func encodeCoil(value string, length int) (b []byte) {
 		log.Fatal(err)
 	}
 
-	if u == 0 {
+	switch u {
+	case 0:
 		b = []byte{0, 0}
-	} else if u == 1 || u == 0xFF00 {
+	case 1, 0xFF00:
 		b = []byte{0xFF, 0}
-	} else {
+	default:
 		log.Fatal("Invalid value")
 	}
 
