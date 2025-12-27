@@ -1,5 +1,9 @@
 version: "2"
 linters:
+  settings:
+    staticcheck:
+      dot-import-whitelist:
+        - "github.com/volkszaehler/mbmd/meters"
   exclusions:
     generated: lax
     presets:
@@ -9,13 +13,15 @@ linters:
       - std-error-handling
     rules:
       - path: (.+)\.go$
-        text: '`sunspecModelID` is unused'
+        text: "`sunspecModelID` is unused"
       - path: (.+)\.go$
-        text: '`printModel` is unused'
+        text: "`printModel` is unused"
       - path: (.+)\.go$
-        text: func `..sunSpec..sanitizeModels` is unused
+        text: "func printModel is unused"
       - path: (.+)\.go$
-        text: func `..SunSpec..relevantModelIds` is unused
+        text: "func \\(\\*SunSpec\\).sanitizeModels is unused"
+      - path: (.+)\.go$
+        text: "func \\(\\*SunSpec\\).relevantModelIds is unused"
     paths:
       - third_party$
       - builtin$
