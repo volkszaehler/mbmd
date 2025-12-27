@@ -12,10 +12,10 @@ type DDMProducer struct {
 
 func NewDDMProducer() Producer {
 	ops := Opcodes{
-		VoltageL1:       0x0000,
-		CurrentL1:       0x0008,
-		PowerL1:         0x0012,
-		ReactivePowerL1: 0x001A,
+		Voltage:         0x0000,
+		Current:         0x0008,
+		Power:           0x0012,
+		ReactivePower:   0x001A,
 		Cosphi:          0x002A,
 		Frequency:       0x0036,
 		Sum:             0x0100,
@@ -40,7 +40,7 @@ func (p *DDMProducer) snip(iec Measurement) Operation {
 }
 
 func (p *DDMProducer) Probe() Operation {
-	return p.snip(VoltageL1)
+	return p.snip(Voltage)
 }
 
 func (p *DDMProducer) Produce() (res []Operation) {
