@@ -22,7 +22,7 @@ func NewORNO1PProducer() Producer {
 		Power:         0x140,  // 32 bit, 0.001kW
 		ReactivePower: 0x148,  // 32 bit, 0.001kvar
 		ApparentPower: 0x150,  // 32 bit, 0.001kva
-		Cosphi:        0x158,  // 16 bit, 0,001
+		Cosphi:        0x158,  // 16 bit, 0.001
 		Sum:           0xA000, // 32 Bit, 0.01kwh
 		SumT1:         0xA002, // 32 Bit, 0.01kwh
 		SumT2:         0xA004, // 32 Bit, 0.01kwh
