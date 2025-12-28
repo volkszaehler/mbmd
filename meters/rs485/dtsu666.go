@@ -53,13 +53,15 @@ func (p *DTSU666Producer) snip(iec Measurement, scaler ...float64) Operation {
 		Transform: RTUIeee754ToFloat64,
 	}
 
-	operation.Transform = MakeScaledTransform(operation.Transform, scaler[0])
+	if len(scaler) > 0 {
+		operation.Transform = MakeScaledTransform(operation.Transform, scaler[0])
+	}
 
 	return operation
 }
 
 func (p *DTSU666Producer) Probe() Operation {
-	return p.snip(VoltageL1)
+	return p.snip(VoltageL1, 10)
 }
 
 func (p *DTSU666Producer) Produce() (res []Operation) {
