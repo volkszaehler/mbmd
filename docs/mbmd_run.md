@@ -21,6 +21,7 @@ mbmd run [flags]
                                          DDM       DDM18SD
                                          DMG610    Lovato DMG610
                                          DS100     B+G e-tech DS100
+                                         DTSU666   Chint DTSU666
                                          DZG       DZG Metering GmbH DVH4013 meters
                                          IEM3000   Schneider Electric iEM3000 series
                                          INEPRO    Inepro Metering Pro 380
