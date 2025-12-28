@@ -34,7 +34,7 @@ func (p *WS100Producer) Description() string {
 	return "B+G e-tech WS100"
 }
 
-func (p *WS100Producer) snip(iec Measurement, readlen uint16, sign signedness, transform RTUTransform, scaler ...float64) Operation {
+func (p *WS100Producer) snip(iec Measurement, readlen uint16, transform RTUTransform, scaler ...float64) Operation {
 	snip := Operation{
 		FuncCode:  ReadHoldingReg,
 		OpCode:    p.Opcodes[iec],
@@ -52,12 +52,22 @@ func (p *WS100Producer) snip(iec Measurement, readlen uint16, sign signedness, t
 
 // snip16u creates modbus operation for single register
 func (p *WS100Producer) snip16u(iec Measurement, scaler ...float64) Operation {
-	return p.snip(iec, 1, unsigned, RTUUint16ToFloat64, scaler...)
+	return p.snip(iec, 1, RTUUint16ToFloat64, scaler...)
 }
 
 // snip32u creates modbus operation for double register
 func (p *WS100Producer) snip32u(iec Measurement, scaler ...float64) Operation {
-	return p.snip(iec, 2, unsigned, RTUUint32ToFloat64, scaler...)
+	return p.snip(iec, 2, RTUUint32ToFloat64, scaler...)
+}
+
+// snip16s creates modbus operation for single register (signed)
+func (p *WS100Producer) snip16s(iec Measurement, scaler ...float64) Operation {
+	return p.snip(iec, 1, RTUInt16ToFloat64, scaler...)
+}
+
+// snip32s creates modbus operation for double register (signed)
+func (p *WS100Producer) snip32s(iec Measurement, scaler ...float64) Operation {
+	return p.snip(iec, 2, RTUInt32ToFloat64, scaler...)
 }
 
 func (p *WS100Producer) Probe() Operation {
@@ -66,13 +76,25 @@ func (p *WS100Producer) Probe() Operation {
 
 func (p *WS100Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
-		Voltage, Current,
+		Voltage,
 	} {
 		res = append(res, p.snip32u(op, 1000))
 	}
 
 	for _, op := range []Measurement{
-		Power, ApparentPower, ReactivePower,
+		Current,
+	} {
+		res = append(res, p.snip32s(op, 1000))
+	}
+
+	for _, op := range []Measurement{
+		Power, ReactivePower,
+	} {
+		res = append(res, p.snip32s(op, 1))
+	}
+
+	for _, op := range []Measurement{
+		ApparentPower,
 	} {
 		res = append(res, p.snip32u(op, 1))
 	}
@@ -92,7 +114,7 @@ func (p *WS100Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		Cosphi,
 	} {
-		res = append(res, p.snip16u(op, 1000))
+		res = append(res, p.snip16s(op, 1000))
 	}
 
 	return res
