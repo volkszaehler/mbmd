@@ -25,6 +25,9 @@ const (
 	_ Measurement = iota
 
 	Frequency
+	FrequencyL1
+	FrequencyL2
+	FrequencyL3
 
 	Current
 	CurrentL1
@@ -36,6 +39,11 @@ const (
 	VoltageL1
 	VoltageL2
 	VoltageL3
+	VoltageL1_L2
+	VoltageL2_L3
+	VoltageL3_L1
+	VoltageL_N_avg
+	VoltageL_L_avg
 
 	Power // synonymous ActivePower
 	PowerL1
@@ -71,6 +79,8 @@ const (
 	THDL1
 	THDL2
 	THDL3
+
+	ThreePhase_Vec_A
 
 	// energy
 	Sum // synonymous ActiveEnergy
@@ -148,6 +158,9 @@ const (
 
 var iec = map[Measurement][]string{
 	Frequency:        {"Frequency", "Hz"},
+	FrequencyL1:      {"L1 Frequency", "Hz"},
+	FrequencyL2:      {"L2 Frequency", "Hz"},
+	FrequencyL3:      {"L3 Frequency", "Hz"},
 	Current:          {"Current", "A"},
 	CurrentL1:        {"L1 Current", "A"},
 	CurrentL2:        {"L2 Current", "A"},
@@ -156,6 +169,11 @@ var iec = map[Measurement][]string{
 	VoltageL1:        {"L1 Voltage", "V"},
 	VoltageL2:        {"L2 Voltage", "V"},
 	VoltageL3:        {"L3 Voltage", "V"},
+	VoltageL1_L2:     {"L1 to L2 Voltage", "V"},
+	VoltageL2_L3:     {"L2 to L3 Voltage", "V"},
+	VoltageL3_L1:     {"L3 to L1 Voltage", "V"},
+	VoltageL_N_avg:   {"L to N average Voltage", "V"},
+	VoltageL_L_avg:   {"L to L average Voltage", "V"},
 	Power:            {"Power", "W"},
 	PowerL1:          {"L1 Power", "W"},
 	PowerL2:          {"L2 Power", "W"},
@@ -184,6 +202,7 @@ var iec = map[Measurement][]string{
 	THDL1:            {"L1 Voltage to neutral THD", "%"},
 	THDL2:            {"L2 Voltage to neutral THD", "%"},
 	THDL3:            {"L3 Voltage to neutral THD", "%"},
+	ThreePhase_Vec_A: {"Three Phase Vector Current", "%"},
 	Sum:              {"Total Sum", "kWh"},
 	SumT1:            {"Tariff 1 Sum", "kWh"},
 	SumT2:            {"Tariff 2 Sum", "kWh"},
