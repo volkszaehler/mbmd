@@ -144,6 +144,9 @@ const (
 	BatteryVoltage
 
 	PhaseAngle
+
+	// Other
+	Tariff
 )
 
 var iec = map[Measurement][]string{
@@ -243,6 +246,7 @@ var iec = map[Measurement][]string{
 	ChargeState:      {"Charge State", "%"},
 	BatteryVoltage:   {"Battery Voltage", "V"},
 	PhaseAngle:       {"Phase Angle", "°"},
+	Tariff:           {"Tariff", ""},
 }
 
 // MarshalText implements encoding.TextMarshaler
