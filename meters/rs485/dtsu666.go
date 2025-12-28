@@ -67,7 +67,8 @@ func (p *DTSU666Producer) Probe() Operation {
 func (p *DTSU666Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3,
-		Power, ReactivePower, PowerL1, PowerL2, PowerL3,
+		Power, PowerL1, PowerL2, PowerL3,
+		ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
 	} {
 		res = append(res, p.snip(op, 10))
 	}
