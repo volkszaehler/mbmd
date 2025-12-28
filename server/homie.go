@@ -138,7 +138,7 @@ func newHomieMeter(client *MqttClient, rootTopic string, meter string) *homieMet
 func (hr *homieMeter) unregister() {
 	subTopic := mqttDeviceTopic(hr.meter)
 	hr.publish(subTopic+"/$state", "disconnected")
-	hr.MqttClient.Client.Disconnect(uint(timeout.Milliseconds()))
+	hr.Client.Disconnect(uint(timeout.Milliseconds()))
 }
 
 func (hr *homieMeter) publishMeter(descriptor meters.DeviceDescriptor) {

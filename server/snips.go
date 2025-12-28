@@ -37,7 +37,7 @@ func (q *QuerySnip) MarshalJSON() ([]byte, error) {
 		Device:      q.Device,
 		Value:       q.Value,
 		IEC61850:    q.Measurement.String(),
-		Description: q.Measurement.Description(),
+		Description: q.Description(),
 		Timestamp:   q.Timestamp.UnixNano() / 1e6,
 	})
 }

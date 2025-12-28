@@ -12,14 +12,14 @@ type DDMProducer struct {
 
 func NewDDMProducer() Producer {
 	ops := Opcodes{
-		Voltage:         0x0000,
-		Current:         0x0008,
-		Power:           0x0012,
-		ReactivePower:   0x001A,
-		Cosphi:          0x002A,
-		Frequency:       0x0036,
-		Sum:             0x0100,
-		ReactiveSum:     0x0400,
+		Voltage:       0x0000,
+		Current:       0x0008,
+		Power:         0x0012,
+		ReactivePower: 0x001A,
+		Cosphi:        0x002A,
+		Frequency:     0x0036,
+		Sum:           0x0100,
+		ReactiveSum:   0x0400,
 	}
 	return &DDMProducer{Opcodes: ops}
 }
