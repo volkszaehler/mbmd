@@ -13,7 +13,7 @@ type MeasurementResult struct {
 }
 
 func (r MeasurementResult) String() string {
-	_, unit := r.Measurement.DescriptionAndUnit()
+	_, unit := r.DescriptionAndUnit()
 	return fmt.Sprintf("%s: %.2f%s", r.Measurement.String(), r.Value, unit)
 }
 
