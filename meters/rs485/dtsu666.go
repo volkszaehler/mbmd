@@ -13,13 +13,22 @@ type DTSU666Producer struct {
 }
 
 func NewDTSU666Producer() Producer {
-	// docs: https://www.chintglobal.com/content/dam/chint/global/product-center/instruments-meters/electricity-meter/din-rail-meter/dtsu666/manual/DTSU666%20DSSU666%20User%20Manual.pdf
+	/***
+	 * Opcodes as defined by Chint DTSU666.
+	 * https://www.chintglobal.com/content/dam/chint/global/product-center/instruments-meters/electricity-meter/din-rail-meter/dtsu666/manual/DTSU666%20DSSU666%20User%20Manual.pdf
+	 */
 	ops := Opcodes{
 		Import:          0x101E,
+		ImportL1:        0x1020,
+		ImportL2:        0x1022,
+		ImportL3:        0x1024,
 		Export:          0x1028,
-		VoltageL1:       0x2000,
-		VoltageL2:       0x2002,
-		VoltageL3:       0x2004,
+		ExportL1:        0x102A,
+		ExportL2:        0x102C,
+		ExportL3:        0x102E,
+		VoltageL1:       0x2006,
+		VoltageL2:       0x2008,
+		VoltageL3:       0x200A,
 		CurrentL1:       0x200C,
 		CurrentL2:       0x200E,
 		CurrentL3:       0x2010,
@@ -37,6 +46,7 @@ func NewDTSU666Producer() Producer {
 		CosphiL3:        0x2030, // power factor, not cosine phi
 		Frequency:       0x2044,
 	}
+
 	return &DTSU666Producer{Opcodes: ops}
 }
 
@@ -87,7 +97,8 @@ func (p *DTSU666Producer) Produce() (res []Operation) {
 	}
 
 	for _, op := range []Measurement{
-		Import, Export,
+		Import, ImportL1, ImportL2, ImportL3,
+		Export, ExportL1, ExportL2, ExportL3,
 	} {
 		res = append(res, p.snip(op, 1))
 	}
