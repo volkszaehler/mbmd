@@ -16,10 +16,10 @@ func NewSDM72Producer() Producer {
 	 * See https://data.stromzähler.eu/eastron/SDM72DM-manual.pdf
 	 */
 	ops := Opcodes{
-		Power:  0x0034,
-		Import: 0x0048,
-		Export: 0x004a,
-		Sum:    0x0156,
+		Power:  0x0034, // Total system power
+		Import: 0x0048, // Total Import kWh
+		Export: 0x004A, // Total Export kWh
+		Sum:    0x0156, // Total kWh
 	}
 	return &SDM72Producer{Opcodes: ops}
 }
