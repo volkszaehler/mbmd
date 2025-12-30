@@ -57,18 +57,18 @@ func NewSDM54Producer() Producer {
 		SumL1:            0x0166, // L1 total kWh
 		SumL2:            0x0168, // L2 total kWh
 		SumL3:            0x016A, // L3 total kWh
-		SumT1:            0x130C,
-		SumT2:            0x130E,
-		ImportT1:         0x1314,
-		ImportT2:         0x1316,
-		ExportT1:         0x131C,
-		ExportT2:         0x131E,
-		ReactiveSumT1:    0x1324,
-		ReactiveSumT2:    0x1326,
-		ReactiveImportT1: 0x132C,
-		ReactiveImportT2: 0x132E,
-		ReactiveExportT1: 0x1334,
-		ReactiveExportT2: 0x1336,
+		SumT1:            0x130C, // Tariff 1 total kWh
+		SumT2:            0x130E, // Tariff 2 total kWh
+		ImportT1:         0x1314, // Tariff 1 import kWh
+		ImportT2:         0x1316, // Tariff 2 import kWh
+		ExportT1:         0x131C, // Tariff 1 export kWh
+		ExportT2:         0x131E, // Tariff 2 export kWh
+		ReactiveSumT1:    0x1324, // Tariff 1 total kVArh
+		ReactiveSumT2:    0x1326, // Tariff 2 total kVArh
+		ReactiveImportT1: 0x132C, // Tariff 1 import kVArh
+		ReactiveImportT2: 0x132E, // Tariff 2 import kVArh
+		ReactiveExportT1: 0x1334, // Tariff 1 export kVArh
+		ReactiveExportT2: 0x1336, // Tariff 2 export kVArh
 	}
 	return &SDM54Producer{Opcodes: ops}
 }
