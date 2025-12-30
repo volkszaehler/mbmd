@@ -2,6 +2,8 @@ package rs485
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/volkszaehler/mbmd/meters"
 )
@@ -21,6 +23,9 @@ type Producer interface {
 	// Type returns device description, typically static
 	Description() string
 
+	// Measurements returns the defined device readings
+	Measurements() []meters.Measurement
+
 	// Produce creates a slice of possible device operations
 	Produce() []Operation
 
@@ -33,10 +38,14 @@ type Producer interface {
 type Opcodes map[meters.Measurement]uint16
 
 // Opcode returns physical register for measurement type
-func (o *Opcodes) Opcode(iec meters.Measurement) uint16 {
-	if opcode, ok := (*o)[iec]; ok {
+func (o Opcodes) Opcode(iec meters.Measurement) uint16 {
+	if opcode, ok := (o)[iec]; ok {
 		return opcode
 	}
 
 	panic(fmt.Sprintf("Undefined opcode for measurement %s", iec.String()))
+}
+
+func (o Opcodes) Measurements() []meters.Measurement {
+	return slices.Collect(maps.Keys(o))
 }
