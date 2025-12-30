@@ -33,10 +33,12 @@ mbmd run [flags]
                                          PAC2200   Siemens PAC2200
                                          SBC       Saia Burgess Controls ALE3 meters
                                          SDM       Eastron SDM630
+                                         SDM120    Eastron SDM120
                                          SDM220    Eastron SDM220
                                          SDM230    Eastron SDM230
                                          SDM54     Eastron SDM54
                                          SDM72     Eastron SDM72
+                                         SDM72V2   Eastron SDM72 v2
                                          SEMTR     SolarEdge SE-MTR-3Y
                                          WAGO87930 Wago 879-30XX
                                          WS100     B+G e-tech WS100
