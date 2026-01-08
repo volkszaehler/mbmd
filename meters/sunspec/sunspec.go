@@ -59,19 +59,38 @@ func DeviceTree(client modbus.Client) ([]sunspec.Device, error) {
 }
 
 // NewDevice creates a Sunspec device
-func NewDevice(meterType string, subdevice ...int) *SunSpec {
-	var dev int
-	if len(subdevice) > 0 {
-		dev = subdevice[0]
-	}
+func NewDevice(meterType string, subdevice int) meters.Device {
+	// Handle special device types
+	meterType = strings.ToUpper(meterType)
 
-	return &SunSpec{
-		subdevice: dev,
-		descriptor: meters.DeviceDescriptor{
-			Type:         meterType,
-			Manufacturer: meterType,
-			SubDevice:    dev,
-		},
+	// Special device types
+	switch meterType {
+	case "SE-BAT", "SOLAREDGE-BAT", "SE-BATTERY", "SOLAREDGE-BATTERY":
+		return NewSolarEdgeBatteryDevice(subdevice)
+	case "FRONIUS":
+		return NewFroniusDevice(subdevice)
+	case "KOSTAL":
+		return NewKostalDevice(subdevice)
+	case "KACO":
+		return NewKacoDevice(subdevice)
+	case "SE", "SOLAREDGE":
+		return NewSolarEdgeDevice(subdevice)
+	case "SMA":
+		return NewSMADevice(subdevice)
+	case "STECA":
+		return NewStecaDevice(subdevice)
+	case "SUNS", "SUNSPEC":
+		return NewSunSpecDevice(subdevice)
+	default:
+		// Default SunSpec device
+		return &SunSpec{
+			subdevice: subdevice,
+			descriptor: meters.DeviceDescriptor{
+				Type:         meterType,
+				Manufacturer: meterType,
+				SubDevice:    subdevice,
+			},
+		}
 	}
 }
 
@@ -373,4 +392,98 @@ func (d *SunSpec) Query(client modbus.Client) (res []meters.MeasurementResult, e
 	}
 
 	return res, nil
+}
+
+// Add the required device constructors for supported devices
+// These were referenced in the NewDevice function
+
+// NewFroniusDevice creates a Fronius device
+func NewFroniusDevice(subdevice int) *SunSpec {
+	return &SunSpec{
+		subdevice: subdevice,
+		descriptor: meters.DeviceDescriptor{
+			Type:         "FRONIUS",
+			Manufacturer: "Fronius",
+			Model:        "Generic",
+			SubDevice:    subdevice,
+		},
+	}
+}
+
+// NewKostalDevice creates a Kostal device
+func NewKostalDevice(subdevice int) *SunSpec {
+	return &SunSpec{
+		subdevice: subdevice,
+		descriptor: meters.DeviceDescriptor{
+			Type:         "KOSTAL",
+			Manufacturer: "Kostal",
+			Model:        "Generic",
+			SubDevice:    subdevice,
+		},
+	}
+}
+
+// NewKacoDevice creates a Kaco device
+func NewKacoDevice(subdevice int) *SunSpec {
+	return &SunSpec{
+		subdevice: subdevice,
+		descriptor: meters.DeviceDescriptor{
+			Type:         "KACO",
+			Manufacturer: "Kaco",
+			Model:        "Generic",
+			SubDevice:    subdevice,
+		},
+	}
+}
+
+// NewSolarEdgeDevice creates a SolarEdge device
+func NewSolarEdgeDevice(subdevice int) *SunSpec {
+	return &SunSpec{
+		subdevice: subdevice,
+		descriptor: meters.DeviceDescriptor{
+			Type:         "SOLAREDGE",
+			Manufacturer: "SolarEdge",
+			Model:        "Generic",
+			SubDevice:    subdevice,
+		},
+	}
+}
+
+// NewSMADevice creates a SMA device
+func NewSMADevice(subdevice int) *SunSpec {
+	return &SunSpec{
+		subdevice: subdevice,
+		descriptor: meters.DeviceDescriptor{
+			Type:         "SMA",
+			Manufacturer: "SMA",
+			Model:        "Generic",
+			SubDevice:    subdevice,
+		},
+	}
+}
+
+// NewStecaDevice creates a Steca device
+func NewStecaDevice(subdevice int) *SunSpec {
+	return &SunSpec{
+		subdevice: subdevice,
+		descriptor: meters.DeviceDescriptor{
+			Type:         "STECA",
+			Manufacturer: "Steca",
+			Model:        "Generic",
+			SubDevice:    subdevice,
+		},
+	}
+}
+
+// NewSunSpecDevice creates a generic SunSpec device
+func NewSunSpecDevice(subdevice int) *SunSpec {
+	return &SunSpec{
+		subdevice: subdevice,
+		descriptor: meters.DeviceDescriptor{
+			Type:         "SUNSPEC",
+			Manufacturer: "SunSpec",
+			Model:        "Generic",
+			SubDevice:    subdevice,
+		},
+	}
 }
