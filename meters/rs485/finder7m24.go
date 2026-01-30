@@ -3,7 +3,7 @@ package rs485
 import . "github.com/volkszaehler/mbmd/meters"
 
 func init() {
-	Register("FINDER7M24", NewFinder7M24Producer)
+	Register("FIND7M24", NewFinder7M24Producer)
 }
 
 type Finder7M24Producer struct {
