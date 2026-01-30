@@ -21,37 +21,37 @@ func NewFinder7M38Producer() Producer {
 	 * All values are IEEE 754 Float (32-bit, 2 registers)
 	 */
 	ops := Opcodes{
-		VoltageL1:       2500, // Phase 1 line to neutral volts
-		VoltageL2:       2502, // Phase 2 line to neutral volts
-		VoltageL3:       2504, // Phase 3 line to neutral volts
-		CurrentL1:       2516, // Phase 1 current
-		CurrentL2:       2518, // Phase 2 current
-		CurrentL3:       2520, // Phase 3 current
-		PowerL1:         2530, // Phase 1 active power
-		PowerL2:         2532, // Phase 2 active power
-		PowerL3:         2534, // Phase 3 active power
-		Power:           2536, // Total system power
-		ReactivePowerL1: 2538, // Phase 1 reactive power
-		ReactivePowerL2: 2540, // Phase 2 reactive power
-		ReactivePowerL3: 2542, // Phase 3 reactive power
-		ReactivePower:   2544, // Total system VAr
-		ApparentPowerL1: 2546, // Phase 1 apparent power
-		ApparentPowerL2: 2548, // Phase 2 apparent power
-		ApparentPowerL3: 2550, // Phase 3 apparent power
-		ApparentPower:   2552, // Total system volt amps.
-		CosphiL1:        2554, // Phase 1 power factor
-		CosphiL2:        2556, // Phase 2 power factor
-		CosphiL3:        2558, // Phase 3 power factor
-		Cosphi:          2560, // Total system power factor
-		PhaseAngle:      2576, // Total system phase angle
-		Frequency:       2584, // Frequency of supply voltages
-		THDL1:           2594, // Phase 1 L/N volts THD
-		THDL2:           2596, // Phase 2 L/N volts THD
-		THDL3:           2598, // Phase 3 L/N volts THD
-		Import:          2752, // Total Import kWh
-		ReactiveImport:  2754, // Total Import kVArh
-		Export:          2756, // Total Export kWh
-		ReactiveExport:  2758, // Total Export kVArh
+		VoltageL1:       2500,
+		VoltageL2:       2502,
+		VoltageL3:       2504,
+		CurrentL1:       2516,
+		CurrentL2:       2518,
+		CurrentL3:       2520,
+		PowerL1:         2530,
+		PowerL2:         2532,
+		PowerL3:         2534,
+		Power:           2536,
+		ReactivePowerL1: 2538,
+		ReactivePowerL2: 2540,
+		ReactivePowerL3: 2542,
+		ReactivePower:   2544,
+		ApparentPowerL1: 2546,
+		ApparentPowerL2: 2548,
+		ApparentPowerL3: 2550,
+		ApparentPower:   2552,
+		CosphiL1:        2554,
+		CosphiL2:        2556,
+		CosphiL3:        2558,
+		Cosphi:          2560,
+		PhaseAngle:      2576,
+		Frequency:       2584,
+		THDL1:           2594,
+		THDL2:           2596,
+		THDL3:           2598,
+		Import:          2752,
+		ReactiveImport:  2754,
+		Export:          2756,
+		ReactiveExport:  2758,
 	}
 
 	return &Finder7M38Producer{Opcodes: ops}
