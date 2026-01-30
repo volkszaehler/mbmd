@@ -77,7 +77,7 @@ func (p *Finder7M38Producer) snip(iec Measurement, readlen uint16, transform RTU
 func (p *Finder7M38Producer) snip32(iec Measurement, scaler ...float64) Operation {
 	transform := RTUIeee754ToFloat64
 	if len(scaler) > 0 {
-		transform = MakeScaledTransform(RTUUint32ToFloat64, scaler[0])
+		transform = MakeScaledTransform(RTUIeee754ToFloat64, scaler[0])
 	}
 	return p.snip(iec, 2, transform)
 }
