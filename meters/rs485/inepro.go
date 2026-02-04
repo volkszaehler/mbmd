@@ -84,6 +84,8 @@ func NewIneproProducer() Producer {
 		ReactiveExportL1: 0x6042,
 		ReactiveExportL2: 0x6044,
 		ReactiveExportL3: 0x6046,
+
+		Tariff: 0x6048,
 	}
 	return &IneproProducer{Opcodes: ops}
 }
@@ -109,6 +111,18 @@ func (p *IneproProducer) snip(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
+func (p *IneproProducer) snip16(iec Measurement) Operation {
+	snip := Operation{
+		FuncCode:  ReadHoldingReg,
+		OpCode:    p.Opcodes[iec],
+		ReadLen:   1,
+		IEC61850:  iec,
+		Transform: RTUInt16ToFloat64,
+	}
+
+	return snip
+}
+
 // Probe implements Producer interface
 func (p *IneproProducer) Probe() Operation {
 	return p.snip(VoltageL1)
@@ -122,6 +136,8 @@ func (p *IneproProducer) Produce() (res []Operation) {
 			ReactivePower, ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
 			ApparentPower, ApparentPowerL1, ApparentPowerL2, ApparentPowerL3:
 			res = append(res, p.snip(op, 0.001))
+		case Tariff:
+			res = append(res, p.snip16(op))
 		default:
 			res = append(res, p.snip(op))
 		}
