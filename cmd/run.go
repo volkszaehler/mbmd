@@ -259,7 +259,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// query engine
-	qe := server.NewQueryEngine(confHandler.Managers)
+	qe := server.NewQueryEngine(confHandler.Managers, confHandler.Names)
 
 	// results- and control channels
 	rc := make(chan server.QuerySnip)
