@@ -79,7 +79,7 @@ func scan(cmd *cobra.Command, args []string) {
 	// create devices
 	devices := make([]meters.Device, 0)
 	if _, ok := conn.(*meters.TCP); ok {
-		suns := sunspec.NewDevice("SUNS")
+		suns := sunspec.NewDevice("SUNS", 0) // Pass 0 as the default subdevice
 		devices = append(devices, suns)
 	} else {
 		for t := range rs485.Producers {

@@ -126,7 +126,8 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 	meterType = strings.ToUpper(meterType)
 
 	var isSunspec bool
-	sunspecTypes := []string{"FRONIUS", "KOSTAL", "KACO", "SE", "SMA", "SOLAREDGE", "STECA", "SUNS", "SUNSPEC"}
+	// Modify this line to add the battery device types:
+	sunspecTypes := []string{"FRONIUS", "KOSTAL", "KACO", "SE", "SMA", "SOLAREDGE", "STECA", "SUNS", "SUNSPEC", "SE-BAT", "SOLAREDGE-BAT", "SE-BATTERY", "SOLAREDGE-BATTERY"}
 	for _, t := range sunspecTypes {
 		if t == meterType {
 			isSunspec = true
