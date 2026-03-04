@@ -49,6 +49,8 @@ mbmd run [flags]
                                          X961A     Eastron SMART X96-1A
                                        TCP
                                          SUNS      Sunspec-compatible MODBUS TCP device (SMA, SolarEdge, KOSTAL, etc)
+                                       UDP
+                                         VM3P      Victron VM-3P75CT/VM-3P5A
                                      To use an adapter different from default, append RTU device or TCP address separated by @.
                                      If the adapter is a TCP connection (identified by :port), the device type (SUNS) is ignored and
                                      any type is considered valid.
@@ -87,6 +89,9 @@ mbmd run [flags]
                            Typically used with RS485 to Ethernet adapters that don't perform protocol conversion (e.g. USR-TCP232).
                            Only applicable if the default adapter is a TCP connection
       --timeout duration   Timeout for MODBUS communication (default 300ms)
+      --udp                Use RTU over UDP for default adapter.
+                           Applicable for devices that use Modbus/UDP (e.g. Victron VM-3P75CT, VM-3P5A).
+                           Only applicable if the default adapter is a UDP address
   -v, --verbose            Verbose mode
 ```
 
