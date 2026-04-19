@@ -184,7 +184,7 @@ func checkVersion() {
 }
 
 // validate surplus config
-func validateRemainingKeys(cmd *cobra.Command, other map[string]interface{}) {
+func validateRemainingKeys(cmd *cobra.Command, other map[string]any) {
 	flags := cmd.PersistentFlags()
 
 	invalid := make([]string, 0)

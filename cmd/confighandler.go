@@ -21,7 +21,7 @@ type Config struct {
 	Influx   InfluxConfig
 	Adapters []AdapterConfig
 	Devices  []DeviceConfig
-	Other    map[string]interface{} `mapstructure:",remain"`
+	Other    map[string]any `mapstructure:",remain"`
 }
 
 // MqttConfig describes the mqtt broker configuration

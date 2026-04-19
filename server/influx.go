@@ -62,7 +62,7 @@ func (m *Influx) Run(in <-chan QuerySnip) {
 			"type":   snip.Measurement.String(),
 		}
 
-		fields := map[string]interface{}{
+		fields := map[string]any{
 			"value": snip.Value,
 		}
 
