@@ -196,9 +196,14 @@ func readFunction(client modbus.Client, typ string) (f func(address, quantity ui
 }
 
 func parseArgs(args []string) (int, int) {
-	register, err := strconv.Atoi(args[0])
+	register, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
-		log.Fatal("Invalid register number")
+		if after, ok := strings.CutPrefix(args[0], "0x"); ok {
+			register, err = strconv.ParseInt(after, 16, 64)
+		}
+		if err != nil {
+			log.Fatal("Invalid register number", err)
+		}
 	}
 
 	length, err := strconv.Atoi(args[1])
@@ -206,7 +211,7 @@ func parseArgs(args []string) (int, int) {
 		log.Fatal("Invalid length")
 	}
 
-	return register, length
+	return int(register), length
 }
 
 func validateFlags(typ, encoding string) {
