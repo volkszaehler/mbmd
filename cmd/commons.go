@@ -60,6 +60,14 @@ func meterHelp() string {
 	s += fmt.Sprintf("\n  %s", "TCP")
 	s += fmt.Sprintf("\n    %-10s%s", "SUNS", "Sunspec-compatible MODBUS TCP device (SMA, SolarEdge, KOSTAL, etc)")
 
+	s += fmt.Sprintf("\n  %s", "UDP")
+	udpTypes := []string{"VM3P"}
+	for _, t := range udpTypes {
+		if p, ok := rs485.Producers[t]; ok {
+			s += fmt.Sprintf("\n    %-10s%s", t, p().Description())
+		}
+	}
+
 	return s
 }
 

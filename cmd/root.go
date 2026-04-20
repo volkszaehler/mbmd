@@ -66,6 +66,13 @@ Only applicable if the default adapter is an RTU device`,
 Typically used with RS485 to Ethernet adapters that don't perform protocol conversion (e.g. USR-TCP232).
 Only applicable if the default adapter is a TCP connection`,
 	)
+	rootCmd.PersistentFlags().Bool(
+		"udp",
+		false,
+		`Use RTU over UDP for default adapter.
+Applicable for devices that use Modbus/UDP (e.g. Victron VM-3P75CT, VM-3P5A).
+Only applicable if the default adapter is a UDP address`,
+	)
 	rootCmd.PersistentFlags().BoolP(
 		"help", "h",
 		false,
