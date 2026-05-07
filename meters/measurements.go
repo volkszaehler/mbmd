@@ -142,8 +142,22 @@ const (
 	// Battery
 	ChargeState
 	BatteryVoltage
-
 	PhaseAngle
+
+	// Battery specific measurements
+	BatterySOH              // State of Health
+	BatterySOC              // State of Charge
+	BatteryTemperature      // Battery temperature
+	BatteryCurrent          // Battery current
+	BatteryPower            // Battery power
+	BatteryStatus           // Battery status code
+	BatteryCriticalFault    // Battery critical fault
+	BatteryWarningFault     // Battery warning fault
+	BatteryAlertFault       // Battery alert fault
+	BatteryRatedCapacity    // Battery rated capacity
+	BatteryMaxPowerCharge   // Battery max charge power
+	BatteryMaxPowerDischarge // Battery max discharge power
+	BatteryAvailableEnergy  // Battery available energy
 )
 
 var iec = map[Measurement][]string{
@@ -243,6 +257,21 @@ var iec = map[Measurement][]string{
 	ChargeState:      {"Charge State", "%"},
 	BatteryVoltage:   {"Battery Voltage", "V"},
 	PhaseAngle:       {"Phase Angle", "°"},
+
+	// Battery specific measurements
+	BatterySOH:              {"Battery State of Health", "%"},
+	BatterySOC:              {"Battery State of Charge", "%"},
+	BatteryTemperature:      {"Battery Temperature", "°C"},
+	BatteryCurrent:          {"Battery Current", "A"},
+	BatteryPower:            {"Battery Power", "W"},
+	BatteryStatus:           {"Battery Status", ""},
+	BatteryCriticalFault:    {"Battery Critical Fault", ""},
+	BatteryWarningFault:     {"Battery Warning Fault", ""},
+	BatteryAlertFault:       {"Battery Alert Fault", ""},
+	BatteryRatedCapacity:    {"Battery Rated Capacity", "kWh"},
+	BatteryMaxPowerCharge:   {"Battery Max Power Charge", "W"},
+	BatteryMaxPowerDischarge: {"Battery Max Power Discharge", "W"},
+	BatteryAvailableEnergy:  {"Battery Available Energy", "kWh"},
 }
 
 // MarshalText implements encoding.TextMarshaler
