@@ -1,10 +1,10 @@
 module github.com/volkszaehler/mbmd
 
-go 1.24.0
+go 1.24.1
 
 require (
 	github.com/andig/gosunspec v0.0.0-20240918203654-860ce51d602b
-	github.com/dmarkham/enumer v1.6.1
+	github.com/dmarkham/enumer v1.6.3
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
