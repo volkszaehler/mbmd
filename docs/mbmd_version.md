@@ -22,6 +22,9 @@ mbmd version [flags]
                            Typically used with RS485 to Ethernet adapters that don't perform protocol conversion (e.g. USR-TCP232).
                            Only applicable if the default adapter is a TCP connection
       --timeout duration   Timeout for MODBUS communication (default 300ms)
+      --udp                Use RTU over UDP for default adapter.
+                           Applicable for devices that use Modbus/UDP (e.g. Victron VM-3P75CT, VM-3P5A).
+                           Only applicable if the default adapter is a UDP address
   -v, --verbose            Verbose mode
 ```
 
