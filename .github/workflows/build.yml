@@ -45,6 +45,12 @@ jobs:
           cache: true
         id: go
 
+      - name: Install tools
+        run: make install
+
+      - name: Assets
+        run: make assets
+
       - name: Build
         run: make build
 
@@ -63,6 +69,12 @@ jobs:
           go-version-file: go.mod
           cache: true
         id: go
+
+      - name: Install tools
+        run: make install
+
+      - name: Assets
+        run: make assets
 
       - name: Lint
         uses: golangci/golangci-lint-action@v9
