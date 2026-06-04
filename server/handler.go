@@ -7,7 +7,8 @@ import (
 	"log"
 	"math"
 	"time"
-
+	"regexp"
+    "strings"
 	"github.com/volkszaehler/mbmd/meters"
 )
 
@@ -17,33 +18,51 @@ const (
 	initDelay  = 3 * time.Second
 )
 
+type NameMap map[string]map[uint8]map[int]string
+
+func sanitizeName(s string) string {
+    s = strings.TrimSpace(s)
+    s = strings.ReplaceAll(s, " ", "_")
+    re := regexp.MustCompile(`[^A-Za-z0-9_-]+`)
+    return re.ReplaceAllString(s, "_")
+}
+
 // Handler is responsible for querying a single connection
 type Handler struct {
-	ID      int
-	Manager *meters.Manager
-	status  map[string]*RuntimeInfo
+    Conn    string
+    ID      int
+    Manager *meters.Manager
+    status  map[string]*RuntimeInfo
+    names   NameMap
 }
 
 // NewHandler creates a connection handler. The handler is responsible
 // for querying all devices attached to the connection.
-func NewHandler(id int, m *meters.Manager) *Handler {
-	handler := &Handler{
-		ID:      id,
-		Manager: m,
-		status:  make(map[string]*RuntimeInfo),
-	}
-
-	return handler
+func NewHandler(conn string, id int, m *meters.Manager, names NameMap) *Handler {
+    return &Handler{
+        Conn:    conn,
+        ID:      id,
+        Manager: m,
+        status:  make(map[string]*RuntimeInfo),
+        names:   names,
+    }
 }
 
 // deviceID creates a unique id per device
 func (h *Handler) deviceID(id uint8, dev meters.Device) string {
-	desc := dev.Descriptor()
-	devID := fmt.Sprintf("%s%d.%d", desc.Type, h.ID, id)
-	if desc.SubDevice > 0 {
-		devID = fmt.Sprintf("%s.%d", devID, desc.SubDevice)
-	}
-	return devID
+    desc := dev.Descriptor()
+    devID := fmt.Sprintf("%s%d.%d", desc.Type, h.ID, id)
+    if desc.SubDevice > 0 {
+        devID = fmt.Sprintf("%s.%d", devID, desc.SubDevice)
+    }
+    if sub1, ok := h.names[h.Conn]; ok {
+        if sub2, ok2 := sub1[id]; ok2 {
+            if name, ok3 := sub2[desc.SubDevice]; ok3 && name != "" {
+                return sanitizeName(name)
+            }
+        }
+    }
+    return devID
 }
 
 // Run initializes and queries every device attached to the handler's connection
