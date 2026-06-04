@@ -16,7 +16,7 @@ import (
 	sunspec "github.com/andig/gosunspec"
 	bus "github.com/andig/gosunspec/modbus"
 	_ "github.com/andig/gosunspec/models" // import models
-	"github.com/andig/gosunspec/smdx"
+	"github.com/andig/gosunspec/types"
 )
 
 // inspectCmd represents the inspect command
@@ -104,14 +104,14 @@ func scanSunspec(client modbus.Client) {
 }
 
 func modelName(m sunspec.Model) string {
-	model := smdx.GetModel(uint16(m.Id()))
+	model := types.GetModel(uint16(m.Id()))
 	if model == nil {
 		return ""
 	}
 	return model.Name
 }
 
-func printModel(m *smdx.ModelElement) {
+func printModel(m *types.Model) {
 	pf("-- Definition --")
 	// pf("----")
 	// pf("Model:  %d - %s", m.Id, m.Name)
