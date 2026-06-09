@@ -47,13 +47,18 @@ func (p *JanitzaProducer) Description() string {
 	return "Janitza B-Series meters"
 }
 
-func (p *JanitzaProducer) snip(iec Measurement) Operation {
+func (p *JanitzaProducer) snip(iec Measurement, scaler ...float64) Operation {
+	transform := RTUIeee754ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		transform = MakeScaledTransform(transform, scaler[0])
+	}
+
 	snip := Operation{
 		FuncCode:  ReadHoldingReg,
 		OpCode:    p.Opcode(iec),
 		ReadLen:   2,
 		IEC61850:  iec,
-		Transform: RTUIeee754ToFloat64,
+		Transform: transform,
 	}
 	return snip
 }
@@ -66,7 +71,14 @@ func (p *JanitzaProducer) Probe() Operation {
 // Produce implements Producer interface
 func (p *JanitzaProducer) Produce() (res []Operation) {
 	for op := range p.Opcodes {
-		res = append(res, p.snip(op))
+		switch op {
+		case ImportL1, ImportL2, ImportL3, Import,
+			ExportL1, ExportL2, ExportL3, Export:
+			// energy registers report Wh
+			res = append(res, p.snip(op, 1000)) // Wh -> kWh
+		default:
+			res = append(res, p.snip(op))
+		}
 	}
 
 	return res
