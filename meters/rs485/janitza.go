@@ -70,16 +70,13 @@ func (p *JanitzaProducer) Probe() Operation {
 
 // Produce implements Producer interface
 func (p *JanitzaProducer) Produce() (res []Operation) {
-	// energy registers report Wh and need scaling to kWh
-	energy := map[Measurement]bool{
-		ImportL1: true, ImportL2: true, ImportL3: true, Import: true,
-		ExportL1: true, ExportL2: true, ExportL3: true, Export: true,
-	}
-
 	for op := range p.Opcodes {
-		if energy[op] {
+		switch op {
+		case ImportL1, ImportL2, ImportL3, Import,
+			ExportL1, ExportL2, ExportL3, Export:
+			// energy registers report Wh
 			res = append(res, p.snip(op, 1000)) // Wh -> kWh
-		} else {
+		default:
 			res = append(res, p.snip(op))
 		}
 	}
