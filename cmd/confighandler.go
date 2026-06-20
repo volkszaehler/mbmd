@@ -50,6 +50,7 @@ type InfluxConfig struct {
 type AdapterConfig struct {
 	Device   string
 	RTU      bool
+	UDP      bool
 	Baudrate int
 	Comset   string
 }
@@ -77,12 +78,16 @@ func NewDeviceConfigHandler() *DeviceConfigHandler {
 	return conf
 }
 
-// createConnection parses adapter string to create TCP or RTU connection
-func createConnection(device string, rtu bool, baudrate int, comset string, timeout time.Duration) (res meters.Connection) {
+// createConnection parses adapter string to create TCP, UDP or RTU connection
+func createConnection(device string, rtu bool, udp bool, baudrate int, comset string, timeout time.Duration) (res meters.Connection) {
 	if device == "mock" {
 		res = meters.NewMock(device) // mocked connection
 	} else if tcp, _ := regexp.MatchString(":[0-9]+$", device); tcp {
-		if rtu {
+		if udp {
+			// special case: RTU over UDP
+			log.Printf("config: creating RTU over UDP connection for %s", device)
+			res = meters.NewRTUOverUDP(device) // udp connection
+		} else if rtu {
 			// special case: RTU over TCP
 			log.Printf("config: creating RTU over TCP connection for %s", device)
 			res = meters.NewRTUOverTCP(device) // tcp connection
@@ -106,10 +111,10 @@ func createConnection(device string, rtu bool, baudrate int, comset string, time
 }
 
 // ConnectionManager returns connection manager from cache or creates new connection wrapped by manager
-func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, baudrate int, comset string, timeout time.Duration) *meters.Manager {
+func (conf *DeviceConfigHandler) ConnectionManager(connSpec string, rtu bool, udp bool, baudrate int, comset string, timeout time.Duration) *meters.Manager {
 	manager, ok := conf.Managers[connSpec]
 	if !ok {
-		conn := createConnection(connSpec, rtu, baudrate, comset, timeout)
+		conn := createConnection(connSpec, rtu, udp, baudrate, comset, timeout)
 		manager = meters.NewManager(conn)
 		conf.Managers[connSpec] = manager
 	}
@@ -222,9 +227,9 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout 
 		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
 
-	// If this is an RTU over TCP device, a default RTU over TCP should already
-	// have been created of the --rtu flag was specified. We'll not re-check this here.
-	manager := conf.ConnectionManager(connSpec, false, 0, "", timeout)
+	// If this is an RTU over TCP/UDP device, a default connection should already
+	// have been created if the --rtu or --udp flag was specified. We'll not re-check this here.
+	manager := conf.ConnectionManager(connSpec, false, false, 0, "", timeout)
 
 	meter := conf.createDeviceForManager(manager, meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {
