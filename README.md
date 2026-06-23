@@ -241,6 +241,7 @@ manuals for definitive guidance):
 |---|---|---|---|---|---|---|---|---|---|
 | EM24 | 3 | + | + | + | + | + | + |  +/- | - |
 | EM24_E1 | 3 | + | + | + | + | + | + | +/- | - |
+| Eltako DSZ15DZMOD/DSZ16 | 3 | + | + | + | + | + | + | - | - |
 | SDM54 | 3 | + | + | + | + | + | + | + | + |
 | SDM72 | 3 | - | - | + | - | + | + | - | - |
 | SDM120/220 | 1 | + | + | + | + | + | + | - | - |
@@ -263,6 +264,7 @@ manuals for definitive guidance):
 
 - **EM24**: Compact (4TE), 3P meter with RS-485 interface.
 - **EM24_E1**: Compact (4TE), 3P meter with Ethernet interface.
+- **Eltako DSZ15DZMOD/DSZ16**: Bidirectional 3P MID meters with Modbus RTU.
 - **SDM54**: Compact (3TE), 3P meter with a lot of features. Can be configured using the builtin display.
 - **SDM72**: Compact (4TE), 3P meter with bare minium of total measurements, no currents. Can be configured using the builtin display.
 - **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
@@ -301,7 +303,6 @@ WE-517 has a lithium battery and multi-tariff support, WE-516 does not support t
 - **B+G e-tech DS100**: Looks to be similar potent as SDM630 if not better, very cheap in Germany (below 50€)
 Able to set higher Baudrate than SDM630 so measurements can be taken more often.
 There is also a MID Version and Multi Traif ("-30B") Version.
-(https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)
 
 ## Modbus TCP Grid Inverters
 
