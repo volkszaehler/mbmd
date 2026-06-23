@@ -260,6 +260,7 @@ manuals for definitive guidance):
 | iEM3000 Series | 3 | + | + | + | + | + | + | (+) | + |
 | B+G e-tech WS100 | 1 | + | + | + | - | + | + | - | - |
 | B+G e-tech DS100 | 3 | + | + | + | + | + | + | + | + |
+| Eltako DSZ15DZMOD/DSZ16 | 3 | + | + | + | + | + | + | - | - |
 
 - **EM24**: Compact (4TE), 3P meter with RS-485 interface.
 - **EM24_E1**: Compact (4TE), 3P meter with Ethernet interface.
@@ -302,6 +303,14 @@ WE-517 has a lithium battery and multi-tariff support, WE-516 does not support t
 Able to set higher Baudrate than SDM630 so measurements can be taken more often.
 There is also a MID Version and Multi Traif ("-30B") Version.
 (https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)
+- **Eltako DSZ15DZMOD/DSZ16**: Bidirectional 3P MID meters with Modbus RTU.
+Use type code `ELTAKODSZ15` for the DSZ15DZMOD and `ELTAKODSZ16` for the DSZ16
+series; both share the same register layout (DSZ16 in its default integer data
+format). Defaults are 9600 8N1, meter ID configurable. Voltage, current, active
+power, power factor and total import/export energy are supported. The DSZ16's
+additional measurements (reactive/apparent power, frequency, per-phase energy)
+are not yet implemented as Eltako does not publish their register table.
+([DSZ15DZMOD Modbus spec](https://www.eltako.com/fileadmin/downloads/de/_bedienung/Modbus-RTU_protocol_specification_for_DSZ15DZMOD_V1.6_English_version.pdf))
 
 ## Modbus TCP Grid Inverters
 
