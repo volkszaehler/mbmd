@@ -277,46 +277,46 @@ Legend: `+` supported, `-` not available, `(+)` only one energy direction
 | SolarEdge SE-MTR-3Y | `SEMTR` | 3 | + | + | + | + | + | + | + | - |
 | Wago 879-30xx | `WAGO87930` | 3 | + | + | + | + | + | + | + | - |
 
-- **B+G e-tech DS100**: Looks to be similar potent as SDM630 if not better, very cheap in Germany (below 50€).
-Able to set higher Baudrate than SDM630 so measurements can be taken more often.
-There is also a MID Version and Multi Tariff ("-30B") Version.
-(https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)
+- **B+G e-tech DS100**: Similarly capable as the SDM630 if not better, and very cheap in Germany (below 50€).
+  It supports a higher baud rate than the SDM630, so measurements can be taken more often.
+  There is also a MID version and a multi-tariff ("-30B") version
+  ([manual](https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)).
 - **B+G e-tech WS100**: Cheap and small (1TE), 1P MID meter.
 - **Bernecker (BE) MPM3PM**: Compact (4TE) three phase meter.
 - **Carlo Gavazzi EM24**: Compact (4TE), 3P meter with RS-485 interface.
 - **Carlo Gavazzi EM24 E1**: Compact (4TE), 3P meter with Ethernet interface.
 - **DZG DVH4013**: This meter does not provide raw phase power measurements
-and only aggregated import/export measurements. The meter is only
-partially implemented and not recommended.
-By default, the meter communicates using 9600 8E1. The meter ID
-is derived from the serial number taking the last two numbers of the
-serial number (top right of the device), e.g. 23, and add one (24).
-Assume this is a hexadecimal number and convert it to decimal (36). Use
-this as the meter ID.
+  and only aggregated import/export measurements. The meter is only
+  partially implemented and not recommended.
+  By default, the meter communicates using 9600 8E1. The meter ID
+  is derived from the serial number taking the last two numbers of the
+  serial number (top right of the device), e.g. 23, and add one (24).
+  Assume this is a hexadecimal number and convert it to decimal (36). Use
+  this as the meter ID.
 - **Eastron SDM54**: Compact (3TE), 3P meter with a lot of features. Can be configured using the builtin display.
 - **Eastron SDM72**: Compact (4TE), 3P meter with bare minimum of total measurements, no currents. Can be configured using the builtin display.
 - **Eastron SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
-You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
+  You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
 - **Eastron SDM220/230**: More comfortable (2TE), can be configured using the builtin display.
 - **Eastron SDM630**: v1 and v2, both MID and non-MID. Compact (4TE) and with lots
-of features. Can be configured for 1P2 (single phase with neutral), 3P3
-(three phase without neutral) and 3P4 (three phase with neutral) systems.
+  of features. Can be configured for 1P2 (single phase with neutral), 3P3
+  (three phase without neutral) and 3P4 (three phase with neutral) systems.
 - **Eltako DSZ15DZMOD/DSZ16**: Bidirectional 3P MID meters with Modbus RTU. Voltage, current,
   power, power factor and total import/export energy are supported; the DSZ16's additional
   measurements (reactive/apparent power, frequency, per-phase energy) are not yet implemented
   ([Modbus spec](https://www.eltako.com/fileadmin/downloads/de/_bedienung/Modbus-RTU_protocol_specification_for_DSZ15DZMOD_V1.6_English_version.pdf)).
 - **Inepro Pro 380**: Compact (4TE) MID meter with extensive features.
-Can be connected 3P4W, 3P3W and 1P2W. Includes per-direction active/reactive energy consumption and supports two tariffs. Energy resolution is 2 digits per kWh.
+  Can be connected 3P4W, 3P3W and 1P2W. Includes per-direction active/reactive energy consumption and supports two tariffs. Energy resolution is 2 digits per kWh.
 - **Janitza B-Series**: These meters have a higher update rate than the Eastron
-devices, but they are more expensive. The B23-312 variant is the one with a MODBUS interface.
+  devices, but they are more expensive. The B23-312 variant is the one with a MODBUS interface.
 - **ORNO WE-504/514/515**: Low cost single phase meter.
-By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
-WE-515 has a lithium battery and multi-tariff support, WE-514 does not support tariff zones.
+  By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via [Software (Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar).
+  WE-515 has a lithium battery and multi-tariff support, WE-514 does not support tariff zones.
 - **ORNO WE-516/517**: Low cost three phase meter.
-By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
-WE-517 has a lithium battery and multi-tariff support, WE-516 does not support tariff zones.
+  By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via [Software (Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar).
+  WE-517 has a lithium battery and multi-tariff support, WE-516 does not support tariff zones.
 - **Saia Burgess (SBC) ALE3**: This compact Saia Burgess Controls meter is comparable to the SDM630.
-It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
+  It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
 - **Schneider Electric iEM3000**: Professional meter with loads of configurable max/average measurements with timestamp functionality.
 
 ## Modbus TCP Grid Inverters
