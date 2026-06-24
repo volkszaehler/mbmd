@@ -232,76 +232,92 @@ There is also the option to directly insert the data into an influxdb database b
 
 ## Modbus RTU Meters
 
-The meters have slightly different capabilities. The EASTRON SDM630 offers
-a lot of features, while the smaller devices only support basic
-features.  The table below gives an overview (please consult the
-manuals for definitive guidance):
+The meters have slightly different capabilities. The Eastron SDM630 offers
+a lot of features, while the smaller devices only support basic features.
+The table below gives an overview (please consult the manuals for definitive
+guidance). The **Type** column is the identifier passed to `-d <Type>:<id>`
+(case-insensitive).
 
-| Meter | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
-|---|---|---|---|---|---|---|---|---|---|
-| EM24 | 3 | + | + | + | + | + | + |  +/- | - |
-| EM24_E1 | 3 | + | + | + | + | + | + | +/- | - |
-| SDM54 | 3 | + | + | + | + | + | + | + | + |
-| SDM72 | 3 | - | - | + | - | + | + | - | - |
-| SDM120/220 | 1 | + | + | + | + | + | + | - | - |
-| SDM530 | 3 | + | + | + | + | + | + | - | - |
-| SDM630 | 3 | + | + | + | + | + | + | + | + |
-| Inepro PRO1/2 | 1 | + | + | + | + | + | + | - | - |
-| Inepro PRO380 | 3 | + | + | + | + | + | + | + | - |
-| Janitza B23-312 | 3 | + | + | + | + | + | + | - | - |
-| DZG DVH4013 | 3 | + | + | - | - | + | + | - | - |
-| SBC ALE3 | 3 | + | + | + | + | + | + | - | - |
-| ABB A/B-Series | 3 | + | + | + | + | + | + | + | + |
-| BE MPM3MP | 3 | + | + | + | + | + | + | - | - |
-| KOSTAL Smart Energy Meter | 3 | + | + | + | + | + | + | + | - |
-| ORNO WE-504/514/515 | 1 | + | + | + | + | + | - | - | - |
-| ORNO WE-516/517 | 3 | + | + | + | + | + | + | + | - |
-| ORNO WE-525/526 | 1 | + | + | + | + | + | + | - | - |
-| iEM3000 Series | 3 | + | + | + | + | + | + | (+) | + |
-| B+G e-tech WS100 | 1 | + | + | + | - | + | + | - | - |
-| B+G e-tech DS100 | 3 | + | + | + | + | + | + | + | + |
+Legend: `+` supported, `-` not available, `(+)` only one energy direction
+(import *or* export) available per phase.
 
-- **EM24**: Compact (4TE), 3P meter with RS-485 interface.
-- **EM24_E1**: Compact (4TE), 3P meter with Ethernet interface.
-- **SDM54**: Compact (3TE), 3P meter with a lot of features. Can be configured using the builtin display.
-- **SDM72**: Compact (4TE), 3P meter with bare minium of total measurements, no currents. Can be configured using the builtin display.
-- **SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
-You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
-- **SDM220, SDM230**: More comfortable (2TE), can be configured using the builtin display.
-- **SDM530**: Very big (7TE) - takes up a lot of space, but all connections are
-on the underside of the meter.
-- **SDM630**: v1 and v2, both MID and non-MID. Compact (4TE) and with lots
-of features. Can be configured for 1P2 (single phase with neutral), 3P3
-(three phase without neutral) and 3P4 (three phase with neutral) systems.
-- **Inepro PRO1/2**: Small (1TE) MID meter up to 100A (Pro2). External tariff input possible (2T versions).
-- **Inepro PRO380**: Compact (4TE) MID meter with extensive features.
-Can be connected 3P4W, 3P3W and 1P2W. Includes per-direction active/reactive energy consumption and supports two tariffs. Energy resolution is 2 digits per kWh.
-- **Janitza B23-312**: These meters have a higher update rate than the Eastron
-devices, but they are more expensive. The -312 variant is the one with a MODBUS interface.
-- **DZG DVH4013**: This meter does not provide raw phase power measurements
-and only aggregated import/export measurements. The meter is only
-partially implemented and not recommended.
-By default, the meter communicates using 9600 8E1. The meter ID
-is derived from the serial number taking the last two numbers of the
-serial number (top right of the device), e.g. 23, and add one (24).
-Assume this is a hexadecimal number and convert it to decimal (36). Use
-this as the meter ID.
-- **SBC ALE3**: This compact Saia Burgess Controls meter is comparable to the SDM630.
-It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
-- **BE MPM3PM**: Compact (4TE) three phase meter.
-- **KOSTAL Smart Energy Meter**: Slave device for Kostal grid inverters. Known [bug](https://github.com/volkszaehler/mbmd/pull/61#issuecomment-570081618) in inverter firmware with Total Export Energy.
-- **ORNO WE-504/514/515**: Low cost single phase meter
-By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
-WE-515 has a lithium battery and multi-tariff support, WE-514 does not support tariff zones.
-- **ORNO WE-516/517**: Low cost three phase meter.
-By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via  [Software(Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar)
-WE-517 has a lithium battery and multi-tariff support, WE-516 does not support tariff zones.
-- **Schneider Electric iEM3000 Series**: Professional meter with loads of configurable max/average measurements with timestamp functionality.
+| Meter | Type | Phases | Voltage | Current | Power | Power Factor | Total Import | Total Export | Per-phase Import/Export | Line/Neutral THD |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ABB A/B-Series | `ABB` | 3 | + | + | + | + | + | + | + | - |
+| B+G e-tech DS100 | `DS100` | 3 | + | + | + | + | + | + | + | - |
+| B+G e-tech WS100 | `WS100` | 1 | + | + | + | + | + | + | - | - |
+| Bernecker (BE) MPM3PM | `MPM` | 3 | + | + | + | + | + | + | - | - |
+| Carlo Gavazzi EM24 | `CGEM24` | 3 | + | + | + | + | + | + | (+) | - |
+| Carlo Gavazzi EM24 E1 | `CGEM24_E1` | 3 | + | + | + | + | + | + | (+) | - |
+| Carlo Gavazzi EM/ET 330/340 | `CGEX3X0` | 3 | + | + | + | + | + | + | (+) | - |
+| Chint DTSU666 | `DTSU666` | 3 | + | + | + | + | + | + | + | - |
+| DDM18SD | `DDM` | 1 | + | + | + | + | + | - | - | - |
+| DZG DVH4013 | `DZG` | 3 | + | + | - | + | + | + | + | - |
+| Eastron SDM54 | `SDM54` | 3 | + | + | + | + | + | + | + | + |
+| Eastron SDM72 | `SDM72` | 3 | - | - | + | - | + | + | - | - |
+| Eastron SDM72 v2 | `SDM72V2` | 3 | + | + | + | + | + | + | - | - |
+| Eastron SDM120 | `SDM120` | 1 | + | + | + | + | + | + | - | - |
+| Eastron SDM220 | `SDM220` | 1 | + | + | + | + | + | + | - | - |
+| Eastron SDM230 | `SDM230` | 1 | + | + | + | + | + | + | - | - |
+| Eastron SDM630 | `SDM` | 3 | + | + | + | + | + | + | + | + |
+| Eastron SMART X96-1A | `X961A` | 3 | + | + | + | + | + | + | + | + |
+| Eltako DSZ15DZMOD/DSZ16 | `ELTAKODSZ15` / `ELTAKODSZ16` | 3 | + | + | + | + | + | + | - | - |
+| Finder 7M.24 | `FIND7M24` | 1 | + | + | + | + | + | + | - | + |
+| Finder 7M.38 | `FIND7M38` | 3 | + | + | + | + | + | + | - | + |
+| Inepro Pro 380 | `INEPRO` | 3 | + | + | + | + | + | + | + | - |
+| Janitza B-Series | `JANITZA` | 3 | + | + | + | + | + | + | + | - |
+| Lovato DMG610 | `DMG610` | 3 | + | + | + | - | + | + | + | + |
+| ORNO WE-504 | `ORNO1P504` | 1 | + | + | + | + | + | - | - | - |
+| ORNO WE-514/515 | `ORNO1p` | 1 | + | + | + | + | + | - | - | - |
+| ORNO WE-516/517 | `ORNO3p` | 3 | + | + | + | + | + | + | + | - |
+| ORNO WE-525/526 | `ORNO1p525` | 1 | + | + | + | + | + | + | - | - |
+| Saia Burgess (SBC) ALE3 | `SBC` | 3 | + | + | + | + | + | + | - | - |
+| Schneider Electric iEM3000 | `IEM3000` | 3 | + | + | + | - | + | + | (+) | - |
+| Siemens PAC2200 | `PAC2200` | 3 | + | + | + | + | + | + | - | - |
+| SolarEdge SE-MTR-3Y | `SEMTR` | 3 | + | + | + | + | + | + | + | - |
+| Wago 879-30xx | `WAGO87930` | 3 | + | + | + | + | + | + | + | - |
+
+- **B+G e-tech DS100**: Similarly capable as the SDM630 if not better, and very cheap in Germany (below 50€).
+  It supports a higher baud rate than the SDM630, so measurements can be taken more often.
+  There is also a MID version and a multi-tariff ("-30B") version
+  ([manual](https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)).
 - **B+G e-tech WS100**: Cheap and small (1TE), 1P MID meter.
-- **B+G e-tech DS100**: Looks to be similar potent as SDM630 if not better, very cheap in Germany (below 50€)
-Able to set higher Baudrate than SDM630 so measurements can be taken more often.
-There is also a MID Version and Multi Traif ("-30B") Version.
-(https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)
+- **Bernecker (BE) MPM3PM**: Compact (4TE) three phase meter.
+- **Carlo Gavazzi EM24**: Compact (4TE), 3P meter with RS-485 interface.
+- **Carlo Gavazzi EM24 E1**: Compact (4TE), 3P meter with Ethernet interface.
+- **DZG DVH4013**: This meter does not provide raw phase power measurements
+  and only aggregated import/export measurements. The meter is only
+  partially implemented and not recommended.
+  By default, the meter communicates using 9600 8E1. The meter ID
+  is derived from the serial number taking the last two numbers of the
+  serial number (top right of the device), e.g. 23, and add one (24).
+  Assume this is a hexadecimal number and convert it to decimal (36). Use
+  this as the meter ID.
+- **Eastron SDM54**: Compact (3TE), 3P meter with a lot of features. Can be configured using the builtin display.
+- **Eastron SDM72**: Compact (4TE), 3P meter with bare minimum of total measurements, no currents. Can be configured using the builtin display.
+- **Eastron SDM120**: Cheap and small (1TE), but communication parameters can only be set over MODBUS, which is currently not supported by this project.
+  You can use e.g. [SDM120C](https://github.com/gianfrdp/SDM120C) to change parameters.
+- **Eastron SDM220/230**: More comfortable (2TE), can be configured using the builtin display.
+- **Eastron SDM630**: v1 and v2, both MID and non-MID. Compact (4TE) and with lots
+  of features. Can be configured for 1P2 (single phase with neutral), 3P3
+  (three phase without neutral) and 3P4 (three phase with neutral) systems.
+- **Eltako DSZ15DZMOD/DSZ16**: Bidirectional 3P MID meters with Modbus RTU. Voltage, current,
+  power, power factor and total import/export energy are supported; the DSZ16's additional
+  measurements (reactive/apparent power, frequency, per-phase energy) are not yet implemented
+  ([Modbus spec](https://www.eltako.com/fileadmin/downloads/de/_bedienung/Modbus-RTU_protocol_specification_for_DSZ15DZMOD_V1.6_English_version.pdf)).
+- **Inepro Pro 380**: Compact (4TE) MID meter with extensive features.
+  Can be connected 3P4W, 3P3W and 1P2W. Includes per-direction active/reactive energy consumption and supports two tariffs. Energy resolution is 2 digits per kWh.
+- **Janitza B-Series**: These meters have a higher update rate than the Eastron
+  devices, but they are more expensive. The B23-312 variant is the one with a MODBUS interface.
+- **ORNO WE-504/514/515**: Low cost single phase meter.
+  By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via [Software (Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar).
+  WE-515 has a lithium battery and multi-tariff support, WE-514 does not support tariff zones.
+- **ORNO WE-516/517**: Low cost three phase meter.
+  By default, the meter communicates using 9600 8E1. The meter ID is 1. Meter ID, bus speed and other parameters are configurable via [Software (Windows only)](https://www.partner.orno.pl/grafiki2/PC%20softwre170621.rar).
+  WE-517 has a lithium battery and multi-tariff support, WE-516 does not support tariff zones.
+- **Saia Burgess (SBC) ALE3**: This compact Saia Burgess Controls meter is comparable to the SDM630.
+  It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
+- **Schneider Electric iEM3000**: Professional meter with loads of configurable max/average measurements with timestamp functionality.
 
 ## Modbus TCP Grid Inverters
 
