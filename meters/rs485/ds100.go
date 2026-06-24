@@ -48,7 +48,7 @@ func NewDS100Producer() Producer {
 		CosphiL1:  				0x0436,
 		CosphiL2:  				0x0437,
 		CosphiL3:  				0x0438,
-		Cosphi:    				0x0439, //implemented from beginning till 0x0439 - 60 Registers so far - too many might lead to delayed readout (2s instead of 1s)
+		Cosphi:    				0x0439,
 		ImportL1:  				0x050A, //A phase forward active energy
 		ImportL2:  				0x056E, //B phase forward active energy
 		ImportL3:  				0x05D2, //C phase forward active energy
