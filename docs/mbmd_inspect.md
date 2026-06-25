@@ -27,6 +27,7 @@ mbmd inspect [flags]
                               DMG610    Lovato DMG610
                               DS100     B+G e-tech DS100
                               DTSU666   Chint DTSU666
+                              DTSU666H  Chint DTSU666-H (Huawei)
                               DZG       DZG Metering GmbH DVH4013 meters
                               ELTAKODSZ15Eltako DSZ15DZMOD / DSZ16
                               ELTAKODSZ16Eltako DSZ15DZMOD / DSZ16
