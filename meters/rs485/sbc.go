@@ -72,6 +72,18 @@ func (p *SBCProducer) snip16(iec Measurement, scaler ...float64) Operation {
 	return snip
 }
 
+// snip16s creates modbus operation for single signed register
+func (p *SBCProducer) snip16s(iec Measurement, scaler ...float64) Operation {
+	snip := p.snip(iec, 1)
+
+	snip.Transform = RTUInt16ToFloat64 // default conversion
+	if len(scaler) > 0 {
+		snip.Transform = MakeScaledTransform(snip.Transform, scaler[0])
+	}
+
+	return snip
+}
+
 // snip32 creates modbus operation for double register
 func (p *SBCProducer) snip32(iec Measurement, scaler ...float64) Operation {
 	snip := p.snip(iec, 2)
@@ -103,10 +115,20 @@ func (p *SBCProducer) Produce() (res []Operation) {
 	}
 
 	for _, op := range []Measurement{
-		PowerL1, PowerL2, PowerL3,
-		CosphiL1, CosphiL2, CosphiL3,
+		PowerL1, PowerL2, PowerL3, Power,
+	} {
+		res = append(res, p.snip16(op, 0.1))
+	}
+
+	for _, op := range []Measurement{
 		ReactivePowerL1, ReactivePowerL2, ReactivePowerL3,
-		Power, ReactivePower,
+		ReactivePower,
+	} {
+		res = append(res, p.snip16s(op, 0.1))
+	}
+
+	for _, op := range []Measurement{
+		CosphiL1, CosphiL2, CosphiL3,
 	} {
 		res = append(res, p.snip16(op, 100))
 	}
