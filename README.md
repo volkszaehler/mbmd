@@ -274,6 +274,7 @@ Legend: `+` supported, `-` not available, `(+)` only one energy direction
 | Saia Burgess (SBC) ALE3 | `SBC` | 3 | + | + | + | + | + | + | - | - |
 | Schneider Electric iEM3000 | `IEM3000` | 3 | + | + | + | - | + | + | (+) | - |
 | Siemens PAC2200 | `PAC2200` | 3 | + | + | + | + | + | + | - | - |
+| Socomec Countis E3x/E4x | `SOCOMEC` | 3 | + | + | + | + | + | + | - | - |
 | SolarEdge SE-MTR-3Y | `SEMTR` | 3 | + | + | + | + | + | + | + | - |
 | Wago 879-30xx | `WAGO87930` | 3 | + | + | + | + | + | + | + | - |
 
@@ -318,6 +319,10 @@ Legend: `+` supported, `-` not available, `(+)` only one energy direction
 - **Saia Burgess (SBC) ALE3**: This compact Saia Burgess Controls meter is comparable to the SDM630.
   It has two tariffs, both import and export depending on meter version and compact (4TE). It's often used with Viessmann heat pumps.
 - **Schneider Electric iEM3000**: Professional meter with loads of configurable max/average measurements with timestamp functionality.
+- **Socomec Countis E3x/E4x**: 3P meters using Socomec's JBUS common table, so other devices of that
+  family may work as well. Voltages, currents, powers and power factor come from the metrology table
+  and are scaled by the configured CT/VT ratio. Total import/export energy has a resolution of 1 kWh
+  ([Modbus spec](https://github.com/user-attachments/files/30981536/Socomec_.MODBUS_E43.XLS)).
 
 ## Modbus TCP Grid Inverters
 
