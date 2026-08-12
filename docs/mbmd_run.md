@@ -45,6 +45,7 @@ mbmd run [flags]
                                          SDM72     Eastron SDM72
                                          SDM72V2   Eastron SDM72 v2
                                          SEMTR     SolarEdge SE-MTR-3Y
+                                         SOCOMEC   Socomec Countis E3x/E4x series
                                          WAGO87930 Wago 879-30XX
                                          WS100     B+G e-tech WS100
                                          X961A     Eastron SMART X96-1A
