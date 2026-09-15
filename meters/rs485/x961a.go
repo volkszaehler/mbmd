@@ -34,6 +34,7 @@ func NewX961AProducer() Producer {
 		CosphiL1:         0x001E, // Phase 1 power factor
 		CosphiL2:         0x0020, // Phase 2 power factor
 		CosphiL3:         0x0022, // Phase 3 power factor
+		Current:          0x0030, // Sum of line currents
 		Power:            0x0034, // Total system power
 		ApparentPower:    0x0038, // Total system volt amps.
 		ReactivePower:    0x003C, // Total system VAr
