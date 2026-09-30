@@ -25,6 +25,7 @@ mbmd run [flags]
                                          DZG       DZG Metering GmbH DVH4013 meters
                                          ELTAKODSZ15Eltako DSZ15DZMOD / DSZ16
                                          ELTAKODSZ16Eltako DSZ15DZMOD / DSZ16
+                                         ENERGYMID Gossen Metrawatt ENERGYMID EM228x/EM238x
                                          FIND7M24  Finder 7M.24
                                          FIND7M38  Finder 7M.38
                                          IEM3000   Schneider Electric iEM3000 series
