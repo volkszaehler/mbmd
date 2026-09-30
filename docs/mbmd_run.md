@@ -56,6 +56,7 @@ mbmd run [flags]
                                      If the adapter is a TCP connection (identified by :port), the device type (SUNS) is ignored and
                                      any type is considered valid.
                                        Example: -d SDM:1@/dev/USB11 -d SMA:126@localhost:502
+      --influx-buffer duration       InfluxDB write buffer duration. Readings are kept in memory and retried for this long while the database is unavailable, e.g. 1h. 0 keeps the client default of 5 retries within 3 minutes.
       --influx-database string       InfluxDB database
       --influx-measurement string    InfluxDB measurement (default "data")
       --influx-organization string   InfluxDB organization
