@@ -18,9 +18,8 @@ mbmd version [flags]
   -c, --config string      Config file (default is $HOME/mbmd.yaml, ./mbmd.yaml, /etc/mbmd.yaml)
   -h, --help               Help for mbmd
       --raw                Log raw device data
-      --rtu                Use RTU over TCP for default adapter.
+      --rtu                Use RTU over TCP for TCP adapters, i.e. the default adapter and adapters given per device via -d type:id@host:port.
                            Typically used with RS485 to Ethernet adapters that don't perform protocol conversion (e.g. USR-TCP232).
-                           Only applicable if the default adapter is a TCP connection
       --timeout duration   Timeout for MODBUS communication (default 300ms)
   -v, --verbose            Verbose mode
 ```
