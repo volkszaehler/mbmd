@@ -45,6 +45,7 @@ type InfluxConfig struct {
 	Token        string
 	User         string
 	Password     string
+	Buffer       time.Duration
 }
 
 // AdapterConfig describes device communication parameters
