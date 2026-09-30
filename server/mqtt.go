@@ -94,11 +94,12 @@ func mqttDeviceTopic(deviceID string) string {
 // MqttRunner allows to attach an MqttClient as broadcast receiver
 type MqttRunner struct {
 	*MqttClient
-	topic string
+	topic  string
+	retain bool
 }
 
 // NewMqttRunner create a new runer for plain MQTT
-func NewMqttRunner(options *MQTT.ClientOptions, qos byte, topic string, verbose bool) *MqttRunner {
+func NewMqttRunner(options *MQTT.ClientOptions, qos byte, topic string, retain bool, verbose bool) *MqttRunner {
 	// set will
 	lwt := fmt.Sprintf("%s/status", topic)
 	options.SetWill(lwt, "disconnected", qos, true)
@@ -108,6 +109,7 @@ func NewMqttRunner(options *MQTT.ClientOptions, qos byte, topic string, verbose 
 	return &MqttRunner{
 		MqttClient: client,
 		topic:      topic,
+		retain:     retain,
 	}
 }
 
@@ -133,6 +135,6 @@ func (m *MqttRunner) Run(in <-chan QuerySnip) {
 		subtopic := topicFromMeasurement(snip.Measurement)
 		topic := fmt.Sprintf("%s/%s/%s", m.topic, mqttDeviceTopic(snip.Device), subtopic)
 		message := fmt.Sprintf("%.3f", snip.Value)
-		go m.Publish(topic, false, message)
+		go m.Publish(topic, m.retain, message)
 	}
 }

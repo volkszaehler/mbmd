@@ -116,6 +116,11 @@ any type is considered valid.
 		0,
 		"MQTT quality of service 0,1,2 (default 0)",
 	)
+	runCmd.PersistentFlags().Bool(
+		"mqtt-retain",
+		false,
+		"Publish measurements with the MQTT retain flag set",
+	)
 	runCmd.PersistentFlags().String(
 		"mqtt-homie",
 		"homie",
@@ -163,7 +168,7 @@ any type is considered valid.
 	bindPflagsWithExceptions(pflags, "devices")
 
 	// mqtt
-	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "qos", "homie")
+	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "qos", "retain", "homie")
 
 	// influx
 	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "organization", "token", "user", "password")
@@ -310,7 +315,7 @@ func run(cmd *cobra.Command, args []string) {
 				viper.GetString("mqtt.password"),
 				viper.GetString("mqtt.clientid"),
 			)
-			mqttRunner := server.NewMqttRunner(options, qos, topic, verbose)
+			mqttRunner := server.NewMqttRunner(options, qos, topic, viper.GetBool("mqtt.retain"), verbose)
 			tee.AttachRunner(server.NewSnipRunner(mqttRunner.Run))
 		}
 
