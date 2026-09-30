@@ -67,6 +67,7 @@ mbmd run [flags]
       --mqtt-clientid string         MQTT client id (default "mbmd")
       --mqtt-password string         MQTT password (optional)
       --mqtt-qos int                 MQTT quality of service 0,1,2 (default 0)
+      --mqtt-retain                  Publish measurements with the MQTT retain flag set
       --mqtt-topic string            MQTT root topic. Set empty to disable publishing. (default "mbmd")
       --mqtt-user string             MQTT user (optional)
       --profile string               Add pprof debug information

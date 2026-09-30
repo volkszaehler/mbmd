@@ -32,6 +32,7 @@ type MqttConfig struct {
 	Password string
 	ClientID string
 	Qos      int
+	Retain   bool
 	Homie    string // deprecated, ignored
 }
 
