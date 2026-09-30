@@ -216,12 +216,6 @@ Another option for receiving client updates is by using the built-in MQTT publis
 By default, readings are published at `/mbmd/<unique id>/<reading>`. Rate limiting is possible.
 
 
-## Homie API
-
-[Homie](https://homieiot.github.io) is an MQTT convention for IoT/M2M. `mbmd` publishes all devices and readings using the Homie protocol. This allows systems like e.g. OpenHAB to auto-discover devices operated by `mbmd`:
-
-![auto-discovery of thinks in OpenHAB](img/openhab.png)
-
 ## InfluxDB support
 
 There is also the option to directly insert the data into an influxdb database by using the command-line options available. InfluxDB 1.8 and 2.0 are currently supported. to enable this, add the `--influx-database` and the `--influx-url` commandline parameter. More advanced configuration is available, to learn more checkout the [mbmd_run.md](docs/mbmd_run.md) documentation

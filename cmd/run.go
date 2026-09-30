@@ -116,11 +116,6 @@ any type is considered valid.
 		0,
 		"MQTT quality of service 0,1,2 (default 0)",
 	)
-	runCmd.PersistentFlags().String(
-		"mqtt-homie",
-		"homie",
-		"MQTT Homie IoT discovery base topic (homieiot.github.io). Set empty to disable.",
-	)
 	runCmd.PersistentFlags().StringP(
 		"influx-url", "i",
 		"",
@@ -163,7 +158,7 @@ any type is considered valid.
 	bindPflagsWithExceptions(pflags, "devices")
 
 	// mqtt
-	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "qos", "homie")
+	bindPFlagsWithPrefix(pflags, "mqtt", "broker", "topic", "user", "password", "clientid", "qos")
 
 	// influx
 	bindPFlagsWithPrefix(pflags, "influx", "url", "database", "measurement", "organization", "token", "user", "password")
@@ -314,17 +309,8 @@ func run(cmd *cobra.Command, args []string) {
 			tee.AttachRunner(server.NewSnipRunner(mqttRunner.Run))
 		}
 
-		// homie runner
-		if topic := viper.GetString("mqtt.homie"); topic != "" {
-			options := server.NewMqttOptions(
-				viper.GetString("mqtt.broker"),
-				viper.GetString("mqtt.user"),
-				viper.GetString("mqtt.password"),
-				viper.GetString("mqtt.clientid"),
-			)
-			cc := server.ToControlChannel(teeC.Attach())
-			homieRunner := server.NewHomieRunner(qe, cc, options, qos, topic, verbose)
-			tee.AttachRunner(server.NewSnipRunner(homieRunner.Run))
+		if viper.IsSet("mqtt.homie") {
+			log.Println("config: mqtt.homie is deprecated, homie support has been removed")
 		}
 	}
 
