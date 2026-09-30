@@ -22,7 +22,7 @@ type QueryEngine struct {
 }
 
 // NewQueryEngine creates new query engine
-func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
+func NewQueryEngine(managers map[string]*meters.Manager, names NameMap) *QueryEngine {
 	handlers := make(map[string]*Handler)
 
 	// sort handlers by name
@@ -36,7 +36,7 @@ func NewQueryEngine(managers map[string]*meters.Manager) *QueryEngine {
 			continue
 		}
 
-		handlers[conn] = NewHandler(len(handlers)+1, m)
+		handlers[conn] = NewHandler(conn, len(handlers)+1, m, names)
 	}
 
 	qe := &QueryEngine{

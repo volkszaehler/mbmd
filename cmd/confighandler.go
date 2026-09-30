@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
+	"github.com/volkszaehler/mbmd/server"
 	"github.com/volkszaehler/mbmd/meters"
 	"github.com/volkszaehler/mbmd/meters/rs485"
 	"github.com/volkszaehler/mbmd/meters/sunspec"
@@ -65,15 +65,17 @@ type DeviceConfig struct {
 
 // DeviceConfigHandler creates map of meter managers from given configuration
 type DeviceConfigHandler struct {
-	DefaultDevice string
-	Managers      map[string]*meters.Manager
+    DefaultDevice string
+    Managers      map[string]*meters.Manager
+    Names         server.NameMap
 }
 
 // NewDeviceConfigHandler creates a configuration handler
 func NewDeviceConfigHandler() *DeviceConfigHandler {
 	conf := &DeviceConfigHandler{
-		Managers: make(map[string]*meters.Manager),
-	}
+    Managers: make(map[string]*meters.Manager),
+    Names:    make(server.NameMap),
+}
 	return conf
 }
 
@@ -155,7 +157,6 @@ func (conf *DeviceConfigHandler) createDeviceForManager(
 // CreateDevice creates new device and adds it to the connection manager
 func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 	if devConf.Adapter == "" {
-		// find default adapter
 		if len(conf.Managers) == 1 {
 			for a := range conf.Managers {
 				log.Printf("config: using default adapter %s for device %v", a, devConf)
@@ -170,7 +171,19 @@ func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 	if !ok {
 		log.Fatalf("Missing adapter configuration for device %v", devConf)
 	}
+
 	meter := conf.createDeviceForManager(manager, devConf.Type, devConf.SubDevice)
+
+
+	if devConf.Name != "" {
+		if conf.Names[devConf.Adapter] == nil {
+			conf.Names[devConf.Adapter] = make(map[uint8]map[int]string)
+		}
+		if conf.Names[devConf.Adapter][devConf.ID] == nil {
+			conf.Names[devConf.Adapter][devConf.ID] = make(map[int]string)
+		}
+		conf.Names[devConf.Adapter][devConf.ID][devConf.SubDevice] = devConf.Name
+	}
 
 	if err := manager.Add(devConf.ID, meter); err != nil {
 		log.Fatalf("Error adding device %v: %v.", devConf, err)
@@ -190,7 +203,6 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout 
 	if len(deviceSplit) == 2 {
 		connSpec = deviceSplit[1]
 	}
-
 	if connSpec == "" {
 		log.Fatalf("Cannot parse connect string- missing physical device or connection for %s. See -h for help.", deviceDef)
 	}
@@ -222,11 +234,9 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout 
 		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
 
-	// If this is an RTU over TCP device, a default RTU over TCP should already
-	// have been created of the --rtu flag was specified. We'll not re-check this here.
 	manager := conf.ConnectionManager(connSpec, false, 0, "", timeout)
-
 	meter := conf.createDeviceForManager(manager, meterType, subdevice)
+
 	if err := manager.Add(uint8(id), meter); err != nil {
 		log.Fatalf("Error adding device %s: %v. See -h for help.", meterDef, err)
 	}
