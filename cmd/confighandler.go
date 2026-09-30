@@ -179,7 +179,7 @@ func (conf *DeviceConfigHandler) CreateDevice(devConf DeviceConfig) {
 
 // CreateDeviceFromSpec creates new device from specification string and adds
 // it to the connection manager
-func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout time.Duration) {
+func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, rtu bool, baudrate int, comset string, timeout time.Duration) {
 	deviceSplit := strings.Split(deviceDef, "@")
 	if len(deviceSplit) == 0 || len(deviceSplit) > 2 {
 		log.Fatalf("Cannot parse connect string %s. See -h for help.", deviceDef)
@@ -222,9 +222,8 @@ func (conf *DeviceConfigHandler) CreateDeviceFromSpec(deviceDef string, timeout 
 		log.Fatalf("Error parsing device id %s: %v. See -h for help.", devID, err)
 	}
 
-	// If this is an RTU over TCP device, a default RTU over TCP should already
-	// have been created of the --rtu flag was specified. We'll not re-check this here.
-	manager := conf.ConnectionManager(connSpec, false, 0, "", timeout)
+	// adapters given per device share the global --rtu, --baudrate and --comset settings
+	manager := conf.ConnectionManager(connSpec, rtu, baudrate, comset, timeout)
 
 	meter := conf.createDeviceForManager(manager, meterType, subdevice)
 	if err := manager.Add(uint8(id), meter); err != nil {
