@@ -33,7 +33,7 @@ type MqttConfig struct {
 	ClientID string
 	Qos      int
 	Retain   bool
-	Homie    string
+	Homie    string // deprecated, ignored
 }
 
 // InfluxConfig describes the InfluxDB configuration

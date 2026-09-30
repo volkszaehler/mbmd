@@ -65,7 +65,6 @@ mbmd run [flags]
       --influx-user string           InfluxDB user (optional)
   -m, --mqtt-broker string           MQTT broker URI. ex: tcp://10.10.1.1:1883
       --mqtt-clientid string         MQTT client id (default "mbmd")
-      --mqtt-homie string            MQTT Homie IoT discovery base topic (homieiot.github.io). Set empty to disable. (default "homie")
       --mqtt-password string         MQTT password (optional)
       --mqtt-qos int                 MQTT quality of service 0,1,2 (default 0)
       --mqtt-retain                  Publish measurements with the MQTT retain flag set
