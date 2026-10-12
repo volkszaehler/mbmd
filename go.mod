@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/andig/gosunspec v0.0.0-20260705113727-6d585e133512
-	github.com/dmarkham/enumer v1.6.3
+	github.com/dmarkham/enumer v1.7.2
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
