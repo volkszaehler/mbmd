@@ -277,6 +277,11 @@ Legend: `+` supported, `-` not available, `(+)` only one energy direction
   It supports a higher baud rate than the SDM630, so measurements can be taken more often.
   There is also a MID version and a multi-tariff ("-30B") version
   ([manual](https://data.xn--stromzhler-v5a.eu/manuals/bg_ds100serie_de.pdf)).
+  What `Sum` (total energy) contains depends on the meter's calculation method
+  (combination code): 1 = import, 2 = export, 3 = import + export, 4 = import − export,
+  5 = netting (DS100-00B and -00B-R from model year 2024 on). With 4 or 5, `Sum` turns negative once
+  export exceeds import. `Import` and `Export` are always the separate counters.
+  Currents are signed and follow the direction of active power, so they read negative while exporting.
 - **B+G e-tech WS100**: Cheap and small (1TE), 1P MID meter.
 - **Bernecker (BE) MPM3PM**: Compact (4TE) three phase meter.
 - **Carlo Gavazzi EM24**: Compact (4TE), 3P meter with RS-485 interface.

@@ -33,6 +33,7 @@ const (
 	CurrentL1
 	CurrentL2
 	CurrentL3
+	CurrentN
 
 	// phases and sums
 	Voltage
@@ -166,6 +167,7 @@ var iec = map[Measurement][]string{
 	CurrentL1:        {"L1 Current", "A"},
 	CurrentL2:        {"L2 Current", "A"},
 	CurrentL3:        {"L3 Current", "A"},
+	CurrentN:         {"Neutral Current", "A"},
 	Voltage:          {"Voltage", "V"},
 	VoltageL1:        {"L1 Voltage", "V"},
 	VoltageL2:        {"L2 Voltage", "V"},

@@ -19,11 +19,16 @@ func NewDS100Producer() Producer {
 		VoltageL1:       0x0400,
 		VoltageL2:       0x0402,
 		VoltageL3:       0x0404,
-		Voltage:         0x040C,
+		VoltageL1_L2:    0x0406,
+		VoltageL2_L3:    0x0408,
+		VoltageL3_L1:    0x040A,
+		Voltage:         0x040C, // average L-N
+		VoltageL_L_avg:  0x040E,
 		CurrentL1:       0x0410,
 		CurrentL2:       0x0412,
 		CurrentL3:       0x0414,
-		Current:         0x0418,
+		CurrentN:        0x0416,
+		Current:         0x0418, // three phase vector current
 		PowerL1:         0x041A,
 		PowerL2:         0x041C,
 		PowerL3:         0x041E,
@@ -36,6 +41,9 @@ func NewDS100Producer() Producer {
 		ReactivePowerL2: 0x042C,
 		ReactivePowerL3: 0x042E,
 		ReactivePower:   0x0430,
+		FrequencyL1:     0x0432,
+		FrequencyL2:     0x0433,
+		FrequencyL3:     0x0434,
 		Frequency:       0x0435,
 		CosphiL1:        0x0436,
 		CosphiL2:        0x0437,
@@ -48,11 +56,24 @@ func NewDS100Producer() Producer {
 		ExportL1:        0x0514, //A phase reverse active energy
 		ExportL2:        0x0578, //B phase reverse active energy
 		ExportL3:        0x05DC, //C phase reverse active energy
-		Export:          0x118A, //  total reverse active energy
+		Export:          0x0118, //  total reverse active energy
 		SumL1:           0x0500, //A phase total active energy
 		SumL2:           0x0564, //B phase total active energy
 		SumL3:           0x05C8, //C phase total active energy
 		Sum:             0x0122, //  total total active energy
+
+		ReactiveImportL1: 0x0528, // A phase forward reactive energy
+		ReactiveImportL2: 0x058C, // B phase forward reactive energy
+		ReactiveImportL3: 0x05F0, // C phase forward reactive energy
+		ReactiveImport:   0x012C, // total forward reactive energy
+		ReactiveExportL1: 0x0532, // A phase reverse reactive energy
+		ReactiveExportL2: 0x0596, // B phase reverse reactive energy
+		ReactiveExportL3: 0x05FA, // C phase reverse reactive energy
+		ReactiveExport:   0x0136, // total reverse reactive energy
+		ReactiveSumL1:    0x051E, // A phase total reactive energy
+		ReactiveSumL2:    0x0582, // B phase total reactive energy
+		ReactiveSumL3:    0x05E6, // C phase total reactive energy
+		ReactiveSum:      0x0140, // total reactive energy
 	}
 	return &DS100Producer{Opcodes: ops}
 }
@@ -104,12 +125,15 @@ func (p *DS100Producer) Probe() Operation {
 func (p *DS100Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		VoltageL1, VoltageL2, VoltageL3, Voltage,
+		VoltageL1_L2, VoltageL2_L3, VoltageL3_L1, VoltageL_L_avg,
 	} {
 		res = append(res, p.snip32u(op, 1000))
 	}
 
+	// Currents are signed and follow the direction of active power,
+	// so they are negative while exporting.
 	for _, op := range []Measurement{
-		CurrentL1, CurrentL2, CurrentL3, Current,
+		CurrentL1, CurrentL2, CurrentL3, CurrentN, Current,
 	} {
 		res = append(res, p.snip32s(op, 1000))
 	}
@@ -130,13 +154,23 @@ func (p *DS100Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		ImportL1, ImportL2, ImportL3, Import,
 		ExportL1, ExportL2, ExportL3, Export,
-		SumL1, SumL2, SumL3, Sum,
+		ReactiveImportL1, ReactiveImportL2, ReactiveImportL3, ReactiveImport,
+		ReactiveExportL1, ReactiveExportL2, ReactiveExportL3, ReactiveExport,
 	} {
 		res = append(res, p.snip32u(op, 100))
 	}
 
+	// Total energy follows the meter's combination code (register 0x100F).
+	// With Import - Export it is signed and turns negative once export exceeds import.
 	for _, op := range []Measurement{
-		Frequency,
+		SumL1, SumL2, SumL3, Sum,
+		ReactiveSumL1, ReactiveSumL2, ReactiveSumL3, ReactiveSum,
+	} {
+		res = append(res, p.snip32s(op, 100))
+	}
+
+	for _, op := range []Measurement{
+		FrequencyL1, FrequencyL2, FrequencyL3, Frequency,
 	} {
 		res = append(res, p.snip16u(op, 10))
 	}
