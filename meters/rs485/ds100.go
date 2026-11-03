@@ -130,6 +130,8 @@ func (p *DS100Producer) Produce() (res []Operation) {
 		res = append(res, p.snip32u(op, 1000))
 	}
 
+	// Currents are signed and follow the direction of active power,
+	// so they are negative while exporting.
 	for _, op := range []Measurement{
 		CurrentL1, CurrentL2, CurrentL3, CurrentN, Current,
 	} {
