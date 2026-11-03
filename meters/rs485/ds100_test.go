@@ -70,3 +70,37 @@ func TestDS100EnergyRegisters(t *testing.T) {
 		assert.Equal(t, uint16(2), ops[iec].ReadLen, iec.String())
 	}
 }
+
+func TestDS100Opcodes(t *testing.T) {
+	p := NewDS100Producer().(*DS100Producer)
+
+	produced := make(map[Measurement]bool)
+	for _, op := range p.Produce() {
+		iec := op.IEC61850
+
+		// a measurement without opcode would silently read register 0
+		opcode, ok := p.Opcodes[iec]
+		assert.True(t, ok, "%s is read but has no opcode", iec)
+		assert.Equal(t, opcode, op.OpCode, iec.String())
+
+		assert.False(t, produced[iec], "%s is read twice", iec)
+		produced[iec] = true
+
+		// frequency and power factor are single registers, all other values double registers
+		readlen := uint16(2)
+		if op.OpCode >= 0x0432 && op.OpCode <= 0x0439 {
+			readlen = 1
+		}
+		assert.Equal(t, readlen, op.ReadLen, iec.String())
+	}
+
+	addresses := make(map[uint16]Measurement)
+	for iec, opcode := range p.Opcodes {
+		assert.True(t, produced[iec], "%s has an opcode but is never read", iec)
+
+		if other, ok := addresses[opcode]; ok {
+			assert.Failf(t, "duplicate opcode", "%s and %s both use 0x%04X", iec, other, opcode)
+		}
+		addresses[opcode] = iec
+	}
+}
