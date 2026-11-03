@@ -26,3 +26,29 @@ func TestDS100SignedSum(t *testing.T) {
 	// import and export counters cannot go negative and stay unsigned
 	assert.InDelta(t, 42949671.96, ops[Import].Transform(negative), 1e-6)
 }
+
+func TestDS100EnergyRegisters(t *testing.T) {
+	ops := make(map[Measurement]Operation)
+	for _, op := range NewDS100Producer().Produce() {
+		ops[op.IEC61850] = op
+	}
+
+	// addresses from the DS100 manual, section 3.2 electric quantity parameters
+	for iec, opcode := range map[Measurement]uint16{
+		Import:   0x010E,
+		Export:   0x0118,
+		Sum:      0x0122,
+		SumL1:    0x0500,
+		ImportL1: 0x050A,
+		ExportL1: 0x0514,
+		SumL2:    0x0564,
+		ImportL2: 0x056E,
+		ExportL2: 0x0578,
+		SumL3:    0x05C8,
+		ImportL3: 0x05D2,
+		ExportL3: 0x05DC,
+	} {
+		assert.Equal(t, opcode, ops[iec].OpCode, iec.String())
+		assert.Equal(t, uint16(2), ops[iec].ReadLen, iec.String())
+	}
+}

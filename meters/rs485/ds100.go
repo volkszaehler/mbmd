@@ -56,7 +56,7 @@ func NewDS100Producer() Producer {
 		ExportL1:        0x0514, //A phase reverse active energy
 		ExportL2:        0x0578, //B phase reverse active energy
 		ExportL3:        0x05DC, //C phase reverse active energy
-		Export:          0x118A, //  total reverse active energy
+		Export:          0x0118, //  total reverse active energy
 		SumL1:           0x0500, //A phase total active energy
 		SumL2:           0x0564, //B phase total active energy
 		SumL3:           0x05C8, //C phase total active energy
