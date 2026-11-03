@@ -15,7 +15,10 @@ func TestDS100SignedSum(t *testing.T) {
 
 	// -1.00 kWh, e.g. combination code Import - Export with more export than import
 	negative := []byte{0xff, 0xff, 0xff, 0x9c}
-	for _, iec := range []Measurement{Sum, SumL1, SumL2, SumL3} {
+	for _, iec := range []Measurement{
+		Sum, SumL1, SumL2, SumL3,
+		ReactiveSum, ReactiveSumL1, ReactiveSumL2, ReactiveSumL3,
+	} {
 		assert.InDelta(t, -1.0, ops[iec].Transform(negative), 1e-9, iec.String())
 	}
 
@@ -24,7 +27,9 @@ func TestDS100SignedSum(t *testing.T) {
 	assert.InDelta(t, 1234.56, ops[Sum].Transform(positive), 1e-9)
 
 	// import and export counters cannot go negative and stay unsigned
-	assert.InDelta(t, 42949671.96, ops[Import].Transform(negative), 1e-6)
+	for _, iec := range []Measurement{Import, ReactiveImport, ReactiveExport} {
+		assert.InDelta(t, 42949671.96, ops[iec].Transform(negative), 1e-6, iec.String())
+	}
 }
 
 func TestDS100EnergyRegisters(t *testing.T) {
@@ -47,6 +52,19 @@ func TestDS100EnergyRegisters(t *testing.T) {
 		SumL3:    0x05C8,
 		ImportL3: 0x05D2,
 		ExportL3: 0x05DC,
+
+		ReactiveImport:   0x012C,
+		ReactiveExport:   0x0136,
+		ReactiveSum:      0x0140,
+		ReactiveSumL1:    0x051E,
+		ReactiveImportL1: 0x0528,
+		ReactiveExportL1: 0x0532,
+		ReactiveSumL2:    0x0582,
+		ReactiveImportL2: 0x058C,
+		ReactiveExportL2: 0x0596,
+		ReactiveSumL3:    0x05E6,
+		ReactiveImportL3: 0x05F0,
+		ReactiveExportL3: 0x05FA,
 	} {
 		assert.Equal(t, opcode, ops[iec].OpCode, iec.String())
 		assert.Equal(t, uint16(2), ops[iec].ReadLen, iec.String())

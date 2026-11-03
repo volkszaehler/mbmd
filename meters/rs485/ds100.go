@@ -61,6 +61,19 @@ func NewDS100Producer() Producer {
 		SumL2:           0x0564, //B phase total active energy
 		SumL3:           0x05C8, //C phase total active energy
 		Sum:             0x0122, //  total total active energy
+
+		ReactiveImportL1: 0x0528, // A phase forward reactive energy
+		ReactiveImportL2: 0x058C, // B phase forward reactive energy
+		ReactiveImportL3: 0x05F0, // C phase forward reactive energy
+		ReactiveImport:   0x012C, // total forward reactive energy
+		ReactiveExportL1: 0x0532, // A phase reverse reactive energy
+		ReactiveExportL2: 0x0596, // B phase reverse reactive energy
+		ReactiveExportL3: 0x05FA, // C phase reverse reactive energy
+		ReactiveExport:   0x0136, // total reverse reactive energy
+		ReactiveSumL1:    0x051E, // A phase total reactive energy
+		ReactiveSumL2:    0x0582, // B phase total reactive energy
+		ReactiveSumL3:    0x05E6, // C phase total reactive energy
+		ReactiveSum:      0x0140, // total reactive energy
 	}
 	return &DS100Producer{Opcodes: ops}
 }
@@ -139,6 +152,8 @@ func (p *DS100Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		ImportL1, ImportL2, ImportL3, Import,
 		ExportL1, ExportL2, ExportL3, Export,
+		ReactiveImportL1, ReactiveImportL2, ReactiveImportL3, ReactiveImport,
+		ReactiveExportL1, ReactiveExportL2, ReactiveExportL3, ReactiveExport,
 	} {
 		res = append(res, p.snip32u(op, 100))
 	}
@@ -147,6 +162,7 @@ func (p *DS100Producer) Produce() (res []Operation) {
 	// With Import - Export it is signed and turns negative once export exceeds import.
 	for _, op := range []Measurement{
 		SumL1, SumL2, SumL3, Sum,
+		ReactiveSumL1, ReactiveSumL2, ReactiveSumL3, ReactiveSum,
 	} {
 		res = append(res, p.snip32s(op, 100))
 	}
