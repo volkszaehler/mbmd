@@ -139,9 +139,16 @@ func (p *DS100Producer) Produce() (res []Operation) {
 	for _, op := range []Measurement{
 		ImportL1, ImportL2, ImportL3, Import,
 		ExportL1, ExportL2, ExportL3, Export,
-		SumL1, SumL2, SumL3, Sum,
 	} {
 		res = append(res, p.snip32u(op, 100))
+	}
+
+	// Total energy follows the meter's combination code (register 0x100F).
+	// With Import - Export it is signed and turns negative once export exceeds import.
+	for _, op := range []Measurement{
+		SumL1, SumL2, SumL3, Sum,
+	} {
+		res = append(res, p.snip32s(op, 100))
 	}
 
 	for _, op := range []Measurement{
