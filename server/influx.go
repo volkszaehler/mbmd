@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	influxdb "github.com/influxdata/influxdb-client-go/v2"
@@ -25,13 +26,26 @@ func NewInfluxClient(
 	token string,
 	user string,
 	password string,
+	buffer time.Duration,
 ) *Influx {
 	// InfluxDB v1 compatibility
 	if token == "" && user != "" {
 		token = fmt.Sprintf("%s:%s", user, password)
 	}
 
-	client := influxdb.NewClient(url, token)
+	options := influxdb.DefaultOptions()
+
+	// retry indefinitely while the database is unavailable, keeping the batches
+	// of the last `buffer` duration. The client counts its retry queue in batches
+	// (RetryBufferLimit/BatchSize) and every flush interval produces one batch.
+	if buffer > 0 {
+		batches := uint(buffer / (time.Duration(options.FlushInterval()) * time.Millisecond))
+		options.SetRetryBufferLimit(max(batches, 1) * options.BatchSize()).
+			SetMaxRetries(math.MaxUint32).
+			SetMaxRetryTime(math.MaxUint32)
+	}
+
+	client := influxdb.NewClientWithOptions(url, token, options)
 
 	if database == "" {
 		log.Fatal("influx: missing database")
