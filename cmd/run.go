@@ -159,7 +159,7 @@ any type is considered valid.
 	runCmd.PersistentFlags().Duration(
 		"influx-buffer",
 		0,
-		"InfluxDB write buffer duration. Readings are kept in memory and retried for this long while the database is unavailable, e.g. 1h. 0 keeps the client default of 5 retries within 3 minutes.",
+		"InfluxDB write buffer duration. Readings are kept in memory and retried for this long while the database is unavailable, e.g. 1h. 0 keeps the client default of 5 retries within 3 minutes, which holds about 10 seconds of data.",
 	)
 
 	pflags := runCmd.PersistentFlags()

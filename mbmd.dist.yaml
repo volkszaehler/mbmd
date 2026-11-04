@@ -18,7 +18,8 @@ influx:
   measurement: mbmd
   user:
   password:
-  # how long readings are kept in memory and retried while the database is unavailable (e.g. 1h)
+  # how long readings are kept in memory and retried while the database is unavailable (e.g. 1h),
+  # 0 keeps the client default of 5 retries within 3 minutes, which holds about 10 seconds of data
   buffer: 0
 
 # influxdb_v2 config
@@ -28,6 +29,7 @@ influx:
   measurement: mbmd
   organization:
   token:
+  # see influxdb_v1 config
   buffer: 0
 
 # adapters are referenced by device
