@@ -12,7 +12,7 @@ require (
 	github.com/grid-x/modbus v1.5.1
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
